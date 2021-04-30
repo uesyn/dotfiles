@@ -1,0 +1,8 @@
+tap "homebrew/bundle"
+brew "mas"
+mas "CotEditor", id: 1024640650
+mas "Display Menu", id: 549083868
+mas "Keynote", id: 409183694
+mas "Kindle", id: 405399194
+mas "Slack", id: 803453959
+mas "Tailscale", id: 1475387142

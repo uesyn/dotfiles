@@ -1,0 +1,32 @@
+{
+  "go":{
+    "goplsUseDaemon": false
+  },
+  "coc": {
+    "preferences": {
+      "formatOnType": true,
+      "formatOnSaveFileTypes": [
+        "go",
+        "dockerfile",
+        "sh",
+        "zsh",
+        "bash"
+      ],
+      "listOfWorkspaceEdit": "location",
+      "useQuickfixForLocations": false,
+      "jumpCommand": "tabe"
+    }
+  },
+  "suggest": {
+    "noselect": true,
+    "preferCompleteThanJumpPlaceholder": true,
+    "detailField": "abbr",
+    "enablePreview": true,
+    "enablePreselect": false,
+    "floatEnable": true,
+    "snippetIndicator": "",
+    "triggerAfterInsertEnter": true,
+    "echodocSupport": true,
+    "timeout":1000
+  }
+}

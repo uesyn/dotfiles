@@ -1,0 +1,7 @@
+vim/pack
+vim/.netrwhist
+volt/repos
+Brewfile.lock.json
+vim/sessions/*
+karabiner/automatic_backups
+karabiner/assets

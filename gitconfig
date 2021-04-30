@@ -1,0 +1,23 @@
+[ghq]
+	root = ~/src
+
+[credential]
+	helper = !gh auth git-credential
+	helper = store
+
+[core]
+	editor = vim
+	excludesfile = ~/.gitconfig.d/gitignore_global
+	hooksPath = ~/.gitconfig.d/hooks
+
+[url "https://github.com/"]
+	insteadOf = git@github.com:
+
+[include]
+	path = ~/.gitconfig.local
+
+[pull]
+	ff = only
+
+[feature]
+	manyFiles = true

@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+REPO_ROOT_DIR="/"
+if [[ -n ${0%/*} ]]; then
+  REPO_ROOT_DIR=$(cd ${0%/*}; cd ..; pwd)
+fi
+
+SUDO=
+if [[ -x $(command -v "sudo") ]]; then
+  SUDO=sudo
+fi
+
+if ! ${SUDO} grep -q "$(whoami) ALL=NOPASSWD: ALL" /etc/sudoers; then
+  echo "$(whoami) ALL=NOPASSWD: ALL" | sudo tee -a /etc/sudoers
+fi
+
+if [[ ! -f /etc/os-release ]]; then
+  echo "os-release doesn't exist"
+  exit 1
+fi
+
+. /etc/os-release
+
+if [[ $ID == ubuntu ]]; then
+  ${SUDO} apt update
+  ${SUDO} apt install -y --no-install-recommends software-properties-common
+  ${SUDO} apt update
+  ${SUDO} apt install --no-install-recommends -y \
+    git openssh-client \
+    build-essential file ca-certificates \
+    tmux zsh vim jq unzip tar file curl git \
+    python3 python3-pip
+else
+  echo "Unsupported Linux"
+  exit 1
+fi
+
+# FROM base as brew
+if ! id linuxbrew >/dev/null 2>&1; then
+  ${SUDO} useradd -m -s /bin/bash linuxbrew
+  ${SUDO} git clone https://github.com/Homebrew/brew /home/linuxbrew/.linuxbrew/Homebrew
+  ${SUDO} mkdir /home/linuxbrew/.linuxbrew/bin
+  ${SUDO} ln -s /home/linuxbrew/.linuxbrew/Homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/
+  ${SUDO} chmod 777 -R /home/linuxbrew/.linuxbrew
+fi
+
+# For WSL
+if uname -r | grep microsoft >/dev/null 2>&1; then
+  mkdir -p ${HOME}/opt/bin
+  curl -L -o ${HOME}/opt/bin/wsl-open https://raw.githubusercontent.com/4U6U57/wsl-open/master/wsl-open.sh
+fi

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+clip_tmp=/tmp/.clip_tmp
+unset clip_tmp
+clip_tmp=$(mktemp --tmpdir clip.XXXXX)
+
+function cleanup() {
+  [[ -n $clip_tmp ]] && rm -f ${clip_tmp}
+}
+trap 'cleanup' EXIT
+
+cat - > $clip_tmp
+
+# tmux
+if [[ -n $TMUX ]]; then
+  cat $clip_tmp | tmux load-buffer -
+fi
+
+# Mac
+if [[ -x "$(command -v pbcopy)" ]]; then
+  cat $clip_tmp | pbcopy
+fi
+
+# WSL2
+clip_exe="/mnt/c/WINDOWS/system32/clip.exe"
+if [[ -x "${clip_exe}" ]]; then
+  cat $clip_tmp | ${clip_exe}
+fi

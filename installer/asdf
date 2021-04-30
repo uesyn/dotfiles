@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+ASDF_DIR="${HOME}/.asdf"
+if [[ -d ${ASDF_DIR} ]]; then
+  echo "Already installed!"
+  exit 0
+fi
+
+git clone --depth=1 https://github.com/asdf-vm/asdf.git ${ASDF_DIR} --branch v0.8.0

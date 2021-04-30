@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+OPT_DIR=${OPT_BIN:-${HOME}/opt}
+export RUSTUP_HOME=${RUSTUP_HOME:-${OPT_DIR}/rust/rustup}
+export CARGO_HOME=${CARGO_HOME:-${OPT_DIR}/rust/cargo}
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path

@@ -1,0 +1,115 @@
+#!/bin/bash
+
+CMD=$0
+SUBCMD=$1
+
+DEVBOX_IMAGE_PREFIX="ghcr.io/uesyn/devbox"
+DEVBOX_IMAGE_TAG=${DEVBOX_IMAGE_TAG:-"latest"}
+DEVBOX_NAME="devbox"
+
+DOCKER=docker
+if [[ -x $(command -v "sudo") ]]; then
+  DOCKER="sudo docker"
+else
+  echo "Must run as root or docker group"
+  exit 1
+fi
+
+usage(){
+  cat << EOF
+devbox command
+
+Usage: 
+  ${CMD##*/} start
+  ${CMD##*/} stop
+  ${CMD##*/} exec
+  ${CMD##*/} ssh
+  ${CMD##*/} pull
+  ${CMD##*/} status
+EOF
+}
+
+start_devbox(){
+  local image=${DEVBOX_IMAGE_PREFIX}:${DEVBOX_IMAGE_TAG}
+
+  local status=$(${DOCKER} inspect ${DEVBOX_NAME} 2>/dev/null | jq -r '.[].State.Status')
+  if [[ $status == "running" ]]; then
+    echo "devbox has beein already running"
+    exit 1
+  fi
+
+  local devbox_home_volume="${HOME}/devbox"
+  ${DOCKER} run \
+    --privileged \
+    --init \
+    -d \
+    --network=host \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ${devbox_home_volume}:${devbox_home_volume} \
+    -e HOME=${devbox_home_volume} \
+    -w ${devbox_home_volume} \
+    --name ${DEVBOX_NAME} \
+    ${image}
+}
+
+stop_devbox(){
+  ${DOCKER} rm -f ${DEVBOX_NAME} >/dev/null 2>&1
+}
+
+exec_devbox(){
+  ${DOCKER} exec \
+    -it --detach-keys="ctrl-\\,ctrl-\\" \
+    ${DEVBOX_NAME} \
+    tmux new-session -ADs main
+}
+
+pull_devbox(){
+  local image="${DEVBOX_IMAGE_PREFIX}:${DEVBOX_IMAGE_TAG}"
+  ${DOCKER} pull ${image}
+}
+
+exit_if_in_devbox(){
+  if [[ -n $DEVBOX ]]; then
+    echo "You already have been in devbox"
+    exit 1
+  fi
+}
+
+logs_devbox(){
+  ${DOCKER} logs -f ${DEVBOX_NAME}
+}
+
+### main ###
+case ${SUBCMD} in
+  start )
+    shift
+    exit_if_in_devbox
+    start_devbox $@
+    ;;
+  stop )
+    exit_if_in_devbox
+    stop_devbox
+    ;;
+  exec )
+    exit_if_in_devbox
+    exec_devbox
+    ;;
+  pull )
+    shift
+    pull_devbox $@
+    ;;
+  logs )
+    logs_devbox
+    ;;
+  status )
+    ${DOCKER} ps | grep -E "${DEVBOX_NAME}"
+    ;;
+  help|--help|-h )
+    usage
+    exit 0
+    ;;
+  * )
+    usage
+    exit 1
+    ;;
+esac

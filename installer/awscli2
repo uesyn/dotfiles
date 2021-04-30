@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+unset tmpdir
+tmpdir=$(mktemp --tmpdir -d awscli.XXXXX)
+function cleanup() {
+  [[ -n $tmpdir ]] && rm -rf ${tmpdir}
+}
+trap 'cleanup' EXIT
+OPT_DIR=${OPT_DIR:-${HOME}/opt}
+OPT_DIR_BIN=${OPT_DIR}/bin
+mkdir -p ${OPT_DIR_BIN}
+
+cd $tmpdir
+case $OSTYPE in
+  linux*)
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    ./aws/install -i ${OPT_DIR}/awscli2 -b ${OPT_DIR_BIN}
+    ;;
+  darwin*)
+    # TODO: implementation https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html
+    echo "unsupported"
+    ;;
+esac

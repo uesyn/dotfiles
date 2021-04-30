@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+unset tmpdir
+tmpdir=$(mktemp --tmpdir -d neovim.XXXXX)
+function cleanup() {
+  [[ -n $tmpdir ]] && rm -rf ${tmpdir}
+}
+trap 'cleanup' EXIT
+OPT_DIR=${OPT_DIR:-${HOME}/opt}
+OPT_DIR_BIN=${OPT_DIR}/bin
+mkdir -p ${OPT_DIR_BIN}
+
+if [[ -x $(command -v nvim) ]]; then
+  echo "Already installed!"
+  exit 0
+fi
+
+case $OSTYPE in
+  linux*)
+    binary=${OPT_DIR_BIN}/nvim
+    curl -o ${binary} -L https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage
+    chmod +x ${binary}
+    ;;
+  darwin*)
+    archive=${tmpdir}/nvim.tar.gz
+    curl -o ${archive} -L https://github.com/neovim/neovim/releases/download/nightly/nvim-macos.tar.gz
+    tar xzvf ${archive} --strip-component=1 -C ${OPT_DIR}
+    ;;
+esac
