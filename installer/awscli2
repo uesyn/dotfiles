@@ -18,7 +18,6 @@ case $OSTYPE in
     ./aws/install -i ${OPT_DIR}/awscli2 -b ${OPT_DIR_BIN}
     ;;
   darwin*)
-    # TODO: implementation https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2-mac.html
-    echo "unsupported"
+    brew install awscli
     ;;
 esac
