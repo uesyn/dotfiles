@@ -30,6 +30,7 @@ asdf: link
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add golang || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add kubectl || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add kustomize || true
+	@source $(HOME)/.asdf/asdf.sh && asdf plugin add helm || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add nodejs || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add vault || true
 
