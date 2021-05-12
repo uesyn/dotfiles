@@ -138,8 +138,8 @@ function _prompt_space(){
 
 function _show_prompt(){
   _prompt_username ${_prompt_color_purple}
-  _prompt_pwd ${_prompt_color_green}
-  _prompt_git ${_prompt_color_red}
+  _prompt_pwd ${_prompt_color_dark_aqua}
+  _prompt_git ${_prompt_color_yellow}
   _prompt_kubernetes ${_prompt_color_dark_blue}
   _prompt_line
   _show_prompt_symbol ${_prompt_color_yellow} ${_prompt_color_dark_yellow}
