@@ -21,8 +21,6 @@ link:
 neovim: link
 	@./installer/neovim
 	nvim --headless -es -u nvim/init.vim -c "PlugInstall" -c "PlugUpdate" -c "PlugLoadStatus" -c "qa"
-	nvim --headless -es -u nvim/init.vim -c "CocInstall -sync coc-go coc-json coc-yaml coc-tsserver coc-tabnine" -c "qa"
-	type go >/dev/null 2>/dev/null && nvim --headless -es -u nvim/init.vim -c "CocCommand go.install.gopls" -c "qa" || true
 
 asdf: link
 	@./installer/asdf

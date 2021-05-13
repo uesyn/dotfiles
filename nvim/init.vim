@@ -102,7 +102,17 @@ call plug#begin(vim_cache . '/plugged')
 
   " Lsp
   Plug 'liuchengxu/vista.vim'
-  Plug 'neoclide/coc.nvim', {'branch': 'release'}
+  if executable("node")
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    " Coc Extentions
+    if executable("yarn")
+      Plug 'josa42/coc-go', {'do': 'yarn install --forzen-lockfile'}
+      Plug 'neoclide/coc-json', {'do': 'yarn install --forzen-lockfile'}
+      Plug 'neoclide/coc-yaml', {'do': 'yarn install --forzen-lockfile'}
+      Plug 'neoclide/coc-tsserver', {'do': 'yarn install --forzen-lockfile'}
+      Plug 'neoclide/coc-tabnine', {'do': 'yarn install --forzen-lockfile'}
+    endif
+  endif
 
 call plug#end()
 
