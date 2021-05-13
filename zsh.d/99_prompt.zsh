@@ -1,26 +1,6 @@
 setopt prompt_subst
 autoload -U colors; colors
 
-# _prompt_color_white=223
-# 
-# _prompt_color_dark_red=124
-# _prompt_color_dark_green=106
-# _prompt_color_dark_yellow=172
-# _prompt_color_dark_blue=66
-# _prompt_color_dark_purple=132
-# _prompt_color_dark_aqua=72
-# _prompt_color_dark_gray=245
-# _prompt_color_dark_orange=166
-# 
-# _prompt_color_red=167
-# _prompt_color_green=142
-# _prompt_color_yellow=214
-# _prompt_color_blue=109
-# _prompt_color_purple=175
-# _prompt_color_aqua=108
-# _prompt_color_gray=246
-# _prompt_color_orange=208
-
 _prompt_color_white="#ebdbb2"
 
 _prompt_color_dark_red="#cc241d"
