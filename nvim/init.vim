@@ -48,12 +48,8 @@ nnoremap <silent> <Leader>y :call <SID>copy()<CR>
 
 " tabline
 function! TabLabel(n)
-  let label = ''
-  if bufnr() == a:n
-    let label = '%#TabLineSel#' . bufname(a:n) . '%#TabLineFill#%T'
-  else
-    let label = '%#TabLine#' . bufname(a:n) . '%#TabLineFill#%T'
-  endif
+  let hi = a:n is bufnr() ? '%#TabLineSel#' : '%#TabLine#'
+  let label = hi . bufname(a:n) . '%#TabLineFill#%T'
   return label
 endfunction
 
