@@ -46,6 +46,34 @@ endfunction
 
 nnoremap <silent> <Leader>y :call <SID>copy()<CR>
 
+" tabline
+function! TabLabel(n)
+  let label = ''
+  if bufnr() == a:n
+    let label = '%#TabLineSel#' . bufname(a:n) . '%#TabLineFill#%T'
+  else
+    let label = '%#TabLine#' . bufname(a:n) . '%#TabLineFill#%T'
+  endif
+  return label
+endfunction
+
+function! MakeTabLine()
+  let s = ""
+  let tabnum = tabpagenr('$')
+  if tabnum > 1
+    let s .= '%#TabLineSel#'
+    let s .= '[CODE JUMP ' . (tabnum - 1) . ']'
+    let s .= '%#TabLineFill#%T '
+  endif
+
+  let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
+  let labels = map(buffers, 'TabLabel(v:val)')
+  return s . join(labels, " | ")
+endfunction
+
+set showtabline=2
+set tabline=%!MakeTabLine()
+
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')
 let vim_plug_dir = expand(vim_cache . '/vim-plug')
@@ -80,7 +108,6 @@ call plug#begin(vim_cache . '/plugged')
   Plug 'lambdalisue/fern.vim'
 
   " UI
-  Plug 'vim-airline/vim-airline'
   Plug 'morhetz/gruvbox'
 
   " Git
@@ -218,11 +245,6 @@ if s:is_plugged("vim-markdown")
   let g:vim_markdown_new_list_item_indent = 0
   let g:vim_markdown_auto_insert_bullets = 1
   let g:vim_markdown_no_default_key_mappings = 1
-endif
-
-if s:is_plugged("vim-airline")
-  let g:airline#extensions#tabline#enabled = 1
-  let g:airline_powerline_fonts = 0
 endif
 
 if s:is_plugged("incsearch.vim")
