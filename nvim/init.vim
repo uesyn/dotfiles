@@ -57,9 +57,7 @@ function! MakeTabLine()
   let s = ""
   let tabnum = tabpagenr('$')
   if tabnum > 1
-    let s .= '%#TabLineSel#'
-    let s .= '[CODE JUMP ' . (tabnum - 1) . ']'
-    let s .= '%#TabLineFill#%T '
+    let s .= '%#TabLineSel#' . '[CODE JUMP ' . (tabnum - 1) . ']' . '%#TabLineFill#%T '
   endif
 
   let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
