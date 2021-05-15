@@ -1,6 +1,9 @@
 function! s:tab_label(n)
-  let hi = a:n is bufnr() ? '%#TabLineSel#' : '%#TabLine#'
-  let label = hi . pathshorten(bufname(a:n)) . '%#TabLineFill#%T'
+  let label = a:n is bufnr() ? '%#TabLineSel#' : '%#TabLine#'
+  if getbufvar(a:n, "&modified")
+    let label .= "[+]"
+  endif
+  let label .= pathshorten(bufname(a:n)) . '%#TabLineFill#%T'
   return label
 endfunction
 
