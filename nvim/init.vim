@@ -51,7 +51,10 @@ set showtabline=2
 set tabline=%!my#tabline#make_tab_line()
 
 " statusline
-set statusline=%!my#statusline#make_status_line()
+augroup my_statusline
+  autocmd! *
+  autocmd BufEnter * call my#statusline#set_status_line()
+augroup END
 
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')
@@ -127,7 +130,7 @@ if s:is_plugged("nerdfont.vim")
 endif
 
 if s:is_plugged("glyph-palette.vim")
-  augroup my-glyph-palette
+  augroup my_glyph_palette
     autocmd! *
     autocmd FileType fern call glyph_palette#apply()
     autocmd FileType nerdtree,startify call glyph_palette#apply()
