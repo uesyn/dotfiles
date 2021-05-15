@@ -64,7 +64,7 @@ function! MakeTabLine()
 
   let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
   let labels = map(buffers, 'TabLabel(v:val)')
-  return s . join(labels, " | ")
+  return s . ' ' . join(labels, " | ")
 endfunction
 
 set showtabline=2
