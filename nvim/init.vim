@@ -47,26 +47,8 @@ endfunction
 nnoremap <silent> <Leader>y :call <SID>copy()<CR>
 
 " tabline
-function! TabLabel(n)
-  let hi = a:n is bufnr() ? '%#TabLineSel#' : '%#TabLine#'
-  let label = hi . bufname(a:n) . '%#TabLineFill#%T'
-  return label
-endfunction
-
-function! MakeTabLine()
-  let s = ""
-  let tabnum = tabpagenr('$')
-  if tabnum > 1
-    let s .= '%#TabLineSel#' . '[CODE JUMP ' . (tabnum - 1) . ']' . '%#TabLineFill#%T '
-  endif
-
-  let buffers = filter(range(1, bufnr('$')), 'buflisted(v:val)')
-  let labels = map(buffers, 'TabLabel(v:val)')
-  return s . ' ' . join(labels, " | ")
-endfunction
-
 set showtabline=2
-set tabline=%!MakeTabLine()
+set tabline=%!my#tabline#make_tab_line()
 
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')

@@ -1,7 +1,3 @@
-function! my#utils#syncclipboard_with_selected() range
-  echo system('gocopy', getline(a:firstline, a:lastline))
-endfunction
-
 function! my#utils#plug_load_status()
   if filereadable(expand('~/.config/nvim/plug_lock.vim'))
     source ~/.config/nvim/plug_lock.vim
