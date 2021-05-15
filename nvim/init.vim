@@ -50,6 +50,9 @@ nnoremap <silent> <Leader>y :call <SID>copy()<CR>
 set showtabline=2
 set tabline=%!my#tabline#make_tab_line()
 
+" statusline
+set statusline=%r%y%m\ %F\ %=%{coc#status()}
+
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')
 let vim_plug_dir = expand(vim_cache . '/vim-plug')
