@@ -51,7 +51,7 @@ set showtabline=2
 set tabline=%!my#tabline#make_tab_line()
 
 " statusline
-set statusline=%r%y%m\ %F\ %=%{coc#status()}
+set statusline=%!my#statusline#make_status_line()
 
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')
