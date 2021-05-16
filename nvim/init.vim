@@ -104,7 +104,6 @@ call plug#begin(vim_cache . '/plugged')
   Plug 'tyru/open-browser-github.vim'
 
   " Tweak
-  Plug 'rbgrouleff/bclose.vim', { 'on': 'Bclose' }
   Plug 'haya14busa/incsearch.vim'
   Plug 'simeji/winresizer'
   Plug 'lambdalisue/suda.vim'
@@ -196,6 +195,7 @@ if s:is_plugged("gruvbox")
 endif
 
 if s:is_plugged("vim-fugitive")
+  let g:fugitive_no_maps = 1
   nnoremap <silent> <Leader>gl :Git log<CR>
   nnoremap <silent> <Leader>gd :Git diff<CR>
   nnoremap <silent> <Leader>gD :Git difftool<CR>

@@ -31,6 +31,6 @@ function! my#utils#close_tab_or_buffer()
     return
   endif
 
-  Bclose
   execute "buffer " . previous_buffer
+  execute "bwipeout" . current_buffer
 endfunction

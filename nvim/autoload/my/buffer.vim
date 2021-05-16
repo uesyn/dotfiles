@@ -26,7 +26,6 @@ function! my#buffer#valid_buffer_list()
     endif
   endfor
 
-  call sort(valid_buffers, 'n')
   return valid_buffers
 endfunction
 
