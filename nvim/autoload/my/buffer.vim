@@ -31,7 +31,7 @@ function! my#buffer#valid_buffer_list()
   return valid_buffers
 endfunction
 
-function! my#buffer#next_buffer(reverse)
+function! my#buffer#move_next_valid_buffer(reverse)
   " not to move next buffer if in invalid buffer
   if !my#buffer#valid_buffer(bufnr())
     return

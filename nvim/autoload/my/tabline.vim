@@ -5,7 +5,7 @@ function! s:tab_label_from_buffer(bufnum)
   endif
 
   let shorten_path = pathshorten(bufname(a:bufnum))
-  let bufname = empty(shorten_path) ? '**empty buffer**' : shorten_path
+  let bufname = empty(shorten_path) ? '[No Name]' : shorten_path
 
   let label .= bufname . '%#TabLineFill#%T'
   return label
