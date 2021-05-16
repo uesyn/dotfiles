@@ -27,17 +27,18 @@ function! my#buffer#valid_buffer_list()
   endfor
 
   call sort(valid_buffers, 'n')
-
   return valid_buffers
 endfunction
 
-function! my#buffer#move_next_valid_buffer(reverse)
-  " not to move next buffer if in invalid buffer
-  if !my#buffer#valid_buffer(bufnr())
-    return
+" return valid next buffer.
+" if return -1, valid buffer is not found.
+function! my#buffer#next_valid_buffer(reverse)
+  let valid_buffer_list = my#buffer#valid_buffer_list()
+
+  if len(valid_buffer_list) is 0
+    return -1
   endif
 
-  let valid_buffer_list = my#buffer#valid_buffer_list()
   if a:reverse is 1
     call reverse(valid_buffer_list)
   endif
@@ -46,12 +47,27 @@ function! my#buffer#move_next_valid_buffer(reverse)
   for bufnum in valid_buffer_list
     let next_valid_index = (next_valid_index + 1) % len(valid_buffer_list)
     if bufnum is bufnr()
-      while !my#buffer#valid_buffer(valid_buffer_list[next_valid_index])
-        let next_valid_index = (next_valid_index + 1) % len(valid_buffer_list)
-      endwhile
-      break
+      " if current buffer is next valid index, return -1
+      if valid_buffer_list[next_valid_index] is bufnr()
+        return -1
+      endif
+      return valid_buffer_list[next_valid_index]
     endif
   endfor
 
-  execute "buffer " . valid_buffer_list[next_valid_index]
+  " if valid buffer is not found, return first valid buffer.
+  return valid_buffer_list[0]
+endfunction
+
+function! my#buffer#move_next_valid_buffer(reverse)
+  " not to move next buffer if in invalid buffer
+  if !my#buffer#valid_buffer(bufnr())
+    return
+  endif
+
+  let next_buffer = my#buffer#next_valid_buffer(a:reverse)
+  if next_buffer is -1
+    return
+  endif
+  execute "buffer " . next_buffer
 endfunction
