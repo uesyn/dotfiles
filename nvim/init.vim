@@ -56,6 +56,9 @@ augroup my_statusline
   autocmd BufEnter * call my#statusline#set_status_line()
 augroup END
 
+" netrw
+let g:netrw_fastbrowse = 0 "to close netrw when open a file
+
 """ vim-plug config
 let vim_cache = expand('~/.cache/nvim')
 let vim_plug_dir = expand(vim_cache . '/vim-plug')
