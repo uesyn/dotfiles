@@ -37,25 +37,21 @@ function! my#buffer#next_buffer(reverse)
     return
   endif
 
-  let idx = 0
   let valid_buffer_list = my#buffer#valid_buffer_list()
   if a:reverse is 1
     call reverse(valid_buffer_list)
   endif
 
+  let next_valid_index = 0
   for bufnum in valid_buffer_list
+    let next_valid_index = (next_valid_index + 1) % len(valid_buffer_list)
     if bufnum is bufnr()
-      let idx = idx + 1
+      while !my#buffer#valid_buffer(valid_buffer_list[next_valid_index])
+        let next_valid_index = (next_valid_index + 1) % len(valid_buffer_list)
+      endwhile
       break
     endif
-    let idx = idx + 1
   endfor
 
-  let idx = idx % len(valid_buffer_list)
-
-  while ! my#buffer#valid_buffer(valid_buffer_list[idx])
-    let idx = (idx + 1) % len(valid_buffer_list)
-  endwhile
-
-  execute "buffer " . valid_buffer_list[idx]
+  execute "buffer " . valid_buffer_list[next_valid_index]
 endfunction
