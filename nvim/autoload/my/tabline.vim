@@ -4,10 +4,8 @@ function! s:tab_label(n)
     let label .= "[+]"
   endif
 
-  let bufname = pathshorten(bufname(a:n))
-  if bufname == ""
-    let bufname = "**empty buffer**"
-  endif
+  let shorten_path = pathshorten(bufname(a:n))
+  let bufname = empty(shorten_path) ? '**empty buffer**' : shorten_path
 
   let label .= bufname . '%#TabLineFill#%T'
   return label
