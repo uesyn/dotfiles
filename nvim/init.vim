@@ -37,8 +37,9 @@ nnoremap <silent> <S-k> <C-w>k
 nnoremap <silent> <S-j> <C-w>j
 
 " buffer
-nnoremap <silent> <C-n> :call my#buffer#move_next_valid_buffer(0)<CR>
-nnoremap <silent> <C-p> :call my#buffer#move_next_valid_buffer(1)<CR>
+nnoremap <silent> <C-n> :NextBuffer<CR>
+nnoremap <silent> <C-p> :PreviousBuffer<CR>
+nnoremap <silent> qq :CloseTabOrBuffer<CR>
 
 function! s:copy()
   call system('clip', @0)
@@ -215,11 +216,6 @@ endif
 if s:is_plugged("open-browser-github.vim")
   nnoremap <silent> <Leader>ho :OpenGithubFile<CR>
   vnoremap <silent> <Leader>ho :'<,'>OpenGithubFile<CR>
-endif
-
-if s:is_plugged("bclose.vim")
-  let g:no_plugin_maps = 1
-  nnoremap <silent> qq :CloseTabOrBuffer<CR>
 endif
 
 if s:is_plugged("winresizer")
