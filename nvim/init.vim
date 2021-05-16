@@ -37,8 +37,8 @@ nnoremap <silent> <S-k> <C-w>k
 nnoremap <silent> <S-j> <C-w>j
 
 " buffer
-nnoremap <silent> <C-n> :bnext<CR>
-nnoremap <silent> <C-p> :bprevious<CR>
+nnoremap <silent> <C-n> :call my#buffer#next_buffer()<CR>
+nnoremap <silent> <C-p> :call my#buffer#previous_buffer()<CR>
 
 function! s:copy()
   call system('clip', @0)

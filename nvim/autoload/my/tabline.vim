@@ -3,7 +3,13 @@ function! s:tab_label(n)
   if getbufvar(a:n, "&modified")
     let label .= "[+]"
   endif
-  let label .= pathshorten(bufname(a:n)) . '%#TabLineFill#%T'
+
+  let bufname = pathshorten(bufname(a:n))
+  if bufname == ""
+    let bufname = "**empty buffer**"
+  endif
+
+  let label .= bufname . '%#TabLineFill#%T'
   return label
 endfunction
 
