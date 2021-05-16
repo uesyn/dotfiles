@@ -1,5 +1,5 @@
 if !exists("g:my_buffer_invalid_buffer_filetypes")
-  let g:my_buffer_invalid_buffer_filetypes = ["qf", "fern", "netrw"]
+  let g:my_buffer_invalid_buffer_filetypes = ["qf", "fern", "netrw", "help"]
 endif
 
 function! s:valid_buffer_filetype(filetype)
