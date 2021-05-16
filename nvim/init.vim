@@ -161,19 +161,20 @@ if s:is_plugged("fern.vim")
   let g:fern#disable_default_mappings = 1
   nnoremap <silent> <Leader>fo :Fern . -drawer -reveal=% -toggle<CR>
   function! s:init_fern() abort
-    nmap <buffer> r <Plug>(fern-action-reload)
-    nmap <buffer> R <Plug>(fern-action-remove)
-    nmap <buffer> F <Plug>(fern-action-new-file)
-    nmap <buffer> D <Plug>(fern-action-new-dir)
-    nmap <buffer> z <Plug>(fern-action-zoom)
-    nmap <buffer> l <Plug>(fern-action-open-or-expand)
-    nmap <buffer> h <Plug>(fern-action-collapse)
-    nmap <buffer> c <Plug>(fern-action-copy)
-    nmap <buffer> m <Plug>(fern-action-move)
     nmap <buffer> <C-C> <Plug>(fern-action-cancel)
     nmap <buffer> <C-h> <Plug>(fern-action-leave)
     nmap <buffer> <CR> <Plug>(fern-action-enter)
     nmap <buffer> ? <Plug>(fern-action-help)
+    nmap <buffer> D <Plug>(fern-action-new-dir)
+    nmap <buffer> F <Plug>(fern-action-new-file)
+    nmap <buffer> R <Plug>(fern-action-remove)
+    nmap <buffer> c <Plug>(fern-action-copy)
+    nmap <buffer> h <Plug>(fern-action-collapse)
+    nmap <buffer> l <Plug>(fern-action-open-or-expand)
+    nmap <buffer> m <Plug>(fern-action-move)
+    nmap <buffer> r <Plug>(fern-action-reload)
+    nmap <buffer> s <Plug>(fern-action-open:select)
+    nmap <buffer> z <Plug>(fern-action-zoom)
   endfunction
   augroup my-fern
     autocmd! *
