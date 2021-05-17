@@ -22,7 +22,8 @@ function! my#utils#close_tab_or_buffer()
   " if no tabs, close current buffer, and move to valid previous buffer.
   let previous_buffer = my#buffer#next_valid_buffer(1)
   if previous_buffer is -1
-    echom "could't close the buffer:" . current_buffer
+    " if previous buffer is not found, close window.
+    quit
     return
   endif
 
