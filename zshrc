@@ -25,6 +25,8 @@ zinit ice lucid from"gh-r" as"program" mv"ghq_*/ghq -> ghq"
 zinit light x-motemen/ghq
 zinit ice lucid from"gh-r" as"program" mv"jq-* -> jq"
 zinit light stedolan/jq
+zinit ice lucid from"gh-r" as"program" mv"yq_* -> yq"
+zinit light mikefarah/yq
 
 zinit ice lucid from"gh-r" as"program" id-as"kubectx" bpick"kubectx_*"
 zinit light ahmetb/kubectx
