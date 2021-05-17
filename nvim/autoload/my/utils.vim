@@ -26,11 +26,6 @@ function! my#utils#close_tab_or_buffer()
     return
   endif
 
-  " if current buffer is not a valid one, need not to close it.
-  if !my#buffer#valid_buffer(bufnr())
-    return
-  endif
-
   execute "buffer " . previous_buffer
   execute "bwipeout" . current_buffer
 endfunction

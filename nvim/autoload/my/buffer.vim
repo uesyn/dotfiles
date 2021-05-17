@@ -32,6 +32,7 @@ endfunction
 " return valid next buffer.
 " if return -1, valid buffer is not found.
 " it is possibility that returns the current buffer.
+" if current buffer is in invalid buffer list, return -1.
 function! my#buffer#next_valid_buffer(reverse)
   let valid_buffer_list = my#buffer#valid_buffer_list()
 
@@ -56,13 +57,9 @@ function! my#buffer#next_valid_buffer(reverse)
 endfunction
 
 function! my#buffer#move_next_valid_buffer(reverse)
-  " not to move next buffer if in invalid buffer
-  if !my#buffer#valid_buffer(bufnr())
-    return
-  endif
-
   let next_buffer = my#buffer#next_valid_buffer(a:reverse)
   if next_buffer is -1
+    echom "failed to move next buffer: current buffer is invalid"
     return
   endif
   execute "buffer " . next_buffer
