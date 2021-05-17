@@ -31,6 +31,7 @@ endfunction
 
 " return valid next buffer.
 " if return -1, valid buffer is not found.
+" it is possibility that returns the current buffer.
 function! my#buffer#next_valid_buffer(reverse)
   let valid_buffer_list = my#buffer#valid_buffer_list()
 
@@ -46,16 +47,12 @@ function! my#buffer#next_valid_buffer(reverse)
   for bufnum in valid_buffer_list
     let next_valid_index = (next_valid_index + 1) % len(valid_buffer_list)
     if bufnum is bufnr()
-      " if current buffer is next valid index, return -1
-      if valid_buffer_list[next_valid_index] is bufnr()
-        return -1
-      endif
       return valid_buffer_list[next_valid_index]
     endif
   endfor
 
-  " if valid buffer is not found, return first valid buffer.
-  return valid_buffer_list[0]
+  " if valid buffer is not found, return -1.
+  return -1
 endfunction
 
 function! my#buffer#move_next_valid_buffer(reverse)
