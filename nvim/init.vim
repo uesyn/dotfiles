@@ -81,6 +81,7 @@ endfunction
 call plug#begin(vim_cache . '/plugged')
   " Syntax
   Plug 'stephpy/vim-yaml'
+  Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
   " Search
   Plug 'junegunn/fzf'
@@ -108,9 +109,6 @@ call plug#begin(vim_cache . '/plugged')
   Plug 'haya14busa/incsearch.vim'
   Plug 'simeji/winresizer'
   Plug 'lambdalisue/suda.vim'
-
-  " Markdown
-  Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
 
   " Lsp
   Plug 'liuchengxu/vista.vim'
@@ -179,7 +177,7 @@ if s:is_plugged("fern.vim")
     nmap <buffer> s <Plug>(fern-action-open:select)
     nmap <buffer> z <Plug>(fern-action-zoom)
   endfunction
-  augroup my-fern
+  augroup my_fern
     autocmd! *
     autocmd FileType fern call s:init_fern()
   augroup END
