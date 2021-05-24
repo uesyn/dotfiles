@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 
-readonly REGEX="^(master|main|release.*)$"
+readonly DENY_BRANCH_REGEX="^(master|main|release.*)$"
+readonly ALLOW_URL_REGEX="^(https://github.com/uesyn/coredns.git)$"
 
 while read local_ref local_sha2 remote_ref remote_sha1; do
-  if [[ -n $GIT_ALLOW_PUSH ]] || [[ ! "${remote_ref##refs/heads/}" =~ ${REGEX} ]]; then
+  if [[ -n $GIT_ALLOW_PUSH ]] || [[ ! "${remote_ref##refs/heads/}" =~ ${DENY_BRANCH_REGEX} ]] || [[ ${remote_url} =~ ${ALLOW_URL_REGEX} ]]; then
     exit 0
   fi
   
