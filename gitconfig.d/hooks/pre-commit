@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+readonly REGEX="^(master|main|release.*)$"
+
+while read local_ref local_sha2 remote_ref remote_sha1; do
+  if [[ -n $GIT_ALLOW_COMMIT ]] || [[ ! "${remote_ref##refs/heads/}" =~ ${REGEX} ]]; then
+    exit 0
+  fi
+  
+  echo "ERROR: Failed to commit: ${remote_ref##refs/heads/}"
+  echo "       If you want to commit, export GIT_ALLOW_COMMIT=yes"
+  exit 1
+done
