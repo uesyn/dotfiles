@@ -11,6 +11,5 @@ while read local_ref local_sha2 remote_ref remote_sha1; do
   fi
   
   echo "ERROR: Failed to push to remote ${remote_ref##refs/heads/}."
-  echo "       If you want to push, export GIT_ALLOW_PUSH=yes"
   exit 1
 done

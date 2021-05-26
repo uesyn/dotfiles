@@ -11,5 +11,4 @@ if [[ -n $GIT_ALLOW_COMMIT ]] || [[ ! ${branch} =~ ${DENY_BRANCH_REGEX} ]] || [[
 fi
 
 echo "ERROR: Failed to commit: ${remote_ref##refs/heads/}"
-echo "       If you want to commit, export GIT_ALLOW_COMMIT=yes"
 exit 1
