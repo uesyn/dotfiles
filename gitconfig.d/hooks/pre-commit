@@ -10,5 +10,5 @@ if [[ -n $GIT_ALLOW_COMMIT ]] || [[ ! ${branch} =~ ${DENY_BRANCH_REGEX} ]] || [[
   exit 0
 fi
 
-echo "ERROR: Failed to commit: ${remote_ref##refs/heads/}"
+echo "ERROR: Failed to commit to ${branch} branch"
 exit 1
