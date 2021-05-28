@@ -109,6 +109,7 @@ call plug#begin(vim_cache . '/plugged')
   Plug 'haya14busa/incsearch.vim'
   Plug 'simeji/winresizer'
   Plug 'lambdalisue/suda.vim'
+  Plug 'mattn/vim-maketable'
 
   " Lsp
   Plug 'liuchengxu/vista.vim'
