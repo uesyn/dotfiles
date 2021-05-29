@@ -82,6 +82,7 @@ call plug#begin(vim_cache . '/plugged')
   " Syntax
   Plug 'stephpy/vim-yaml'
   Plug 'plasticboy/vim-markdown', { 'for': 'markdown' }
+  Plug 'hashivim/vim-terraform'
 
   " Search
   Plug 'junegunn/fzf'
