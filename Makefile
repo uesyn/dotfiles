@@ -31,6 +31,7 @@ asdf: link
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add helm || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add nodejs || true
 	@source $(HOME)/.asdf/asdf.sh && asdf plugin add vault || true
+	@source $(HOME)/.asdf/asdf.sh && asdf plugin add terraform || true
 
 bootstrap: link
 ifeq ($(shell uname), Darwin)
