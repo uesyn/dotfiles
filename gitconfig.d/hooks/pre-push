@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 readonly DENY_BRANCH_REGEX="^(master|main|release.*)$"
-readonly ALLOW_URL_REGEX="^(https://github.com/uesyn/dotfiles)$"
+readonly ALLOW_URL_REGEX="^(https://github.com/uesyn/dotfiles|https://github.com/uesyn/Dockerfiles)$"
 
 remote_url=$(git remote get-url origin)
 
