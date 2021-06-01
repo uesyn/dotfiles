@@ -20,7 +20,7 @@ link:
 
 neovim: link
 	@./installer/neovim
-	nvim --headless -es -u nvim/init.vim -c "PlugInstall" -c "PlugUpdate" -c "PlugLoadStatus" -c "qa"
+	nvim --headless -es -u nvim/init.vim -c "PlugLoadStatus" -c "qa"
 
 asdf: link
 	@./installer/asdf
