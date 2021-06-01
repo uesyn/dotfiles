@@ -103,13 +103,9 @@ call plug#begin(vim_cache . '/plugged')
   Plug 'junegunn/gv.vim'
   Plug 'airblade/vim-gitgutter'
 
-  Plug 'tyru/open-browser.vim'
-  Plug 'tyru/open-browser-github.vim'
-
   " Tweak
   Plug 'haya14busa/incsearch.vim'
   Plug 'simeji/winresizer'
-  Plug 'lambdalisue/suda.vim'
 
   " Lsp
   Plug 'liuchengxu/vista.vim'
