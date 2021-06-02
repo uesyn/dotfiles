@@ -5,7 +5,7 @@ function! my#utils#plug_load_status()
 endfunction
 
 function! my#utils#plug_save_status()
-  PlugSnapshot ~/.config/nvim/plug_lock.vim
+  PlugSnapshot! ~/.config/nvim/plug_lock.vim
 endfunction
 
 function! my#utils#close_tab_or_buffer()
