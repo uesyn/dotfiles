@@ -1,0 +1,214 @@
+[[plugins]]
+repo = 'plasticboy/vim-markdown'
+hook_add = '''
+  let g:vim_markdown_folding_disabled = 1
+  let g:vim_markdown_new_list_item_indent = 0
+  let g:vim_markdown_auto_insert_bullets = 1
+  let g:vim_markdown_no_default_key_mappings = 1
+'''
+
+[[plugins]]
+repo = 'hashivim/vim-terraform'
+
+[[plugins]]
+repo = 'junegunn/fzf'
+
+[[plugins]]
+repo = 'junegunn/fzf.vim'
+hook_add = '''
+  nnoremap <Leader>fl :call fzf#vim#grep(
+  	\ 'rg --ignore-file ~/.ripgrep_ignore --column --line-number --no-heading --hidden --smart-case .+',
+  	\ 1,
+  	\ fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%', '?'),
+  	\ 0,)<CR>
+  nnoremap <silent> <Leader>fb :Buffers<CR>
+  nnoremap <silent> <Leader>ff :Files<CR>
+  nnoremap <silent> <Leader>fl :Lines<CR>
+'''
+
+[[plugins]]
+repo = 'lambdalisue/nerdfont.vim'
+
+[[plugins]]
+repo = 'lambdalisue/fern-renderer-nerdfont.vim'
+hook_add = '''
+  let g:fern#renderer = "nerdfont"
+'''
+depends = ['nerdfont.vim']
+
+[[plugins]]
+repo = 'lambdalisue/glyph-palette.vim'
+hook_add = '''
+  augroup my_glyph_palette
+    autocmd! *
+    autocmd FileType fern call glyph_palette#apply()
+    autocmd FileType nerdtree,startify call glyph_palette#apply()
+  augroup END
+'''
+depends = ['fern-renderer-nerdfont.vim']
+
+[[plugins]]
+repo = 'lambdalisue/fern-git-status.vim'
+hook_add = '''
+  let g:fern_git_status#disable_ignored = 0
+  let g:fern_git_status#disable_untracked = 0
+  let g:fern_git_status#disable_submodules = 1
+  let g:fern_git_status#disable_directories = 0
+'''
+depends = ['glyph-palette.vim']
+
+[[plugins]]
+repo = 'lambdalisue/fern.vim'
+hook_add = '''
+  let g:fern#default_hidden = 1
+  let g:fern#disable_default_mappings = 1
+  nnoremap <silent> <Leader>fo :Fern . -drawer -reveal=% -toggle<CR>
+  function! s:init_fern() abort
+    nmap <buffer> <C-C> <Plug>(fern-action-cancel)
+    nmap <buffer> <C-h> <Plug>(fern-action-leave)
+    nmap <buffer> <CR> <Plug>(fern-action-enter)
+    nmap <buffer> ? <Plug>(fern-action-help)
+    nmap <buffer> D <Plug>(fern-action-new-dir)
+    nmap <buffer> F <Plug>(fern-action-new-file)
+    nmap <buffer> R <Plug>(fern-action-remove)
+    nmap <buffer> c <Plug>(fern-action-copy)
+    nmap <buffer> h <Plug>(fern-action-collapse)
+    nmap <buffer> l <Plug>(fern-action-open-or-expand)
+    nmap <buffer> m <Plug>(fern-action-move)
+    nmap <buffer> r <Plug>(fern-action-reload)
+    nmap <buffer> s <Plug>(fern-action-open:select)
+    nmap <buffer> z <Plug>(fern-action-zoom)
+  endfunction
+  augroup my_fern
+    autocmd! *
+    autocmd FileType fern call s:init_fern()
+  augroup END
+'''
+depends = ['fern-git-status.vim']
+
+[[plugins]]
+repo = 'morhetz/gruvbox'
+hook_add = '''
+  set background=dark
+  try
+    colorscheme gruvbox
+  catch /^Vim\%((\a\+)\)\=:E185/
+    colorscheme desert
+  endtry
+'''
+
+[[plugins]]
+repo = 'tpope/vim-fugitive'
+hook_add = '''
+  let g:fugitive_no_maps = 1
+  nnoremap <silent> <Leader>gl :Git log<CR>
+  nnoremap <silent> <Leader>gd :Git diff<CR>
+  nnoremap <silent> <Leader>gD :Git difftool<CR>
+  nnoremap <silent> <Leader>gs :Git status<CR>
+  nnoremap <silent> <Leader>gb :Git blame<CR>
+'''
+
+[[plugins]]
+repo = 'junegunn/gv.vim'
+hook_add = '''
+  noremap <silent> <Leader>gl :GV!<CR>
+'''
+
+[[plugins]]
+repo = 'airblade/vim-gitgutter'
+hook_add = '''
+  let g:gitgutter_map_keys = 0
+  autocmd! BufWritePost * GitGutter
+'''
+
+[[plugins]]
+repo = 'tyru/open-browser.vim'
+
+[[plugins]]
+repo = 'tyru/open-browser-github.vim'
+hook_add = '''
+  nnoremap <silent> <Leader>ho :OpenGithubFile<CR>
+  vnoremap <silent> <Leader>ho :'<,'>OpenGithubFile<CR>
+'''
+
+[[plugins]]
+repo = 'haya14busa/incsearch.vim'
+hook_add = '''
+  map /  <Plug>(incsearch-forward)
+  map ?  <Plug>(incsearch-backward)
+  map g/ <Plug>(incsearch-stay)
+'''
+
+[[plugins]]
+repo = 'simeji/winresizer'
+hook_add = '''
+  let g:winresizer_start_key = "<S-w>"
+'''
+
+[[plugins]]
+repo = 'liuchengxu/vista.vim'
+hook_add = '''
+  nmap <silent> [LSP]v :<C-u>Vista<CR>
+  let g:vista_executive_for = {
+  \ 'go': 'coc',
+  \ }
+  let g:vista_fzf_preview = ['right:50%']
+  let g:vista_sidebar_width = 30
+  let g:vista_stay_on_open = 0
+'''
+
+[[plugins]]
+repo = 'neoclide/coc.nvim'
+hook_add = '''
+  " if node is not installed, suppress errors
+  if executable("node")
+    let g:coc_disable_uncaught_error = 1
+  endif
+  nnoremap [LSP] <Nop>
+  map <Leader>l [LSP]
+  nmap <silent> [LSP]d <plug>(coc-definition)
+  nmap <silent> [LSP]t <Plug>(coc-type-definition)
+  nmap <silent> [LSP]r <plug>(coc-references)
+  nmap <silent> [LSP]R <plug>(coc-rename)
+  nmap <silent> [LSP]f <plug>(coc-format)
+  nmap <silent> [LSP]a <plug>(coc-codeaction)
+  nmap <silent> [LSP]l <plug>(coc-codelens-action)
+  nmap <silent> [LSP]h :call CocActionAsync('doHover')<CR>
+  let g:coc_data_home	= expand(g:cache_home . '/coc')
+'''
+rev = 'release'
+
+[[plugins]]
+repo = 'josa42/coc-go'
+hook_post_update = '''
+  call system('yarn install --forzen-lockfile')
+'''
+depends = ['coc.nvim']
+
+[[plugins]]
+repo = 'neoclide/coc-json'
+hook_post_update = '''
+  call system('yarn install --forzen-lockfile')
+'''
+depends = ['coc.nvim']
+
+[[plugins]]
+repo = 'neoclide/coc-yaml'
+hook_post_update = '''
+  call system('yarn install --forzen-lockfile')
+'''
+depends = ['coc.nvim']
+
+[[plugins]]
+repo = 'neoclide/coc-tsserver'
+hook_post_update = '''
+  call system('yarn install --forzen-lockfile')
+'''
+depends = ['coc.nvim']
+
+[[plugins]]
+repo = 'neoclide/coc-tabnine'
+hook_post_update = '''
+  call system('yarn install --forzen-lockfile')
+'''
+depends = ['coc.nvim']
