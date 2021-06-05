@@ -33,7 +33,7 @@ export GOBIN=${HOME}/bin
 # asdf
 export ASDF_DIR=${HOME}/.asdf
 export ASDF_DATA_DIR=/tmp/asdf
-source ${ASDF_DIR}/asdf.sh
+[[ -f ${ASDF_DIR}/asdf.sh ]] && source ${ASDF_DIR}/asdf.sh
 export NODEJS_CHECK_SIGNATURES=no
 
 # dotfiles
