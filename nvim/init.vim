@@ -79,6 +79,8 @@ endif
 augroup my_dein
   autocmd! *
   autocmd VimEnter * call dein#call_hook('post_source')
+  autocmd VimEnter * call map(dein#check_clean(), "delete(v:val, 'rf')")
+  autocmd VimEnter * call dein#recache_runtimepath()
 augroup END
 
 if has('vim_starting') && dein#check_install()
