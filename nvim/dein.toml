@@ -12,6 +12,9 @@ repo = 'hashivim/vim-terraform'
 
 [[plugins]]
 repo = 'junegunn/fzf'
+hook_post_update = '''
+  fzf#install()
+'''
 
 [[plugins]]
 repo = 'junegunn/fzf.vim'
