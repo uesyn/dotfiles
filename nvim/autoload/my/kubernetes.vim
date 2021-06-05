@@ -19,7 +19,7 @@ endfunction
 function! my#kubernetes#kubectl_delete() range
   echo "[kubectl delete]"
   let selected_lines = getline(a:firstline, a:lastline)
-  let get_result = system('kubectl get -o go-template --template=''{{- if .items }}{{- range .items }}{{ printf "%s/%s\n" .kind .metadata.name }}{{- end }}{{- else }}{{ printf "%s/%s\n" .kind .metadata.name }}{{ end }}''  --ignore-not-found=true -f-', selected_lines)
+  let get_result = system('kubectl get -o name'  --ignore-not-found=true -f-', selected_lines)
   if len(get_result) == 0
     echo " * Target not found"
     return

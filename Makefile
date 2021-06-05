@@ -20,7 +20,11 @@ link:
 
 neovim: link
 	@./installer/neovim
-	nvim --headless -es -u nvim/init.vim -c "PlugInstall" -c "qa"
+	nvim --headless -es -u nvim/init.vim -c "call dein#install()"
+	nvim --headless -es -u nvim/init.vim -c "call dein#load_rollback(expand('~/.config/nvim/dein_lock'))"
+
+neovim-save-rollback:
+	nvim --headless -es -u nvim/init.vim -c "call dein#save_rollback(expand('~/.config/nvim/dein_lock'))"
 
 asdf: link
 	@./installer/asdf
