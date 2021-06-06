@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ALLOWED_REPOS=https://github.com/uesyn/dotfiles|https://github.com/uesyn/Dockerfiles
+ALLOWED_REPOS="https://github.com/uesyn/dotfiles|https://github.com/uesyn/Dockerfiles"
 if [[ -n $ADDISIONAL_ALLOWED_REPOS ]]; then
   ALLOWED_REPOS="${ALLOWED_REPOS}|$ADDISIONAL_ALLOWED_REPOS"
 fi
