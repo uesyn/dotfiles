@@ -193,14 +193,6 @@ hook_add = '''
 rev = 'release'
 
 [[plugins]]
-repo = 'josa42/coc-go'
-merged = 0
-hook_post_update = '''
-  call system('yarn install --forzen-lockfile')
-'''
-depends = ['coc.nvim']
-
-[[plugins]]
 repo = 'neoclide/coc-tsserver'
 merged = 0
 hook_post_update = '''
