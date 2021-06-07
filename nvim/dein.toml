@@ -11,6 +11,9 @@ hook_add = '''
 repo = 'hashivim/vim-terraform'
 
 [[plugins]]
+repo = 'stephpy/vim-yaml'
+
+[[plugins]]
 repo = 'junegunn/fzf'
 merged = 0
 hook_post_update = '''
@@ -193,14 +196,6 @@ depends = ['coc.nvim']
 
 [[plugins]]
 repo = 'neoclide/coc-json'
-merged = 0
-hook_post_update = '''
-  call system('yarn install --forzen-lockfile')
-'''
-depends = ['coc.nvim']
-
-[[plugins]]
-repo = 'neoclide/coc-yaml'
 merged = 0
 hook_post_update = '''
   call system('yarn install --forzen-lockfile')
