@@ -43,5 +43,3 @@ export PATH=${PATH}:${HOME}/.bin
 touch ${HOME}/.bashrc.local && source ${HOME}/.bashrc.local
 
 alias d='devbox'
-
-[ -f ~/.fzf.bash ] && source ~/.fzf.bash

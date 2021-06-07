@@ -14,10 +14,16 @@ repo = 'hashivim/vim-terraform'
 repo = 'stephpy/vim-yaml'
 
 [[plugins]]
+repo = 'elzr/vim-json'
+hook_add = '''
+  let g:vim_json_syntax_conceal = 0
+'''
+
+[[plugins]]
 repo = 'junegunn/fzf'
 merged = 0
 hook_post_update = '''
-  call system('./install')
+  call system('./install --no-bash --no-zsh --no-fish')
 '''
 
 [[plugins]]
@@ -188,14 +194,6 @@ rev = 'release'
 
 [[plugins]]
 repo = 'josa42/coc-go'
-merged = 0
-hook_post_update = '''
-  call system('yarn install --forzen-lockfile')
-'''
-depends = ['coc.nvim']
-
-[[plugins]]
-repo = 'neoclide/coc-json'
 merged = 0
 hook_post_update = '''
   call system('yarn install --forzen-lockfile')

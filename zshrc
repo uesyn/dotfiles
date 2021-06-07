@@ -65,5 +65,3 @@ ZSHRC_LOCAL=${HOME}/.zshrc.local
 touch ${ZSHRC_LOCAL} && source ${ZSHRC_LOCAL}
 
 touch ${HOME}/.gitconfig.local
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
