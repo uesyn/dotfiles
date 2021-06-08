@@ -173,6 +173,10 @@ hook_add = '''
 [[plugins]]
 repo = 'neoclide/coc.nvim'
 merged = 0
+hook_post_update = '''
+  CocInstall -sync coc-tsserver coc-tabnine
+  CocUpdateSync
+'''
 hook_add = '''
   " if node is not installed, suppress errors
   if executable("node")
@@ -191,19 +195,3 @@ hook_add = '''
   let g:coc_data_home	= expand(g:cache_home . '/coc')
 '''
 rev = 'release'
-
-[[plugins]]
-repo = 'neoclide/coc-tsserver'
-merged = 0
-hook_post_update = '''
-  call system('yarn install --forzen-lockfile')
-'''
-depends = ['coc.nvim']
-
-[[plugins]]
-repo = 'neoclide/coc-tabnine'
-merged = 0
-hook_post_update = '''
-  call system('yarn install --forzen-lockfile')
-'''
-depends = ['coc.nvim']
