@@ -6,4 +6,4 @@ if [[ -d ${ASDF_DIR} ]]; then
   exit 0
 fi
 
-git clone --depth=1 https://github.com/asdf-vm/asdf.git ${ASDF_DIR} --branch v0.8.0
+git clone --depth=1 https://github.com/asdf-vm/asdf.git ${ASDF_DIR} --branch v0.8.1
