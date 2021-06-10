@@ -62,6 +62,7 @@ for file (${HOME}/.zsh.d/*.zsh){
 autoload -Uz ${HOME}/.zsh.d/functions/*
 
 ZSHRC_LOCAL=${HOME}/.zshrc.local
-touch ${ZSHRC_LOCAL} && source ${ZSHRC_LOCAL}
+[[ ! -f $ZSHRC_LOCAL ]] && touch ${ZSHRC_LOCAL}
+source ${ZSHRC_LOCAL}
 
 touch ${HOME}/.gitconfig.local
