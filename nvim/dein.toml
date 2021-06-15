@@ -128,10 +128,9 @@ hook_add = '''
 '''
 
 [[plugins]]
-repo = 'airblade/vim-gitgutter'
+repo = 'mhinz/vim-signify'
 hook_add = '''
-  let g:gitgutter_map_keys = 0
-  autocmd! BufWritePost * GitGutter
+  set updatetime=100
 '''
 
 [[plugins]]
