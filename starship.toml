@@ -1,0 +1,14 @@
+# ~/.config/starship.toml
+
+# カスタムフォーマットを利用します
+format = """
+$kubernetes$linebreak
+$username$directory$git_branch$git_commit$git_state$git_status$aws$gcloud
+$character"""
+
+scan_timeout = 10
+add_newline = false
+
+[kubernetes]
+disabled = false
+format = '[$symbol$context]($style)[:]($style)[$namespace]($style)'

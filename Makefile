@@ -13,6 +13,7 @@ link:
 	ln -sfn $(ROOT_DIR)/bash_profile $(HOME)/.bash_profile
 	ln -sfn $(ROOT_DIR)/dircolors $(HOME)/.dircolors
 	ln -sfn $(ROOT_DIR)/nvim $(HOME)/.config/nvim
+	ln -sfn $(ROOT_DIR)/starship.toml $(HOME)/.config/starship.toml
 	ln -sfn $(ROOT_DIR)/ripgrep_ignore $(HOME)/.ripgrep_ignore
 	ln -sfn $(ROOT_DIR)/gitconfig $(HOME)/.gitconfig
 	ln -sfn $(ROOT_DIR)/gitconfig.d $(HOME)/.gitconfig.d
