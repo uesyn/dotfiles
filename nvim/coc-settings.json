@@ -5,8 +5,7 @@
 			"rootPatterns": ["go.mod", ".vim/", ".git/", ".hg/"],
 			"filetypes": ["go"],
 			"initializationOptions": {
-				"usePlaceholders": true,
-				"experimentalWorkspaceModule": true
+				"usePlaceholders": true
 			}
 		}
 	},
