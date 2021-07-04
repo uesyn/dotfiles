@@ -103,3 +103,8 @@ if version >= 508 || !exists("did_proto_syn_inits")
 endif
 
 let b:current_syntax = "proto"
+
+set expandtab
+set tabstop=2
+set softtabstop=2
+set shiftwidth=2
