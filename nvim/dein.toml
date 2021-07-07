@@ -173,7 +173,7 @@ hook_add = '''
 repo = 'neoclide/coc.nvim'
 merged = 0
 hook_post_update = '''
-  CocInstall -sync coc-tsserver coc-tabnine
+  CocInstall -sync coc-tsserver coc-tabnine coc-go
   CocUpdateSync
 '''
 hook_add = '''
