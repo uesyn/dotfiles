@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 unset tmpdir
-tmpdir=$(mktemp --tmpdir -d neovim.XXXXX)
+tmpdir=$(mktemp -t -d neovim.XXXXX)
 function cleanup() {
   [[ -n $tmpdir ]] && rm -rf ${tmpdir}
 }
