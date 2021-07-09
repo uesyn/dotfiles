@@ -19,7 +19,6 @@ link:
 	ln -sfn $(ROOT_DIR)/bin $(HOME)/.bin
 
 neovim: link
-	@./installer/neovim
 	nvim --headless -es -u nvim/init.vim -c "call dein#install()"
 	nvim --headless -es -u nvim/init.vim -c "call dein#load_rollback(expand('~/.config/nvim/dein_lock'))"
 

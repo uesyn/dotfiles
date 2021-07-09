@@ -11,3 +11,5 @@ if ! grep "GIT_AUTHOR_NAME" ${ZSHENV_LOCAL} >/dev/null 2>&1 ;then
   echo 'export GIT_COMMITTER_EMAIL=${GIT_EMAIL}' >> ${ZSHENV_LOCAL}
   echo 'export GIT_AUTHOR_EMAIL=${GIT_EMAIL}' >> ${ZSHENV_LOCAL}
 fi
+
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
