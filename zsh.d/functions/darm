@@ -1,0 +1,4 @@
+#!/usr/bin/env zsh
+
+export DOCKER_DEFAULT_PLATFORM=linux/arm64
+echo "DOCKER_DEFAULT_PLATFORM: $DOCKER_DEFAULT_PLATFORM"
