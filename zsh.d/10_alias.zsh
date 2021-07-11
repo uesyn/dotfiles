@@ -35,3 +35,8 @@ alias d='devbox'
 if [[ -x "$(command -v nvim)" ]];then
   alias vim="nvim"
 fi
+
+# kind for Mac arm64
+if uname -v | grep ARM64; then
+  alias kind="DOCKER_DEFAULT_PLATFORM=linux/arm64 kind"
+fi
