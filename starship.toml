@@ -1,0 +1,22 @@
+add_newline = false
+format = """
+[┌─](bold green)(bold green) $username$directory$git_branch$git_commit$git_status$terraform
+[└─](bold green) """
+
+[username]
+show_always = true
+
+[character]
+disabled = true
+
+[hostname]
+disabled = true
+
+[golang]
+disabled = true
+
+[git_branch]
+only_attached = true
+
+[git_commit]
+tag_disabled = false
