@@ -1,7 +1,7 @@
 add_newline = false
 format = """
-[┌─](bold fg:#fabd2f) $username$directory$git_branch$git_commit$git_status$terraform
-[└─](bold fg:#fabd2f) """
+[┌─](bold fg:#a89984) $username$directory$git_branch$git_commit$git_status$terraform
+[└─](bold fg:#a89984) """
 
 [username]
 show_always = true
@@ -12,9 +12,9 @@ style = "fg:#fabd2f"
 
 [git_branch]
 only_attached = true
-style = "#fb4934"
+style = "#fe8019"
 
 [git_commit]
 tag_disabled = false
-style = "#fb4934"
-format = "on [$hash$tag]($style) "
+style = "#fe8019"
+format = "on [ $hash$tag]($style) "
