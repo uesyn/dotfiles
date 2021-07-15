@@ -36,13 +36,14 @@ zinit ice lucid from"gh-r" as"program" id-as"stern" mv"stern*/stern -> stern"
 zinit light stern/stern
 zinit ice lucid from"gh-r" as"program" id-as"kind" mv"kind* -> kind"
 zinit light kubernetes-sigs/kind
+zinit ice lucid from"gh-r" as"program" id-as"starship"
+zinit light starship/starship
 
-zinit ice wait'!0' lucid depth"1" atload'gitstatus_stop "MY" && gitstatus_start -s -1 -u -1 -c -1 -d -1 "MY"'
-zinit light romkatv/gitstatus
+# For my custom prompt
+# zinit ice wait'!0' lucid depth"1" atload'gitstatus_stop "MY" && gitstatus_start -s -1 -u -1 -c -1 -d -1 "MY"'
+# zinit light romkatv/gitstatus
 zinit ice wait'!1' lucid depth"1"
 zinit light zdharma/history-search-multi-word
-zinit ice wait'!1' lucid depth"1"
-zinit light paulirish/git-open
 zinit ice wait'!2' lucid depth"1"
 zinit wait lucid light-mode blockf for blockf atpull'zinit creinstall -q .' \
 	atinit"zicompinit; zicdreplay" \
