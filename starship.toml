@@ -18,3 +18,6 @@ style = "#fe8019"
 tag_disabled = false
 style = "#fe8019"
 format = "on [ $hash$tag]($style) "
+
+[git_status]
+style = "#fe8019"
