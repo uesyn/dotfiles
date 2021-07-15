@@ -17,6 +17,7 @@ link:
 	ln -sfn $(ROOT_DIR)/gitconfig $(HOME)/.gitconfig
 	ln -sfn $(ROOT_DIR)/gitconfig.d $(HOME)/.gitconfig.d
 	ln -sfn $(ROOT_DIR)/bin $(HOME)/.bin
+	ln -sfn $(ROOT_DIR)/starship.toml $(HOME)/.config/starship.toml
 
 neovim: link
 	nvim --headless -es -u nvim/init.vim -c "call dein#install()"

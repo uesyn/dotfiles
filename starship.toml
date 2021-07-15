@@ -1,22 +1,20 @@
 add_newline = false
 format = """
-[┌─](bold green)(bold green) $username$directory$git_branch$git_commit$git_status$terraform
-[└─](bold green) """
+[┌─](bold fg:#fabd2f) $username$directory$git_branch$git_commit$git_status$terraform
+[└─](bold fg:#fabd2f) """
 
 [username]
 show_always = true
+format = "[$user](fg:#8ec07c) in "
 
-[character]
-disabled = true
-
-[hostname]
-disabled = true
-
-[golang]
-disabled = true
+[directory]
+style = "fg:#fabd2f"
 
 [git_branch]
 only_attached = true
+style = "#fb4934"
 
 [git_commit]
 tag_disabled = false
+style = "#fb4934"
+format = "on [$hash$tag]($style) "
