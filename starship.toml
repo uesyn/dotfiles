@@ -1,6 +1,6 @@
 add_newline = false
 format = """
-[┌─](fg:#a89984) $username$directory$git_branch$git_commit$git_status$terraform$kubernetes
+[┌─](fg:#a89984) $username$directory$git_branch$git_commit$git_status$kubernetes$terraform
 [└─](fg:#a89984) """
 
 [username]
