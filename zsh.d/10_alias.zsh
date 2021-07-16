@@ -37,6 +37,6 @@ if [[ -x "$(command -v nvim)" ]];then
 fi
 
 # kind for Mac arm64
-if uname -v | grep ARM64; then
+if uname -v | grep ARM64 > /dev/null 2>&1; then
   alias kind="DOCKER_DEFAULT_PLATFORM=linux/arm64 kind"
 fi
