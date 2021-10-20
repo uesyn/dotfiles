@@ -1,0 +1,8 @@
+.bin
+zsh/*
+!zsh/.zshrc
+!zsh/functions
+!zsh/configs
+!zsh/plugins
+gh/*
+!gh/config.yml

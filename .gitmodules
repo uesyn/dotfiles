@@ -1,0 +1,81 @@
+[submodule "nvim/pack/submodules/opt/vim-table-mode"]
+	path = nvim/pack/submodules/opt/dhruvasagar_vim-table-mode
+	url = https://github.com/dhruvasagar/vim-table-mode
+[submodule "nvim/pack/submodules/opt/nvim-scrollview"]
+	path = nvim/pack/submodules/opt/nvim-scrollview
+	url = https://github.com/dstein64/nvim-scrollview
+[submodule "nvim/pack/submodules/opt/vim-terraform"]
+	path = nvim/pack/submodules/opt/hashivim_vim-terraform
+	url = https://github.com/hashivim/vim-terraform
+[submodule "nvim/pack/submodules/opt/fzf"]
+	path = nvim/pack/submodules/opt/junegunn_fzf
+	url = https://github.com/junegunn/fzf
+[submodule "nvim/pack/submodules/opt/fzf.vim"]
+	path = nvim/pack/submodules/opt/junegunn_fzf.vim
+	url = https://github.com/junegunn/fzf.vim
+[submodule "nvim/pack/submodules/opt/vim-markdown"]
+	path = nvim/pack/submodules/opt/plasticboy_vim-markdown
+	url = https://github.com/plasticboy/vim-markdown
+[submodule "nvim/pack/submodules/opt/winresizer"]
+	path = nvim/pack/submodules/opt/simeji_winresizer
+	url = https://github.com/simeji/winresizer
+[submodule "nvim/pack/submodules/opt/open-browser-github.vim"]
+	path = nvim/pack/submodules/opt/tyru_open-browser-github.vim
+	url = https://github.com/tyru/open-browser-github.vim
+[submodule "nvim/pack/submodules/opt/open-browser.vim"]
+	path = nvim/pack/submodules/opt/tyru_open-browser.vim
+	url = https://github.com/tyru/open-browser.vim
+[submodule "nvim/pack/submodules/opt/vim-lsp-settings"]
+	path = nvim/pack/submodules/opt/mattn_vim-lsp-settings
+	url = https://github.com/mattn/vim-lsp-settings.git
+[submodule "nvim/pack/submodules/opt/vim-lsp"]
+	path = nvim/pack/submodules/opt/prabirshrestha_vim-lsp
+	url = https://github.com/prabirshrestha/vim-lsp.git
+[submodule "nvim/pack/submodules/opt/asyncomplete.vim"]
+	path = nvim/pack/submodules/opt/prabirshrestha_asyncomplete.vim
+	url = https://github.com/prabirshrestha/asyncomplete.vim.git
+[submodule "nvim/pack/submodules/opt/asyncomplete-lsp.vim"]
+	path = nvim/pack/submodules/opt/prabirshrestha_asyncomplete-lsp.vim
+	url = https://github.com/prabirshrestha/asyncomplete-lsp.vim.git
+[submodule "nvim/pack/submodules/opt/vista.vim"]
+	path = nvim/pack/submodules/opt/liuchengxu_vista.vim
+	url = https://github.com/liuchengxu/vista.vim.git
+[submodule "nvim/pack/submodules/opt/vim-oscyank"]
+	path = nvim/pack/submodules/opt/ojroques_vim-oscyank
+	url = https://github.com/ojroques/vim-oscyank.git
+[submodule "nvim/pack/submodules/opt/vim-signify"]
+	path = nvim/pack/submodules/opt/mhinz_vim-signify
+	url = https://github.com/mhinz/vim-signify.git
+[submodule "nvim/pack/submodules/opt/gruvbox"]
+	path = nvim/pack/submodules/opt/gruvbox-community_gruvbox
+	url = https://github.com/gruvbox-community/gruvbox.git
+[submodule "nvim/pack/submodules/opt/fern.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_fern.vim
+	url = https://github.com/lambdalisue/fern.vim.git
+[submodule "nvim/pack/submodules/opt/nerdfont.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_nerdfont.vim
+	url = https://github.com/lambdalisue/nerdfont.vim.git
+[submodule "nvim/pack/submodules/opt/glyph-palette.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_glyph-palette.vim
+	url = https://github.com/lambdalisue/glyph-palette.vim.git
+[submodule "nvim/pack/submodules/opt/fern-renderer-nerdfont.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_fern-renderer-nerdfont.vim
+	url = https://github.com/lambdalisue/fern-renderer-nerdfont.vim.git
+[submodule "nvim/pack/submodules/opt/fern-git-status.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_fern-git-status.vim
+	url = https://github.com/lambdalisue/fern-git-status.vim.git
+[submodule "nvim/pack/submodules/opt/vim-bbye"]
+	path = nvim/pack/submodules/opt/moll_vim-bbye
+	url = https://github.com/moll/vim-bbye.git
+[submodule "nvim/pack/submodules/opt/lightline.vim"]
+	path = nvim/pack/submodules/opt/itchyny_lightline.vim
+	url = https://github.com/itchyny/lightline.vim.git
+[submodule "nvim/pack/submodules/opt/vim-json"]
+	path = nvim/pack/submodules/opt/elzr_vim-json
+	url = https://github.com/elzr/vim-json.git
+[submodule "nvim/pack/submodules/opt/lightline-bufferline"]
+	path = nvim/pack/submodules/opt/mengelbrecht_lightline-bufferline
+	url = https://github.com/mengelbrecht/lightline-bufferline.git
+[submodule "nvim/pack/submodules/opt/FixCursorHold.nvim"]
+	path = nvim/pack/submodules/opt/antoinemadec_FixCursorHold.nvim
+	url = https://github.com/antoinemadec/FixCursorHold.nvim.git

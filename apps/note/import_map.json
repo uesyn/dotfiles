@@ -1,0 +1,8 @@
+{
+  "imports": {
+    "@octokit/core": "https://cdn.skypack.dev/@octokit/core?dts",
+    "cliffy/command": "https://deno.land/x/cliffy@v0.24.3/command/mod.ts",
+    "charmd": "https://deno.land/x/charmd@v0.0.1/mod.ts",
+    "std/crypto": "https://deno.land/std@0.151.0/crypto/mod.ts"
+  }
+}

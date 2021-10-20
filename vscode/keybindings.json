@@ -1,0 +1,205 @@
+// Place your key bindings in this file to override the defaults
+[
+    /*** panel ***/
+    // Focus terminal
+    {
+        "key": "ctrl+; ctrl+t",
+        "command": "workbench.action.focusPanel",
+    },
+    // Close panel
+    {
+        "key": "ctrl+; t",
+        "command": "workbench.action.togglePanel",
+    },
+    // Fullscreen Terminal
+    {
+        "key": "ctrl+; ctrl+;",
+        "command": "my.toggleFullScreenTerminalAndFocusTerminal",
+        "when": "terminalFocus"
+    },
+    // move next panel
+    {
+        "key": "ctrl+; ctrl+n",
+        "command": "workbench.action.nextPanelView",
+        "when": "panelFocus"
+    },
+    // move next previous
+    {
+        "key": "ctrl+; ctrl+p",
+        "command": "workbench.action.previousPanelView",
+        "when": "panelFocus"
+    },
+    /*** editor ***/
+    // Focus editor
+    {
+        "key": "ctrl+; ctrl+e",
+        "command": "workbench.action.focusActiveEditorGroup",
+    },
+    // zoom a editor window
+    {
+        "key": "ctrl+; ctrl+;",
+        "command": "workbench.action.toggleEditorWidths",
+        "when": "editorFocus && vim.mode == 'Normal'"
+    },
+    // next sidebar explorer
+    {
+        "key": "ctrl+n",
+        "command": "workbench.action.nextEditor",
+        "when": "editorFocus && vim.mode == 'Normal'"
+    },
+    // previous sidebar explorer
+    {
+        "key": "ctrl+p",
+        "command": "workbench.action.previousEditor",
+        "when": "editorFocus && vim.mode == 'Normal'"
+    },
+    /*** sidebar ***/
+    // Focus sidebar
+    {
+        "key": "ctrl+; ctrl+s",
+        "command": "workbench.action.focusSideBar",
+    },
+    {
+        "key": "ctrl+; s",
+        "command": "workbench.action.toggleSidebarVisibility",
+    },
+    {
+        "key": "shift+l",
+        "command": "workbench.action.focusActiveEditorGroup",
+        "when": "sideBarFocus"
+    },
+    // open a directory
+    {
+        "key": "Enter",
+        "command": "list.select",
+        "when": "filesExplorerFocus && !explorerResourceIsFolder && !inputFocus"
+    },
+    {
+        "key": "l",
+        "command": "list.select",
+        "when": "filesExplorerFocus && !explorerResourceIsFolder && !inputFocus"
+    },
+    // close a directory
+    {
+        "key": "h",
+        "command": "list.collapse",
+        "when": "filesExplorerFocus && explorerResourceIsFolder && !inputFocus"
+    },
+    {
+        "key": "h",
+        "command": "my.closeFolderWhenSelectingFile",
+        "when": "filesExplorerFocus && !explorerResourceIsFolder && !inputFocus"
+    },
+    // open a file
+    {
+        "key": "Enter",
+        "command": "list.toggleExpand",
+        "when": "filesExplorerFocus && explorerResourceIsFolder && !inputFocus"
+    },
+    {
+        "key": "l",
+        "command": "list.toggleExpand",
+        "when": "filesExplorerFocus && explorerResourceIsFolder && !inputFocus"
+    },
+    // rename a file
+    {
+        "key": "shift+r",
+        "command": "renameFile",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // copy a file
+    {
+        "key": "c",
+        "command": "filesExplorer.copy",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // paste a file
+    {
+        "key": "p",
+        "command": "filesExplorer.paste",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // create a file
+    {
+        "key": "f",
+        "command": "explorer.newFile",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // delete a file
+    {
+        "key": "shift+d",
+        "command": "deleteFile",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // create a directory
+    {
+        "key": "shift+f",
+        "command": "explorer.newFolder",
+        "when": "filesExplorerFocus && !inputFocus"
+    },
+    // move next sidebar menu
+    {
+        "key": "ctrl+n",
+        "command": "workbench.action.nextSideBarView",
+        "when": "sideBarFocus"
+    },
+    // move previous sidebar menu
+    {
+        "key": "ctrl+p",
+        "command": "workbench.action.previousSideBarView",
+        "when": "sideBarFocus"
+    },
+    // open or cancel search navigation
+    {
+        "key": "ctrl-[",
+        "command": "list.toggleKeyboardNavigation",
+        "when": "listFocus && listSupportsKeyboardNavigation && !inputFocus"
+    },
+
+    /*** VIM ***/
+    // select suggestion
+    {
+        "key": "enter",
+        "commands": "acceptSelectedSuggestion",
+        "when": "suggestWidgetVisible && textInputFocus"
+    },
+    // cursor movements (https://github.com/VSCodeVim/Vim/issues/1933#issuecomment-413736407)
+    {
+        "key": "j",
+        "command": "cursorDown",
+        "when": "editorTextFocus && vim.active && vim.mode == 'Normal' && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+    },
+    {
+        "key": "k",
+        "command": "cursorUp",
+        "when": "editorTextFocus && vim.active && vim.mode == 'Normal'&& !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+    },
+    {
+        "key": "up",
+        "command": "-extension.vim_up",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+    },
+    {
+        "key": "down",
+        "command": "-extension.vim_down",
+        "when": "editorTextFocus && vim.active && !inDebugRepl && !suggestWidgetMultipleSuggestions && !suggestWidgetVisible"
+    },
+    // go back
+    {
+        "key": "ctrl+-",
+        "command": "-workbench.action.navigateBack"
+    },
+    {
+        "key": "ctrl+o",
+        "command": "workbench.action.navigateBack"
+    },
+    // go forward
+    {
+        "key": "ctrl+shift+-",
+        "command": "-workbench.action.navigateForward"
+    },
+    {
+        "key": "ctrl+i",
+        "command": "workbench.action.navigateForward"
+    },
+]

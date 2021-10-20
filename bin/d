@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+
+DEVBOX_NAMESPACE=${DEVBOX_NAMESPACE:-devbox}
+
+help() {
+  echo 'usage: d [SUBCOMMAND]
+
+  SUBCOMMAND:
+    exec      exec devbox (default)
+    create    create devbox
+    delete    delete devbox
+    restart   restart devbox
+    help      show the help
+'
+}
+
+exec() {
+  kubectl -n ${DEVBOX_NAMESPACE} exec -it devbox-0 zsh
+}
+
+create() {
+  cat << EOF | kubectl create --save-config -f- 2>/dev/null
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: devbox
+  name: ${DEVBOX_NAMESPACE}
+  namespace: ${DEVBOX_NAMESPACE}
+stringData:
+  TAILSCALE_AUTH_KEY: "${TAILSCALE_AUTH_KEY:-}"
+  TAILSCALE_HOSTNAME: "${TAILSCALE_HOSTNAME:-devbox}"
+  GIT_USER: "${GIT_USER:-uesyn}"
+  GIT_EMAIL: "${GIT_EMAIL:-}"
+  GITHUB_TOKEN: "${GITHUB_TOKEN:-}"
+  GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN:-}"
+EOF
+
+  cat << EOF | kubectl apply -f-
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app: devbox
+  name: ${DEVBOX_NAMESPACE}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: devbox
+  name: devbox
+  namespace: ${DEVBOX_NAMESPACE}
+spec:
+  ports:
+  - name: ssh
+    port: 32222
+    protocol: TCP
+    targetPort: 2222
+  selector:
+    app: devbox
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: devbox
+  name: devbox
+  namespace: ${DEVBOX_NAMESPACE}
+spec:
+  replicas: 1
+  serviceName: devbox
+  selector:
+    matchLabels:
+      app: devbox
+  template:
+    metadata:
+      labels:
+        app: devbox
+    spec:
+      dnsPolicy: Default
+      shareProcessNamespace: true
+      terminationGracePeriodSeconds: 3600
+      containers:
+      - image: ghcr.io/uesyn/devbox:latest
+        name: devbox
+        env:
+        - name: TAILSCALE_HOSTNAME
+          value: "devbox"
+        - name: TAILSCALE_AUTH_KEY
+          valueFrom:
+            secretKeyRef:
+              name: devbox
+              key: TAILSCALE_AUTH_KEY
+              optional: true
+        - name: GIT_USER
+          valueFrom:
+            secretKeyRef:
+              name: devbox
+              key: GIT_USER
+              optional: true
+        - name: GIT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: devbox
+              key: GIT_EMAIL
+              optional: true
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: devbox
+              key: GITHUB_TOKEN
+              optional: true
+        - name: GH_ENTERPRISE_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: devbox
+              key: GH_ENTERPRISE_TOKEN
+              optional: true
+        lifecycle:
+          preStop:
+            exec:
+              command:
+              - /bin/bash
+              - -c
+              - |
+                # Stop devbox when zellij and nvim are inactive or timeout is reached.
+                touch /tmp/stopping
+                end="\$(( \$(date +%s) + 1800 ))"
+
+                # wait for devbox started.
+                while [[ "\$(date +%s)" -lt "\${end}" ]]; do
+                  [[ -p /tmp/stop ]] && break;
+                  sleep 1s
+                done
+
+                while [[ "\$(date +%s)" -lt "\${end}" ]]; do
+                  [[ "\$(ps -lC zellij | wc -l)" -eq 1 ]] && break
+                  sleep 1s
+                done
+
+                while [[ "\$(date +%s)" -lt "\${end}" ]]; do
+                  [[ "\$(ps -lC nvim | wc -l)" -eq 1 ]] && break
+                  sleep 1s
+                done
+
+                sudo tailscale --socket=/tmp/tailscaled.sock logout
+                echo "stop" > /tmp/stop
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: docker
+          mountPath: /var/lib/docker
+        - name: data
+          mountPath: /home/uesyn
+      volumes:
+      - name: docker
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 30Gi
+EOF
+}
+
+delete() {
+  kubectl -n ${DEVBOX_NAMESPACE} delete --ignore-not-found statefulset devbox
+  kubectl -n ${DEVBOX_NAMESPACE} delete --ignore-not-found service devbox
+  kubectl -n ${DEVBOX_NAMESPACE} delete --ignore-not-found secret devbox
+}
+
+restart() {
+  kubectl -n ${DEVBOX_NAMESPACE} rollout restart statefulset devbox
+  kubectl -n ${DEVBOX_NAMESPACE} rollout status -w statefulset devbox
+}
+
+SUBCOMMAND=$1
+case ${SUBCOMMAND} in
+  create|c) create;;
+  exec|e) exec;;
+  delete|d) delete;;
+  restart|r) restart;;
+  help|h) help;;
+  "") exec;;
+  *) help; exit 1;;
+esac

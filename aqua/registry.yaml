@@ -1,0 +1,126 @@
+---
+packages:
+- name: rustup/rustup-init
+  type: http
+  url: 'https://raw.githubusercontent.com/rust-lang/rustup/{{ .Version }}/rustup-init.sh'
+  format: "raw"
+  files:
+  - name: rustup-init
+    src: rustup-init.sh
+- type: github_release
+  repo_owner: microsoft
+  repo_name: ripgrep-prebuilt
+  asset: 'ripgrep-{{.Version}}-{{.Arch}}-{{.OS}}.tar.gz'
+  description: ripgrep recursively searches directories for a regex pattern while respecting your gitignore
+  replacements:
+    arm64: aarch64
+    amd64: x86_64
+    darwin: apple-darwin
+    linux: unknown-linux-musl
+  files:
+  - name: rg
+- type: github_release
+  repo_owner: neovim
+  repo_name: neovim
+  description: Hyperextensible Vim-based text editor
+  supported_envs: ["darwin", "linux/amd64"]
+  replacements:
+    windows: win64
+    linux: linux64
+    darwin: macos
+  asset: "nvim-{{.OS}}.{{.Format}}"
+  format: tar.gz
+  files:
+    - name: nvim
+      src: "nvim-{{.OS}}/bin/nvim"
+  overrides:
+    - goos: windows
+      format: zip
+  version_constraint: 'semver(">= 0.7.2")'
+  version_overrides:
+    - version_constraint: 'true'
+      overrides:
+        - goos: windows
+          format: zip
+        - goos: darwin
+          files:
+            - name: nvim
+              src: "nvim-osx64/bin/nvim"
+- type: github_release
+  repo_owner: uesyn
+  repo_name: neovim-arm64-builder
+  description: Hyperextensible Vim-based text editor
+  supported_envs: ["linux/arm64"]
+  asset: 'nvim-linux-arm64.tar.gz'
+  files:
+  - name: nvim
+    src: 'nvim-linux-arm64/bin/nvim'
+- type: github_release
+  repo_owner: open-policy-agent
+  repo_name: opa
+  asset: "opa_{{.OS}}_{{.Arch}}"
+  description: An open source, general-purpose policy engine
+  overrides:
+  - goos: linux
+    asset: "opa_{{.OS}}_{{.Arch}}_static"
+- type: github_release
+  repo_owner: open-policy-agent
+  repo_name: conftest
+  # https://github.com/open-policy-agent/conftest/blob/f68c92599fa8fd1c2e81527aee351064f5419df5/.goreleaser.yml#L21-L31
+  asset: 'conftest_{{trimV .Version}}_{{title .OS}}_{{.Arch}}.tar.gz'
+  description: Write tests against structured configuration data using the Open Policy Agent Rego query language
+  replacements:
+    amd64: x86_64
+- name: cloudflare/cfssl/cfssl
+  type: go_install
+  repo_owner: cloudflare
+  repo_name: cfssl
+  description: the cfssl program, which is the canonical command line utility using the CFSSL packages
+  path: github.com/cloudflare/cfssl/cmd/cfssl
+  files:
+  - name: cfssl
+- name: cloudflare/cfssl/cfssljson
+  type: go_install
+  repo_owner: cloudflare
+  repo_name: cfssl
+  description: the cfssljson program, which takes the JSON output from the cfssl and multirootca programs and writes certificates, keys, CSRs, and bundles to disk
+  path: github.com/cloudflare/cfssl/cmd/cfssljson
+  files:
+  - name: cfssljson
+- name: danielgatis/imgcat
+  type: go_install
+  repo_owner: danielgatis
+  repo_name: imgcat
+  description: Display images and gifs in your terminal
+  path: github.com/danielgatis/imgcat
+  files:
+  - name: imgcat
+- type: github_release
+  repo_owner: rust-lang
+  repo_name: rust-analyzer
+  asset: rust-analyzer-{{.Arch}}-{{.OS}}.{{.Format}}
+  format: gz
+  description: A Rust compiler front-end for IDEs
+  replacements:
+    amd64: x86_64
+    arm64: aarch64
+    darwin: apple-darwin
+    linux: unknown-linux-gnu
+    windows: pc-windows-msvc
+  files:
+    - name: rust-analyzer
+      src: rust-analyzer-{{.Arch}}-{{.OS}}
+- type: github_release
+  repo_owner: rui314
+  repo_name: mold
+  description: a faster drop-in replacement for existing Unix linkers
+  supported_envs: ["linux"]
+  replacements:
+    arm64: aarch64
+    amd64: x86_64
+  asset: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}.{{.Format}}"
+  format: tar.gz
+  files:
+    - name: mold
+      src: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}/bin/mold"
+---

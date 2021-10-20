@@ -1,0 +1,218 @@
+#!/bin/sh
+
+OPT_DIR=${HOME}/opt
+export PATH="${OPT_DIR}/bin:${PATH}"
+SCRIPT_DIR="$(cd $(dirname $0); pwd)"
+
+# fork from https://starship.rs/install.sh
+info() {
+  printf '%s\n' "${BOLD}${GREY}>${NO_COLOR} $*"
+}
+
+# fork from https://starship.rs/install.sh
+warn() {
+  printf '%s\n' "${YELLOW}! $*${NO_COLOR}"
+}
+
+# fork from https://starship.rs/install.sh
+error() {
+  printf '%s\n' "${RED}x $*${NO_COLOR}" >&2
+}
+
+# fork from https://starship.rs/install.sh
+detect_target() {
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
+
+  case "${platform}" in
+    linux) platform="linux" ;;
+    darwin) platform="darwin" ;;
+  esac
+
+  case "${arch}" in
+    x86_64) arch="amd64" ;;
+    aarch64) arch="arm64" ;;
+    armv*) arch="arm" ;;
+  esac
+
+  printf '%s' "$platform-$arch"
+}
+
+# fork from https://starship.rs/install.sh
+download() {
+  file="$1"
+  url="$2"
+
+  if [ -x "$(command -v curl)" ]; then
+    cmd="curl --fail --silent --location --output $file $url"
+  elif [ -x "$(command -v wget)" ]; then
+    cmd="wget --quiet --output-document=$file $url"
+  elif [ -x "$(command -v fetch)" ]; then
+    cmd="fetch --quiet --output=$file $url"
+  else
+    error "No HTTP download program (curl, wget, fetch) found, exiting..."
+    return 1
+  fi
+
+  $cmd && return 0 || rc=$?
+  return $rc
+}
+
+make_links(){
+  XDG_CONFIG_HOME=${HOME}/.config
+  mkdir -p $XDG_CONFIG_HOME
+  mkdir -p ${XDG_CONFIG_HOME}/tmux
+  ln -sfn ${SCRIPT_DIR}/tmux/tmux.conf ${XDG_CONFIG_HOME}/tmux/tmux.conf
+  ln -sfn ${SCRIPT_DIR}/bashrc ${HOME}/.bashrc
+  ln -sfn ${SCRIPT_DIR}/bash_profile ${HOME}/.bash_profile
+  ln -sfn ${SCRIPT_DIR}/zshrc ${HOME}/.zshrc
+  ln -sfn ${SCRIPT_DIR}/zsh ${XDG_CONFIG_HOME}/zsh
+  ln -sfn ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
+  ln -sfn ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
+  mkdir -p ${HOME}/opt/bin
+  for file in ./bin/*; do ln -sfn ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
+  mkdir -p ${XDG_CONFIG_HOME}/aquaproj-aqua
+  ln -sfn ${SCRIPT_DIR}/aqua/global_aqua.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/global_aqua.yaml
+  ln -sfn ${SCRIPT_DIR}/aqua/registry.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/registry.yaml
+  mkdir -p ${XDG_CONFIG_HOME}/gh
+  ln -sfn ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
+  ln -sfn ${SCRIPT_DIR}/apps ${HOME}/opt/apps
+  ln -sfn ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
+  mkdir -p ${XDG_CONFIG_HOME}/wezterm
+  ln -sfn ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
+}
+
+setup_zsh() {
+  info "Intalling zsh..."
+  zsh_dir=${HOME}/opt/zsh
+  if [ -x "$(command -v zsh)" ]; then
+    info "zsh already installed!"
+    return
+  fi
+  zsh_bin_version=6.1.1
+  sh -c "$(curl -SsfL https://raw.githubusercontent.com/romkatv/zsh-bin/v${zsh_bin_version}/install)" -- -e no -d ${zsh_dir} -q
+  info "zsh installed!"
+}
+
+setup_aqua() {
+  aqua_version=1.19.2
+  info "Installing aqua..."
+  if [ -x "$(command -v aqua)" ]; then
+    version=$(aqua version | cut -f3 -d" ")
+    if [ "${aqua_version}" = "${version}" ]; then
+      info "aqua is already installed!"
+      return
+    fi
+  fi
+
+  case "$(detect_target)" in
+    darwin-arm64)
+      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_arm64.tar.gz
+      ;;
+    darwin-amd64)
+      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_amd64.tar.gz
+      ;;
+    linux-amd64)
+      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_amd64.tar.gz
+      ;;
+    linux-arm64)
+      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm64.tar.gz
+      ;;
+    linux-arm)
+      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm.tar.gz
+      ;;
+    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+  esac
+
+  aqua_tmp=/tmp/aqua.tar.gz
+  aqua_bin=${OPT_DIR}/bin/aqua
+  aqua_bin_tmp=${OPT_DIR}/bin/.aqua.tmp
+
+  mkdir -p ${OPT_DIR}/bin
+  download ${aqua_tmp} ${aqua_url}
+  tar xf ${aqua_tmp} -O aqua > ${aqua_bin_tmp}
+  chmod +x ${aqua_bin_tmp}
+  mv ${aqua_bin_tmp} ${aqua_bin}
+
+  rm ${aqua_tmp}
+  info "aqua installed!"
+}
+
+setup_nvm() {
+  nvm_version=v0.39.1
+  nvm_install_dir=${HOME}/.local/share/nvm
+  info "Installing nvm..."
+  if [ -d "${nvm_install_dir}" ]; then
+    info "nvm is already installed!"
+    return
+  fi
+  git clone --depth=1 -b ${nvm_version} https://github.com/nvm-sh/nvm.git ${nvm_install_dir} > /dev/null 2>&1
+}
+
+setup_jabba() {
+  export JABBA_HOME=${HOME}/opt/jabba
+  info "Intalling jabba..."
+  if [ -d "${JABBA_HOME}" ]; then
+    info "jabba is already installed!"
+    return
+  fi
+
+  if [ ! -x "$(command -v bash)" ]; then
+    warn "jabba is not installed: bash not found"
+    return
+  fi
+  curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash -s -- --skip-rc
+}
+
+make_local_configs() {
+  zlogin_file=${HOME}/.zlogin
+  if [ ! -f "${zlogin_file}" ]; then
+    cat << EOF > ${zlogin_file}
+PROMPT_KUBE_TRIM_PREFIX=()
+PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
+export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}
+export GIT_USER=${GIT_USER:-uesyn}
+export GIT_EMAIL=${GIT_EMAIL:-}
+export GIT_COMMITTER_NAME=${GIT_USER:-}
+export GIT_AUTHOR_NAME=${GIT_USER:-}
+export GIT_COMMITTER_EMAIL=${GIT_EMAIL:-}
+export GIT_AUTHOR_EMAIL=${GIT_EMAIL:-}
+export NOTE_USER=${NOTE_USER:-uesyn}
+export TAILSCALE_AUTH_KEY=${TAILSCALE_AUTH_KEY:-}
+export NOTE_REPO=${NOTE_REPO:-}
+export GITHUB_TOKEN=${GITHUB_TOKEN:-}
+if [[ -n \$MY_GITHUB_TOKEN ]]; then
+  export GITHUB_TOKEN=\$MY_GITHUB_TOKEN
+fi
+DEVBOX=${DEVBOX:-}
+EOF
+  fi
+}
+
+fetch_submodules() {
+  cd ${SCRIPT_DIR}
+  info "Fetch submodules..."
+  git submodule update --init --jobs=16
+}
+
+setup_for_codespace() {
+  if [ -z "$GITHUB_CODESPACE_TOKEN" ]; then
+    return 0
+  fi
+  mkdir -p ${HOME}/opt/bin
+  ln -sfn /bin/git ${HOME}/opt/bin/git
+}
+
+### main ###
+make_links
+make_local_configs
+fetch_submodules
+setup_zsh
+setup_for_codespace
+setup_nvm
+setup_jabba
+setup_aqua
+
+export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/global_aqua.yaml
+export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
+aqua install -l -a
