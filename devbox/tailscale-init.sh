@@ -9,7 +9,7 @@
   set -e
   
   if [[ -z "${TAILSCALE_AUTH_KEY}" ]]; then
-    exec "$@"
+    exit 0
   fi
   
   TAILSCALED_ARGS="--tun=userspace-networking --state=mem: --statedir=/tmp --socket=/tmp/tailscaled.sock"
