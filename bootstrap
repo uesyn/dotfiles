@@ -168,6 +168,7 @@ make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
     cat << EOF > ${zlogin_file}
+DEVBOX_IMAGE=${DEVBOX_IMAGE:-}
 PROMPT_KUBE_TRIM_PREFIX=()
 PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
 export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}

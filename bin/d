@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+DEVBOX_IMAGE=${DEVBOX_IMAGE:-ghcr.io/uesyn/devbox:latest}
 DEVBOX_NAMESPACE=${DEVBOX_NAMESPACE:-devbox}
 
 help() {
@@ -83,7 +84,7 @@ spec:
       shareProcessNamespace: true
       terminationGracePeriodSeconds: 3600
       containers:
-      - image: ghcr.io/uesyn/devbox:latest
+      - image: ${DEVBOX_IMAGE}
         name: devbox
         env:
         - name: TAILSCALE_HOSTNAME
