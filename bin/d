@@ -17,7 +17,7 @@ help() {
 }
 
 exec() {
-  kubectl -n ${DEVBOX_NAMESPACE} exec -it devbox-0 zsh
+  kubectl -n ${DEVBOX_NAMESPACE} exec -it devbox-0 -- env PROMPT_ICON="" zsh
 }
 
 create() {

@@ -185,7 +185,6 @@ export GITHUB_TOKEN=${GITHUB_TOKEN:-}
 if [[ -n \$MY_GITHUB_TOKEN ]]; then
   export GITHUB_TOKEN=\$MY_GITHUB_TOKEN
 fi
-export PROMPT_ICON=${PROMPT_ICON:-}
 EOF
   fi
 }
@@ -193,7 +192,7 @@ EOF
 fetch_submodules() {
   cd ${SCRIPT_DIR}
   info "Fetch submodules..."
-  git submodule update --init --jobs=16
+  git submodule update --init --jobs=3
 }
 
 setup_for_codespace() {
