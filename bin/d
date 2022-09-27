@@ -126,7 +126,7 @@ restart() {
 test() {
   local container_name
   container_name="devbox"
-  docker run -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
+  docker run --init -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
   while ! docker exec -it ${container_name} bash -c "test -e /home/uesyn/.local/share/aquaproj-aqua/bin"; do
     echo "Waiting..."
     sleep 3s
