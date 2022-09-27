@@ -185,7 +185,7 @@ export GITHUB_TOKEN=${GITHUB_TOKEN:-}
 if [[ -n \$MY_GITHUB_TOKEN ]]; then
   export GITHUB_TOKEN=\$MY_GITHUB_TOKEN
 fi
-DEVBOX=${DEVBOX:-}
+export PROMPT_ICON=${PROMPT_ICON:-}
 EOF
   fi
 }

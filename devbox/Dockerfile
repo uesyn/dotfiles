@@ -3,7 +3,6 @@ ENV USERNAME=uesyn
 ENV USER_UID=1000
 ENV USER_GID=$USER_UID
 ENV LANG=en_US.UTF-8
-ENV DEVBOX=y
 ADD common-debian.sh /tmp/scripts/common-debian.sh
 ADD sshd-debian.sh /tmp/scripts/sshd-debian.sh
 ADD docker-in-docker-debian.sh /tmp/scripts/docker-in-docker-debian.sh

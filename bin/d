@@ -88,6 +88,8 @@ spec:
       - image: ${DEVBOX_IMAGE}
         name: devbox
         env:
+        - name: PROMPT_ICON
+          value: ""
         - name: TAILSCALE_HOSTNAME
           value: "devbox"
         - name: TAILSCALE_AUTH_KEY
@@ -185,7 +187,7 @@ test() {
   local container_name
   container_name="devbox"
   docker run -d --privileged -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
-  docker exec -it --detach-keys=ctrl-\\ -e DEVBOX=y -w /home/uesyn ${container_name} zsh
+  docker exec -it --detach-keys=ctrl-\\ -e PROMPT_ICON="" -w /home/uesyn ${container_name} zsh
   docker rm -f ${container_name}
 }
 

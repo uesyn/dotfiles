@@ -50,8 +50,8 @@ function _my_prompt() {
     darwin*) os_prompt=" %F{#8ec07c} %f" ;;
     linux*) os_prompt=" %F{#8ec07c} %f" ;;
   esac
-  if [[ -n "${DEVBOX}" ]]; then
-    os_prompt=" %F{#8ec07c} %f"
+  if [[ -n "${PROMPT_ICON}" ]]; then
+    os_prompt=" %F{#8ec07c}${PROMPT_ICON} %f"
   fi
 
   short_dir_prompt="%c"
