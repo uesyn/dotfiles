@@ -17,7 +17,14 @@ help() {
 }
 
 exec() {
-  kubectl -n ${DEVBOX_NAMESPACE} exec -it devbox-0 -- env PROMPT_ICON="" zsh
+  kubectl -n ${DEVBOX_NAMESPACE} exec -it devbox-0 -- \
+    env PROMPT_ICON="" \
+    GITHUB_TOKEN="$GITHUB_TOKEN" \
+    GIT_USER="$GIT_USER" \
+    NOTE_REPO="$NOTE_REPO" \
+    GH_ENTERPRISE_TOKEN="$GH_ENTERPRISE_TOKEN" \
+    GIT_EMAIL="$GIT_EMAIL" \
+    zsh
 }
 
 create() {
