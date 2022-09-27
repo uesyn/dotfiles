@@ -181,8 +181,8 @@ export GIT_AUTHOR_EMAIL=${GIT_EMAIL}
 export NOTE_USER=${NOTE_USER:-uesyn}
 export NOTE_REPO=${NOTE_REPO:-}
 export GITHUB_TOKEN=${GITHUB_TOKEN:-}
-if [[ -n \$MY_GITHUB_TOKEN ]]; then
-  export GITHUB_TOKEN=\$MY_GITHUB_TOKEN
+if [[ -n "$MY_GITHUB_TOKEN" ]]; then
+  export GITHUB_TOKEN=$MY_GITHUB_TOKEN
 fi
 EOF
   fi
