@@ -179,6 +179,7 @@ delete() {
 }
 
 restart() {
+  kubectl -n ${DEVBOX_NAMESPACE} rollout status -w statefulset devbox
   kubectl -n ${DEVBOX_NAMESPACE} rollout restart statefulset devbox
   kubectl -n ${DEVBOX_NAMESPACE} rollout status -w statefulset devbox
 }
