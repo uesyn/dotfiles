@@ -60,7 +60,6 @@ spec:
       containers:
       - image: ${DEVBOX_IMAGE}
         name: devbox
-        env:
         lifecycle:
           preStop:
             exec:
