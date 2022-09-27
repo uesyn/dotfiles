@@ -127,7 +127,15 @@ test() {
   local container_name
   container_name="devbox"
   docker run -d --privileged -v docker:/var/lib/docker -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
-  docker exec -it --detach-keys=ctrl-\\ -e PROMPT_ICON="" -w /home/uesyn ${container_name} zsh
+  docker exec -it \
+    --detach-keys=ctrl-\\ \
+    -e PROMPT_ICON="" \
+    -e GITHUB_TOKEN="$GITHUB_TOKEN" \
+    -e GIT_USER="$GIT_USER" \
+    -e NOTE_REPO="$NOTE_REPO" \
+    -e GH_ENTERPRISE_TOKEN="$GH_ENTERPRISE_TOKEN" \
+    -e GIT_EMAIL="$GIT_EMAIL" \
+    -w /home/uesyn ${container_name} zsh
   docker rm -f ${container_name}
   docker volume rm docker
 }
