@@ -126,7 +126,11 @@ restart() {
 test() {
   local container_name
   container_name="devbox"
-  docker run -d --privileged -v docker:/var/lib/docker -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
+  docker run -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
+  while ! docker exec -it ${container_name} bash -c "test -e /home/uesyn/.local/share/aquaproj-aqua/bin"; do
+    echo "Waiting..."
+    sleep 3s
+  done
   docker exec -it \
     --detach-keys=ctrl-\\ \
     -e PROMPT_ICON="" \
@@ -136,8 +140,8 @@ test() {
     -e GH_ENTERPRISE_TOKEN="$GH_ENTERPRISE_TOKEN" \
     -e GIT_EMAIL="$GIT_EMAIL" \
     -w /home/uesyn ${container_name} zsh
-  docker rm -f ${container_name}
-  docker volume rm docker
+  docker rm -f ${container_name} >/dev/null
+  docker volume rm docker >/dev/null
 }
 
 SUBCOMMAND=$1
