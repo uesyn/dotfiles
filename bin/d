@@ -7,6 +7,7 @@ help() {
   echo 'usage: d [SUBCOMMAND]
 
   SUBCOMMAND:
+    test      test devbox with docker
     exec      exec devbox (default)
     create    create devbox
     delete    delete devbox
@@ -180,9 +181,18 @@ restart() {
   kubectl -n ${DEVBOX_NAMESPACE} rollout status -w statefulset devbox
 }
 
+test() {
+  local container_name
+  container_name="devbox"
+  docker run -d --privileged -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
+  docker exec -it --detach-keys=ctrl-\\ -e DEVBOX=y -w /home/uesyn ${container_name} zsh
+  docker rm -f ${container_name}
+}
+
 SUBCOMMAND=$1
 case ${SUBCOMMAND} in
   create|c) create;;
+  test|t) test;;
   exec|e) exec;;
   delete|d) delete;;
   restart|r) restart;;
