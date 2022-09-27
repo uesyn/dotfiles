@@ -186,9 +186,10 @@ restart() {
 test() {
   local container_name
   container_name="devbox"
-  docker run -d --privileged -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
+  docker run -d --privileged -v docker:/var/lib/docker -v devbox:/home/uesyn --name ${container_name} ${DEVBOX_IMAGE}
   docker exec -it --detach-keys=ctrl-\\ -e PROMPT_ICON="" -w /home/uesyn ${container_name} zsh
   docker rm -f ${container_name}
+  docker volume rm docker
 }
 
 SUBCOMMAND=$1
