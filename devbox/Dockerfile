@@ -7,6 +7,7 @@ ADD common-debian.sh /tmp/scripts/common-debian.sh
 ADD docker-in-docker-debian.sh /tmp/scripts/docker-in-docker-debian.sh
 RUN chmod 755 /tmp/scripts/*
 RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update && \
     apt-get -y install build-essential && \
     bash /tmp/scripts/common-debian.sh "true" "${USERNAME}" "${USER_UID}" "${USER_GID}" "true" "false" "false" && \
     bash /tmp/scripts/docker-in-docker-debian.sh "true" "${USERNAME}" "true" && \
