@@ -7,7 +7,7 @@ function _kube_prompt() {
   fi
 
   if [[ ! -x "$(command -v kubectl)" ]]; then
-    echo -n " %F{#83a598}[error: kubectl command not found]%f"
+    echo -n " %F{#8be9fd}[error: kubectl command not found]%f"
     return
   fi
 
@@ -15,7 +15,7 @@ function _kube_prompt() {
   context=$(kubectl config current-context 2>&1)
   if [[ $? -ne 0 ]]; then
     [[ $context = "error: current-context is not set" ]] && return
-    echo -n " %F{#83a598}⎈ failed to execute kubectl%f"
+    echo -n " %F{#8be9fd}⎈ failed to execute kubectl%f"
     return
   fi
 
@@ -31,22 +31,22 @@ function _kube_prompt() {
     echo -n " %K{#ff0000}%F{#ffffff}⎈ ${context}%f%k"
     return
   fi
-  echo -n " %F{#83a598}⎈ ${context}%f"
+  echo -n " %F{#8be9fd}⎈ ${context}%f"
 }
 
 ZSH_GIT_PROMPT_SHOW_UPSTREAM="no"
 ZSH_THEME_GIT_PROMPT_PREFIX="%B%b"
 ZSH_THEME_GIT_PROMPT_SUFFIX=""
 ZSH_THEME_GIT_PROMPT_SEPARATOR=""
-ZSH_THEME_GIT_PROMPT_BRANCH="%F{#fe8019} "
-ZSH_THEME_GIT_PROMPT_DETACHED="%F{#fe8019}:"
-ZSH_THEME_GIT_PROMPT_BEHIND="%F{#fe8019}↓"
-ZSH_THEME_GIT_PROMPT_AHEAD="%F{#fe8019}↑"
-ZSH_THEME_GIT_PROMPT_UNMERGED="%F{#fe8019}✖"
-ZSH_THEME_GIT_PROMPT_STAGED="%F{#fe8019}+"
-ZSH_THEME_GIT_PROMPT_UNSTAGED="%F{#fe8019}!"
-ZSH_THEME_GIT_PROMPT_UNTRACKED="%F{#fe8019}…"
-ZSH_THEME_GIT_PROMPT_STASHED="%F{#fe8019}⚑"
+ZSH_THEME_GIT_PROMPT_BRANCH="%F{#ffb86c} "
+ZSH_THEME_GIT_PROMPT_DETACHED="%F{#ffb86c}:"
+ZSH_THEME_GIT_PROMPT_BEHIND="%F{#ffb86c}↓"
+ZSH_THEME_GIT_PROMPT_AHEAD="%F{#ffb86c}↑"
+ZSH_THEME_GIT_PROMPT_UNMERGED="%F{#ffb86c}✖"
+ZSH_THEME_GIT_PROMPT_STAGED="%F{#ffb86c}+"
+ZSH_THEME_GIT_PROMPT_UNSTAGED="%F{#ffb86c}!"
+ZSH_THEME_GIT_PROMPT_UNTRACKED="%F{#ffb86c}…"
+ZSH_THEME_GIT_PROMPT_STASHED="%F{#ffb86c}⚑"
 ZSH_THEME_GIT_PROMPT_CLEAN=""
 
 function _git_prompt() {
@@ -70,11 +70,11 @@ function _my_prompt() {
 
   os_prompt=""
   case $OSTYPE in
-    darwin*) os_prompt=" %F{#8ec07c} %f" ;;
-    linux*) os_prompt=" %F{#8ec07c} %f" ;;
+    darwin*) os_prompt=" %F{#ff79c6} %f" ;;
+    linux*) os_prompt=" %F{#ff79c6} %f" ;;
   esac
   if [[ -n "${PROMPT_ICON}" ]]; then
-    os_prompt=" %F{#8ec07c}${PROMPT_ICON} %f"
+    os_prompt=" %F{#ff79c6}${PROMPT_ICON} %f"
   fi
 
   short_dir_prompt="%c"

@@ -573,8 +573,9 @@ pane_frames: false
 
 # Choose the theme that is specified in the themes section.
 # For some examples, see: https://github.com/zellij-org/zellij/tree/main/example/themes
+# Dracula Theme is forked from: https://github.com/dracula/zellij
 # Default: default
-theme: gruvbox-dark
+theme: dracula
 themes:
   gruvbox-dark:
     bg: [40, 40, 40]
@@ -588,6 +589,19 @@ themes:
     cyan: [104, 157, 106]
     black: [60, 56, 54]
     white: [251, 241, 199]
+  dracula:
+    fg: [248, 248, 242]
+    bg: [40, 42, 54]
+    black: [40, 42, 54]
+    gray: [68, 71, 90]
+    red: [255, 85, 85]
+    green: [80, 250, 123]
+    yellow: [241, 250, 140]
+    blue: [98, 114, 164]
+    magenta: [255, 121, 198]
+    cyan: [139, 233, 253]
+    white: [255, 255, 255]
+    orange: [255, 184, 108]
 
 # Choose the mode that zellij uses when starting up.
 # Default: normal

@@ -79,3 +79,6 @@
 [submodule "nvim/pack/submodules/opt/FixCursorHold.nvim"]
 	path = nvim/pack/submodules/opt/antoinemadec_FixCursorHold.nvim
 	url = https://github.com/antoinemadec/FixCursorHold.nvim.git
+[submodule "nvim/pack/submodules/opt/vim"]
+	path = nvim/pack/submodules/opt/dracula_vim
+	url = https://github.com/dracula/vim.git

@@ -88,7 +88,8 @@ call Packin({'name': 'antoinemadec_FixCursorHold.nvim', 'config': 'antoinemadec_
 call Packin({'name': 'moll_vim-bbye', 'config': 'moll_vim-bbye.vim'})
 
 " colorscheme
-call Packin({'name': 'gruvbox-community_gruvbox', 'config': 'gruvbox-community_gruvbox.vim'})
+" call Packin({'name': 'gruvbox-community_gruvbox', 'config': 'gruvbox-community_gruvbox.vim'})
+call Packin({'name': 'dracula_vim', 'config': 'dracula_vim.vim'})
 " overwrite background color with terminal background color
 augroup my_highlight
   autocmd!
