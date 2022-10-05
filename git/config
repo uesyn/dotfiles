@@ -35,3 +35,5 @@
 	patterns = tskey-[a-zA-Z0-9]+-[a-zA-Z0-9]+
 	allowed = AKIAIOSFODNN7EXAMPLE
 	allowed = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+[rebase]
+	updateRefs = true
