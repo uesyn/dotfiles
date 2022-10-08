@@ -15,3 +15,8 @@ augroup my_fern
 augroup END
 
 nnoremap <silent> <leader>fo :Fern . -drawer -toggle<CR>
+
+augroup my-glyph-palette
+  autocmd! *
+  autocmd FileType fern call glyph_palette#apply()
+augroup END

@@ -64,21 +64,39 @@
 [submodule "nvim/pack/submodules/opt/fern-git-status.vim"]
 	path = nvim/pack/submodules/opt/lambdalisue_fern-git-status.vim
 	url = https://github.com/lambdalisue/fern-git-status.vim.git
-[submodule "nvim/pack/submodules/opt/vim-bbye"]
-	path = nvim/pack/submodules/opt/moll_vim-bbye
-	url = https://github.com/moll/vim-bbye.git
-[submodule "nvim/pack/submodules/opt/lightline.vim"]
-	path = nvim/pack/submodules/opt/itchyny_lightline.vim
-	url = https://github.com/itchyny/lightline.vim.git
 [submodule "nvim/pack/submodules/opt/vim-json"]
 	path = nvim/pack/submodules/opt/elzr_vim-json
 	url = https://github.com/elzr/vim-json.git
-[submodule "nvim/pack/submodules/opt/lightline-bufferline"]
-	path = nvim/pack/submodules/opt/mengelbrecht_lightline-bufferline
-	url = https://github.com/mengelbrecht/lightline-bufferline.git
 [submodule "nvim/pack/submodules/opt/FixCursorHold.nvim"]
 	path = nvim/pack/submodules/opt/antoinemadec_FixCursorHold.nvim
 	url = https://github.com/antoinemadec/FixCursorHold.nvim.git
 [submodule "nvim/pack/submodules/opt/vim"]
 	path = nvim/pack/submodules/opt/dracula_vim
 	url = https://github.com/dracula/vim.git
+[submodule "nvim/pack/submodules/opt/neovim_nvim-lspconfig"]
+	path = nvim/pack/submodules/opt/neovim_nvim-lspconfig
+	url = https://github.com/neovim/nvim-lspconfig.git
+[submodule "nvim/pack/submodules/opt/williamboman_mason.nvim"]
+	path = nvim/pack/submodules/opt/williamboman_mason.nvim
+	url = https://github.com/williamboman/mason.nvim.git
+[submodule "nvim/pack/submodules/opt/williamboman_mason-lspconfig.nvim"]
+	path = nvim/pack/submodules/opt/williamboman_mason-lspconfig.nvim
+	url = https://github.com/williamboman/mason-lspconfig.nvim.git
+[submodule "nvim/pack/submodules/opt/hrsh7th_nvim-cmp"]
+	path = nvim/pack/submodules/opt/hrsh7th_nvim-cmp
+	url = https://github.com/hrsh7th/nvim-cmp.git
+[submodule "nvim/pack/submodules/opt/hrsh7th_cmp-nvim-lsp"]
+	path = nvim/pack/submodules/opt/hrsh7th_cmp-nvim-lsp
+	url = https://github.com/hrsh7th/cmp-nvim-lsp.git
+[submodule "nvim/pack/submodules/opt/nvim-lualine_lualine.nvim"]
+	path = nvim/pack/submodules/opt/nvim-lualine_lualine.nvim
+	url = https://github.com/nvim-lualine/lualine.nvim.git
+[submodule "nvim/pack/submodules/opt/romgrk_barbar.nvim"]
+	path = nvim/pack/submodules/opt/romgrk_barbar.nvim
+	url = https://github.com/romgrk/barbar.nvim.git
+[submodule "nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons"]
+	path = nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons
+	url = https://github.com/nvim-tree/nvim-web-devicons.git
+[submodule "nvim/pack/submodules/opt/nvim-lua_lsp-status.nvim"]
+	path = nvim/pack/submodules/opt/nvim-lua_lsp-status.nvim
+	url = https://github.com/nvim-lua/lsp-status.nvim.git
