@@ -37,3 +37,6 @@
 	allowed = wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 [rebase]
 	updateRefs = true
+[user]
+	name = uesyn
+	email = 17411645+uesyn@users.noreply.github.com
