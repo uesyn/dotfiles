@@ -75,11 +75,6 @@ export LS_COLORS
 
 # nvm
 export NVM_DIR="${XDG_DATA_HOME}/nvm"
-if [[ -e "$NVM_DIR/nvm.sh" ]]; then
-  alias nvm='unalias nvm node npm && source "$NVM_DIR"/nvm.sh && nvm'
-  alias node='unalias nvm node npm && source "$NVM_DIR"/nvm.sh && node'
-  alias npm='unalias nvm node npm && source "$NVM_DIR"/nvm.sh && npm'
-fi
 
 # jabaa
 export JABBA_HOME="$HOME/opt/jabba"
