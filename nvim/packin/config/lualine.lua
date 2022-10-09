@@ -238,6 +238,10 @@ end
 local function get_vim_lsp_status()
   local info = {}
 
+  if vim.fn.exists('*lsp#get_progress') == 0 then
+    return info_to_status(info)
+  end
+
   local progresses = vim.fn['lsp#get_progress']()
   for i, p in ipairs(progresses) do
     if p == nil or p.server == nil then
