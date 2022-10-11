@@ -144,7 +144,7 @@ packin.load({ 'mhinz_vim-signify' })
 -- colortheme
 packin.load(
   { 'dracula_vim' },
-  { config = 'dracula.vim' }
+  { config = 'dracula.vim', setup = 'dracula.vim' }
 )
 
 -- tweeks
