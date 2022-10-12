@@ -95,7 +95,7 @@ setup_zsh() {
 }
 
 setup_aqua() {
-  aqua_version=1.19.5
+  aqua_version=1.20.2
   info "Installing aqua..."
   if [ -x "$(command -v aqua)" ]; then
     version=$(aqua version | cut -f3 -d" ")
@@ -172,12 +172,6 @@ DEVBOX_IMAGE=${DEVBOX_IMAGE:-}
 PROMPT_KUBE_TRIM_PREFIX=()
 PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
 export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}
-export GIT_USER=${GIT_USER:-uesyn}
-export GIT_EMAIL=${GIT_EMAIL:-}
-export GIT_COMMITTER_NAME=${GIT_USER}
-export GIT_AUTHOR_NAME=${GIT_USER}
-export GIT_COMMITTER_EMAIL=${GIT_EMAIL}
-export GIT_AUTHOR_EMAIL=${GIT_EMAIL}
 export NOTE_USER=${NOTE_USER:-uesyn}
 export NOTE_REPO=${NOTE_REPO:-}
 export GITHUB_TOKEN=${GITHUB_TOKEN:-}
