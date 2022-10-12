@@ -19,7 +19,9 @@ function _kube_prompt() {
     return
   fi
 
-  for prefix in ${PROMPT_KUBE_TRIM_PREFIX[@]}; do
+  local prefixes
+  prefixes=($(tr "," " " <<<"${PROMPT_KUBE_TRIM_PREFIX}"))
+  for prefix in ${prefixes[@]}; do
     tmp_context="${context#${prefix}}"
     if [[ ${tmp_context} != ${context} ]]; then
       context="${tmp_context}"
