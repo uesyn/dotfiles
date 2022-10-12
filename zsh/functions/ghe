@@ -1,0 +1,3 @@
+#!/usr/bin/env zsh
+
+export GH_HOST=${_GH_HOST}
