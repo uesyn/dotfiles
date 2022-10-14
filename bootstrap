@@ -139,7 +139,7 @@ setup_aqua() {
 }
 
 setup_nvm() {
-  nvm_version=v0.39.1
+  nvm_version=v0.39.2
   nvm_install_dir=${HOME}/.local/share/nvm
   info "Installing nvm..."
   if [ -d "${nvm_install_dir}" ]; then
