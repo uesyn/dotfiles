@@ -89,7 +89,7 @@ spec:
         - name: docker
           mountPath: /var/lib/docker
         - name: data
-          mountPath: /home/uesyn
+          mountPath: /home/devbox
       volumes:
       - name: docker
         emptyDir: {}
@@ -119,20 +119,16 @@ restart() {
 test() {
   local container_name
   container_name="devbox"
-  docker run --init -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
-  while ! docker exec -it ${container_name} bash -c "test -e /home/uesyn/.local/share/aquaproj-aqua/bin"; do
+  docker pull ${DEVBOX_IMAGE}
+  docker run -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
+  while ! docker exec -it ${container_name} bash -c "test -e /home/devbox/.local/share/aquaproj-aqua/bin"; do
     echo "Waiting..."
-    sleep 3s
+    sleep 1s
   done
   docker exec -it \
     --detach-keys=ctrl-\\ \
     -e PROMPT_ICON="" \
-    -e GITHUB_TOKEN="$GITHUB_TOKEN" \
-    -e GIT_USER="$GIT_USER" \
-    -e NOTE_REPO="$NOTE_REPO" \
-    -e GH_ENTERPRISE_TOKEN="$GH_ENTERPRISE_TOKEN" \
-    -e GIT_EMAIL="$GIT_EMAIL" \
-    -w /home/uesyn ${container_name} zsh
+    ${container_name} zsh
   docker rm -f ${container_name} >/dev/null
   docker volume rm docker >/dev/null
 }
