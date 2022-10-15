@@ -1,5 +1,13 @@
 ---
 packages:
+- type: http
+  repo_owner: xwmx
+  repo_name: nb
+  url: https://raw.github.com/xwmx/nb/{{ .Version }}/nb
+  description: "web note‑taking, bookmarking, archiving, and knowledge base application"
+  files:
+    - name: nb
+      src: nb
 - name: rustup/rustup-init
   type: http
   url: 'https://raw.githubusercontent.com/rust-lang/rustup/{{ .Version }}/rustup-init.sh'

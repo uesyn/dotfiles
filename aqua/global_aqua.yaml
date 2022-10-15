@@ -58,4 +58,6 @@ packages:
 - name: rui314/mold@v1.4.2
   registry: local
 - name: awslabs/git-secrets@1.3.0
+- name: xwmx/nb@6.11.2
+  registry: local
 ---
