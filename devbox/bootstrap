@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+sudo chown ${USER}:${USER} ${HOME}
+
+# setup SSH keys
+mkdir -p ${HOME}/.ssh
+chmod 700 ${HOME}/.ssh
+authorized_key_path="${HOME}/.ssh/authorized_keys"
+if [[ ! -f "${authorized_key_path}" ]]; then
+  curl -o "${authorized_key_path}" -sSfL https://github.com/uesyn.keys
+  chmod 600 "${authorized_key_path}"
+fi
+
+# setup dotfiles
+dotfiles_path=${HOME}/src/github.com/uesyn/dotfiles
+if [[ ! -d "${dotfiles_path}" ]]; then
+  git clone https://github.com/uesyn/dotfiles ${dotfiles_path}
+fi
+cd ${dotfiles_path}
+./bootstrap

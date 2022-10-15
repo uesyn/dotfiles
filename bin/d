@@ -88,7 +88,7 @@ spec:
                 done
 
                 rm /tmp/stopping
-                echo "stop" > /tmp/stop
+                sudo pkill supervisord
         securityContext:
           privileged: true
         volumeMounts:

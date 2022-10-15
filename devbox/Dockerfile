@@ -3,17 +3,71 @@ ENV USERNAME=uesyn
 ENV USER_UID=1000
 ENV USER_GID=$USER_UID
 ENV LANG=en_US.UTF-8
-ADD common-debian.sh /tmp/scripts/common-debian.sh
-ADD docker-in-docker-debian.sh /tmp/scripts/docker-in-docker-debian.sh
-RUN chmod 755 /tmp/scripts/*
+
 RUN export DEBIAN_FRONTEND=noninteractive && \
-    apt-get update && \
-    apt-get -y install build-essential && \
-    bash /tmp/scripts/common-debian.sh "true" "${USERNAME}" "${USER_UID}" "${USER_GID}" "true" "false" "false" && \
-    bash /tmp/scripts/docker-in-docker-debian.sh "true" "${USERNAME}" "true" && \
-    apt-get autoremove -y && apt-get clean -y && \
+    apt update && \
+    apt install -y --no-install-recommends \
+        software-properties-common \
+    apt-transport-https \
+    apt-utils \
+        gnupg2 \
+        curl \
+    ca-certificates && \
+    apt install -y --no-install-recommends \
+        build-essential \
+        dialog \
+        dirmngr \
+        dnsutils \
+        ftp \
+        git \
+        git-lfs \
+        htop \
+        init-system-helpers \
+        iproute2 \
+        iputils-ping \
+        jq \
+        less \
+        locales \
+        lsb-release \
+        lsof \
+        man-db \
+        manpages \
+        manpages-dev \
+        ncdu \
+        netcat \
+        net-tools \
+        openssh-client \
+        parallel \
+        procps \
+        psmisc \
+        python3-pip \
+        rsync \
+        strace \
+        supervisor \
+        sudo \
+        telnet \
+        time \
+        tzdata \
+        unzip \
+        vim \
+        wget \
+        zsh \
+        zip \
+        zstd && \
+    curl -L https://get.docker.com/ | sh && \
+    apt autoremove -y && \
+    apt clean
+
+RUN groupadd --gid $USER_GID $USERNAME && \
+    useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -G docker -m $USERNAME && \
+    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME && \
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen && \
     chsh -s /usr/bin/zsh ${USERNAME}
-COPY entrypoint /usr/local/share
+
+COPY bootstrap /usr/local/share/bootstrap
+COPY docker-init /usr/local/bin/docker-init
+COPY entrypoint /usr/local/share/entrypoint
+COPY supervisord.conf /etc/supervisor/supervisord.conf
 USER ${USERNAME}
-ENTRYPOINT [ "/usr/local/share/docker-init.sh" ]
-CMD [ "/usr/local/share/entrypoint" ]
+ENTRYPOINT [ "/usr/local/share/entrypoint" ]
