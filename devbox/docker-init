@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Dind wrapper script from docker team, adapted to a function
 # Maintained: https://github.com/moby/moby/blob/master/hack/dind 
