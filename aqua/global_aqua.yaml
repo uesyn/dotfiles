@@ -60,4 +60,7 @@ packages:
 - name: awslabs/git-secrets@1.3.0
 - name: xwmx/nb@6.11.2
   registry: local
+- name: Schniz/fnm@v1.31.1
+- name: shyiko/jabba@0.11.2
+  registry: local
 ---

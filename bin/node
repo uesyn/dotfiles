@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-. $NVM_DIR/nvm.sh
+if [[ -x "$(command -v fnm)" ]]; then
+  eval "$(fnm env)"
+fi
 exec node "$@"

@@ -6,8 +6,8 @@ packages:
   url: https://raw.github.com/xwmx/nb/{{ .Version }}/nb
   description: "web note‑taking, bookmarking, archiving, and knowledge base application"
   files:
-    - name: nb
-      src: nb
+  - name: nb
+    src: nb
 - name: rustup/rustup-init
   type: http
   url: 'https://raw.githubusercontent.com/rust-lang/rustup/{{ .Version }}/rustup-init.sh'
@@ -129,6 +129,15 @@ packages:
   asset: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}.{{.Format}}"
   format: tar.gz
   files:
-    - name: mold
-      src: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}/bin/mold"
+  - name: mold
+    src: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}/bin/mold"
+- type: github_release
+  repo_owner: shyiko
+  repo_name: jabba
+  description: Java Version Manager
+  asset: "jabba-{{.Version}}-{{.OS}}-{{.Arch}}"
+  format: raw
+  files:
+  - name: jabba
+    src: "jabba-{{.Version}}-{{.OS}}-{{.Arch}}"
 ---

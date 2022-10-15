@@ -84,11 +84,11 @@ make_links(){
 
 setup_zsh() {
   info "Intalling zsh..."
-  zsh_dir=${HOME}/opt/zsh
   if [ -x "$(command -v zsh)" ]; then
     info "zsh already installed!"
     return
   fi
+  zsh_dir=${HOME}/opt/zsh
   zsh_bin_version=6.1.1
   sh -c "$(curl -SsfL https://raw.githubusercontent.com/romkatv/zsh-bin/v${zsh_bin_version}/install)" -- -e no -d ${zsh_dir} -q
   info "zsh installed!"
@@ -138,32 +138,6 @@ setup_aqua() {
   info "aqua installed!"
 }
 
-setup_nvm() {
-  nvm_version=v0.39.2
-  nvm_install_dir=${HOME}/.local/share/nvm
-  info "Installing nvm..."
-  if [ -d "${nvm_install_dir}" ]; then
-    info "nvm is already installed!"
-    return
-  fi
-  git clone --depth=1 -b ${nvm_version} https://github.com/nvm-sh/nvm.git ${nvm_install_dir} > /dev/null 2>&1
-}
-
-setup_jabba() {
-  export JABBA_HOME=${HOME}/opt/jabba
-  info "Intalling jabba..."
-  if [ -d "${JABBA_HOME}" ]; then
-    info "jabba is already installed!"
-    return
-  fi
-
-  if [ ! -x "$(command -v bash)" ]; then
-    warn "jabba is not installed: bash not found"
-    return
-  fi
-  curl -sL https://github.com/shyiko/jabba/raw/master/install.sh | bash -s -- --skip-rc
-}
-
 make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
@@ -203,8 +177,6 @@ make_local_configs
 fetch_submodules
 setup_zsh
 setup_for_codespace
-setup_nvm
-setup_jabba
 setup_aqua
 
 export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/global_aqua.yaml
