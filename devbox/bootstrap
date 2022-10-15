@@ -18,3 +18,5 @@ if [[ ! -d "${dotfiles_path}" ]]; then
 fi
 cd ${dotfiles_path}
 ./bootstrap
+
+tail -f /dev/null
