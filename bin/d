@@ -71,12 +71,6 @@ spec:
                 touch /tmp/stopping
                 end="\$(( \$(date +%s) + 1800 ))"
 
-                # wait for devbox started.
-                while [[ "\$(date +%s)" -lt "\${end}" ]]; do
-                  [[ -p /tmp/stop ]] && break;
-                  sleep 1s
-                done
-
                 while [[ "\$(date +%s)" -lt "\${end}" ]]; do
                   [[ "\$(ps -lC zellij | wc -l)" -eq 1 ]] && break
                   sleep 1s
