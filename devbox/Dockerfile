@@ -68,6 +68,6 @@ RUN groupadd --gid $USER_GID $USERNAME && \
 COPY bootstrap /usr/local/share/bootstrap
 COPY docker-init /usr/local/bin/docker-init
 COPY entrypoint /usr/local/share/entrypoint
-COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY supervisor/conf.d /etc/supervisor/conf.d
 USER ${USERNAME}
 ENTRYPOINT [ "/usr/local/share/entrypoint" ]
