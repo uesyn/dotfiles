@@ -58,6 +58,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt autoremove -y && \
     apt clean
 
+RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
+    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+
 RUN groupadd --gid $USER_GID $USERNAME && \
     useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -G docker -m $USERNAME && \
     echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
