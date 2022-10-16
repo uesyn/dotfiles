@@ -8,11 +8,11 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
         software-properties-common \
-    apt-transport-https \
-    apt-utils \
+        apt-transport-https \
+        apt-utils \
         gnupg2 \
         curl \
-    ca-certificates && \
+        ca-certificates && \
     apt install -y --no-install-recommends \
         build-essential \
         dialog \
