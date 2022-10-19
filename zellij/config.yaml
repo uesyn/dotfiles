@@ -496,6 +496,8 @@ keybinds:
           key: [Ctrl: 's']
         - action: [EditScrollback, SwitchToMode: Normal]
           key: [ Char: '[']
+        - action: [CloseTab, SwitchToMode: Normal]
+          key: [ Char: 'x']
         - action: [NewPane: Down, SwitchToMode: Normal,]
           key: [Char: "\"",]
         - action: [NewPane: Right, SwitchToMode: Normal,]
