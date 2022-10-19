@@ -71,33 +71,16 @@ vim.api.nvim_create_user_command('TrimSpaces', function() vim.api.nvim_command([
 local packin = require('util.packin')
 
 vim.g.packin_dir = vim.fn.expand("<sfile>:p:h") .. '/packin'
-vim.g.use_nvim_lsp = false
-
--- lsp
-if vim.g.use_nvim_lsp then
-  packin.load(
-    {
-      'williamboman_mason.nvim',
-      'williamboman_mason-lspconfig.nvim',
-      'neovim_nvim-lspconfig',
-      'hrsh7th_nvim-cmp',
-      'hrsh7th_cmp-nvim-lsp',
-      'nvim-lua_lsp-status.nvim'
-    },
-    { config = 'nvim-lsp.lua' }
-  )
-else
-  packin.load(
-    {
-      'prabirshrestha_vim-lsp',
-      'mattn_vim-lsp-settings',
-      'prabirshrestha_asyncomplete.vim',
-      'prabirshrestha_asyncomplete-lsp.vim',
-      'liuchengxu_vista.vim',
-    },
-    { setup = 'vim-lsp.vim', config = 'vim-lsp.vim' }
-  )
-end
+packin.load(
+  {
+    'prabirshrestha_vim-lsp',
+    'mattn_vim-lsp-settings',
+    'prabirshrestha_asyncomplete.vim',
+    'prabirshrestha_asyncomplete-lsp.vim',
+    'liuchengxu_vista.vim',
+  },
+  { setup = 'vim-lsp.vim', config = 'vim-lsp.vim' }
+)
 
 -- fern
 packin.load(
@@ -114,7 +97,6 @@ packin.load(
 -- statusline
 packin.load(
   {
-    'nvim-lua_lsp-status.nvim',
     'nvim-lualine_lualine.nvim'
   },
   { config = 'lualine.lua' }
