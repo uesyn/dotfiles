@@ -1,3 +1,0 @@
-#!/bin/sh
-
-exec deno run -A --unstable ${HOME}/opt/apps/note/index.ts "$@"
