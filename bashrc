@@ -3,16 +3,6 @@ if [[ -z ${OLD_PATH} ]]; then
 fi
 PATH=${OLD_PATH}
 
-function tm() {
-  [[ -n ${TMUX} ]] && return
-  tmux new-session -ADs main
-}
-
-function z() {
-  [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
-  zellij attach -c
-}
-
 ### global
 if [[ $OSTYPE =~ linux.* ]]; then
 	export LANG=en_US.UTF-8

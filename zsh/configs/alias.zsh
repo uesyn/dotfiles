@@ -20,11 +20,6 @@ case $OSTYPE in
     ;;
 esac
 
-function tm() {
-  [[ -n ${TMUX} ]] && return
-  tmux new-session -ADs main
-}
-
 function z() {
   if [[ -x "$(command -v tmux)" ]]; then
     tmux new-session -ADs main
