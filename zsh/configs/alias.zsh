@@ -21,11 +21,6 @@ case $OSTYPE in
 esac
 
 function z() {
-  if [[ -x "$(command -v tmux)" ]]; then
-    tmux new-session -ADs main
-    return
-  fi
-
   if [[ -x "$(command -v zellij)" ]]; then
     [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
     zellij attach -c
