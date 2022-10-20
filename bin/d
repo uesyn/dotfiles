@@ -67,12 +67,17 @@ spec:
               - /bin/bash
               - -c
               - |
-                # Stop devbox when zellij and nvim are inactive or timeout is reached.
+                # Stop devbox when zellij, tmux and nvim are inactive or timeout is reached.
                 touch /tmp/stopping
                 end="\$(( \$(date +%s) + 1800 ))"
 
                 while [[ "\$(date +%s)" -lt "\${end}" ]]; do
                   [[ "\$(ps -lC zellij | wc -l)" -eq 1 ]] && break
+                  sleep 1s
+                done
+
+                while [[ "\$(date +%s)" -lt "\${end}" ]]; do
+                  [[ "\$(ps -lC tmux | wc -l)" -eq 1 ]] && break
                   sleep 1s
                 done
 
