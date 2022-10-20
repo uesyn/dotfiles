@@ -63,6 +63,4 @@ packages:
 - name: Schniz/fnm@v1.31.1
 - name: shyiko/jabba@0.11.2
   registry: local
-- name: uesyn/build-static-tmux@3.3a
-  registry: local
 ---
