@@ -49,21 +49,6 @@
 [submodule "nvim/pack/submodules/opt/gruvbox"]
 	path = nvim/pack/submodules/opt/gruvbox-community_gruvbox
 	url = https://github.com/gruvbox-community/gruvbox.git
-[submodule "nvim/pack/submodules/opt/fern.vim"]
-	path = nvim/pack/submodules/opt/lambdalisue_fern.vim
-	url = https://github.com/lambdalisue/fern.vim.git
-[submodule "nvim/pack/submodules/opt/nerdfont.vim"]
-	path = nvim/pack/submodules/opt/lambdalisue_nerdfont.vim
-	url = https://github.com/lambdalisue/nerdfont.vim.git
-[submodule "nvim/pack/submodules/opt/glyph-palette.vim"]
-	path = nvim/pack/submodules/opt/lambdalisue_glyph-palette.vim
-	url = https://github.com/lambdalisue/glyph-palette.vim.git
-[submodule "nvim/pack/submodules/opt/fern-renderer-nerdfont.vim"]
-	path = nvim/pack/submodules/opt/lambdalisue_fern-renderer-nerdfont.vim
-	url = https://github.com/lambdalisue/fern-renderer-nerdfont.vim.git
-[submodule "nvim/pack/submodules/opt/fern-git-status.vim"]
-	path = nvim/pack/submodules/opt/lambdalisue_fern-git-status.vim
-	url = https://github.com/lambdalisue/fern-git-status.vim.git
 [submodule "nvim/pack/submodules/opt/vim-json"]
 	path = nvim/pack/submodules/opt/elzr_vim-json
 	url = https://github.com/elzr/vim-json.git
@@ -82,3 +67,6 @@
 [submodule "nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons"]
 	path = nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons
 	url = https://github.com/nvim-tree/nvim-web-devicons.git
+[submodule "nvim/pack/submodules/opt/vfiler.vim"]
+	path = nvim/pack/submodules/opt/obaland_vfiler.vim
+	url = https://github.com/obaland/vfiler.vim.git

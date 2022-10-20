@@ -82,16 +82,12 @@ packin.load(
   { setup = 'vim-lsp.vim', config = 'vim-lsp.vim' }
 )
 
--- fern
+-- vfiler
 packin.load(
   {
-    'lambdalisue_fern.vim',
-    'lambdalisue_nerdfont.vim',
-    'lambdalisue_fern-renderer-nerdfont.vim',
-    'lambdalisue_fern-git-status.vim',
-    'lambdalisue_glyph-palette.vim',
+    'obaland_vfiler.vim',
   },
-  { config = 'fern.vim', setup = 'fern.vim' }
+  { config = 'vfiler.lua' }
 )
 
 -- statusline
