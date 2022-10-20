@@ -69,12 +69,6 @@ require'vfiler/config'.setup {
     ['H'] = function(vfiler, context, view)
       vim.cmd([[:exe "normal \<c-w>\h"]])
     end,
-    ['K'] = function(vfiler, context, view)
-      vim.cmd([[:exe "normal \<c-w>\k"]])
-    end,
-    ['J'] = function(vfiler, context, view)
-      vim.cmd([[:exe "normal \<c-w>\j"]])
-    end,
     ['<C-n'] = function(vfiler, context, view) end
   },
 }
