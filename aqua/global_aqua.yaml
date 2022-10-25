@@ -1,7 +1,7 @@
 ---
 registries:
 - type: standard
-  ref: v3.80.0 # renovate: depName=aquaproj/aqua-registry
+  ref: v3.81.0 # renovate: depName=aquaproj/aqua-registry
 - name: local
   type: local
   path: registry.yaml
@@ -64,7 +64,9 @@ packages:
   registry: local
 - name: ziglang/zig
   version: '0.9.1'
-- name: zellij-org/zellij@v0.31.4
+- name: zellij-org/zellij@v0.32.0
+  tags:
+  - precede
 - name: vmware-tanzu/carvel-vendir@v0.30.0
 - name: twistedpair/google-cloud-sdk@402.0.0
 - name: x-motemen/ghq@v1.3.0
