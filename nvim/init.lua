@@ -85,9 +85,11 @@ packin.load(
 -- vfiler
 packin.load(
   {
-    'obaland_vfiler.vim',
+    'lambdalisue_fern.vim',
+    'lambdalisue_fern-git-status.vim',
+    'yuki-yano_fern-preview.vim',
   },
-  { config = 'vfiler.lua' }
+  { config = 'fern.vim', setup = 'fern.vim' }
 )
 
 -- statusline

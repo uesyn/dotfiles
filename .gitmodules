@@ -67,6 +67,12 @@
 [submodule "nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons"]
 	path = nvim/pack/submodules/opt/nvim-tree_nvim-web-devicons
 	url = https://github.com/nvim-tree/nvim-web-devicons.git
-[submodule "nvim/pack/submodules/opt/vfiler.vim"]
-	path = nvim/pack/submodules/opt/obaland_vfiler.vim
-	url = https://github.com/obaland/vfiler.vim.git
+[submodule "nvim/pack/submodules/opt/fern.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_fern.vim
+	url = https://github.com/lambdalisue/fern.vim.git
+[submodule "nvim/pack/submodules/opt/fern-git-status.vim"]
+	path = nvim/pack/submodules/opt/lambdalisue_fern-git-status.vim
+	url = https://github.com/lambdalisue/fern-git-status.vim.git
+[submodule "nvim/pack/submodules/opt/fern-preview.vim"]
+	path = nvim/pack/submodules/opt/yuki-yano_fern-preview.vim
+	url = https://github.com/yuki-yano/fern-preview.vim.git
