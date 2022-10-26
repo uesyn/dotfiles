@@ -46,9 +46,6 @@
 [submodule "nvim/pack/submodules/opt/vim-signify"]
 	path = nvim/pack/submodules/opt/mhinz_vim-signify
 	url = https://github.com/mhinz/vim-signify.git
-[submodule "nvim/pack/submodules/opt/gruvbox"]
-	path = nvim/pack/submodules/opt/gruvbox-community_gruvbox
-	url = https://github.com/gruvbox-community/gruvbox.git
 [submodule "nvim/pack/submodules/opt/vim-json"]
 	path = nvim/pack/submodules/opt/elzr_vim-json
 	url = https://github.com/elzr/vim-json.git
