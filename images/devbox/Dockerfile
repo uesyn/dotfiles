@@ -47,6 +47,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         sudo \
         telnet \
         time \
+        tini \
         tzdata \
         unzip \
         vim \
@@ -73,4 +74,5 @@ COPY docker-init /usr/local/bin/docker-init
 COPY entrypoint /usr/local/share/entrypoint
 COPY supervisor/conf.d /etc/supervisor/conf.d
 USER ${USERNAME}
-ENTRYPOINT [ "/usr/local/share/entrypoint" ]
+ENTRYPOINT ["tini"]
+CMD ["/usr/local/share/entrypoint"]
