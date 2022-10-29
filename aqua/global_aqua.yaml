@@ -64,9 +64,6 @@ packages:
   registry: local
 - name: ziglang/zig
   version: '0.9.1'
-- name: zellij-org/zellij@v0.32.0
-  tags:
-  - precede
 - name: vmware-tanzu/carvel-vendir@v0.30.0
 - name: twistedpair/google-cloud-sdk@402.0.0
 - name: x-motemen/ghq@v1.3.0
@@ -87,6 +84,4 @@ packages:
   registry: local
 - name: uesyn/build-static-tmux@3.3a
   registry: local
-  tags:
-  - precede
 ---
