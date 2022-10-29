@@ -55,7 +55,6 @@ spec:
         app: devbox
     spec:
       dnsPolicy: Default
-      shareProcessNamespace: true
       terminationGracePeriodSeconds: 3600
       containers:
       - image: ${DEVBOX_IMAGE}
