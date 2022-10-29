@@ -17,7 +17,6 @@ let g:lsp_fold_enabled = 0
 let g:lsp_text_edit_enabled = 0
 let g:lsp_diagnostics_float_cursor = 1
 let g:lsp_diagnostics_float_delay = 1000
-let g:lsp_diagnostics_signs_error = {'text': '⛔'}
 
 let g:lsp_settings_filetype_typescript = ['typescript-language-server', 'deno']
 let g:lsp_settings_filetype_javascript = ['typescript-language-server', 'deno']
