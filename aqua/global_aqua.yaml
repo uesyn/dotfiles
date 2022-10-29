@@ -28,7 +28,7 @@ packages:
   registry: local
   tags:
   - precede
-- name: uesyn/neovim-arm64-builder@v0.7.2
+- name: uesyn/neovim-arm64-builder@v0.8.0
   registry: local
   tags:
   - precede
