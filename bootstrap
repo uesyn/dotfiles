@@ -138,46 +138,6 @@ setup_aqua() {
   info "aqua installed!"
 }
 
-setup_zellij() {
-  zellij_version=0.32.0
-  info "Installing zellij..."
-  if [ -x "$(command -v zellij)" ]; then
-    version=$(zellij --version | cut -f2 -d" ")
-    if [ "${zellij_version}" = "${version}" ]; then
-      info "zellij is already installed!"
-      return
-    fi
-  fi
-
-  case "$(detect_target)" in
-    darwin-arm64)
-      zellij_url=https://github.com/zellij-org/zellij/releases/download/v${zellij_version}/zellij-aarch64-apple-darwin.tar.gz
-      ;;
-    darwin-amd64)
-      zellij_url=https://github.com/zellij-org/zellij/releases/download/v${zellij_version}/zellij-x86_64-apple-darwin.tar.gz
-      ;;
-    linux-arm64)
-      zellij_url=https://github.com/zellij-org/zellij/releases/download/v${zellij_version}/zellij-aarch64-unknown-linux-musl.tar.gz
-      ;;
-    linux-amd64)
-      zellij_url=https://github.com/zellij-org/zellij/releases/download/v${zellij_version}/zellij-x86_64-unknown-linux-musl.tar.gz
-      ;;
-    *) warn "Unsupported platform for zellij: $(detect_target)"; return 0 ;;
-  esac
-
-  zellij_tmp=/tmp/zellij.tar.gz
-  zellij_bin_tmp=/tmp/zellij
-  zellij_bin=${OPT_DIR}/bin/zellij
-  mkdir -p ${OPT_DIR}/bin
-  download ${zellij_tmp} ${zellij_url}
-  tar xf ${zellij_tmp} -O zellij > ${zellij_bin_tmp}
-  chmod +x ${zellij_bin_tmp}
-  mv ${zellij_bin_tmp} ${zellij_bin}
-
-  rm ${zellij_tmp}
-  info "zellij installed!"
-}
-
 make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
@@ -216,7 +176,6 @@ fetch_submodules
 setup_zsh
 setup_for_codespace
 setup_aqua
-setup_zellij
 
 export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/global_aqua.yaml
 export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
