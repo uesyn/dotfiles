@@ -90,11 +90,15 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: tmp
+          mountPath: /tmp
         - name: docker
           mountPath: /var/lib/docker
         - name: data
           mountPath: /home/devbox
       volumes:
+      - name: tmp
+        emptyDir: {}
       - name: docker
         emptyDir: {}
   volumeClaimTemplates:
