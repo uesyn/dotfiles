@@ -71,7 +71,7 @@ packages:
   - precede
 - name: Aloxaf/silicon@v0.4.3
 - name: golang.org/x/tools/gopls
-  version: v0.9.5
+  version: v0.10.1
 - name: rui314/mold@v1.4.2
   registry: local
 - name: awslabs/git-secrets@1.3.0
