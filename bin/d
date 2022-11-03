@@ -129,7 +129,6 @@ test() {
   container_name="devbox"
   docker pull ${DEVBOX_IMAGE}
   docker run -d \
-    --network host \
     --privileged \
     -v docker:/var/lib/docker \
     -v home:/home/devbox \
