@@ -128,7 +128,13 @@ test() {
   local container_name
   container_name="devbox"
   docker pull ${DEVBOX_IMAGE}
-  docker run -d --privileged -v docker:/var/lib/docker --name ${container_name} ${DEVBOX_IMAGE} >/dev/null
+  docker run -d \
+    --network host \
+    --privileged \
+    -v docker:/var/lib/docker \
+    -v home:/home/devbox \
+    --name ${container_name} \
+    ${DEVBOX_IMAGE} >/dev/null
   while ! docker exec -it ${container_name} bash -c "test -e /home/devbox/.local/share/aquaproj-aqua/bin"; do
     echo "Waiting..."
     sleep 1s
@@ -138,7 +144,6 @@ test() {
     -e PROMPT_ICON="" \
     ${container_name} zsh
   docker rm -f ${container_name} >/dev/null
-  docker volume rm docker >/dev/null
 }
 
 SUBCOMMAND=$1
