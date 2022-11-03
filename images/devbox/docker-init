@@ -25,4 +25,4 @@ if [ -f /sys/fs/cgroup/cgroup.controllers ]; then
 	sudo bash -c "sed -e 's/ / +/g' -e 's/^/+/' < /sys/fs/cgroup/cgroup.controllers > /sys/fs/cgroup/cgroup.subtree_control"
 fi
 
-exec dockerd --registry-mirror https://mirror.gcr.io --mtu=${DOCKER_MTU:-1280}
+exec dockerd --registry-mirror https://mirror.gcr.io --mtu=${DOCKER_MTU:-1280} --bip=172.23.0.254/24
