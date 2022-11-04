@@ -180,3 +180,27 @@ setup_aqua
 export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/global_aqua.yaml
 export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
 aqua install -a --tags precede
+
+case "$(uname -r)" in
+  *WSL2) 
+    cat <<- EOF
+
+===== INFO =====
+
+* Create /etc/wsl.conf with below contents:
+[boot]
+systemd=true
+
+[interop]
+appendWindowsPath=true
+
+[network]
+generateResolvConf = false
+
+* Create /etc/resolv.conf with below contents:
+nameserver 8.8.8.8
+
+================
+EOF
+    ;;
+esac
