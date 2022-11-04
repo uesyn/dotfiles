@@ -84,9 +84,11 @@ export FNM_VERSION_FILE_STRATEGY="local"
 export FNM_DIR="${XDG_DATA_HOME}/fnm"
 export FNM_LOGLEVEL="info"
 export FNM_NODE_DIST_MIRROR="https://nodejs.org/dist"
-export FNM_ARCH="x64"
-if [[ -x "$(command -v arch)" ]] && [[ "arm64" == "$(arch)" ]] ; then
-  export FNM_ARCH="arm64"
+if [[ -x "$(command -v uname)" ]]; then
+  case "$(uname -m)" in
+    aarch64 ) export FNM_ARCH="arm64" ;;
+    x86_64 ) export FNM_ARCH="x64" ;;
+  esac
 fi
 path=("${XDG_CONFIG_HOME}/fnm_multishells/bin" $path)
 
