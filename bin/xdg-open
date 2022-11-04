@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [[ -x "$(command -v open)" ]]; then
-  open "$@"
-fi
-
-if [[ -x "$(command -v wsl-open)" ]]; then
-  wsl-open "$@"
-fi

@@ -78,5 +78,17 @@ export JABBA_HOME="$HOME/opt/jabba"
 export JAVA_HOME="${JABBA_HOME}/jdk/default"
 path=("${JAVA_HOME}/bin" $path)
 
+# fnm
+export FNM_MULTISHELL_PATH="${XDG_CONFIG_HOME}/fnm_multishells"
+export FNM_VERSION_FILE_STRATEGY="local"
+export FNM_DIR="${XDG_DATA_HOME}/fnm"
+export FNM_LOGLEVEL="info"
+export FNM_NODE_DIST_MIRROR="https://nodejs.org/dist"
+export FNM_ARCH="x64"
+if [[ -x "$(command -v arch)" ]] && [[ "arm64" == "$(arch)" ]] ; then
+  export FNM_ARCH="arm64"
+fi
+path=("${XDG_CONFIG_HOME}/fnm_multishells/bin" $path)
+
 # raise OPT_BIN path priority
 path=(${OPT_BIN} $path)
