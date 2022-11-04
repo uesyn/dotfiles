@@ -7,7 +7,7 @@ help() {
   echo 'usage: d [SUBCOMMAND]
 
   SUBCOMMAND:
-    test      test devbox with docker
+    docker    create devbox with docker
     exec      exec devbox (default)
     create    create devbox
     delete    delete devbox
@@ -141,6 +141,7 @@ test() {
   docker exec -it \
     --detach-keys=ctrl-\\ \
     -e PROMPT_ICON="" \
+    -e GITHUB_TOKEN \
     ${container_name} zsh
   docker rm -f ${container_name} >/dev/null
 }
@@ -148,9 +149,9 @@ test() {
 SUBCOMMAND=$1
 case ${SUBCOMMAND} in
   create|c) create;;
-  test|t) test;;
+  docker|d) test;;
   exec|e) exec;;
-  delete|d) delete;;
+  delete) delete;;
   restart|r) restart;;
   help|h) help;;
   "") exec;;
