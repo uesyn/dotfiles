@@ -186,6 +186,8 @@ case "$(uname -r)" in
     cat <<- EOF
 
 ===== INFO =====
+* Install k3s
+$ curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--flannel-backend host-gw" sh -s -
 
 * Create /etc/wsl.conf with below contents:
 [boot]
