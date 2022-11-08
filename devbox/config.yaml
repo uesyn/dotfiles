@@ -1,0 +1,7 @@
+default:
+  kubernetes:
+    manifest: ${HOME}/.config/devbox/default.yaml
+    exec:
+      shell: zsh
+      hostEnvs:
+      - GITHUB_TOKEN

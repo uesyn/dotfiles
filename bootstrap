@@ -80,6 +80,7 @@ make_links(){
   ln -sfn ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
   mkdir -p ${XDG_CONFIG_HOME}/wezterm
   ln -sfn ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
+  ln -sfn ${SCRIPT_DIR}/devbox ${XDG_CONFIG_HOME}/devbox
 }
 
 setup_zsh() {
