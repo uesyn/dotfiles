@@ -13,8 +13,8 @@ packages:
 - name: stedolan/jq@jq-1.6
   tags:
   - precede
-- name: stern/stern@v1.21.0
-- name: cli/cli@v2.18.1
+- name: stern/stern@v1.22.0
+- name: cli/cli@v2.20.0
   tags:
   - precede
 - name: junegunn/fzf@0.34.0
@@ -47,8 +47,8 @@ packages:
 - name: open-policy-agent/opa@v0.39.0
   registry: local
 - name: kubernetes-sigs/kubebuilder@v3.5.0
-- name: denoland/deno@v1.25.3
-- name: LukeChannings/deno-arm64@v1.25.3
+- name: denoland/deno@v1.27.2
+- name: LukeChannings/deno-arm64@v1.27.2
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: rustup/rustup-init
   version: 1.25.0
