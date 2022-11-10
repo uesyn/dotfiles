@@ -1,4 +1,0 @@
-#!/usr/bin/env zsh
-
-export DOCKER_DEFAULT_PLATFORM=linux/amd64
-echo "DOCKER_DEFAULT_PLATFORM: $DOCKER_DEFAULT_PLATFORM"
