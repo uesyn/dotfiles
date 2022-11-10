@@ -86,7 +86,7 @@ packages:
   registry: local
 - name: uesyn/build-static-tmux@3.3a
   registry: local
-- name: zellij-org/zellij@v0.32.0
+- name: zellij-org/zellij@v0.33.0
   tags:
   - precede
 ---
