@@ -89,7 +89,8 @@ function _my_prompt() {
 
   kube_prompt='$(_kube_prompt)'
 
-  PROMPT="${shutdown_prompt}${os_prompt}${short_dir_prompt}${git_prompt}${kube_prompt} %F{#a89984}%f "
+  PROMPT="${shutdown_prompt}${os_prompt}${short_dir_prompt}${git_prompt}${kube_prompt}${new_line}
+ %F{#a89984}%f "
   RPROMPT="${dir_prompt}"
 }
 
