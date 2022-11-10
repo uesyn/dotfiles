@@ -10,6 +10,8 @@ packages:
   tags:
   - precede
 - name: ahmetb/kubens@v0.9.4
+  tags:
+  - precede
 - name: stedolan/jq@jq-1.6
   tags:
   - precede
