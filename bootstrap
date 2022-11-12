@@ -143,9 +143,9 @@ make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
     cat << 'EOF' > ${zlogin_file}
-DEVBOX_IMAGE=${DEVBOX_IMAGE:-}
-PROMPT_KUBE_TRIM_PREFIX=""
-PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
+export DEVBOX_IMAGE=${DEVBOX_IMAGE:-ghcr.io/uesyn/devbox:latest}
+export ROMPT_KUBE_TRIM_PREFIX=""
+export ROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
 export _GH_HOST=${_GH_HOST:-}
 export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}
 export GITHUB_TOKEN=${GITHUB_TOKEN:-}
