@@ -53,5 +53,7 @@ default:
           storage: 50Gi
   exec:
     shell: zsh
+    envs:
+      PROMPT_ICON: 
     hostEnvs:
     - GITHUB_TOKEN
