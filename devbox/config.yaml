@@ -57,3 +57,4 @@ default:
       PROMPT_ICON: 
     hostEnvs:
     - GITHUB_TOKEN
+    - GH_ENTERPRISE_TOKEN
