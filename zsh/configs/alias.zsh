@@ -4,6 +4,8 @@ alias ks='kubectl -n kube-system'
 alias kx='kubectx'
 alias kn='kubens'
 
+alias d="devbox"
+
 case $OSTYPE in
   linux*)
     alias ll='ls --color -l'
