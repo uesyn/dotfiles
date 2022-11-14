@@ -79,22 +79,6 @@ packages:
   description: Write tests against structured configuration data using the Open Policy Agent Rego query language
   replacements:
     amd64: x86_64
-- name: cloudflare/cfssl/cfssl
-  type: go_install
-  repo_owner: cloudflare
-  repo_name: cfssl
-  description: the cfssl program, which is the canonical command line utility using the CFSSL packages
-  path: github.com/cloudflare/cfssl/cmd/cfssl
-  files:
-  - name: cfssl
-- name: cloudflare/cfssl/cfssljson
-  type: go_install
-  repo_owner: cloudflare
-  repo_name: cfssl
-  description: the cfssljson program, which takes the JSON output from the cfssl and multirootca programs and writes certificates, keys, CSRs, and bundles to disk
-  path: github.com/cloudflare/cfssl/cmd/cfssljson
-  files:
-  - name: cfssljson
 - name: danielgatis/imgcat
   type: go_install
   repo_owner: danielgatis
