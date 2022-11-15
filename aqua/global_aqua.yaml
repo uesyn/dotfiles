@@ -49,8 +49,8 @@ packages:
 - name: open-policy-agent/opa@v0.39.0
   registry: local
 - name: kubernetes-sigs/kubebuilder@v3.5.0
-- name: denoland/deno@v1.27.2
-- name: LukeChannings/deno-arm64@v1.27.2
+- name: denoland/deno@v1.28.0
+- name: LukeChannings/deno-arm64@v1.28.0
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: rustup/rustup-init
   version: 1.25.0
