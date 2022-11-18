@@ -4,7 +4,7 @@ registries:
   ref: v3.94.0 # renovate: depName=aquaproj/aqua-registry
 - name: local
   type: local
-  path: registry.yaml
+  path: $HOME/.config/aquaproj-aqua/registry.yaml
 packages:
 - name: ahmetb/kubectx@v0.9.4
   tags:

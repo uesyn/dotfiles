@@ -40,7 +40,7 @@ export OPT_BIN=${OPT_DIR}/bin
 path=(${OPT_BIN} $path)
 
 # aqua
-export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/global_aqua.yaml
+export AQUA_GLOBAL_CONFIG=${HOME}/.aqua.yaml:${HOME}/.aqua.custom.yaml
 path=(${XDG_DATA_HOME}/aquaproj-aqua/bin $path)
 
 # go
