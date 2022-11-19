@@ -4,5 +4,6 @@ zsh/*
 !zsh/functions
 !zsh/configs
 !zsh/plugins
+!aqua/aqua.yaml
 gh/*
 !gh/config.yml
