@@ -1,0 +1,92 @@
+---
+registries:
+- type: standard
+  ref: v3.94.0 # renovate: depName=aquaproj/aqua-registry
+- name: local
+  type: local
+  path: registry.yaml
+packages:
+- name: ahmetb/kubectx@v0.9.4
+  tags:
+  - precede
+- name: ahmetb/kubens@v0.9.4
+  tags:
+  - precede
+- name: stedolan/jq@jq-1.6
+  tags:
+  - precede
+- name: stern/stern@v1.22.0
+- name: cli/cli@v2.20.2
+  tags:
+  - precede
+- name: junegunn/fzf@0.34.0
+  tags:
+  - precede
+- name: kubernetes/kubectl
+  version: v1.25.2
+  tags:
+  - precede
+- name: neovim/neovim@v0.8.1
+  registry: local
+  tags:
+  - precede
+- name: uesyn/neovim-arm64-builder@v0.8.0
+  registry: local
+  tags:
+  - precede
+- name: helm/helm@v3.9.4
+- name: golangci/golangci-lint@v1.49.0
+- name: golang/go
+  version: "1.19.3"
+- name: kubernetes-sigs/kind@v0.17.0
+- name: kubernetes-sigs/kustomize@kustomize/v4.5.7
+- name: mikefarah/yq@v4.24.4
+- name: github/hub@v2.14.2
+- name: hashicorp/vault@v1.11.3
+- name: kubernetes/minikube@v1.28.0
+- name: open-policy-agent/conftest@v0.33.1
+  registry: local
+- name: open-policy-agent/opa@v0.39.0
+  registry: local
+- name: kubernetes-sigs/kubebuilder@v3.5.0
+- name: denoland/deno@v1.28.0
+- name: LukeChannings/deno-arm64@v1.28.0
+- name: Ladicle/kubectl-rolesum@v1.5.1
+- name: rustup/rustup-init
+  version: 1.25.0
+  registry: local
+- name: microsoft/ripgrep-prebuilt@v13.0.0-4
+  registry: local
+- name: profclems/glab@v1.22.0
+  tags:
+  - precede
+- name: grafana/loki/logcli@v2.6.0
+- name: awslabs/amazon-ecr-credential-helper@v0.6.0
+- name: rust-lang/rust-analyzer@2022-09-12
+  registry: local
+- name: ziglang/zig
+  version: '0.9.1'
+- name: vmware-tanzu/carvel-vendir@v0.30.0
+- name: twistedpair/google-cloud-sdk@402.0.0
+- name: x-motemen/ghq@v1.3.0
+  tags:
+  - precede
+- name: Aloxaf/silicon@v0.4.3
+- name: golang.org/x/tools/gopls
+  version: v0.10.1
+- name: rui314/mold@v1.4.2
+  registry: local
+- name: awslabs/git-secrets@1.3.0
+  tags:
+  - precede
+- name: xwmx/nb@6.11.2
+  registry: local
+- name: Schniz/fnm@v1.31.1
+- name: shyiko/jabba@0.11.2
+  registry: local
+- name: uesyn/build-static-tmux@3.3a
+  registry: local
+- name: zellij-org/zellij@v0.33.0
+  tags:
+  - precede
+---
