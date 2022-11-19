@@ -177,7 +177,7 @@ setup_zsh
 setup_for_codespace
 setup_aqua
 
-export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/global_aqua.yaml
+export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
 export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
 aqua install -a --tags precede
 

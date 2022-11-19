@@ -30,7 +30,7 @@ packages:
   registry: local
   tags:
   - precede
-- name: uesyn/neovim-arm64-builder@v0.8.0
+- name: uesyn/neovim-arm64-builder@v0.8.1
   registry: local
   tags:
   - precede
