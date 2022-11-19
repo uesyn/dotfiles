@@ -53,7 +53,7 @@ packages:
 - name: LukeChannings/deno-arm64@v1.28.0
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: rustup/rustup-init
-  version: 1.25.0
+  version: 1.25.1
   registry: local
 - name: microsoft/ripgrep-prebuilt@v13.0.0-4
   registry: local
