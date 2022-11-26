@@ -1,0 +1,22 @@
+exec:
+  shell: zsh
+  envs:
+    PROMPT_ICON: "A"
+  hostEnvs:
+  - GITHUB_TOKEN
+  - GH_ENTERPRISE_TOKEN
+
+devbox:
+  image: ghcr.io/uesyn/devbox
+  privileged: true
+  hostPID: false
+  terminationGracePeriodSeconds: 3600
+  volumes:
+  - name: home
+    mountPath: /home/devbox
+    persistentVolumeClaim:
+      accessMode: ReadWriteOnce
+      size: 50Gi
+  - name: docker
+    mountPath: /var/lib/docker
+    emptyDir: {}
