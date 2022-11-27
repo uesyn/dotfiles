@@ -1,7 +1,7 @@
 exec:
   shell: zsh
   envs:
-    PROMPT_ICON: "A"
+    PROMPT_ICON: "🍎"
   hostEnvs:
   - GITHUB_TOKEN
   - GH_ENTERPRISE_TOKEN
