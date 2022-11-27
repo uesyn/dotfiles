@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:bookworm
 ENV USERNAME=devbox
 ENV USER_UID=1000
 ENV USER_GID=$USER_UID
