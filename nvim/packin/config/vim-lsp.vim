@@ -10,6 +10,7 @@ nmap [LSP]R <plug>(lsp-rename)
 nmap [LSP]a <plug>(lsp-code-action)
 nmap [LSP]f <plug>(lsp-document-format)
 nmap [LSP]q <plug>(lsp-document-diagnostics)
+nmap [LSP]i :LspCodeActionSync source.organizeImports<CR>
 nmap [LSP]v :Vista<CR>
 
 let g:vista_fzf_preview = ['right:50%']
