@@ -1,23 +1,20 @@
 function _kube_prompt() {
   local kubeconfig
   kubeconfig="${KUBECONFIG:-${HOME}/.kube/config}"
+  if [[ -z ${kubeconfig} ]]; then
+    return
+  fi
   if [[ ! -f "${kubeconfig}" ]]; then
-    echo -n ""
     return
   fi
 
   local context tmp_context
-  if [[ -x "$(command -v kubectx)" ]]; then
-    context=$(kubectx -c)
-  elif [[ -x "$(command -v kubectx)" ]]; then
-    context=$(kubectl config current-context 2>&1)
-  else
-    echo -n " %F{#8be9fd}[error: kubectl command not found]%f"
+  context=($(cat ${kubeconfig} | grep current-context | cut -f2 -d":"))
+  if [[ $? -ne 0 ]]; then
+    echo -n " %F{#8be9fd}⎈ failed to get current-context%f"
     return
   fi
-  if [[ $? -ne 0 ]]; then
-    [[ $context = "error: current-context is not set" ]] && return
-    echo -n " %F{#8be9fd}⎈ failed to execute kubectl%f"
+  if [[ -z "$context" ]]; then
     return
   fi
 
