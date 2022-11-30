@@ -8,12 +8,9 @@ function _kube_prompt() {
     return
   fi
 
-  local context tmp_context
-  context=($(cat ${kubeconfig} | grep current-context | cut -f2 -d":"))
-  if [[ $? -ne 0 ]]; then
-    echo -n " %F{#8be9fd}⎈ failed to get current-context%f"
-    return
-  fi
+  local context context_line tmp_context
+  context_line=$(grep "current-context:" ${kubeconfig})
+  context=${context_line#"current-context: "}
   if [[ -z "$context" ]]; then
     return
   fi
