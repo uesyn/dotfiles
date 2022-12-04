@@ -76,7 +76,6 @@ make_links(){
   ln -sfn ${SCRIPT_DIR}/aqua/registry.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/registry.yaml
   mkdir -p ${XDG_CONFIG_HOME}/gh
   ln -sfn ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
-  ln -sfn ${SCRIPT_DIR}/apps ${HOME}/opt/apps
   ln -sfn ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
   mkdir -p ${XDG_CONFIG_HOME}/wezterm
   ln -sfn ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
