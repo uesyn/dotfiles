@@ -13,7 +13,6 @@ devbox:
   - name: home
     mountPath: /home/devbox
     persistentVolumeClaim:
-      accessMode: ReadWriteOnce
       size: 50Gi
   - name: docker
     mountPath: /var/lib/docker
