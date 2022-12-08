@@ -124,16 +124,4 @@ packages:
   files:
   - name: jabba
     src: "jabba-{{.Version}}-{{.OS}}-{{.Arch}}"
-- type: github_release
-  repo_owner: uesyn
-  repo_name: build-static-tmux
-  asset: "tmux-{{.OS}}-{{.Arch}}"
-  description: tmux is a terminal multiplexer
-  supported_envs: ["linux"]
-  replacements:
-    amd64: x86_64
-    arm64: aarch64
-  files:
-  - name: tmux
-    src: tmux.{{.OS}}-{{.Arch}}
 ---
