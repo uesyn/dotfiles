@@ -9,6 +9,10 @@ devbox:
   privileged: true
   hostPID: false
   terminationGracePeriodSeconds: 3600
+  requests:
+    cpu: 500m
+    memory: 1Gi
+    ephemeral-storage: 5Gi
   volumes:
   - name: home
     mountPath: /home/devbox
