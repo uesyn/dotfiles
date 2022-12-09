@@ -21,3 +21,7 @@ devbox:
   - name: docker
     mountPath: /var/lib/docker
     emptyDir: {}
+  - name: tls
+    mountPath: /etc/ssl/certs
+    hostPath:
+      path: /etc/ssl/certs
