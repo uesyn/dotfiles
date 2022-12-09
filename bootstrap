@@ -178,7 +178,7 @@ setup_aqua
 
 export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
 export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
-aqua install -a --tags precede
+aqua i -a -l
 
 case "$(uname -r)" in
   *WSL2) 
