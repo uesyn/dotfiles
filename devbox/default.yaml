@@ -6,6 +6,10 @@ exec:
     GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
 devbox:
   image: ghcr.io/uesyn/devbox
+  startupProbeCommand:
+  - test
+  - -d
+  - /home/devbox/.local/share/aquaproj-aqua
   privileged: true
   hostPID: false
   terminationGracePeriodSeconds: 3600
