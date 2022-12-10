@@ -17,10 +17,11 @@ devbox:
   - name: home
     mountPath: /home/devbox
     persistentVolumeClaim:
-      size: 50Gi
+      size: 30Gi
   - name: docker
     mountPath: /var/lib/docker
-    emptyDir: {}
+    persistentVolumeClaim:
+      size: 30Gi
   - name: tls
     mountPath: /etc/ssl/certs
     hostPath:
