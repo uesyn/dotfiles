@@ -3,8 +3,7 @@
 
 [credential]
 	helper =
-	helper = !gh auth git-credential
-	helper = !glab auth git-credential
+	helper = env
 
 [core]
 	excludesfile = ~/.config/git/ignore
