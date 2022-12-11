@@ -11,11 +11,9 @@ devbox:
   - -d
   - /home/devbox/.local/share/aquaproj-aqua
   privileged: true
-  hostPID: false
-  terminationGracePeriodSeconds: 3600
   requests:
-    cpu: 500m
-    memory: 1Gi
+    cpu: 1000m
+    memory: 2Gi
     ephemeral-storage: 5Gi
   volumes:
   - name: home
