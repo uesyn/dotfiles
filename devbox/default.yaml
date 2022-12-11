@@ -3,6 +3,7 @@ exec:
   envs:
     PROMPT_ICON: "🍎"
     GITHUB_TOKEN: "${GITHUB_TOKEN}"
+    GITLAB_TOKEN: "${GITLAB_TOKEN}"
     GH_ENTERPRISE_TOKEN: "${GH_ENTERPRISE_TOKEN}"
 devbox:
   image: ghcr.io/uesyn/devbox
