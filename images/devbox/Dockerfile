@@ -14,15 +14,14 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         curl \
         ca-certificates && \
     apt install -y --no-install-recommends \
+        apparmor \
         build-essential \
         dialog \
         dirmngr \
         dnsutils \
         docker.io \
-        ftp \
         git \
         git-lfs \
-        htop \
         init-system-helpers \
         iproute2 \
         iputils-ping \
@@ -34,19 +33,14 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         man-db \
         manpages \
         manpages-dev \
-        ncdu \
         netcat-openbsd \
         net-tools \
         openssh-client \
-        parallel \
         procps \
         psmisc \
-        python3-pip \
         rsync \
-        strace \
         supervisor \
         sudo \
-        telnet \
         time \
         tini \
         tzdata \
