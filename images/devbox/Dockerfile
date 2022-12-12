@@ -1,4 +1,4 @@
-FROM debian:11
+FROM debian:bookworm
 ENV USERNAME=devbox
 ENV USER_UID=1000
 ENV USER_GID=$USER_UID
@@ -18,6 +18,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         dialog \
         dirmngr \
         dnsutils \
+        docker.io \
         ftp \
         git \
         git-lfs \
@@ -34,7 +35,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         manpages \
         manpages-dev \
         ncdu \
-        netcat \
+        netcat-openbsd \
         net-tools \
         openssh-client \
         parallel \
@@ -55,7 +56,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         zsh \
         zip \
         zstd && \
-    curl -L https://get.docker.com/ | sh && \
     apt autoremove -y && \
     apt clean
 
