@@ -12,17 +12,13 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         apt-utils \
         gnupg2 \
         curl \
-        ca-certificates && \
-    apt install -y --no-install-recommends \
+        ca-certificates \
         apparmor \
         build-essential \
-        dialog \
-        dirmngr \
         dnsutils \
         docker.io \
         git \
         git-lfs \
-        init-system-helpers \
         iproute2 \
         iputils-ping \
         jq \
