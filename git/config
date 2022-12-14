@@ -1,6 +1,9 @@
 [ghq]
 	root = ~/src
 
+[include]
+    path = ~/.gitconfig.local
+
 [credential]
 	helper =
 	helper = env

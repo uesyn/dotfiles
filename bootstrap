@@ -61,8 +61,6 @@ download() {
 make_links(){
   XDG_CONFIG_HOME=${HOME}/.config
   mkdir -p $XDG_CONFIG_HOME
-  mkdir -p ${XDG_CONFIG_HOME}/tmux
-  ln -sfn ${SCRIPT_DIR}/tmux/tmux.conf ${XDG_CONFIG_HOME}/tmux/tmux.conf
   ln -sfn ${SCRIPT_DIR}/bashrc ${HOME}/.bashrc
   ln -sfn ${SCRIPT_DIR}/bash_profile ${HOME}/.bash_profile
   ln -sfn ${SCRIPT_DIR}/zshrc ${HOME}/.zshrc
