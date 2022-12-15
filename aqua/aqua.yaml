@@ -75,6 +75,6 @@ packages:
 - name: Schniz/fnm@v1.33.1
 - name: shyiko/jabba@0.11.2
   registry: local
-- name: zellij-org/zellij@v0.34.3
+- name: zellij-org/zellij@v0.34.4
   tags:
   - precede
