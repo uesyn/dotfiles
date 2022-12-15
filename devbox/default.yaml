@@ -18,6 +18,7 @@ devbox:
     cpu: 1000m
     memory: 2Gi
     ephemeral-storage: 5Gi
+  autoMountServiceAccountToken: false
   volumes:
   - name: home
     mountPath: /home/devbox
