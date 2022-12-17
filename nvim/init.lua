@@ -39,7 +39,7 @@ vim.api.nvim_create_autocmd("FileType", {
   pattern = 'qf',
   callback = function()
     vim.bo.buflisted = false
-    vim.keymap.set('n', 'qq', ':q<CR>', { buffer = true })
+    vim.keymap.set('n', 'qq', ':clo<CR>', { buffer = true })
     vim.keymap.set('n', '<C-n>', '<Nop>', { buffer = true })
     vim.keymap.set('n', '<C-p>', '<Nop>', { buffer = true })
   end
