@@ -1,6 +1,7 @@
 exec:
   default:
-    shell: zsh
+    command:
+    - zsh
     env:
       PROMPT_ICON:
         Value: "🍎"
