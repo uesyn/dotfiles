@@ -1,3 +1,5 @@
+FROM docker:dind@sha256:0e94d967b79da9ab21108997e338afd1cf53f8c86642c9b5acbfa286fde5e071 as dind
+
 FROM debian:bookworm
 ENV USERNAME=devbox
 ENV USER_UID=1000
@@ -16,9 +18,10 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         apparmor \
         build-essential \
         dnsutils \
-        docker.io \
+	docker.io \
         git \
         git-lfs \
+	gosu \
         iproute2 \
         iputils-ping \
         jq \
@@ -38,7 +41,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         supervisor \
         sudo \
         time \
-        tini \
         tzdata \
         unzip \
         vim \
@@ -53,16 +55,14 @@ RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 
 RUN groupadd --gid $USER_GID $USERNAME && \
-    useradd -s /bin/bash --uid $USER_UID --gid $USER_GID -G docker -m $USERNAME && \
+    useradd -s /usr/bin/zsh --uid $USER_UID --gid $USER_GID -G docker -m $USERNAME && \
     echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
     chmod 0440 /etc/sudoers.d/$USERNAME && \
-    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen && \
-    chsh -s /usr/bin/zsh ${USERNAME}
+    echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
 
-COPY bootstrap /usr/local/share/bootstrap
-COPY docker-init /usr/local/bin/docker-init
-COPY entrypoint /usr/local/share/entrypoint
+COPY --from=dind /usr/local/bin/dind /usr/local/bin/dind
+COPY --from=dind /usr/local/bin/modprobe /usr/local/bin/modprobe
+
+COPY bootstrap/dotfiles /usr/local/share/bootstrap/dotfiles
 COPY supervisor/conf.d /etc/supervisor/conf.d
-USER ${USERNAME}
-ENTRYPOINT ["tini"]
-CMD ["/usr/local/share/entrypoint"]
+ENTRYPOINT ["supervisord", "-n"]

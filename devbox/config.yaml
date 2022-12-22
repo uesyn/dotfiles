@@ -1,6 +1,8 @@
 exec:
   default:
     command:
+    - gosu
+    - devbox
     - zsh
     env:
       PROMPT_ICON:
