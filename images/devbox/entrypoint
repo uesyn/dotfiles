@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+chmod 700 /home/devbox
+chown devbox:devbox /home/devbox
+
+# setup dotfiles
+dotfiles_path=/home/devbox/src/github.com/uesyn/dotfiles
+if [[ ! -d "${dotfiles_path}" ]]; then
+  sudo -E -H -u devbox git clone https://github.com/uesyn/dotfiles ${dotfiles_path}
+fi
+cd ${dotfiles_path}
+sudo -E -H -u devbox ./bootstrap
+
+exec dind dockerd --registry-mirror https://mirror.gcr.io --mtu=1280 --bip=172.23.0.254/24
