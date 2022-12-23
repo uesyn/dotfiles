@@ -26,19 +26,18 @@ devbox:
     - /home/devbox/.local/share/aquaproj-aqua
     privileged: true
     requests:
-      cpu: 1000m
-      memory: 2Gi
+      cpu: 300m
+      memory: 500Mi
       ephemeral-storage: 5Gi
     autoMountServiceAccountToken: false
     volumes:
     - name: home
       mountPath: /home/devbox
       persistentVolumeClaim:
-        size: 30Gi
+        size: 20Gi
     - name: docker
       mountPath: /var/lib/docker
-      persistentVolumeClaim:
-        size: 30Gi
+      emptyDir: {}
     - name: tls
       mountPath: /etc/ssl/certs
       hostPath:
