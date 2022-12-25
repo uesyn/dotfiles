@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec $(aqua which rustup-init) -y --no-modify-path "$@"
