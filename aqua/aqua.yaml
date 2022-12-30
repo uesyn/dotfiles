@@ -21,7 +21,7 @@ packages:
   version: v1.26.0
   tags:
   - precede
-- name: neovim/neovim@v0.8.1
+- name: neovim/neovim@v0.8.2
   registry: local
   tags:
   - precede
