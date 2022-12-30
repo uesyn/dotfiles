@@ -18,7 +18,7 @@ packages:
   tags:
   - precede
 - name: kubernetes/kubectl
-  version: v1.25.4
+  version: v1.26.0
   tags:
   - precede
 - name: neovim/neovim@v0.8.1
