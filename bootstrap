@@ -58,26 +58,28 @@ download() {
   return $rc
 }
 
+make_link() {
+  from=$1
+  to=$2
+  mkdir -p $(dirname ${to})
+  ln -sfn ${from} ${to}
+}
+
 make_links(){
   XDG_CONFIG_HOME=${HOME}/.config
-  mkdir -p $XDG_CONFIG_HOME
-  ln -sfn ${SCRIPT_DIR}/bashrc ${HOME}/.bashrc
-  ln -sfn ${SCRIPT_DIR}/bash_profile ${HOME}/.bash_profile
-  ln -sfn ${SCRIPT_DIR}/zshrc ${HOME}/.zshrc
-  ln -sfn ${SCRIPT_DIR}/zsh ${XDG_CONFIG_HOME}/zsh
-  ln -sfn ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
-  ln -sfn ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
-  mkdir -p ${HOME}/opt/bin
-  for file in ./bin/*; do ln -sfn ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
-  mkdir -p ${XDG_CONFIG_HOME}/aquaproj-aqua
-  ln -sfn ${SCRIPT_DIR}/aqua/aqua.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
-  ln -sfn ${SCRIPT_DIR}/aqua/registry.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/registry.yaml
-  mkdir -p ${XDG_CONFIG_HOME}/gh
-  ln -sfn ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
-  ln -sfn ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
-  mkdir -p ${XDG_CONFIG_HOME}/wezterm
-  ln -sfn ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
-  ln -sfn ${SCRIPT_DIR}/devbox ${XDG_CONFIG_HOME}/devbox
+  make_link ${SCRIPT_DIR}/bashrc ${HOME}/.bashrc
+  make_link ${SCRIPT_DIR}/bash_profile ${HOME}/.bash_profile
+  make_link ${SCRIPT_DIR}/zshrc ${HOME}/.zshrc
+  make_link ${SCRIPT_DIR}/zsh ${XDG_CONFIG_HOME}/zsh
+  make_link ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
+  make_link ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
+  make_link ${SCRIPT_DIR}/aqua/aqua.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
+  make_link ${SCRIPT_DIR}/aqua/registry.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/registry.yaml
+  make_link ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
+  make_link ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
+  make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
+  make_link ${SCRIPT_DIR}/devbox ${XDG_CONFIG_HOME}/devbox
+  for file in ./bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
 setup_zsh() {
@@ -92,7 +94,7 @@ setup_zsh() {
   info "zsh installed!"
 }
 
-setup_aqua() {
+install_aqua() {
   aqua_version=1.30.1
   info "Installing aqua..."
   if [ -x "$(command -v aqua)" ]; then
@@ -136,6 +138,13 @@ setup_aqua() {
   info "aqua installed!"
 }
 
+setup_aqua() {
+  install_aqua
+  export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
+  export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
+  aqua install -a --tags precede
+}
+
 make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
@@ -169,22 +178,10 @@ setup_for_codespace() {
   ln -sfn /bin/git ${HOME}/opt/bin/git
 }
 
-### main ###
-make_links
-make_local_configs
-fetch_submodules
-setup_zsh
-setup_for_codespace
-setup_aqua
-
-export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
-export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
-aqua install -a --tags precede
-
-case "$(uname -r)" in
-  *WSL2) 
-    cat <<- EOF
-
+show_infos() {
+  case "$(uname -r)" in
+    *WSL2)
+      cat <<- EOF
 ===== INFO =====
 * Create /etc/wsl.conf with below contents:
 [boot]
@@ -198,8 +195,17 @@ generateResolvConf = false
 
 * Create /etc/resolv.conf with below contents:
 nameserver 8.8.8.8
-
 ================
 EOF
     ;;
-esac
+  esac
+}
+
+### main ###
+make_links
+make_local_configs
+fetch_submodules
+setup_zsh
+setup_for_codespace
+setup_aqua
+show_infos
