@@ -24,6 +24,7 @@ devbox:
     - test
     - -d
     - /home/devbox/.local/share/aquaproj-aqua
+    shareProcessNamespace: true
     privileged: true
     requests:
       cpu: 300m
