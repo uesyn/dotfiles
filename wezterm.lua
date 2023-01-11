@@ -45,4 +45,5 @@ return {
     top = 0,
     bottom = 0,
   },
+  front_end = "WebGpu", -- https://github.com/wez/wezterm/issues/2756
 }
