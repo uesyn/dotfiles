@@ -139,11 +139,6 @@ packin.load(
 )
 
 packin.load(
-  { 'antoinemadec_FixCursorHold.nvim' },
-  { config = 'FixCursorHold.nvim.vim' }
-)
-
-packin.load(
   {
     'tyru_open-browser.vim',
     'tyru_open-browser-github.vim'
