@@ -82,14 +82,22 @@ packin.load(
   { setup = 'vim-lsp.vim', config = 'vim-lsp.vim' }
 )
 
--- vfiler
+-- filer
+-- packin.load(
+--   {
+--     'lambdalisue_fern.vim',
+--     'lambdalisue_fern-git-status.vim',
+--     'yuki-yano_fern-preview.vim',
+--   },
+--   { config = 'fern.vim', setup = 'fern.vim' }
+-- )
+
 packin.load(
   {
-    'lambdalisue_fern.vim',
-    'lambdalisue_fern-git-status.vim',
-    'yuki-yano_fern-preview.vim',
+    'nvim-tree_nvim-web-devicons',
+    'nvim-tree_nvim-tree.lua',
   },
-  { config = 'fern.vim', setup = 'fern.vim' }
+  { config = 'nvim-tree.lua' }
 )
 
 -- statusline
