@@ -22,7 +22,7 @@ require("nvim-tree").setup({
         { key = "p", action = "preview" },
         { key = "r", action = "refresh" },
         { key = "f", action = "create" },
-        { key = "D", action = "delete" },
+        { key = "D", action = "remove" },
         { key = "R", action = "rename" },
         { key = "c", action = "copy" },
         { key = "x", action = "cut" },
