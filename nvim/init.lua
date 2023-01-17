@@ -509,7 +509,7 @@ local plugins = {
   {
     "elzr/vim-json",
     ft = "json",
-    setup = function()
+    config = function()
       vim.g.vim_json_syntax_conceal = 0
     end,
   },
