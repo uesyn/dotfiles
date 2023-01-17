@@ -29,7 +29,7 @@ packages:
   registry: local
   tags:
   - precede
-- name: helm/helm@v3.10.2
+- name: helm/helm@v3.10.3
 - name: golangci/golangci-lint@v1.50.1
 - name: golang/go
   version: "1.19.5"
@@ -41,11 +41,11 @@ packages:
 - name: kubernetes/minikube@v1.28.0
 - name: open-policy-agent/conftest@v0.36.0
   registry: local
-- name: open-policy-agent/opa@v0.47.1
+- name: open-policy-agent/opa@v0.48.0
   registry: local
-- name: kubernetes-sigs/kubebuilder@v3.8.0
-- name: denoland/deno@v1.28.3
-- name: LukeChannings/deno-arm64@v1.28.3
+- name: kubernetes-sigs/kubebuilder@v3.9.0
+- name: denoland/deno@v1.29.4
+- name: LukeChannings/deno-arm64@v1.29.4
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: rustup/rustup-init
   version: 1.25.1
@@ -54,11 +54,11 @@ packages:
   registry: local
 - name: grafana/loki/logcli@v2.7.0
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
-- name: rust-lang/rust-analyzer@2022-12-05
+- name: rust-lang/rust-analyzer@2023-01-16
   registry: local
 - name: ziglang/zig
   version: '0.10.0'
-- name: twistedpair/google-cloud-sdk@411.0.0
+- name: twistedpair/google-cloud-sdk@413.0.0
 - name: x-motemen/ghq@v1.3.0
   tags:
   - precede
