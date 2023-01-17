@@ -4,6 +4,9 @@ OPT_DIR=${HOME}/opt
 export PATH="${OPT_DIR}/bin:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
 
+export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
+export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
+
 # fork from https://starship.rs/install.sh
 info() {
   printf '%s\n' "${BOLD}${GREY}>${NO_COLOR} $*"
@@ -140,8 +143,6 @@ install_aqua() {
 
 setup_aqua() {
   install_aqua
-  export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
-  export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
   aqua install -a --tags precede
 }
 
@@ -201,6 +202,12 @@ EOF
   esac
 }
 
+setup_neovim() {
+  setup_aqua
+  info "install neovim plugins..."
+  nvim --headless "+Lazy! sync" +qa
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -208,4 +215,5 @@ fetch_submodules
 setup_zsh
 setup_for_codespace
 setup_aqua
+setup_neovim
 show_infos
