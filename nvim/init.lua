@@ -84,15 +84,15 @@ vim.opt.rtp:prepend(lazypath)
 local plugins = {
   {
     "Mofiqul/dracula.nvim",
-    lazy = false, -- make sure we load this during startup if it is your main colorscheme
-    priority = 1000, -- make sure to load this before all the other start plugins
+    lazy = false,
+    priority = 1000,
     config = function()
-      -- load the colorscheme here
       vim.cmd([[colorscheme dracula]])
     end,
   },
   {
     "nvim-lualine/lualine.nvim",
+    lazy = false,
     config = function()
       local lualine = require('lualine')
 
@@ -429,6 +429,7 @@ local plugins = {
     dependencies = {
       "nvim-tree/nvim-web-devicons",
     },
+    lazy = false,
     config = function()
       vim.keymap.set('n', '<S-q>', '<Cmd>BufferClose<CR>')
       vim.keymap.set('n', '<C-n>', '<Cmd>BufferNext<CR>')
@@ -440,6 +441,7 @@ local plugins = {
     dependencies = {
       "nvim-tree/nvim-web-devicons",
     },
+    keys = "<Leader>fo",
     config = function()
       vim.g.loaded_netrw = 1
       vim.g.loaded_netrwPlugin = 1
@@ -483,12 +485,14 @@ local plugins = {
   },
   {
     "mhinz/vim-signify",
+    lazy = false,
   },
   {
     "tyru/open-browser.vim",
     dependencies = {
       "tyru/open-browser-github.vim",
     },
+    keys = {"<Leader>ho", {"<Leader>ho", mode = "v"}},
     config = function()
       vim.keymap.set('n', '<Leader>ho', '<Cmd>OpenGithubFile<CR>')
       vim.keymap.set('v', '<Leader>ho', "<Cmd>'<,'>OpenGithubFile<CR>")
@@ -496,6 +500,7 @@ local plugins = {
   },
   {
     "simeji/winresizer",
+    keys = "<S-w",
     init = function()
       vim.g.winresizer_start_key = "<S-w>"
     end,
@@ -503,15 +508,18 @@ local plugins = {
   -- filetype
   {
     "elzr/vim-json",
+    ft = "json",
     setup = function()
       vim.g.vim_json_syntax_conceal = 0
     end,
   },
   {
     "hashivim/vim-terraform",
+    ft = "terraform",
   },
   {
     "preservim/vim-markdown",
+    ft = "markdown",
     config = function()
       vim.g.vim_markdown_folding_disabled = 1
       vim.g.vim_markdown_new_list_item_indent = 0
@@ -524,6 +532,7 @@ local plugins = {
     dependencies = {
       "junegunn/fzf.vim",
     },
+    keys = {"<Leader>fs", "<Leader>ff"},
     config = function()
       vim.keymap.set('n', '<Leader>fs', ":Rg<space>")
       vim.keymap.set('n', '<Leader>ff', "<Cmd>FZF<CR>")
@@ -531,6 +540,7 @@ local plugins = {
   },
   {
     "ojroques/vim-oscyank",
+    lazy = false,
     config = function()
       vim.keymap.set('v', '<Leader>y', "<Cmd>OSCYank<CR>")
       vim.g.oscyank_term = 'default'
@@ -540,6 +550,7 @@ local plugins = {
   },
   {
     'dhruvasagar/vim-table-mode',
+    event = "VeryLazy",
   },
   {
     'prabirshrestha/vim-lsp',
