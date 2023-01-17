@@ -32,7 +32,7 @@ packages:
 - name: helm/helm@v3.10.2
 - name: golangci/golangci-lint@v1.50.1
 - name: golang/go
-  version: "1.19.4"
+  version: "1.19.5"
 - name: kubernetes-sigs/kind@v0.17.0
 - name: kubernetes-sigs/kustomize@kustomize/v4.5.7
 - name: mikefarah/yq@v4.24.4
