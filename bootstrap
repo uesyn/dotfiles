@@ -164,12 +164,6 @@ EOF
   fi
 }
 
-fetch_submodules() {
-  cd ${SCRIPT_DIR}
-  info "Fetch submodules..."
-  git submodule update --init --jobs=3
-}
-
 setup_for_codespace() {
   if [ -z "$GITHUB_CODESPACE_TOKEN" ]; then
     return 0
@@ -210,7 +204,6 @@ setup_neovim() {
 ### main ###
 make_links
 make_local_configs
-fetch_submodules
 setup_zsh
 setup_for_codespace
 setup_aqua
