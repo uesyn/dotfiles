@@ -2,7 +2,7 @@
 	root = ~/src
 
 [include]
-    path = ~/.gitconfig.local
+	path = ~/.gitconfig.local
 
 [credential]
 	helper =
