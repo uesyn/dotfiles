@@ -7,10 +7,5 @@ else
 fi
 b64_payload=$(printf "%s" "$payload" | base64 -w0)
 
-# tmux
-if [[ -n $TMUX ]]; then
-  printf "%s" "$payload" | tmux load-buffer - > /dev/null
-fi
-
 # OSC52
 printf "\e]52;c;%s\a" "$b64_payload"
