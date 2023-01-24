@@ -3,7 +3,7 @@
   "asyncomplete.vim": { "branch": "master", "commit": "9c7651894c2c6d656c0dc71e87cfabbbb71b9c78" },
   "barbar.nvim": { "branch": "master", "commit": "e9da670e3fd58598bd0d2cf7e32e1af24cb2fcca" },
   "dracula.nvim": { "branch": "main", "commit": "a0b129d7dea51b317fa8064f13b29f68004839c4" },
-  "fzf": { "branch": "master", "commit": "aa7361337d3f78ae1e32283ba395446025323abb" },
+  "fzf": { "branch": "master", "commit": "2023012408ff892d43441fce0385943bafdbb52b" },
   "fzf.vim": { "branch": "master", "commit": "bdf48c282ad2174c25c059b3cdb7956427b07a99" },
   "lazy.nvim": { "branch": "main", "commit": "4f60facf18b34ae06d164485aa2ce879e21e44fc" },
   "lualine.nvim": { "branch": "master", "commit": "0050b308552e45f7128f399886c86afefc3eb988" },
