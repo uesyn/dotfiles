@@ -1,4 +1,4 @@
-local lazyversion = "v9.3.1"
+local lazyversion = "v9.5.0"
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
   vim.fn.system({
