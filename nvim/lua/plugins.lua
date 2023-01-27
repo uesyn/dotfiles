@@ -29,12 +29,24 @@ function M.setup()
 
   -- if in headless mode, sync lazy.nvim version.
   if vim.api.nvim_list_uis()[1] == nil then
-    vim.fn.system({
+    local current_tag = vim.fn.system({
       "git",
       "-C",
       lazypath,
-      "fetch",
+      "tag",
+      "-l",
+      lazyversion,
     })
+
+    if current_tag == '' then
+      vim.fn.system({
+        "git",
+        "-C",
+        lazypath,
+        "fetch",
+      })
+    end
+
     vim.fn.system({
       "git",
       "-C",
