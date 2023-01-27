@@ -1,24 +1,30 @@
-local lazyversion = "v9.5.0"
-local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
-if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=" .. lazyversion,
-    lazypath,
-  })
+local M = {}
+
+function M.setup()
+  local lazyversion = "v9.5.0"
+  local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+  if not vim.loop.fs_stat(lazypath) then
+    vim.fn.system({
+      "git",
+      "clone",
+      "--filter=blob:none",
+      "https://github.com/folke/lazy.nvim.git",
+      "--branch=" .. lazyversion,
+      lazypath,
+    })
+  end
+  vim.opt.rtp:prepend(lazypath)
+  local plugins = {
+    {
+      "folke/lazy.nvim",
+      lazy = false,
+      version = lazyversion,
+    },
+    {
+      import = "lazy.plugins"
+    },
+  }
+  require("lazy").setup(plugins)
 end
-vim.opt.rtp:prepend(lazypath)
-local plugins = {
-  {
-    "folke/lazy.nvim",
-    lazy = false,
-    version = lazyversion,
-  },
-  {
-    import = "lazy.plugins"
-  },
-}
-require("lazy").setup(plugins)
+
+return M
