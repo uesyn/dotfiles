@@ -13,6 +13,7 @@ function M.setup()
       lazypath,
     })
   end
+
   vim.opt.rtp:prepend(lazypath)
   local plugins = {
     {
@@ -25,6 +26,23 @@ function M.setup()
     },
   }
   require("lazy").setup(plugins)
+
+  -- if in headless mode, sync lazy.nvim version.
+  if vim.api.nvim_list_uis()[1] == nil then
+    vim.fn.system({
+      "git",
+      "-C",
+      lazypath,
+      "fetch",
+    })
+    vim.fn.system({
+      "git",
+      "-C",
+      lazypath,
+      "checkout",
+      lazyversion,
+    })
+  end
 end
 
 return M
