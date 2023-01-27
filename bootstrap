@@ -176,7 +176,7 @@ show_infos() {
   case "$(uname -r)" in
     *WSL2)
       cat <<- EOF
-===== INFO =====
+==================== INFO ======================
 * Create /etc/wsl.conf with below contents:
 [boot]
 systemd=true
@@ -189,7 +189,7 @@ generateResolvConf = false
 
 * Create /etc/resolv.conf with below contents:
 nameserver 8.8.8.8
-================
+================================================
 EOF
     ;;
   esac
