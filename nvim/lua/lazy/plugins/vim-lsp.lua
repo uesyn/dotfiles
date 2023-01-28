@@ -8,7 +8,7 @@ return {
   init = function()
     vim.g.lsp_work_done_progress_enabled = 1
     vim.g.lsp_document_code_action_signs_enabled = 0
-    vim.g.lsp_diagnostics_echo_cursor = 1
+    vim.g.lsp_diagnostics_echo_cursor = 0
     vim.g.lsp_diagnostics_echo_delay = 50
     vim.g.lsp_diagnostics_highlights_enabled = 0
     vim.g.lsp_diagnostics_highlights_delay = 50
@@ -16,7 +16,7 @@ return {
     vim.g.lsp_diagnostics_signs_enabled = 1
     vim.g.lsp_diagnostics_signs_delay = 50
     vim.g.lsp_diagnostics_signs_insert_mode_enabled = 0
-    vim.g.lsp_diagnostics_virtual_text_enabled = 0
+    vim.g.lsp_diagnostics_virtual_text_enabled = 1
     vim.g.lsp_diagnostics_virtual_text_delay = 50
     vim.g.lsp_diagnostics_float_cursor = 0
     vim.g.lsp_diagnostics_float_delay = 1000
