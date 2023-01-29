@@ -7,8 +7,7 @@ return {
   },
   enabled = vim.g.use_nvim_lsp,
   config = function()
-    vim.lsp.set_log_level("debug") -- for debug
-
+    -- vim.lsp.set_log_level("debug") -- for debug
     local lsp_status = require('lsp-status')
     lsp_status.register_progress()
 
