@@ -5,6 +5,7 @@ return {
     'prabirshrestha/asyncomplete-lsp.vim',
     'mattn/vim-lsp-settings',
   },
+  enabled = not vim.g.use_nvim_lsp,
   init = function()
     vim.g.lsp_work_done_progress_enabled = 1
     vim.g.lsp_document_code_action_signs_enabled = 0
