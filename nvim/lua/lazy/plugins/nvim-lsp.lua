@@ -12,6 +12,8 @@ return {
     lsp_status.register_progress()
 
     local on_attach = function(client, bufnr)
+      vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
       local bufopts = { noremap = true, silent = true, buffer = bufnr }
       vim.keymap.set('n', '<space>lD', vim.lsp.buf.declaration, bufopts)
       vim.keymap.set('n', '<space>ld', vim.lsp.buf.definition, bufopts)
@@ -41,6 +43,7 @@ return {
     lspconfig.gopls.setup {
       on_attach = on_attach,
       capabilities = capabilities,
+      single_file_support = false,
     }
 
     require('mini.completion').setup {
