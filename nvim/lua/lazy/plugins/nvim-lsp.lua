@@ -5,6 +5,7 @@ return {
   dependencies = {
     { 'echasnovski/mini.completion', version = '*' },
     'nvim-lua/lsp-status.nvim',
+    'SmiteshP/nvim-navic'
   },
   enabled = vim.g.use_nvim_lsp,
   config = function()
@@ -30,6 +31,9 @@ return {
         print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
       end, bufopts)
       vim.keymap.set('n', '<space>lI', vim.lsp.buf.implementation, bufopts)
+      if client.server_capabilities.documentSymbolProvider then
+        require("nvim-navic").attach(client, bufnr)
+      end
       lsp_status.on_attach(client)
     end
 
