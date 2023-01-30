@@ -3,6 +3,7 @@
   "dracula.nvim": { "branch": "main", "commit": "a0b129d7dea51b317fa8064f13b29f68004839c4" },
   "fzf": { "branch": "master", "commit": "2023012408ff892d43441fce0385943bafdbb52b" },
   "fzf.vim": { "branch": "master", "commit": "bdf48c282ad2174c25c059b3cdb7956427b07a99" },
+  "gitsigns.nvim": { "branch": "main", "commit": "0d4fe37ba5285171f3729da955955205f3fa945b" },
   "lazy.nvim": { "branch": "main", "commit": "9b208696e139a404d159963b975a5b90af38439b" },
   "lsp-status.nvim": { "branch": "master", "commit": "54f48eb5017632d81d0fd40112065f1d062d0629" },
   "lualine.nvim": { "branch": "master", "commit": "0050b308552e45f7128f399886c86afefc3eb988" },
@@ -16,7 +17,6 @@
   "vim-json": { "branch": "master", "commit": "3727f089410e23ae113be6222e8a08dd2613ecf2" },
   "vim-markdown": { "branch": "master", "commit": "df4be8626e2c5b2a42eb60e1f100fce469b81f7d" },
   "vim-oscyank": { "branch": "main", "commit": "e6298736a7835bcb365dd45a8e8bfe86d935c1f8" },
-  "vim-signify": { "branch": "master", "commit": "a05e63ba72411977f5087c27c1564c9287bfab66" },
   "vim-table-mode": { "branch": "master", "commit": "9555a3e6e5bcf285ec181b7fc983eea90500feb4" },
   "vim-terraform": { "branch": "master", "commit": "d00503de9bed3a1da7206090cb148c6a1acce870" },
   "winresizer": { "branch": "master", "commit": "9bd559a03ccec98a458e60c705547119eb5350f3" }
