@@ -1,6 +1,9 @@
 return {
   "nvim-lualine/lualine.nvim",
   lazy = false,
+  dependencies = {
+    'SmiteshP/nvim-navic'
+  },
   config = function()
     local lualine = require('lualine')
 
@@ -74,7 +77,9 @@ return {
       winbar = {
         lualine_a = {'diff'},
         lualine_b = {},
-        lualine_c = {{'filename', path = 3}},
+        lualine_c = {
+          { require("nvim-navic").get_location, cond = require("nvim-navic").is_available },
+        },
         lualine_x = {},
         lualine_y = {},
         lualine_z = {}
@@ -82,7 +87,7 @@ return {
       inactive_winbar = {
         lualine_a = {'diff'},
         lualine_b = {},
-        lualine_c = {{'filename', path = 3}},
+        lualine_c = {},
         lualine_x = {},
         lualine_y = {},
         lualine_z = {}
