@@ -2,7 +2,8 @@ return {
   "nvim-lualine/lualine.nvim",
   lazy = false,
   dependencies = {
-    'SmiteshP/nvim-navic'
+    'SmiteshP/nvim-navic',
+    'nvim-tree/nvim-web-devicons',
   },
   config = function()
     local lualine = require('lualine')
