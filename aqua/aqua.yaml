@@ -40,9 +40,7 @@ packages:
 - name: hashicorp/vault@v1.12.2
 - name: kubernetes/minikube@v1.28.0
 - name: open-policy-agent/conftest@v0.36.0
-  registry: local
 - name: open-policy-agent/opa@v0.48.0
-  registry: local
 - name: kubernetes-sigs/kubebuilder@v3.9.0
 - name: denoland/deno@v1.29.4
 - name: LukeChannings/deno-arm64@v1.29.4

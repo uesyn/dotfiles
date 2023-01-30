@@ -63,22 +63,6 @@ packages:
   files:
   - name: nvim
     src: 'nvim-linux-arm64/bin/nvim'
-- type: github_release
-  repo_owner: open-policy-agent
-  repo_name: opa
-  asset: "opa_{{.OS}}_{{.Arch}}"
-  description: An open source, general-purpose policy engine
-  overrides:
-  - goos: linux
-    asset: "opa_{{.OS}}_{{.Arch}}_static"
-- type: github_release
-  repo_owner: open-policy-agent
-  repo_name: conftest
-  # https://github.com/open-policy-agent/conftest/blob/f68c92599fa8fd1c2e81527aee351064f5419df5/.goreleaser.yml#L21-L31
-  asset: 'conftest_{{trimV .Version}}_{{title .OS}}_{{.Arch}}.tar.gz'
-  description: Write tests against structured configuration data using the Open Policy Agent Rego query language
-  replacements:
-    amd64: x86_64
 - name: danielgatis/imgcat
   type: go_install
   repo_owner: danielgatis
