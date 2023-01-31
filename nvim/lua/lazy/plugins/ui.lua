@@ -77,7 +77,7 @@ return {
         },
         tabline = {},
         winbar = {
-          lualine_a = { 'diff' },
+          lualine_a = {},
           lualine_b = {},
           lualine_c = {
             { require("nvim-navic").get_location, cond = require("nvim-navic").is_available },
@@ -87,7 +87,7 @@ return {
           lualine_z = {}
         },
         inactive_winbar = {
-          lualine_a = { 'diff' },
+          lualine_a = {},
           lualine_b = {},
           lualine_c = {},
           lualine_x = {},
@@ -354,7 +354,6 @@ return {
     },
     lazy = false,
     config = function()
-      vim.keymap.set('n', '<S-q>', '<Cmd>BufferClose<CR>')
       vim.keymap.set('n', '<C-n>', '<Cmd>BufferNext<CR>')
       vim.keymap.set('n', '<C-p>', '<Cmd>BufferPrevious<CR>')
     end,

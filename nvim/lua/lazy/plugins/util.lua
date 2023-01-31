@@ -1,7 +1,7 @@
 return {
   {
-      "nvim-tree/nvim-web-devicons",
-      lazy = true,
+    "nvim-tree/nvim-web-devicons",
+    lazy = true,
   },
 
   {
@@ -50,5 +50,19 @@ return {
       vim.keymap.set('n', '<Leader>fs', ":Rg<space>")
       vim.keymap.set('n', '<Leader>ff', "<Cmd>FZF<CR>")
     end,
-  }
+  },
+
+  {
+    'echasnovski/mini.bufremove',
+    version = '*',
+    keys = { "<S-q>" },
+    config = function()
+      require('mini.bufremove').setup({})
+      vim.keymap.set('n', '<S-q>', function() MiniBufremove.delete() end)
+    end
+  },
+
+  {
+    'nvim-lua/plenary.nvim',
+  },
 }
