@@ -26,7 +26,7 @@ function M.setup()
   vim.opt.fileformats = {"unix", "dos", "mac"}
   vim.opt.foldcolumn = "0"
   vim.opt.signcolumn = "yes"
-  vim.opt.laststatus = 2
+  vim.opt.laststatus = 3
   vim.opt.showtabline = 2
   vim.opt.breakindent = true
   vim.opt.binary = true

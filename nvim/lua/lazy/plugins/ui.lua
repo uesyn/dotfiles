@@ -79,9 +79,7 @@ return {
         winbar = {
           lualine_a = {},
           lualine_b = {},
-          lualine_c = {
-            { require("nvim-navic").get_location, cond = require("nvim-navic").is_available },
-          },
+          lualine_c = {},
           lualine_x = {},
           lualine_y = {},
           lualine_z = {}
@@ -154,14 +152,6 @@ return {
         cond = conditions.buffer_not_empty,
       }
 
-      ins_left {
-        'filename',
-        cond = conditions.buffer_not_empty,
-        color = { fg = colors.pink, gui = 'bold' },
-      }
-
-      ins_left { 'location' }
-
       ins_left { 'progress', color = { fg = colors.fg, gui = 'bold' } }
 
       ins_left {
@@ -173,6 +163,11 @@ return {
           color_warn = { fg = colors.yellow },
           color_info = { fg = colors.cyan },
         },
+      }
+
+      ins_left {
+        require("nvim-navic").get_location,
+        cond = require("nvim-navic").is_available,
       }
 
       -- Insert mid section. You can make any number of sections in neovim :)
