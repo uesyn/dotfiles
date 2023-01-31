@@ -172,11 +172,11 @@ return {
 
       -- Insert mid section. You can make any number of sections in neovim :)
       -- for lualine it's any number greater then 2
-      ins_left {
-        function()
-          return '%='
-        end,
-      }
+      -- ins_left {
+      --   function()
+      --     return '%='
+      --   end,
+      -- }
 
       local progress_icons = { '⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷' }
 
@@ -277,7 +277,7 @@ return {
         return info_to_status(info)
       end
 
-      ins_left {
+      ins_right {
         -- Lsp server name .
         function()
           if vim.g.use_nvim_lsp then
