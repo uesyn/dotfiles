@@ -14,19 +14,6 @@ function M.setup()
     })
   end
 
-  vim.opt.rtp:prepend(lazypath)
-  local plugins = {
-    {
-      "folke/lazy.nvim",
-      lazy = false,
-      version = lazyversion,
-    },
-    {
-      import = "lazy.plugins"
-    },
-  }
-  require("lazy").setup(plugins)
-
   -- if in headless mode, sync lazy.nvim version.
   if vim.api.nvim_list_uis()[1] == nil then
     local current_tag = vim.fn.system({
@@ -55,6 +42,19 @@ function M.setup()
       lazyversion,
     })
   end
+
+  vim.opt.rtp:prepend(lazypath)
+  local plugins = {
+    {
+      "folke/lazy.nvim",
+      lazy = false,
+      version = lazyversion,
+    },
+    {
+      import = "lazy.plugins"
+    },
+  }
+  require("lazy").setup(plugins)
 end
 
 return M
