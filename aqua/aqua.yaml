@@ -76,3 +76,4 @@ packages:
 - name: zellij-org/zellij@v0.34.4
   tags:
   - precede
+- name: sumneko/lua-language-server@3.6.8

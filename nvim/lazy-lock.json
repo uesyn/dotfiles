@@ -19,6 +19,7 @@
   "open-browser-github.vim": { "branch": "master", "commit": "ac7c034e300f36d591ef234dcd5eb5cd5c07c74f" },
   "open-browser.vim": { "branch": "master", "commit": "7d4c1d8198e889d513a030b5a83faa07606bac27" },
   "plenary.nvim": { "branch": "master", "commit": "9a0d3bf7b832818c042aaf30f692b081ddd58bd9" },
+  "rust-tools.nvim": { "branch": "master", "commit": "b297167d9e01accc9b9afe872ce91e791df2dde0" },
   "vim-json": { "branch": "master", "commit": "3727f089410e23ae113be6222e8a08dd2613ecf2" },
   "vim-markdown": { "branch": "master", "commit": "df4be8626e2c5b2a42eb60e1f100fce469b81f7d" },
   "vim-oscyank": { "branch": "main", "commit": "e6298736a7835bcb365dd45a8e8bfe86d935c1f8" },
