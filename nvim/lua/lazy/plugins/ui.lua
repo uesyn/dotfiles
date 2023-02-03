@@ -222,7 +222,7 @@ return {
 
           local filetypes = client.config.filetypes
           if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-            for i, m in ipairs(require('lsp-status').messages()) do
+            for _, m in ipairs(require('lsp-status').messages()) do
               if m.title == nil then
                 goto continue
               end
@@ -244,7 +244,7 @@ return {
         end
 
         local progresses = vim.fn['lsp#get_progress']()
-        for i, p in ipairs(progresses) do
+        for _, p in ipairs(progresses) do
           if p == nil or p.server == nil then
             goto continue
           end
