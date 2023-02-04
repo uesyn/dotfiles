@@ -21,11 +21,11 @@ packages:
   version: v1.26.0
   tags:
   - precede
-- name: neovim/neovim@v0.8.2
+- name: neovim/neovim@v0.8.3
   registry: local
   tags:
   - precede
-- name: uesyn/neovim-arm64-builder@v0.8.2
+- name: uesyn/neovim-arm64-builder@v0.8.3
   registry: local
   tags:
   - precede
