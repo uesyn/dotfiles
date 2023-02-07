@@ -9,10 +9,14 @@ return {
       'SmiteshP/nvim-navic',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
+      'simrat39/inlay-hints.nvim',
     },
     enabled = vim.g.use_nvim_lsp,
     config = function()
       -- vim.lsp.set_log_level("debug") -- for debug
+      local inlay_hints = require("inlay-hints")
+      inlay_hints.setup()
+
       local lsp_status = require('lsp-status')
       lsp_status.register_progress()
 
@@ -33,6 +37,10 @@ return {
           require("nvim-navic").attach(client, bufnr)
         end
         lsp_status.on_attach(client)
+
+        if client.server_capabilities.inlayHintProvider then
+          inlay_hints.on_attach(client, bufnr)
+        end
       end
 
       local capabilities = vim.tbl_extend('keep', vim.lsp.protocol.make_client_capabilities(), lsp_status.capabilities)
