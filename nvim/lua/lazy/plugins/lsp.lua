@@ -1,13 +1,5 @@
 return {
   {
-    'simrat39/rust-tools.nvim',
-    dependencies = {
-      'plenary.nvim',
-    },
-    lazy = false,
-  },
-
-  {
     'neovim/nvim-lspconfig',
     version = '*',
     event = 'BufReadPre',
@@ -17,7 +9,6 @@ return {
       'SmiteshP/nvim-navic',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
-      'rust-tools.nvim',
     },
     enabled = vim.g.use_nvim_lsp,
     config = function()
@@ -58,21 +49,13 @@ return {
       require("mason-lspconfig").setup_handlers({ setup_handler })
 
       -- Use language server directly.
-      local servers = { "gopls", "sumneko_lua" }
+      local servers = { "gopls", "sumneko_lua", "rust_analyzer" }
       for _, server in ipairs(servers) do
         require("lspconfig")[server].setup {
           on_attach = on_attach,
           capabilities = capabilities,
         }
       end
-
-      require("rust-tools").setup({
-        server = {
-          on_attach = function(client, bufnr)
-            on_attach(client, bufnr)
-          end,
-        },
-      })
 
       require('mini.completion').setup {
         window = {
