@@ -3,7 +3,7 @@
   "dracula.nvim": { "branch": "main", "commit": "798274ba3c454a9aa3cd71f95a86ea55cbbbb142" },
   "fzf": { "branch": "master", "commit": "f7447aece12f9b95133b803d5c4f71815bee8ca6" },
   "fzf.vim": { "branch": "master", "commit": "dc71692255b62d1f67dc55c8e51ab1aa467b1d46" },
-  "gitsigns.nvim": { "branch": "main", "commit": "ec4742a7eebf68bec663041d359b95637242b5c3" },
+  "gitsigns.nvim": { "branch": "main", "commit": "f29f0b22fd66c910b892aae3bc18a4872c002738" },
   "inlay-hints.nvim": { "branch": "main", "commit": "006b0898f5d3874e8e528352103733142e705834" },
   "lazy.nvim": { "branch": "main", "commit": "9b208696e139a404d159963b975a5b90af38439b" },
   "lsp-status.nvim": { "branch": "master", "commit": "54f48eb5017632d81d0fd40112065f1d062d0629" },
