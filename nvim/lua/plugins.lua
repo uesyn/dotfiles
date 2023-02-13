@@ -1,7 +1,7 @@
 local M = {}
 
 function M.setup()
-  local lazyversion = "v9.5.0"
+  local lazyversion = "v9.8.0"
   local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
   if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
