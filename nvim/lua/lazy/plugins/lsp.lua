@@ -57,7 +57,7 @@ return {
       require("mason-lspconfig").setup_handlers({ setup_handler })
 
       -- Use language server directly.
-      local servers = { "gopls", "sumneko_lua", "rust_analyzer" }
+      local servers = { "gopls", "rust_analyzer" }
       for _, server in ipairs(servers) do
         require("lspconfig")[server].setup {
           on_attach = on_attach,
