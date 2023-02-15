@@ -1,7 +1,7 @@
 {
   "barbar.nvim": { "branch": "master", "commit": "2d53f49c21327da48f0447841027848f49e1fea4" },
   "dracula.nvim": { "branch": "main", "commit": "798274ba3c454a9aa3cd71f95a86ea55cbbbb142" },
-  "fzf": { "branch": "master", "commit": "9e9c0ceaf48ddbc3fe09850fb403708438edbed2" },
+  "fzf": { "branch": "master", "commit": "352ea072269dfe2a3c429785a95a2f22887ccda3" },
   "fzf.vim": { "branch": "master", "commit": "dc71692255b62d1f67dc55c8e51ab1aa467b1d46" },
   "gitsigns.nvim": { "branch": "main", "commit": "5f1451ea7d9a9005b3f0bedeab20cef7a4c65993" },
   "inlay-hints.nvim": { "branch": "main", "commit": "006b0898f5d3874e8e528352103733142e705834" },
@@ -9,7 +9,7 @@
   "lsp-status.nvim": { "branch": "master", "commit": "54f48eb5017632d81d0fd40112065f1d062d0629" },
   "lualine.nvim": { "branch": "master", "commit": "e99d733e0213ceb8f548ae6551b04ae32e590c80" },
   "mason-lspconfig.nvim": { "branch": "main", "commit": "93e58e100f37ef4fb0f897deeed20599dae9d128" },
-  "mason.nvim": { "branch": "main", "commit": "bce3009ad4570eff9f64ccbb3f339b2eb46dd047" },
+  "mason.nvim": { "branch": "main", "commit": "63ccfe5dd1a9afd16d9d3cdcf0aa59403eef5ef7" },
   "mini.bufremove": { "branch": "main", "commit": "351d18d596f7eac4589b67b4b87ed1708c545dd3" },
   "mini.completion": { "branch": "main", "commit": "71a1d90642bb93f54bb5131eb903c09d6b7e6f3f" },
   "neo-tree.nvim": { "branch": "v2.x", "commit": "245cf1e68840defcc75a16297740f6203f5a045d" },
