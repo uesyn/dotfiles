@@ -1,7 +1,6 @@
 return {
   {
     'neovim/nvim-lspconfig',
-    version = '*',
     event = 'BufReadPre',
     dependencies = {
       { 'echasnovski/mini.completion', version = '*' },
