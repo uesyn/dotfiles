@@ -170,122 +170,29 @@ return {
         cond = require("nvim-navic").is_available,
       }
 
-      -- Insert mid section. You can make any number of sections in neovim :)
-      -- for lualine it's any number greater then 2
-      -- ins_left {
-      --   function()
-      --     return '%='
-      --   end,
-      -- }
-
-      local progress_icons = { '⣾', '⣽', '⣻', '⢿', '⡿', '⣟', '⣯', '⣷' }
-
-      local function get_progress_icon()
-        local icon = progress_icons[progress_icons_index]
-        progress_icons_index = tonumber(vim.fn.strftime('%s')) % #progress_icons + 1
-        return icon
-      end
-
-      local function info_to_status(info)
-        local msg = nil
-
-        for server, messages in pairs(info) do
-          local m = "[" .. server .. "]"
-
-          if #messages > 0 then
-            table.sort(messages)
-            m = m .. " " .. table.concat(messages, ", ") .. " " .. get_progress_icon()
-          end
-
-          if msg == nil then
-            msg = m
-          else
-            msg = msg .. " " .. m
-          end
-        end
-
-        if msg == nil then
-          return '[No Active Lsp]'
-        end
-        return msg
-      end
-
-      local function get_nvim_lsp_status()
-        local info = {}
-        local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
-        local clients = vim.lsp.get_active_clients()
-
-        for _, client in ipairs(clients) do
-          if info[client.name] == nil then
-            info[client.name] = {}
-          end
-
-          local filetypes = client.config.filetypes
-          if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
-            for _, m in ipairs(require('lsp-status').messages()) do
-              if m.title == nil then
-                goto continue
-              end
-
-              table.insert(info[client.name], m.title)
-              ::continue::
-            end
-          end
-        end
-
-        return info_to_status(info)
-      end
-
-      local function get_vim_lsp_status()
-        local info = {}
-
-        if vim.fn.exists('*lsp#get_progress') == 0 then
-          return info_to_status(info)
-        end
-
-        local progresses = vim.fn['lsp#get_progress']()
-        for _, p in ipairs(progresses) do
-          if p == nil or p.server == nil then
-            goto continue
-          end
-
-          local server = p.server
-          if info[server] == nil then
-            info[server] = {}
-          end
-
-          if p.title == nil then
-            goto continue
-          end
-
-          table.insert(info[server], p.title)
-          ::continue::
-        end
-
-        for i, server in ipairs(vim.fn['lsp#get_server_names']()) do
-          local status = vim.fn['lsp#get_server_status'](server)
-
-          if info[server] == nil then
-            info[server] = {}
-          end
-
-          if status ~= 'running' then
-            table.insert(info[server], status)
-          end
-        end
-
-        return info_to_status(info)
-      end
+      ins_left {
+        function()
+          return '%='
+        end,
+      }
 
       ins_right {
-        -- Lsp server name .
         function()
-          if vim.g.use_nvim_lsp then
-            return get_nvim_lsp_status()
+          local msg = 'No Active Lsp'
+          local buf_ft = vim.api.nvim_buf_get_option(0, 'filetype')
+          local clients = vim.lsp.get_active_clients()
+          if next(clients) == nil then
+            return msg
           end
-          return get_vim_lsp_status()
+          for _, client in ipairs(clients) do
+            local filetypes = client.config.filetypes
+            if filetypes and vim.fn.index(filetypes, buf_ft) ~= -1 then
+              return client.name
+            end
+          end
+          return msg
         end,
-        -- icon = ' ',
+        icon = '',
         color = { fg = '#ffffff', gui = 'bold' },
       }
 

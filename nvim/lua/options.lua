@@ -1,8 +1,6 @@
 local M = {}
 
 function M.setup()
-  vim.g.use_nvim_lsp = true
-
   vim.opt.encoding = 'UTF-8'
   vim.scriptencoding = 'utf-8'
   vim.opt.backspace= {"indent", "eol", "start"}
