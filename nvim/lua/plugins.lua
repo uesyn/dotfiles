@@ -56,9 +56,6 @@ function M.setup()
   }
   require("lazy").setup({
     spec = plugins,
-    install = {
-      missing = false,
-    },
     change_detection = {
       enabled = true,
       notify = false,
