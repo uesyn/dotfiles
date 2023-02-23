@@ -54,11 +54,16 @@ function M.setup()
       import = "lazy.plugins"
     },
   }
-  require("lazy").setup({
+  local lazy = require("lazy")
+  lazy.setup({
     spec = plugins,
     change_detection = {
       enabled = true,
       notify = false,
+    },
+    install = {
+      missing = true,
+      colorscheme = {'default'},
     },
   })
 end
