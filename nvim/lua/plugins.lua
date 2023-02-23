@@ -54,7 +54,16 @@ function M.setup()
       import = "lazy.plugins"
     },
   }
-  require("lazy").setup(plugins)
+  require("lazy").setup({
+    spec = plugins,
+    install = {
+      missing = false,
+    },
+    change_detection = {
+      enabled = true,
+      notify = false,
+    },
+  })
 end
 
 return M

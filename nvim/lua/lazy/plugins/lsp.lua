@@ -3,7 +3,9 @@ return {
     'neovim/nvim-lspconfig',
     event = 'BufReadPre',
     dependencies = {
-      { 'echasnovski/mini.completion', version = '*' },
+      'hrsh7th/cmp-buffer',
+      'hrsh7th/nvim-cmp',
+      'hrsh7th/cmp-nvim-lsp',
       'nvim-lua/lsp-status.nvim',
       'SmiteshP/nvim-navic',
       'williamboman/mason.nvim',
@@ -12,6 +14,26 @@ return {
     },
     enabled = vim.g.use_nvim_lsp,
     config = function()
+      local cmp = require 'cmp'
+      cmp.setup({
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-b>'] = cmp.mapping.scroll_docs( -4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          -- ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = cmp.config.sources({
+          { name = 'nvim_lsp' },
+        }, {
+          { name = 'buffer' },
+        })
+      })
+
       -- vim.lsp.set_log_level("debug") -- for debug
       local inlay_hints = require("inlay-hints")
       inlay_hints.setup()
@@ -42,7 +64,9 @@ return {
         end
       end
 
-      local capabilities = vim.tbl_extend('keep', vim.lsp.protocol.make_client_capabilities(), lsp_status.capabilities)
+      -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
+      capabilities = vim.tbl_extend('keep', capabilities, lsp_status.capabilities)
 
       local function setup_handler(server_name)
         require("lspconfig")[server_name].setup {
@@ -63,60 +87,6 @@ return {
           capabilities = capabilities,
         }
       end
-
-      require('mini.completion').setup {
-        window = {
-          info = { height = 25, width = 80, border = 'single' },
-          signature = { height = 25, width = 80, border = 'single' },
-        },
-      }
     end
-  },
-
-  {
-    'prabirshrestha/vim-lsp',
-    dependencies = {
-      'prabirshrestha/asyncomplete.vim',
-      'prabirshrestha/asyncomplete-lsp.vim',
-      'mattn/vim-lsp-settings',
-    },
-    enabled = not vim.g.use_nvim_lsp,
-    init = function()
-      vim.g.lsp_work_done_progress_enabled = 1
-      vim.g.lsp_document_code_action_signs_enabled = 0
-      vim.g.lsp_diagnostics_echo_cursor = 0
-      vim.g.lsp_diagnostics_echo_delay = 50
-      vim.g.lsp_diagnostics_highlights_enabled = 0
-      vim.g.lsp_diagnostics_highlights_delay = 50
-      vim.g.lsp_diagnostics_highlights_insert_mode_enabled = 0
-      vim.g.lsp_diagnostics_signs_enabled = 1
-      vim.g.lsp_diagnostics_signs_delay = 50
-      vim.g.lsp_diagnostics_signs_insert_mode_enabled = 0
-      vim.g.lsp_diagnostics_virtual_text_enabled = 1
-      vim.g.lsp_diagnostics_virtual_text_delay = 50
-      vim.g.lsp_diagnostics_float_cursor = 0
-      vim.g.lsp_diagnostics_float_delay = 1000
-      vim.g.lsp_completion_documentation_delay = 40
-      vim.g.lsp_document_highlight_delay = 50
-      vim.g.lsp_document_code_action_signs_delay = 100
-      vim.g.lsp_fold_enabled = 0
-      vim.g.lsp_text_edit_enabled = 0
-      vim.g.lsp_settings_filetype_typescript = { 'typescript-language-server', 'deno' }
-      vim.g.lsp_settings_filetype_javascript = { 'typescript-language-server', 'deno' }
-    end,
-    config = function()
-      vim.keymap.set('n', '[LSP]D', "<plug>(lsp-declaration)")
-      vim.keymap.set('n', '[LSP]d', "<plug>(lsp-definition)")
-      vim.keymap.set('n', '[LSP]h', "<plug>(lsp-hover)")
-      vim.keymap.set('n', '[LSP]t', "<plug>(lsp-type-definition)")
-      vim.keymap.set('n', '[LSP]r', "<plug>(lsp-references)")
-      vim.keymap.set('n', '[LSP]R', "<plug>(lsp-rename)")
-      vim.keymap.set('n', '[LSP]a', "<plug>(lsp-code-action)")
-      vim.keymap.set('n', '[LSP]f', "<plug>(lsp-document-format)")
-      vim.keymap.set('n', '[LSP]q', "<plug>(lsp-document-diagnostics)")
-      vim.keymap.set('n', '[LSP]i', "<Cmd>LspCodeActionSync source.organizeImports<CR>")
-      vim.opt.signcolumn = "yes"
-      vim.opt.omnifunc = "lsp#complete"
-    end,
   }
 }
