@@ -1,5 +1,5 @@
 {
-  "barbar.nvim": { "branch": "master", "commit": "00512bab6983fb8b996f36a9688b0c8478a1f4f0" },
+  "barbar.nvim": { "branch": "master", "commit": "dddf48688bf3ddfe7fd58ab710c63e9fe3912d1f" },
   "dracula.nvim": { "branch": "main", "commit": "798274ba3c454a9aa3cd71f95a86ea55cbbbb142" },
   "fzf": { "branch": "master", "commit": "3364d4d147ade148d8e5dd67609e46f0ef6c50fc" },
   "fzf.vim": { "branch": "master", "commit": "dc71692255b62d1f67dc55c8e51ab1aa467b1d46" },
