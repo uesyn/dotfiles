@@ -1,7 +1,7 @@
 return {
   {
     'neovim/nvim-lspconfig',
-    event = 'BufReadPre',
+    event = 'VeryLazy',
     dependencies = {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
