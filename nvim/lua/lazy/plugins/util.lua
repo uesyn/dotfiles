@@ -6,7 +6,7 @@ return {
 
   {
     "ojroques/vim-oscyank",
-    event = "BufReadPre",
+    event = "VeryLazy",
     config = function()
       vim.keymap.set('v', '<Leader>y', "<Cmd>OSCYank<CR>")
       vim.g.oscyank_term = 'default'
