@@ -8,12 +8,15 @@ return {
       'hrsh7th/cmp-nvim-lsp',
       'nvim-lua/lsp-status.nvim',
       'SmiteshP/nvim-navic',
+      'folke/neodev.nvim',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
       'simrat39/inlay-hints.nvim',
     },
     enabled = vim.g.use_nvim_lsp,
     config = function()
+      -- vim.lsp.set_log_level("debug") -- for debug
+
       local cmp = require 'cmp'
       cmp.setup({
         window = {
@@ -34,7 +37,7 @@ return {
         })
       })
 
-      -- vim.lsp.set_log_level("debug") -- for debug
+      require("neodev").setup({})
       local inlay_hints = require("inlay-hints")
       inlay_hints.setup()
 
@@ -64,6 +67,11 @@ return {
         end
       end
 
+      local handlers = {
+        ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
+        ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
+      }
+
       -- local capabilities = vim.lsp.protocol.make_client_capabilities()
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
       capabilities = vim.tbl_extend('keep', capabilities, lsp_status.capabilities)
@@ -71,6 +79,7 @@ return {
       local function setup_handler(server_name)
         require("lspconfig")[server_name].setup {
           on_attach = on_attach,
+          handlers = handlers,
           capabilities = capabilities,
         }
       end
