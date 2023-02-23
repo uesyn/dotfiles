@@ -2,7 +2,8 @@ return {
   {
     'lvimuser/lsp-inlayhints.nvim',
     config = function()
-      require("lsp-inlayhints").setup()
+      local inlayhints = require("lsp-inlayhints")
+      inlayhints.setup({ enabled_at_startup = false })
       vim.api.nvim_create_augroup("LspAttach_inlayhints", {})
       vim.api.nvim_create_autocmd("LspAttach", {
         group = "LspAttach_inlayhints",
@@ -14,7 +15,8 @@ return {
           local bufnr = args.buf
           local client = vim.lsp.get_client_by_id(args.data.client_id)
           if client.server_capabilities.inlayHintProvider then
-            require("lsp-inlayhints").on_attach(client, bufnr, true)
+            inlayhints.on_attach(client, bufnr, true)
+            vim.keymap.set('n', '<space>lH', inlayhints.toggle, { noremap = true, silent = true, buffer = bufnr })
           end
         end,
       })
@@ -43,28 +45,16 @@ return {
   },
 
   {
-    'nvim-lua/lsp-status.nvim',
+    'j-hui/fidget.nvim',
     config = function()
-      local lsp_status = require('lsp-status')
-      lsp_status.register_progress()
-      vim.api.nvim_create_augroup("LspAttach_lsp_status", {})
-      vim.api.nvim_create_autocmd("LspAttach", {
-        group = "LspAttach_lsp_status",
-        callback = function(args)
-          if not (args.data and args.data.client_id) then
-            return
-          end
-
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          lsp_status.on_attach(client)
-        end,
-      })
+      require("fidget").setup({ window = { blend = 0 } })
+      vim.cmd([[highlight! FidgetTask ctermfg=0 guifg=0]])
     end
   },
 
   {
     'neovim/nvim-lspconfig',
-    event = "VeryLazy",
+    event = { "BufReadPre", "BufNewFile" },
     dependencies = {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
@@ -120,18 +110,10 @@ return {
 
       local settings = {
         Lua = {
-          runtime = {
-            version = 'LuaJIT',
-          },
-          diagnostics = {
-            globals = { 'vim' },
-          },
-          telemetry = {
-            enable = false,
-          },
-          hint = {
-            enable = true,
-          },
+          runtime = { version = 'LuaJIT' },
+          diagnostics = { globals = { 'vim' } },
+          telemetry = { enable = false },
+          hint = { enable = true },
         },
         gopls = {
           hints = {
@@ -147,21 +129,15 @@ return {
       }
 
       local function setup_handler(server_name)
-        require("lspconfig")[server_name].setup {
+        require("lspconfig")[server_name].setup({
           on_attach = on_attach,
           handlers = handlers,
           capabilities = capabilities,
           settings = settings,
-        }
+        })
       end
 
-      require("mason").setup(
-        {
-          ui = {
-            border = "rounded"
-          }
-        }
-      )
+      require("mason").setup({ ui = { border = "rounded" } })
       require("mason-lspconfig").setup()
       require("mason-lspconfig").setup_handlers({ setup_handler })
     end
