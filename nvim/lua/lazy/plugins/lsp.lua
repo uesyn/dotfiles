@@ -39,7 +39,9 @@ return {
 
       require("neodev").setup()
       local inlay_hints = require("inlay-hints")
-      inlay_hints.setup()
+      inlay_hints.setup({
+        only_current_line = true,
+      })
 
       local lsp_status = require('lsp-status')
       lsp_status.register_progress()
@@ -76,11 +78,31 @@ return {
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
       capabilities = vim.tbl_extend('keep', capabilities, lsp_status.capabilities)
 
+      local settings = {
+        Lua = {
+          hint = {
+            enable = true,
+          },
+        },
+        gopls = {
+          hints = {
+            assignVariableTypes = true,
+            compositeLiteralFields = true,
+            compositeLiteralTypes = true,
+            constantValues = true,
+            functionTypeParameters = true,
+            parameterNames = true,
+            rangeVariableTypes = true,
+          },
+        },
+      }
+
       local function setup_handler(server_name)
         require("lspconfig")[server_name].setup {
           on_attach = on_attach,
           handlers = handlers,
           capabilities = capabilities,
+          settings = settings,
         }
       end
 
