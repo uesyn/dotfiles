@@ -11,13 +11,12 @@ return {
       'folke/neodev.nvim',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
-      'simrat39/inlay-hints.nvim',
+      'lvimuser/lsp-inlayhints.nvim'
     },
-    enabled = vim.g.use_nvim_lsp,
     config = function()
       -- vim.lsp.set_log_level("debug") -- for debug
 
-      local cmp = require 'cmp'
+      local cmp = require("cmp")
       cmp.setup({
         window = {
           completion = cmp.config.window.bordered(),
@@ -38,10 +37,8 @@ return {
       })
 
       require("neodev").setup()
-      local inlay_hints = require("inlay-hints")
-      inlay_hints.setup({
-        only_current_line = true,
-      })
+
+      require("lsp-inlayhints").setup()
 
       local lsp_status = require('lsp-status')
       lsp_status.register_progress()
@@ -65,7 +62,7 @@ return {
         lsp_status.on_attach(client)
 
         if client.server_capabilities.inlayHintProvider then
-          inlay_hints.on_attach(client, bufnr)
+          require("lsp-inlayhints").on_attach(client, bufnr, true)
         end
       end
 
