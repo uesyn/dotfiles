@@ -258,6 +258,7 @@ return {
     config = function()
       vim.keymap.set('n', '<C-n>', '<Cmd>BufferNext<CR>')
       vim.keymap.set('n', '<C-p>', '<Cmd>BufferPrevious<CR>')
+      vim.keymap.set('n', '<C-p>', '<Cmd>BufferClose<CR>')
     end,
   }
 }

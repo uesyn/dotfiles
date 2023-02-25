@@ -53,16 +53,6 @@ return {
   },
 
   {
-    'echasnovski/mini.bufremove',
-    version = '*',
-    keys = { "<S-q>" },
-    config = function()
-      require('mini.bufremove').setup({})
-      vim.keymap.set('n', '<S-q>', function() MiniBufremove.delete() end)
-    end
-  },
-
-  {
     'nvim-lua/plenary.nvim',
   },
 }
