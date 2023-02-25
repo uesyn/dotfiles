@@ -64,27 +64,6 @@ return {
     },
     config = function()
       -- vim.lsp.set_log_level("debug") -- for debug
-
-      local cmp = require("cmp")
-      cmp.setup({
-        window = {
-          completion = cmp.config.window.bordered(),
-          documentation = cmp.config.window.bordered(),
-        },
-        mapping = cmp.mapping.preset.insert({
-          ['<C-b>'] = cmp.mapping.scroll_docs( -4),
-          ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          -- ['<C-Space>'] = cmp.mapping.complete(),
-          ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }),
-        }),
-        sources = cmp.config.sources({
-          { name = 'nvim_lsp' },
-        }, {
-          { name = 'buffer' },
-        })
-      })
-
       vim.api.nvim_create_autocmd("LspAttach", {
         group = lsp,
         callback = function(args)
@@ -107,6 +86,26 @@ return {
           vim.keymap.set('n', '<space>lf', function() vim.lsp.buf.format { async = true } end, bufopts)
           vim.keymap.set('n', '<space>lI', vim.lsp.buf.implementation, bufopts)
         end,
+      })
+
+      local cmp = require("cmp")
+      cmp.setup({
+        window = {
+          completion = cmp.config.window.bordered(),
+          documentation = cmp.config.window.bordered(),
+        },
+        mapping = cmp.mapping.preset.insert({
+          ['<C-b>'] = cmp.mapping.scroll_docs( -4),
+          ['<C-f>'] = cmp.mapping.scroll_docs(4),
+          -- ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-e>'] = cmp.mapping.abort(),
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = cmp.config.sources({
+          { name = 'nvim_lsp' },
+        }, {
+          { name = 'buffer' },
+        })
       })
 
       local handlers = {

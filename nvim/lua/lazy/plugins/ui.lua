@@ -129,7 +129,6 @@ return {
             no = colors.red,
             s = colors.orange,
             S = colors.orange,
-            [''] = colors.orange,
             ic = colors.yellow,
             R = colors.purple,
             Rv = colors.purple,
@@ -258,7 +257,7 @@ return {
     config = function()
       vim.keymap.set('n', '<C-n>', '<Cmd>BufferNext<CR>')
       vim.keymap.set('n', '<C-p>', '<Cmd>BufferPrevious<CR>')
-      vim.keymap.set('n', '<C-p>', '<Cmd>BufferClose<CR>')
+      vim.keymap.set('n', '<S-q>', '<Cmd>BufferClose<CR>')
     end,
   }
 }
