@@ -109,6 +109,10 @@ return {
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       local settings = {
+        ["rust-analyzer"] = {
+          cargo = { allFeatures = true },
+          checkOnSave = { allFeatures = true },
+        },
         Lua = {
           runtime = { version = 'LuaJIT' },
           diagnostics = { globals = { 'vim' } },
