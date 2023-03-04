@@ -120,6 +120,11 @@ return {
         ["rust-analyzer"] = {
           cargo = { allFeatures = true },
           checkOnSave = { allFeatures = true },
+          diagnostics = {
+            enable = true,
+            disabled = {"unresolved-proc-macro"},
+            enableExperimental = true,
+          },
         },
         Lua = {
           runtime = { version = 'LuaJIT' },
