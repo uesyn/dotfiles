@@ -3,6 +3,7 @@ local lsp = vim.api.nvim_create_augroup("LSP", { clear = true })
 return {
   {
     'lvimuser/lsp-inlayhints.nvim',
+    event = { "BufReadPre", "BufNewFile" },
     config = function()
       local inlayhints = require("lsp-inlayhints")
       inlayhints.setup({ enabled_at_startup = false })
