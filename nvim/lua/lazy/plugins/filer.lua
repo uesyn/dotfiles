@@ -55,6 +55,7 @@ return {
       'nvim-web-devicons',
       'MunifTanjim/nui.nvim',
     },
+    keys = { "<Leader>fo" },
     version = "v2.x",
     -- keys = "<Leader>fo",
     init = function()

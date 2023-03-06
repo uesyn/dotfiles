@@ -46,6 +46,7 @@ return {
 
   {
     'j-hui/fidget.nvim',
+    event = "LspAttach",
     config = function()
       require("fidget").setup({ window = { blend = 0 } })
       vim.cmd([[highlight! FidgetTask ctermfg=0 guifg=0]])

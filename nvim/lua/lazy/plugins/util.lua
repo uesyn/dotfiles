@@ -6,7 +6,6 @@ return {
 
   {
     "ojroques/vim-oscyank",
-    event = "VeryLazy",
     config = function()
       vim.keymap.set('v', '<Leader>y', "<Cmd>OSCYank<CR>")
       vim.g.oscyank_term = 'default'
@@ -29,7 +28,7 @@ return {
 
   {
     'dhruvasagar/vim-table-mode',
-    event = "VeryLazy",
+    ft = "markdown",
   },
 
   {
