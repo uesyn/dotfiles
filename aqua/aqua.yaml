@@ -72,3 +72,4 @@ packages:
 - name: zellij-org/zellij@v0.35.2
   tags:
   - precede
+- name: keisku/kubectl-explore@v0.7.1
