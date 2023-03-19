@@ -73,3 +73,4 @@ packages:
   tags:
   - precede
 - name: keisku/kubectl-explore@v0.7.1
+- name: kubernetes-sigs/krew@v0.4.3

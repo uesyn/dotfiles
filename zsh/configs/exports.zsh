@@ -93,5 +93,8 @@ if [[ -x "$(command -v uname)" ]]; then
 fi
 path=("${XDG_CONFIG_HOME}/fnm_multishells/bin" $path)
 
+# krew
+export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
+
 # raise OPT_BIN path priority
 path=(${OPT_BIN} $path)
