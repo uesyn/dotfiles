@@ -39,21 +39,21 @@ packages:
   asset: "nvim-{{.OS}}.{{.Format}}"
   format: tar.gz
   files:
-    - name: nvim
-      src: "nvim-{{.OS}}/bin/nvim"
+  - name: nvim
+    src: "nvim-{{.OS}}/bin/nvim"
   overrides:
-    - goos: windows
-      format: zip
+  - goos: windows
+    format: zip
   version_constraint: 'semver(">= 0.7.2")'
   version_overrides:
-    - version_constraint: 'true'
-      overrides:
-        - goos: windows
-          format: zip
-        - goos: darwin
-          files:
-            - name: nvim
-              src: "nvim-osx64/bin/nvim"
+  - version_constraint: 'true'
+    overrides:
+    - goos: windows
+      format: zip
+    - goos: darwin
+      files:
+      - name: nvim
+        src: "nvim-osx64/bin/nvim"
 - type: github_release
   repo_owner: uesyn
   repo_name: neovim-arm64-builder
