@@ -28,33 +28,6 @@ packages:
   files:
   - name: rg
 - type: github_release
-  repo_owner: neovim
-  repo_name: neovim
-  description: Hyperextensible Vim-based text editor
-  supported_envs: ["darwin", "linux/amd64"]
-  replacements:
-    windows: win64
-    linux: linux64
-    darwin: macos
-  asset: "nvim-{{.OS}}.{{.Format}}"
-  format: tar.gz
-  files:
-  - name: nvim
-    src: "nvim-{{.OS}}/bin/nvim"
-  overrides:
-  - goos: windows
-    format: zip
-  version_constraint: 'semver(">= 0.7.2")'
-  version_overrides:
-  - version_constraint: 'true'
-    overrides:
-    - goos: windows
-      format: zip
-    - goos: darwin
-      files:
-      - name: nvim
-        src: "nvim-osx64/bin/nvim"
-- type: github_release
   repo_owner: uesyn
   repo_name: neovim-arm64-builder
   description: Hyperextensible Vim-based text editor
@@ -63,19 +36,6 @@ packages:
   files:
   - name: nvim
     src: 'nvim-linux-arm64/bin/nvim'
-- type: github_release
-  repo_owner: rui314
-  repo_name: mold
-  description: a faster drop-in replacement for existing Unix linkers
-  supported_envs: ["linux"]
-  replacements:
-    arm64: aarch64
-    amd64: x86_64
-  asset: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}.{{.Format}}"
-  format: tar.gz
-  files:
-  - name: mold
-    src: "mold-{{trimV .Version}}-{{.Arch}}-{{.OS}}/bin/mold"
 - type: github_release
   repo_owner: shyiko
   repo_name: jabba
