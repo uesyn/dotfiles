@@ -15,3 +15,5 @@ for config (
 }
 
 unset config
+
+# This line exists not to be overwritten zshrc by sdkman-init.sh.

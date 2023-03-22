@@ -35,3 +35,5 @@ touch ${HOME}/.bashrc.local && source ${HOME}/.bashrc.local
 
 # raise OPT_BIN path priority
 PATH=${OPT_BIN}:$PATH
+
+# This line exists not to be overwritten bashrc by sdkman-init.sh.

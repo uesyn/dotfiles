@@ -44,11 +44,7 @@ packages:
 - name: denoland/deno@v1.30.3
 - name: LukeChannings/deno-arm64@v1.30.3
 - name: Ladicle/kubectl-rolesum@v1.5.1
-- name: rustup/rustup-init
-  version: 1.25.1
-  registry: local
-- name: microsoft/ripgrep-prebuilt@v13.0.0-4
-  registry: local
+- name: microsoft/ripgrep-prebuilt@v13.0.0-7
 - name: grafana/loki/logcli@v2.7.0
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
 - name: ziglang/zig

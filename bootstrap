@@ -95,7 +95,7 @@ setup_zsh() {
 }
 
 install_aqua() {
-  aqua_version=1.38.0
+  aqua_version=2.1.0
   info "Installing aqua..."
   if [ -x "$(command -v aqua)" ]; then
     version=$(aqua version | cut -f3 -d" ")
@@ -201,6 +201,26 @@ setup_neovim() {
   nvim --headless "+Lazy! restore" +qa
 }
 
+setup_rustup_init() {
+  local rustup_init_version=1.25.1
+  local rustup_init_path=${HOME}/opt/bin/rustup-init
+  if [ -f ${rustup_init_path} ]; then
+    return
+  fi
+  curl -o ${rustup_init_path} -L https://raw.githubusercontent.com/rust-lang/rustup/${rustup_init_version}/rustup-init.sh
+  chmod +x ${rustup_init_path}
+}
+
+setup_sdkman_init() {
+  info "Installing sdkman-init..."
+  local sdkman_init_path=${HOME}/opt/bin/sdkman-init
+  if [ -f ${sdkman_init_path} ]; then
+    return
+  fi
+  curl -o ${sdkman_init_path} -L https://get.sdkman.io/
+  chmod +x ${sdkman_init_path}
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -208,4 +228,6 @@ setup_zsh
 setup_for_codespace
 setup_aqua
 setup_neovim
+setup_rustup_init
+setup_sdkman_init
 show_infos

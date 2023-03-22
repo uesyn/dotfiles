@@ -8,25 +8,6 @@ packages:
   files:
   - name: nb
     src: nb
-- name: rustup/rustup-init
-  type: http
-  url: 'https://raw.githubusercontent.com/rust-lang/rustup/{{ .Version }}/rustup-init.sh'
-  format: "raw"
-  files:
-  - name: rustup-init
-    src: rustup-init.sh
-- type: github_release
-  repo_owner: microsoft
-  repo_name: ripgrep-prebuilt
-  asset: 'ripgrep-{{.Version}}-{{.Arch}}-{{.OS}}.tar.gz'
-  description: ripgrep recursively searches directories for a regex pattern while respecting your gitignore
-  replacements:
-    arm64: aarch64
-    amd64: x86_64
-    darwin: apple-darwin
-    linux: unknown-linux-musl
-  files:
-  - name: rg
 - type: github_release
   repo_owner: uesyn
   repo_name: neovim-arm64-builder
