@@ -36,13 +36,4 @@ packages:
   files:
   - name: nvim
     src: 'nvim-linux-arm64/bin/nvim'
-- type: github_release
-  repo_owner: shyiko
-  repo_name: jabba
-  description: Java Version Manager
-  asset: "jabba-{{.Version}}-{{.OS}}-{{.Arch}}"
-  format: raw
-  files:
-  - name: jabba
-    src: "jabba-{{.Version}}-{{.OS}}-{{.Arch}}"
 ---
