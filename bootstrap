@@ -202,8 +202,9 @@ setup_neovim() {
 }
 
 setup_rustup_init() {
+  info "Installing rustup-init..."
   local rustup_init_version=1.25.1
-  local rustup_init_path=${HOME}/opt/bin/rustup-init
+  local rustup_init_path=${OPT_DIR}/bin/rustup-init
   if [ -f ${rustup_init_path} ]; then
     return
   fi
@@ -213,7 +214,7 @@ setup_rustup_init() {
 
 setup_sdkman_init() {
   info "Installing sdkman-init..."
-  local sdkman_init_path=${HOME}/opt/bin/sdkman-init
+  local sdkman_init_path=${OPT_DIR}/bin/sdkman-init
   if [ -f ${sdkman_init_path} ]; then
     return
   fi
