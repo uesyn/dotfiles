@@ -11,14 +11,13 @@ packages:
 - name: stedolan/jq@jq-1.6
   tags:
   - precede
-- name: stern/stern@v1.23.0
-- name: cli/cli@v2.23.0
-- name: profclems/glab@v1.22.0
+- name: stern/stern@v1.24.0
+- name: cli/cli@v2.25.1
 - name: junegunn/fzf@0.34.0
   tags:
   - precede
 - name: kubernetes/kubectl
-  version: v1.26.1
+  version: v1.26.3
   tags:
   - precede
 - name: neovim/neovim@v0.8.3
@@ -31,25 +30,25 @@ packages:
 - name: helm/helm@v3.11.1
 - name: golangci/golangci-lint@v1.50.1
 - name: golang/go
-  version: "1.19.6"
+  version: "1.19.7"
 - name: kubernetes-sigs/kind@v0.17.0
 - name: kubernetes-sigs/kustomize@kustomize/v4.5.7
 - name: mikefarah/yq@v4.24.4
 - name: github/hub@v2.14.2
 - name: hashicorp/vault@v1.12.2
-- name: kubernetes/minikube@v1.28.0
+- name: kubernetes/minikube@v1.29.0
 - name: open-policy-agent/conftest@v0.36.0
 - name: open-policy-agent/opa@v0.48.0
-- name: kubernetes-sigs/kubebuilder@v3.9.0
-- name: denoland/deno@v1.30.3
-- name: LukeChannings/deno-arm64@v1.30.3
+- name: kubernetes-sigs/kubebuilder@v3.9.1
+- name: denoland/deno@v1.32.0
+- name: LukeChannings/deno-arm64@v1.32.0
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: microsoft/ripgrep-prebuilt@v13.0.0-7
 - name: grafana/loki/logcli@v2.7.0
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
 - name: ziglang/zig
   version: '0.10.1'
-- name: twistedpair/google-cloud-sdk@419.0.0
+- name: twistedpair/google-cloud-sdk@423.0.0
 - name: x-motemen/ghq@v1.4.1
   tags:
   - precede
