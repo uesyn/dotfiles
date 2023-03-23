@@ -377,7 +377,7 @@ scrollback_editor "nvim"
 // Default: false
 //
 // mirror_session true
-mirror_session false
+mirror_session true
 
 // The folder in which Zellij will look for layouts
 //
