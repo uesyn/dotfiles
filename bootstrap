@@ -203,7 +203,7 @@ setup_neovim() {
 
 setup_rustup_init() {
   info "Installing rustup-init..."
-  local rustup_init_version=1.25.1
+  local rustup_init_version=1.25.2
   local rustup_init_path=${OPT_DIR}/bin/rustup-init
   if [ -f ${rustup_init_path} ]; then
     return
