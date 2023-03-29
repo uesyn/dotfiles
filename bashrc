@@ -31,7 +31,8 @@ export GOPATH=${HOME}
 export GOBIN=${OPT_BIN}
 
 # load local bashrc
-touch ${HOME}/.bashrc.local && source ${HOME}/.bashrc.local
+touch ${HOME}/.bashrc.local
+source ${HOME}/.bashrc.local
 
 # raise OPT_BIN path priority
 PATH=${OPT_BIN}:$PATH
