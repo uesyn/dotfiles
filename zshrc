@@ -9,7 +9,6 @@ for config (
 	"alias"
 	"git-prompt"
 	"prompt"
-	"completions"
 	"lazy"
 ) {
   source ${HOME}/.config/zsh/configs/${config}.zsh
