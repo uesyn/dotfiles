@@ -58,7 +58,6 @@ packages:
   - precede
 - name: xwmx/nb@6.11.2
   registry: local
-- name: Schniz/fnm@v1.33.1
 - name: zellij-org/zellij@v0.35.2
   tags:
   - precede

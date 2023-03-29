@@ -208,7 +208,7 @@ setup_rustup_init() {
   if [ -f ${rustup_init_path} ]; then
     return
   fi
-  curl -o ${rustup_init_path} -L https://raw.githubusercontent.com/rust-lang/rustup/${rustup_init_version}/rustup-init.sh
+  download ${rustup_init_path} https://raw.githubusercontent.com/rust-lang/rustup/${rustup_init_version}/rustup-init.sh
   chmod +x ${rustup_init_path}
 }
 
@@ -218,8 +218,30 @@ setup_sdkman_init() {
   if [ -f ${sdkman_init_path} ]; then
     return
   fi
-  curl -o ${sdkman_init_path} -L https://get.sdkman.io/
+  download ${sdkman_init_path} https://get.sdkman.io/
   chmod +x ${sdkman_init_path}
+}
+
+setup_nvm() {
+  info "Installing nvm..."
+  local nvm_version="v0.39.3"
+  export NVM_DIR="${OPT_DIR}/nvm"
+  mkdir -p ${NVM_DIR}
+  if [ -f "${NVM_DIR}/nvm.sh" ]; then
+    return
+  fi
+
+  if [ -x "$(command -v curl)" ]; then
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh | bash
+    return
+  fi
+
+  if [ -x "$(command -v wget)" ]; then
+    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh | bash
+    return
+  fi
+
+  error "curl or wget were not found"
 }
 
 ### main ###
@@ -231,4 +253,5 @@ setup_aqua
 setup_neovim
 setup_rustup_init
 setup_sdkman_init
+setup_nvm
 show_infos

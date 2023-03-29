@@ -10,6 +10,7 @@ for config (
 	"git-prompt"
 	"prompt"
 	"completions"
+	"lazy"
 ) {
   source ${HOME}/.config/zsh/configs/${config}.zsh
 }
@@ -17,3 +18,4 @@ for config (
 unset config
 
 # This line exists not to be overwritten zshrc by sdkman-init.sh.
+# This line exists not to be overwritten zshrc by nvm installer. ## /nvm.sh, $NVM_DIR/bash_completion
