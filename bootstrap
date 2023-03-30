@@ -85,7 +85,6 @@ make_links(){
 setup_zsh() {
   info "Intalling zsh..."
   if [ -x "$(command -v zsh)" ]; then
-    info "zsh already installed!"
     return
   fi
   zsh_dir=${HOME}/opt/zsh
@@ -100,7 +99,6 @@ install_aqua() {
   if [ -x "$(command -v aqua)" ]; then
     version=$(aqua version | cut -f3 -d" ")
     if [ "${aqua_version}" = "${version}" ]; then
-      info "aqua is already installed!"
       return
     fi
   fi
@@ -210,7 +208,6 @@ setup_rtx() {
   if [ -x "$(command -v rtx)" ]; then
     version=$(rtx version | cut -f1 -d" ")
     if [ "${rtx_version}" = "v${version}" ]; then
-      info "rtx is already installed!"
       return
     fi
   fi
