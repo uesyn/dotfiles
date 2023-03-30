@@ -194,7 +194,6 @@ EOF
 }
 
 setup_neovim() {
-  setup_aqua
   info "Installing neovim plugins..."
   nvim --headless "+Lazy! restore" +qa
 }
