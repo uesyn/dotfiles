@@ -201,47 +201,42 @@ setup_neovim() {
   nvim --headless "+Lazy! restore" +qa
 }
 
-setup_rustup_init() {
-  info "Installing rustup-init..."
-  local rustup_init_version=1.25.2
-  local rustup_init_path=${OPT_DIR}/bin/rustup-init
-  if [ -f ${rustup_init_path} ]; then
-    return
-  fi
-  download ${rustup_init_path} https://raw.githubusercontent.com/rust-lang/rustup/${rustup_init_version}/rustup-init.sh
-  chmod +x ${rustup_init_path}
-}
+setup_rtx() {
+  info "Installing rtx..."
+  local rtx_version=v1.27.9
+  local rtx_path="${OPT_DIR}/bin/rtx"
+  local rtx_url
 
-setup_sdkman_init() {
-  info "Installing sdkman-init..."
-  local sdkman_init_path=${OPT_DIR}/bin/sdkman-init
-  if [ -f ${sdkman_init_path} ]; then
-    return
-  fi
-  download ${sdkman_init_path} https://get.sdkman.io/
-  chmod +x ${sdkman_init_path}
-}
-
-setup_nvm() {
-  info "Installing nvm..."
-  local nvm_version="v0.39.3"
-  export NVM_DIR="${OPT_DIR}/nvm"
-  mkdir -p ${NVM_DIR}
-  if [ -f "${NVM_DIR}/nvm.sh" ]; then
-    return
+  if [ -x "$(command -v rtx)" ]; then
+    version=$(rtx version | cut -f1 -d" ")
+    if [ "${rtx_version}" = "v${version}" ]; then
+      info "rtx is already installed!"
+      return
+    fi
   fi
 
-  if [ -x "$(command -v curl)" ]; then
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh | bash
-    return
-  fi
+  rtx_url=https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}
+  case "$(detect_target)" in
+    darwin-arm64)
+      rtx_url=${rtx_url}-macos-arm64
+      ;;
+    darwin-amd64)
+      rtx_url=${rtx_url}-macos-x64
+      ;;
+    linux-arm64)
+      rtx_url=${rtx_url}-linux-arm64
+      ;;
+    linux-amd64)
+      rtx_url=${rtx_url}-linux-x64
+      ;;
+    *) warn "Unsupported platform for rtx: $(detect_target)"; return 0 ;;
+  esac
 
-  if [ -x "$(command -v wget)" ]; then
-    wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/${nvm_version}/install.sh | bash
-    return
-  fi
-
-  error "curl or wget were not found"
+  download ${rtx_path} ${rtx_url}
+  chmod +x ${rtx_path}
+  rtx plugin add rust
+  rtx plugin add nodejs
+  rtx plugin add java
 }
 
 ### main ###
@@ -251,7 +246,5 @@ setup_zsh
 setup_for_codespace
 setup_aqua
 setup_neovim
-setup_rustup_init
-setup_sdkman_init
-setup_nvm
+setup_rtx
 show_infos
