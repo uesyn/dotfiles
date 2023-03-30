@@ -231,8 +231,8 @@ setup_rtx() {
   download ${rtx_path} ${rtx_url}
   chmod +x ${rtx_path}
   rtx plugin add rust
+  rtx plugin add rust-analyzer
   rtx plugin add nodejs
-  rtx plugin add java
 }
 
 ### main ###

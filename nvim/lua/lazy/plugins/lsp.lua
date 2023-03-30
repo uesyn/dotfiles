@@ -160,6 +160,15 @@ return {
       require("mason").setup({ ui = { border = "rounded" } })
       require("mason-lspconfig").setup()
       require("mason-lspconfig").setup_handlers({ setup_handler })
+
+      local servers = {"gopls", "rust_analyzer"}
+      for _, server_name in ipairs(servers) do
+        require("lspconfig")[server_name].setup({
+          handlers = handlers,
+          capabilities = capabilities,
+          settings = settings,
+        })
+      end
     end
   }
 }
