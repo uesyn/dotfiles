@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e -o pipefail
-
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export PATH="${OPT_DIR}/bin:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
