@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e -o pipefail
+
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export PATH="${OPT_DIR}/bin:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
@@ -200,7 +202,7 @@ setup_neovim() {
 
 setup_rtx() {
   info "Installing rtx..."
-  local rtx_version=v1.27.9
+  local rtx_version=v1.27.10
   local rtx_path="${OPT_DIR}/bin/rtx"
   local rtx_url
 
@@ -228,10 +230,11 @@ setup_rtx() {
     *) warn "Unsupported platform for rtx: $(detect_target)"; return 0 ;;
   esac
 
+  rm -f ${rtx_path}
   download ${rtx_path} ${rtx_url}
   chmod +x ${rtx_path}
-  rtx plugin add rust
-  rtx plugin add nodejs
+  ${rtx_path} plugin add rust
+  ${rtx_path} plugin add nodejs
 }
 
 ### main ###
