@@ -83,7 +83,7 @@ make_links(){
 }
 
 setup_zsh() {
-  info "Intalling zsh..."
+  info "Installing zsh..."
   if [ -x "$(command -v zsh)" ]; then
     return
   fi
