@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devbox
+spec:
+  volumes:
+  - name: home
+    persistentVolumeClaim:
+      claimName: home
+  - name: var-lib-docker
+    emptyDir: {}
+  containers:
+  - name: bash
+    image: ghcr.io/uesyn/devbox
+    env:
+    - name: DOCKER_HOST
+      value: tcp://localhost:2375
+    volumeMounts:
+    - name: home
+      mountPath: /root
+  - name: docker
+    image: docker:dind
+    args:
+    - --mtu=1280
+    - --bip=172.23.0.254/24
+    - --registry-mirror=https://mirror.gcr.io
+    env:
+    - name: DOCKER_TLS_CERTDIR
+      value: ""
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - name: var-lib-docker
+      mountPath: /var/lib/docker
+    - name: home
+      mountPath: /root

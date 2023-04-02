@@ -1,8 +1,6 @@
 exec:
   default:
     command:
-    - gosu
-    - devbox
     - zsh
     env:
       PROMPT_ICON:
@@ -17,29 +15,3 @@ exec:
         Value: "${GITLAB_ENTERPRISE_TOKEN}"
       GH_ENTERPRISE_TOKEN:
         Value: "${GH_ENTERPRISE_TOKEN}"
-devbox:
-  default:
-    image: ghcr.io/uesyn/devbox
-    startupProbeCommand:
-    - test
-    - -d
-    - /home/devbox/.local/share/aquaproj-aqua
-    shareProcessNamespace: true
-    privileged: true
-    requests:
-      cpu: 300m
-      memory: 500Mi
-      ephemeral-storage: 5Gi
-    autoMountServiceAccountToken: false
-    volumes:
-    - name: home
-      mountPath: /home/devbox
-      persistentVolumeClaim:
-        size: 20Gi
-    - name: docker
-      mountPath: /var/lib/docker
-      emptyDir: {}
-    - name: tls
-      mountPath: /etc/ssl/certs
-      hostPath:
-        path: /etc/ssl/certs
