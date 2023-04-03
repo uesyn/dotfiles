@@ -10,7 +10,7 @@ spec:
   - name: var-lib-docker
     emptyDir: {}
   containers:
-  - name: bash
+  - name: devbox
     image: ghcr.io/uesyn/devbox
     env:
     - name: DOCKER_HOST
