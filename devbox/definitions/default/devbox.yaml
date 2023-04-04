@@ -3,18 +3,25 @@ kind: Pod
 metadata:
   name: devbox
 spec:
-  volumes:
-  - name: home
-    persistentVolumeClaim:
-      claimName: home
-  - name: var-lib-docker
-    emptyDir: {}
   containers:
   - name: devbox
     image: ghcr.io/uesyn/devbox
     env:
     - name: DOCKER_HOST
       value: tcp://localhost:2375
+    lifecycle:
+      postStart:
+        exec:
+          command:
+          - /bin/sh
+          - -c
+          - |-
+            DOTFILES_DIR="/root/src/github.com/uesyn/dotfiles"
+            if [[ -d ${DOTFILES_DIR} ]]; then
+              exit
+            fi
+            git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
+            ${DOTFILES_DIR}/bootstrap
     volumeMounts:
     - name: home
       mountPath: /root
@@ -34,3 +41,10 @@ spec:
       mountPath: /var/lib/docker
     - name: home
       mountPath: /root
+  volumes:
+  - name: home
+    persistentVolumeClaim:
+      claimName: home
+  - name: var-lib-docker
+    emptyDir: {}
+  terminationGracePeriodSeconds: 1
