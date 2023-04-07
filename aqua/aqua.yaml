@@ -20,7 +20,7 @@ packages:
   version: v1.26.3
   tags:
   - precede
-- name: neovim/neovim@v0.8.3
+- name: neovim/neovim@v0.9.0
   tags:
   - precede
 - name: uesyn/neovim-arm64-builder@v0.8.3
