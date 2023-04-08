@@ -66,3 +66,4 @@ packages:
 - name: golang.org/x/tools/gopls@v0.11.0
 - name: rust-lang/rust-analyzer@2023-04-04
   registry: local
+- name: argoproj/argo-workflows@v3.4.6
