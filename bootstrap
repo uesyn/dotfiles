@@ -200,7 +200,6 @@ setup_neovim() {
 
 setup_rtx() {
   info "Installing rtx..."
-  export RTX_DATA_DIR=${OPT_DIR}/rtx
   local rtx_version=v1.27.12
   local rtx_path="${OPT_DIR}/bin/rtx"
   local rtx_url
