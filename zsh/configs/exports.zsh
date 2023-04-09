@@ -74,6 +74,7 @@ export LS_COLORS
 export PATH="${KREW_ROOT:-$HOME/.krew}/bin:$PATH"
 
 # rtx
+export RTX_DATA_DIR=${OPT_DIR}/rtx
 if [[ -x "$(command -v rtx)" ]]; then
   eval "$(rtx activate zsh)"
 fi
