@@ -61,6 +61,8 @@ return {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-nvim-lsp',
+      'hrsh7th/cmp-vsnip',
+      'hrsh7th/vim-vsnip',
       'williamboman/mason.nvim',
       'williamboman/mason-lspconfig.nvim',
     },
@@ -92,20 +94,25 @@ return {
 
       local cmp = require("cmp")
       cmp.setup({
+        snippet = {
+          expand = function(args)
+            vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+          end,
+        },
         window = {
           completion = cmp.config.window.bordered(),
           documentation = cmp.config.window.bordered(),
         },
         mapping = cmp.mapping.preset.insert({
-          ['<C-b>'] = cmp.mapping.scroll_docs( -4),
+          ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
           -- ['<C-Space>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }),
+          ['<CR>'] = cmp.mapping.confirm({ select = false }),
+          ['<Tab>'] = cmp.mapping.confirm({ select = true }),
         }),
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },
-        }, {
           { name = 'buffer' },
         })
       })
@@ -124,7 +131,7 @@ return {
           checkOnSave = { allFeatures = true },
           diagnostics = {
             enable = true,
-            disabled = {"unresolved-proc-macro"},
+            disabled = { "unresolved-proc-macro" },
             enableExperimental = true,
           },
         },
@@ -161,7 +168,7 @@ return {
       require("mason-lspconfig").setup()
       require("mason-lspconfig").setup_handlers({ setup_handler })
 
-      local servers = {"gopls", "rust_analyzer"}
+      local servers = { "gopls", "rust_analyzer" }
       for _, server_name in ipairs(servers) do
         require("lspconfig")[server_name].setup({
           handlers = handlers,
