@@ -94,7 +94,7 @@ setup_zsh() {
 }
 
 install_aqua() {
-  aqua_version=2.2.1
+  aqua_version=2.3.0
   info "Installing aqua..."
   if [ -x "$(command -v aqua)" ]; then
     version=$(aqua version | cut -f3 -d" ")
