@@ -82,6 +82,57 @@ make_links(){
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
+setup_coreutils() {
+  coreutils_version=0.0.18
+  info "Installing coreutils..."
+  case "$(detect_target)" in
+    darwin-arm64)
+      # TODO: use aarch64 version if it released
+      coreutils_basename=coreutils-${coreutils_version}-x86_64-apple-darwin
+      ;;
+    darwin-amd64)
+      coreutils_basename=coreutils-${coreutils_version}-x86_64-apple-darwin
+      ;;
+    linux-amd64)
+      coreutils_basename=coreutils-${coreutils_version}-x86_64-unknown-linux-musl
+      ;;
+    linux-arm64)
+      coreutils_basename=coreutils-${coreutils_version}-aarch64-unknown-linux-gnu
+      ;;
+    linux-arm)
+      coreutils_basename=coreutils-${coreutils_version}-arm-unknown-linux-gnueabihf
+      ;;
+    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+  esac
+  coreutils_url=https://github.com/uutils/coreutils/releases/download/${coreutils_version}/${coreutils_basename}.tar.gz
+  coreutils_tmp=/tmp/coreutils.tar.gz
+  coreutils_dir=${OPT_DIR}/coreutils
+  coreutils_bin=${coreutils_dir}/coreutils_${coreutils_version}
+  coreutils_cmds_dir=${coreutils_dir}/bin
+
+  coreutils_installed=
+  if [ ! -x ${coreutils_bin} ]; then
+    mkdir -p ${coreutils_dir}
+    download ${coreutils_tmp} ${coreutils_url}
+    tar zxf ${coreutils_tmp} ${coreutils_basename}/coreutils -O > ${coreutils_bin}
+    chmod +x ${coreutils_bin}
+    coreutils_installed=true
+  fi
+
+  if [ ! -d "${coreutils_cmds_dir}" ] || [ -n "${coreutils_installed}" ]; then
+    rm -rf ${coreutils_cmds_dir}
+    mkdir -p ${coreutils_cmds_dir}
+    cmds='[:arch:b2sum:b3sum:base32:base64:basename:basenc:cat:chgrp:chmod:chown:chroot:cksum:comm:cp:csplit:cut:date:dd:df:dir:dircolors:dirname:du:echo:env:expand:expr:factor:false:fmt:fold:groups:hashsum:head:hostid:hostname:id:install:join:kill:link:ln:logname:ls:md5sum:mkdir:mkfifo:mknod:mktemp:more:mv:nice:nl:nohup:nproc:numfmt:od:paste:pathchk:pr:printenv:printf:ptx:pwd:readlink:realpath:relpath:rm:rmdir:seq:sha1sum:sha224sum:sha256sum:sha3-224sum:sha3-256sum:sha3-384sum:sha3-512sum:sha384sum:sha3sum:sha512sum:shake128sum:shake256sum:shred:shuf:sleep:sort:split:stat:stty:sum:sync:tac:tail:tee:test:timeout:touch:tr:true:truncate:tsort:tty:uname:unexpand:uniq:unlink:vdir:wc:whoami:yes:'
+    while [ -n "$cmds" ]; do
+      cmd="${cmds%%:*}"
+      ln ${coreutils_bin} ${coreutils_cmds_dir}/${cmd}
+      cmds=${cmds#*:}
+    done
+  fi
+
+  info "coreutils installed!"
+}
+
 setup_zsh() {
   info "Installing zsh..."
   if [ -x "$(command -v zsh)" ]; then
@@ -239,6 +290,7 @@ setup_rtx() {
 make_links
 make_local_configs
 setup_zsh
+setup_coreutils
 setup_for_codespace
 setup_aqua
 setup_neovim

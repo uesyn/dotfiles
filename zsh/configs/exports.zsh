@@ -39,6 +39,9 @@ export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
 path=(${OPT_BIN} $path)
 
+# coreutils
+path=(${OPT_DIR}/coreutils/bin $path)
+
 # aqua
 export AQUA_DISABLE_POLICY=true
 export AQUA_REQUIRE_CHECKSUM=false
