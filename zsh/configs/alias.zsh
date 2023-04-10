@@ -8,13 +8,13 @@ alias d="devbox"
 
 case $OSTYPE in
   linux*)
-    alias ll='ls --color -l'
-    alias ls='ls --color'
+    alias ll='\ls --color -l'
+    alias ls='\ls --color'
     ;;
   darwin*)
     if [[ -x "$(command -v gls)" ]]; then
-      alias ll='gls --color -l'
-      alias ls='gls --color'
+      alias ll='\gls --color -l'
+      alias ls='\gls --color'
     fi
     if [[ -x "$(command -v gmake)" ]]; then
       alias make="gmake"
