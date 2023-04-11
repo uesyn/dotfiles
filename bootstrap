@@ -62,6 +62,7 @@ make_link() {
   from=$1
   to=$2
   mkdir -p $(dirname ${to})
+  [ -L ${to} ] && rm ${to}
   ln -sfn ${from} ${to}
 }
 
@@ -84,6 +85,7 @@ make_links(){
 
 setup_coreutils() {
   coreutils_version=0.0.18
+  export PATH=${HOME}/opt/coreutils/bin:${PATH}
   info "Installing coreutils..."
   case "$(detect_target)" in
     darwin-arm64)
@@ -287,10 +289,10 @@ setup_rtx() {
 }
 
 ### main ###
+setup_coreutils
 make_links
 make_local_configs
 setup_zsh
-setup_coreutils
 setup_for_codespace
 setup_aqua
 setup_neovim
