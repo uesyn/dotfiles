@@ -16,14 +16,11 @@ return {
   },
 
   {
-    "tyru/open-browser.vim",
-    dependencies = {
-      "tyru/open-browser-github.vim",
-    },
+    "Almo7aya/openingh.nvim",
     keys = { "<Leader>ho", { "<Leader>ho", mode = "v" } },
     config = function()
-      vim.keymap.set('n', '<Leader>ho', '<Cmd>OpenGithubFile<CR>')
-      vim.keymap.set('v', '<Leader>ho', "<Cmd>'<,'>OpenGithubFile<CR>")
+      vim.keymap.set('n', '<Leader>ho', '<Cmd>OpenInGHFile<CR>')
+      vim.keymap.set('v', '<Leader>ho', "<Esc><Cmd>'<,'>OpenInGHFile<CR>")
     end,
   },
 
