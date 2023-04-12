@@ -12,7 +12,10 @@ case $OSTYPE in
     alias ls='\ls --color'
     ;;
   darwin*)
-    if [[ -x "$(command -v gls)" ]]; then
+    if [[ -d "${OPT_DIR}/coreutils/bin" ]]; then
+      alias ll='\ls --color -l'
+      alias ls='\ls --color'
+    elif [[ -x "$(command -v gls)" ]]; then
       alias ll='\gls --color -l'
       alias ls='\gls --color'
     fi
