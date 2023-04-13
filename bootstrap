@@ -90,6 +90,8 @@ setup_coreutils() {
   case "$(detect_target)" in
     darwin-arm64)
       # TODO: use aarch64 version if it released
+      warn "unsupported"
+      return 0
       coreutils_basename=coreutils-${coreutils_version}-x86_64-apple-darwin
       ;;
     darwin-amd64)
