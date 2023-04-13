@@ -1,17 +1,23 @@
 exec:
   default:
-    command:
+    shell:
     - zsh
-    env:
-      PROMPT_ICON:
-        Value: "🍎"
-      GITHUB_TOKEN:
-        Value: "${GITHUB_TOKEN}"
-      GITLAB_TOKEN:
-        Value: "${GITLAB_TOKEN}"
-      GITLAB_ENTERPRISE_HOST:
-        Value: "${GITLAB_ENTERPRISE_HOST}"
-      GITLAB_ENTERPRISE_TOKEN:
-        Value: "${GITLAB_ENTERPRISE_TOKEN}"
-      GH_ENTERPRISE_TOKEN:
-        Value: "${GH_ENTERPRISE_TOKEN}"
+    envs:
+    - name: PROMPT_ICON
+      valueFrom:
+        raw: "🍎"
+    - name: GITHUB_TOKEN
+      valueFrom:
+        hostEnv: GITHUB_TOKEN
+    - name: GITLAB_TOKEN
+      valueFrom:
+        hostEnv: GITLAB_TOKEN
+    - name: GITLAB_ENTERPRISE_HOST
+      valueFrom:
+        hostEnv: GITLAB_ENTERPRISE_HOST
+    - name: GITLAB_ENTERPRISE_TOKEN
+      valueFrom:
+        hostEnv: GITLAB_ENTERPRISE_TOKEN
+    - name: GH_ENTERPRISE_TOKEN
+      valueFrom:
+        hostEnv: GH_ENTERPRISE_TOKEN
