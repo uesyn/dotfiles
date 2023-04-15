@@ -1,7 +1,5 @@
 template:
-  templateDir: ${HOME}/.config/devbox/templates
-  kustomize:
-    loadRestrictionsNone: true
+  loadRestrictionsNone: true
 exec:
   command:
   - zsh
