@@ -37,5 +37,16 @@ source ${HOME}/.bashrc.local
 # raise OPT_BIN path priority
 PATH=${OPT_BIN}:$PATH
 
+function z() {
+  if [[ -x "$(command -v zellij)" ]]; then
+    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
+    zellij attach -c
+    return
+  fi
+}
+
+# nvim
+[[ -x "$(command -v nvim)" ]] && alias vim="nvim"
+
 # This line exists not to be overwritten bashrc by sdkman-init.sh.
 # This line exists not to be overwritten zshrc by nvm installer. ## /nvm.sh, $NVM_DIR/bash_completion
