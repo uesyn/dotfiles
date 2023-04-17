@@ -259,7 +259,7 @@ setup_neovim() {
 
 setup_rtx() {
   info "Installing rtx..."
-  local rtx_version=v1.28.4
+  local rtx_version=v1.28.5
   local rtx_path="${OPT_DIR}/bin/rtx"
   local rtx_url
 
