@@ -1,0 +1,10 @@
+template:
+  loadRestrictionsNone: true
+exec:
+  command:
+  - zsh
+  envs:
+  - name: FOO
+    raw: foo
+  - name: BAR
+    hostEnv: BAR
