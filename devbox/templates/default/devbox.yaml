@@ -3,6 +3,8 @@ kind: Pod
 metadata:
   name: devbox
 spec:
+  securityContext:
+    fsGroup: 1000
   containers:
   - name: devbox
     image: ghcr.io/uesyn/devbox
