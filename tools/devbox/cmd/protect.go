@@ -21,6 +21,7 @@ func newProtectCommand() *cli.Command {
 				Aliases: []string{"n"},
 				Value:   "default",
 				Usage:   "kubernetes namespace where devbox run",
+				EnvVars: []string{"DEVBOX_NAMESPACE"},
 			},
 		},
 		Action: func(cCtx *cli.Context) error {

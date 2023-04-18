@@ -21,6 +21,7 @@ func newListCommand() *cli.Command {
 				Aliases: []string{"n"},
 				Value:   "default",
 				Usage:   "kubernetes namespace where devbox run",
+				EnvVars: []string{"DEVBOX_NAMESPACE"},
 			},
 			&cli.BoolFlag{
 				Name:    "all",
