@@ -1,6 +1,11 @@
 name: Devbox command Release
 on:
   workflow_dispatch:
+  push:
+    branches:
+    - main
+    paths:
+    - 'tools/devbox/**'
 jobs:
   build:
     runs-on: ubuntu-latest
