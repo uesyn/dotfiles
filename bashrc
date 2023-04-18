@@ -48,5 +48,45 @@ function z() {
 # nvim
 [[ -x "$(command -v nvim)" ]] && alias vim="nvim"
 
-# This line exists not to be overwritten bashrc by sdkman-init.sh.
-# This line exists not to be overwritten zshrc by nvm installer. ## /nvm.sh, $NVM_DIR/bash_completion
+detect_target() {
+  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
+  arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
+
+  case "${platform}" in
+    linux) platform="linux" ;;
+    darwin) platform="darwin" ;;
+  esac
+
+  case "${arch}" in
+    x86_64) arch="amd64" ;;
+    aarch64) arch="arm64" ;;
+    armv*) arch="arm" ;;
+  esac
+
+  printf '%s' "$platform-$arch"
+}
+
+function d() {
+  if [[ ! -x "$(command -v devbox)" ]]; then
+    local devbox=${OPT_DIR}/bin/devbox
+    local bin_name
+    case "$(detect_target)" in
+      darwin-arm64)
+        bin_name=devbox_darwin_arm64
+        ;;
+      darwin-amd64)
+        bin_name=devbox_darwin_amd64
+        ;;
+      linux-amd64)
+        bin_name=devbox_linux_amd64
+        ;;
+      linux-arm64)
+        bin_name=devbox_linux_arm64
+        ;;
+      *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+    esac
+    curl -L -o ${devbox} https://github.com/uesyn/dotfiles/releases/download/devbox%2Fnightly/${bin_name}
+    chmod +x ${devbox}
+  fi
+  devbox "$@"
+}
