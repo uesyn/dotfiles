@@ -1,4 +1,4 @@
-FROM docker:dind@sha256:0e94d967b79da9ab21108997e338afd1cf53f8c86642c9b5acbfa286fde5e071 as dind
+FROM docker:23.0.4 as docker
 
 FROM debian:bookworm
 ENV LANG=en_US.UTF-8
@@ -45,7 +45,12 @@ RUN apt install -y build-essential libssl-dev zlib1g-dev \
     apt autoremove -y && \
     apt clean
 RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
-    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+      update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
-COPY --from=dind /usr/local/bin/docker /usr/local/bin/docker
+RUN groupadd -g 9999 docker && \
+      groupadd devbox -g 1000 && \
+      useradd devbox -g 1000 -G docker
+COPY sudoers.d/devbox /etc/sudoers.d/devbox
+COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
+USER devbox
 ENTRYPOINT ["tail", "-f", "/dev/null"]

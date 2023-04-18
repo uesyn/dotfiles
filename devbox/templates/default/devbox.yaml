@@ -28,7 +28,7 @@ spec:
     - name: home
       mountPath: /root
   - name: docker
-    image: docker:dind
+    image: docker:23.0.4-dind
     args:
     - --mtu=1280
     - --bip=172.23.0.254/24
