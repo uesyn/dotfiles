@@ -41,7 +41,7 @@ function d() {
         ;;
       *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
     esac
-    curl -L -o ${devbox} https://github.com/uesyn/dotfiles/releases/download/devbox%2Fnightly/${bin_name}
+    curl -L -o ${devbox} "https://github.com/uesyn/dotfiles/releases/download/devbox%2Fnightly/${bin_name}"
     chmod +x ${devbox}
   fi
   devbox "$@"
