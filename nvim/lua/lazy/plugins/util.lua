@@ -52,4 +52,16 @@ return {
   {
     'nvim-lua/plenary.nvim',
   },
+
+  {
+    "pwntester/octo.nvim",
+    dependencies = {
+      'plenary.nvim',
+      'nvim-web-devicons',
+      'nvim-telescope/telescope.nvim',
+    },
+    config = function()
+      require "octo".setup()
+    end
+  },
 }
