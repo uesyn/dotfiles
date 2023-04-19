@@ -56,8 +56,6 @@ packages:
 - name: awslabs/git-secrets@1.3.0
   tags:
   - precede
-- name: xwmx/nb@6.11.2
-  registry: local
 - name: zellij-org/zellij@v0.36.0
   tags:
   - precede
