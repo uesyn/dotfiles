@@ -231,6 +231,9 @@ setup_for_codespace() {
 }
 
 show_infos() {
+  local file="${HOME}/.cache/.bootstrapped"
+  [ -f "${file}" ] && return;
+  touch ${file}
   case "$(uname -r)" in
     *WSL2)
       cat <<- EOF
@@ -247,6 +250,10 @@ generateResolvConf = false
 
 * Create /etc/resolv.conf with below contents:
 nameserver 8.8.8.8
+
+* Install Icons
+(ref: https://learn.microsoft.com/ja-jp/windows/terminal/tutorials/custom-prompt-setup#use-terminal-icons-to-add-missing-folder-or-file-icons)
+$ Install-Module -Name Terminal-Icons -Repository PSGallery
 ================================================
 EOF
     ;;
