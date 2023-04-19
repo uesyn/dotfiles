@@ -3,6 +3,7 @@ kind: Pod
 metadata:
   name: devbox
 spec:
+  automountServiceAccountToken: true
   securityContext:
     fsGroup: 1000
   containers:
