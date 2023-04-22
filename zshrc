@@ -16,4 +16,4 @@ for config (
 
 unset config
 
-test -d "$HOME/.tea" && source <("$HOME/.tea/tea.xyz/v*/bin/tea" --magic=zsh --silent)
+test -d "$HOME/.tea" && source <(tea --magic=zsh --silent)

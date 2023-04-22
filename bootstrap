@@ -84,6 +84,22 @@ make_links(){
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
+setup_tea() {
+  info "Installing tea..."
+  tea_path="${OPT_DIR}/bin/tea"
+  tea_url="https://tea.xyz/$(uname)/$(uname -m)"
+
+  if [ -x ${tea_path} ]; then
+    if [ ! -d ${HOME}/.tea ]; then
+      ${tea_path} --sync
+    fi
+    return
+  fi
+
+  download "${tea_path}" "${tea_url}"
+  chmod u+x ${tea_path}
+}
+
 setup_coreutils() {
   coreutils_version=0.0.18
   export PATH=${HOME}/opt/coreutils/bin:${PATH}
@@ -306,6 +322,7 @@ setup_rtx() {
 # setup_coreutils
 make_links
 make_local_configs
+setup_tea
 setup_zsh
 setup_for_codespace
 setup_aqua
