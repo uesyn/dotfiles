@@ -393,6 +393,7 @@ plugins {
     strider { path "strider"; }
     compact-bar { path "compact-bar"; }
 }
+
 themes {
     dracula {
         fg 248 248 242
@@ -421,4 +422,3 @@ themes {
         orange 214 93 14
     }
 }
-
