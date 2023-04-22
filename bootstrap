@@ -97,6 +97,9 @@ setup_tea() {
 
   download "${tea_path}" "${tea_url}"
   chmod u+x ${tea_path}
+  if [ ! -d ${HOME}/.tea ]; then
+    ${tea_path} --sync
+  fi
 }
 
 setup_coreutils() {
