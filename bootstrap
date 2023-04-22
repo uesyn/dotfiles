@@ -75,7 +75,6 @@ make_links(){
   make_link ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
   make_link ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
   make_link ${SCRIPT_DIR}/aqua/aqua.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
-  make_link ${SCRIPT_DIR}/aqua/registry.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/registry.yaml
   make_link ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
   make_link ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
   make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
@@ -277,8 +276,28 @@ EOF
 }
 
 setup_neovim() {
-  info "Installing neovim plugins..."
+  info "Installing neovim and plugins..."
+  NVIM_VERSION=0.9.0
+  rm -f ${OPT_DIR}/bin/nvim*
+  ln $(which tea) ${OPT_DIR}/bin/nvim=${NVIM_VERSION}
+  ln -sfn ${OPT_DIR}/bin/nvim=${NVIM_VERSION} ${OPT_DIR}/bin/nvim
   nvim --headless "+Lazy! restore" +qa
+}
+
+setup_jq() {
+  info "Installing jq..."
+  JQ_VERSION=1.6
+  rm -f ${OPT_DIR}/bin/jq*
+  ln $(which tea) ${OPT_DIR}/bin/jq=${JQ_VERSION}
+  ln -sfn ${OPT_DIR}/bin/jq=${JQ_VERSION} ${OPT_DIR}/bin/jq
+}
+
+setup_rust_analyzer() {
+  info "Installing rust-analyzer..."
+  RUST_ANALYZER_VERSION=1.69.0
+  rm -f ${OPT_DIR}/bin/rust-analyzer*
+  ln $(which tea) ${OPT_DIR}/bin/rust-analyzer=${RUST_ANALYZER_VERSION}
+  ln -sfn ${OPT_DIR}/bin/rust-analyzer=${RUST_ANALYZER_VERSION} ${OPT_DIR}/bin/rust-analyzer
 }
 
 setup_rtx() {
@@ -327,5 +346,7 @@ setup_zsh
 setup_for_codespace
 setup_aqua
 setup_neovim
+setup_jq
+setup_rust_analyzer
 setup_rtx
 show_infos

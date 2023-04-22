@@ -2,15 +2,9 @@
 registries:
 - type: standard
   ref: v3.150.0 # renovate: depName=aquaproj/aqua-registry
-- name: local
-  type: local
-  path: registry.yaml
 packages:
 - name: ahmetb/kubectx@v0.9.4
 - name: ahmetb/kubens@v0.9.4
-- name: stedolan/jq@jq-1.6
-  tags:
-  - precede
 - name: stern/stern@v1.24.0
 - name: cli/cli@v2.25.1
 - name: junegunn/fzf@0.39.0
@@ -18,13 +12,6 @@ packages:
   - precede
 - name: kubernetes/kubectl
   version: v1.26.3
-  tags:
-  - precede
-- name: neovim/neovim@v0.9.0
-  tags:
-  - precede
-- name: uesyn/neovim-arm64-builder@v0.8.3
-  registry: local
   tags:
   - precede
 - name: helm/helm@v3.11.1
@@ -62,6 +49,4 @@ packages:
 - name: keisku/kubectl-explore@v0.7.1
 - name: kubernetes-sigs/krew@v0.4.3
 - name: golang.org/x/tools/gopls@v0.11.0
-- name: rust-lang/rust-analyzer@2023-04-04
-  registry: local
 - name: argoproj/argo-workflows@v3.4.6

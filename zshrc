@@ -15,5 +15,3 @@ for config (
 }
 
 unset config
-
-test -d "$HOME/.tea" && source <(tea --magic=zsh --silent)
