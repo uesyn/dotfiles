@@ -183,14 +183,6 @@ EOF
   fi
 }
 
-setup_for_codespace() {
-  if [ -z "$GITHUB_CODESPACE_TOKEN" ]; then
-    return 0
-  fi
-  mkdir -p ${HOME}/opt/bin
-  ln -sfn /bin/git ${HOME}/opt/bin/git
-}
-
 show_infos() {
   local file="${HOME}/.cache/.bootstrapped"
   [ -f "${file}" ] && return;
@@ -258,12 +250,13 @@ setup_rtx() {
 ### main ###
 make_links
 make_local_configs
-setup_tea
-setup_zsh
-setup_for_codespace
-setup_aqua
-setup_neovim
-setup_jq
-setup_gh
-setup_rtx
+setup_tea &
+setup_zsh &
+setup_aqua &
+wait
+setup_neovim &
+setup_jq &
+setup_gh &
+setup_rtx &
+wait
 show_infos
