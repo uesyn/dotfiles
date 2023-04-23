@@ -173,11 +173,18 @@ return {
 
       local servers = { "gopls", "rust_analyzer" }
       for _, server_name in ipairs(servers) do
+        if server_name == "rust_analyzer" then
+          if vim.fn.executable("cargo") == 0 then
+            goto continue
+          end
+        end
+
         require("lspconfig")[server_name].setup({
           handlers = handlers,
           capabilities = capabilities,
           settings = settings,
         })
+        ::continue::
       end
     end
   }
