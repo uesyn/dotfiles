@@ -22,5 +22,4 @@ raw = false         # set to true to directly pipe plugins to stdin/stdout/stder
 disable_default_shorthands = false # disable the default shorthands, see `RTX_DISABLE_DEFAULT_SHORTHANDS`
 
 experimental = false # enable experimental features such as shims
-shims_dir = '~/.local/share/rtx/shims' # [experimental] directory where shims are stored
 log_level = 'debug' # log verbosity, see `RTX_LOG_LEVEL`

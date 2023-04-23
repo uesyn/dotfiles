@@ -1,7 +1,9 @@
 #!/bin/sh
 
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
-export PATH="${OPT_DIR}/bin:${PATH}"
+export OPT_BIN=${OPT_DIR}/bin
+mkdir -p ${OPT_BIN}
+export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
 
 # fork from https://starship.rs/install.sh
@@ -85,7 +87,7 @@ make_links(){
 
 setup_tea() {
   info "Installing tea..."
-  tea_path="${OPT_DIR}/bin/tea"
+  tea_path="${OPT_BIN}/tea"
   tea_url="https://tea.xyz/$(uname)/$(uname -m)"
 
   if [ -x ${tea_path} ]; then
@@ -100,64 +102,6 @@ setup_tea() {
   if [ ! -d ${HOME}/.tea ]; then
     ${tea_path} --sync
   fi
-}
-
-setup_coreutils() {
-  coreutils_version=0.0.18
-  export PATH=${HOME}/opt/coreutils/bin:${PATH}
-  info "Installing coreutils..."
-  case "$(detect_target)" in
-    darwin-arm64)
-      # TODO: use aarch64 version if it released
-      warn "unsupported"
-      return 0
-      coreutils_basename=coreutils-${coreutils_version}-x86_64-apple-darwin
-      ;;
-    darwin-amd64)
-      coreutils_basename=coreutils-${coreutils_version}-x86_64-apple-darwin
-      ;;
-    linux-amd64)
-      coreutils_basename=coreutils-${coreutils_version}-x86_64-unknown-linux-musl
-      ;;
-    linux-arm64)
-      coreutils_basename=coreutils-${coreutils_version}-aarch64-unknown-linux-gnu
-      ;;
-    linux-arm)
-      coreutils_basename=coreutils-${coreutils_version}-arm-unknown-linux-gnueabihf
-      ;;
-    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
-  esac
-  coreutils_url=https://github.com/uutils/coreutils/releases/download/${coreutils_version}/${coreutils_basename}.tar.gz
-  coreutils_tmp=/tmp/coreutils.tar.gz
-  coreutils_dir=${OPT_DIR}/coreutils
-  coreutils_bin=${coreutils_dir}/coreutils_${coreutils_version}
-  coreutils_cmds_dir=${coreutils_dir}/bin
-
-  coreutils_installed=
-  if [ ! -x ${coreutils_bin} ]; then
-    mkdir -p ${coreutils_dir}
-    download ${coreutils_tmp} ${coreutils_url}
-    tar zxf ${coreutils_tmp} ${coreutils_basename}/coreutils -O > ${coreutils_bin}
-    chmod +x ${coreutils_bin}
-    coreutils_installed=true
-  fi
-
-  if [ -d "${coreutils_cmds_dir}" ] && [ -z "${coreutils_installed}" ]; then
-    return
-  fi
-
-  rm -rf ${coreutils_cmds_dir}
-  mkdir -p ${coreutils_cmds_dir}
-#  cmds='[:arch:b2sum:b3sum:base32:base64:basename:basenc:cat:chgrp:chmod:chown:chroot:cksum:comm:cp:csplit:cut:date:dd:df:dir:dircolors:dirname:du:echo:env:expand:expr:factor:false:fmt:fold:groups:hashsum:head:hostid:hostname:id:install:join:kill:link:ln:logname:ls:md5sum:mkdir:mkfifo:mknod:mktemp:more:mv:nice:nl:nohup:nproc:numfmt:od:paste:pathchk:pr:printenv:printf:ptx:pwd:readlink:realpath:relpath:rm:rmdir:seq:sha1sum:sha224sum:sha256sum:sha3-224sum:sha3-256sum:sha3-384sum:sha3-512sum:sha384sum:sha3sum:sha512sum:shake128sum:shake256sum:shred:shuf:sleep:sort:split:stat:stty:sum:sync:tac:tail:tee:test:timeout:touch:tr:true:truncate:tsort:tty:uname:unexpand:uniq:unlink:vdir:wc:whoami:yes:'
-  # Use arch and uname of native MacOS command.
-  cmds='[:b2sum:b3sum:base32:base64:basename:basenc:cat:chgrp:chmod:chown:chroot:cksum:comm:cp:csplit:cut:date:dd:df:dir:dircolors:dirname:du:echo:env:expand:expr:factor:false:fmt:fold:groups:hashsum:head:hostid:hostname:id:install:join:kill:link:ln:logname:ls:md5sum:mkdir:mkfifo:mknod:mktemp:more:mv:nice:nl:nohup:nproc:numfmt:od:paste:pathchk:pr:printenv:printf:ptx:pwd:readlink:realpath:relpath:rm:rmdir:seq:sha1sum:sha224sum:sha256sum:sha3-224sum:sha3-256sum:sha3-384sum:sha3-512sum:sha384sum:sha3sum:sha512sum:shake128sum:shake256sum:shred:shuf:sleep:sort:split:stat:stty:sum:sync:tac:tail:tee:test:timeout:touch:tr:true:truncate:tsort:tty:unexpand:uniq:unlink:vdir:wc:whoami:yes:'
-  while [ -n "$cmds" ]; do
-    cmd="${cmds%%:*}"
-    ln ${coreutils_bin} ${coreutils_cmds_dir}/${cmd}
-    cmds=${cmds#*:}
-  done
-
-  info "coreutils installed!"
 }
 
 setup_zsh() {
@@ -201,10 +145,9 @@ install_aqua() {
   esac
 
   aqua_tmp=/tmp/aqua.tar.gz
-  aqua_bin=${OPT_DIR}/bin/aqua
-  aqua_bin_tmp=${OPT_DIR}/bin/.aqua.tmp
+  aqua_bin=${OPT_BIN}/aqua
+  aqua_bin_tmp=${OPT_BIN}/.aqua.tmp
 
-  mkdir -p ${OPT_DIR}/bin
   download ${aqua_tmp} ${aqua_url}
   tar xf ${aqua_tmp} -O aqua > ${aqua_bin_tmp}
   chmod +x ${aqua_bin_tmp}
@@ -278,70 +221,41 @@ EOF
   esac
 }
 
+TEA_DIR=${HOME}/.tea
+
 setup_neovim() {
   info "Installing neovim and plugins..."
-  NVIM_VERSION=0.9.0
-  rm -f ${OPT_DIR}/bin/nvim*
-  ln $(which tea) ${OPT_DIR}/bin/nvim=${NVIM_VERSION}
-  ln -sfn ${OPT_DIR}/bin/nvim=${NVIM_VERSION} ${OPT_DIR}/bin/nvim
+  NVIM_VERSION=v0.9.0
+  tea nvim=${NVIM_VERSION} --version >/dev/null
+  ln -sfn ${TEA_DIR}/neovim.io/${NVIM_VERSION}/bin/nvim ${OPT_BIN}/nvim
   nvim --headless "+Lazy! restore" +qa
 }
 
 setup_jq() {
   info "Installing jq..."
-  JQ_VERSION=1.6
-  rm -f ${OPT_DIR}/bin/jq*
-  ln $(which tea) ${OPT_DIR}/bin/jq=${JQ_VERSION}
-  ln -sfn ${OPT_DIR}/bin/jq=${JQ_VERSION} ${OPT_DIR}/bin/jq
+  JQ_VERSION=v1.6.0
+  tea jq=${JQ_VERSION} --version >/dev/null
+  ln -sfn ${TEA_DIR}/stedolan.github.io/jq/${JQ_VERSION}/bin/jq ${OPT_BIN}/jq
 }
 
-setup_rust_analyzer() {
-  info "Installing rust-analyzer..."
-  RUST_ANALYZER_VERSION=1.69.0
-  rm -f ${OPT_DIR}/bin/rust-analyzer*
-  ln $(which tea) ${OPT_DIR}/bin/rust-analyzer=${RUST_ANALYZER_VERSION}
-  ln -sfn ${OPT_DIR}/bin/rust-analyzer=${RUST_ANALYZER_VERSION} ${OPT_DIR}/bin/rust-analyzer
+setup_gh() {
+  info "Installing gh ..."
+  GH_VERSION=v2.27.0
+  tea gh=${GH_VERSION} version >/dev/null
+  ln -sfn ${TEA_DIR}/cli.github.com/${GH_VERSION}/bin/gh ${OPT_BIN}/gh
 }
 
 setup_rtx() {
   info "Installing rtx..."
-  local rtx_version=v1.28.6
-  local rtx_path="${OPT_DIR}/bin/rtx"
-  local rtx_url
-
-  if [ -x "$(command -v rtx)" ]; then
-    version=$(rtx version | cut -f1 -d" ")
-    if [ "${rtx_version}" = "v${version}" ]; then
-      return
-    fi
-  fi
-
-  rtx_url=https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}
-  case "$(detect_target)" in
-    darwin-arm64)
-      rtx_url=${rtx_url}-macos-arm64
-      ;;
-    darwin-amd64)
-      rtx_url=${rtx_url}-macos-x64
-      ;;
-    linux-arm64)
-      rtx_url=${rtx_url}-linux-arm64
-      ;;
-    linux-amd64)
-      rtx_url=${rtx_url}-linux-x64
-      ;;
-    *) warn "Unsupported platform for rtx: $(detect_target)"; return 0 ;;
-  esac
-
-  rm -f ${rtx_path}
-  download ${rtx_path} ${rtx_url}
-  chmod +x ${rtx_path}
-  ${rtx_path} plugin add rust
-  ${rtx_path} plugin add nodejs
+  RTX_VERSION=v1.29.1
+  tea rtx=${RTX_VERSION} version >/dev/null
+  ln -sfn ${TEA_DIR}/crates.io/rtx-cli/${RTX_VERSION}/bin/rtx ${OPT_BIN}/rtx
+  rtx plugin add rust
+  rtx plugin add rust-analyzer
+  rtx plugin add node
 }
 
 ### main ###
-# setup_coreutils
 make_links
 make_local_configs
 setup_tea
@@ -350,6 +264,6 @@ setup_for_codespace
 setup_aqua
 setup_neovim
 setup_jq
-setup_rust_analyzer
+setup_gh
 setup_rtx
 show_infos

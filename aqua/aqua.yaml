@@ -6,7 +6,6 @@ packages:
 - name: ahmetb/kubectx@v0.9.4
 - name: ahmetb/kubens@v0.9.4
 - name: stern/stern@v1.24.0
-- name: cli/cli@v2.25.1
 - name: junegunn/fzf@0.39.0
   tags:
   - precede
