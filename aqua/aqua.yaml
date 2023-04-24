@@ -43,8 +43,6 @@ packages:
   tags:
   - precede
 - name: zellij-org/zellij@v0.36.0
-  tags:
-  - precede
 - name: keisku/kubectl-explore@v0.7.1
 - name: kubernetes-sigs/krew@v0.4.3
 - name: golang.org/x/tools/gopls@v0.11.0

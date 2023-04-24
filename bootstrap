@@ -82,6 +82,7 @@ make_links(){
   make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
   make_link ${SCRIPT_DIR}/devbox ${XDG_CONFIG_HOME}/devbox
   make_link ${SCRIPT_DIR}/rtx ${XDG_CONFIG_HOME}/rtx
+  make_link ${SCRIPT_DIR}/tmux ${XDG_CONFIG_HOME}/tmux
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
@@ -247,6 +248,14 @@ setup_rtx() {
   rtx plugin add node
 }
 
+setup_tmux() {
+  info "Installing tmux..."
+  TMUX_VERSION=3.3
+  rm -f ${OPT_BIN}/tmux*
+  ln $(which tea) ${OPT_BIN}/tmux=3.3
+  ln -sfn ${OPT_BIN}/tmux=3.3 ${OPT_BIN}/tmux
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -258,5 +267,6 @@ setup_neovim &
 setup_jq &
 setup_gh &
 setup_rtx &
+setup_tmux &
 wait
 show_infos

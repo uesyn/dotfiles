@@ -74,5 +74,12 @@ function z() {
   fi
 }
 
+function t() {
+  if [[ -x "$(command -v tmux)" ]]; then
+    tmux new-session -ADs main
+    return
+  fi
+}
+
 # nvim
 [[ -x "$(command -v nvim)" ]] && alias vim="nvim"
