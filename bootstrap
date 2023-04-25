@@ -240,7 +240,7 @@ setup_gh() {
 
 setup_rtx() {
   info "Installing rtx..."
-  RTX_VERSION=v1.29.1
+  RTX_VERSION=v1.29.2
   tea rtx=${RTX_VERSION} version >/dev/null
   ln -sfn ${TEA_DIR}/crates.io/rtx-cli/${RTX_VERSION}/bin/rtx ${OPT_BIN}/rtx
   rtx plugin add rust
