@@ -214,13 +214,13 @@ EOF
   esac
 }
 
-TEA_DIR=${HOME}/.tea
+TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
 
 setup_neovim() {
   info "Installing neovim and plugins..."
   NVIM_VERSION=v0.9.0
   tea nvim=${NVIM_VERSION} --version >/dev/null
-  ln -sfn ${TEA_DIR}/neovim.io/${NVIM_VERSION}/bin/nvim ${OPT_BIN}/nvim
+  ln -sfn ${TEA_PREFIX}/neovim.io/${NVIM_VERSION}/bin/nvim ${OPT_BIN}/nvim
   nvim --headless "+Lazy! restore" +qa
 }
 
@@ -228,21 +228,21 @@ setup_jq() {
   info "Installing jq..."
   JQ_VERSION=v1.6.0
   tea jq=${JQ_VERSION} --version >/dev/null
-  ln -sfn ${TEA_DIR}/stedolan.github.io/jq/${JQ_VERSION}/bin/jq ${OPT_BIN}/jq
+  ln -sfn ${TEA_PREFIX}/stedolan.github.io/jq/${JQ_VERSION}/bin/jq ${OPT_BIN}/jq
 }
 
 setup_gh() {
   info "Installing gh ..."
   GH_VERSION=v2.27.0
   tea gh=${GH_VERSION} version >/dev/null
-  ln -sfn ${TEA_DIR}/cli.github.com/${GH_VERSION}/bin/gh ${OPT_BIN}/gh
+  ln -sfn ${TEA_PREFIX}/cli.github.com/${GH_VERSION}/bin/gh ${OPT_BIN}/gh
 }
 
 setup_rtx() {
   info "Installing rtx..."
   RTX_VERSION=v1.29.2
   tea rtx=${RTX_VERSION} version >/dev/null
-  ln -sfn ${TEA_DIR}/crates.io/rtx-cli/${RTX_VERSION}/bin/rtx ${OPT_BIN}/rtx
+  ln -sfn ${TEA_PREFIX}/crates.io/rtx-cli/${RTX_VERSION}/bin/rtx ${OPT_BIN}/rtx
   rtx plugin add rust
   rtx plugin add rust-analyzer
   rtx plugin add node
