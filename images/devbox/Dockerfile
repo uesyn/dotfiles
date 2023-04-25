@@ -1,5 +1,3 @@
-FROM docker:23.0.4 as docker
-
 FROM debian:bookworm
 ENV LANG=en_US.UTF-8
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -51,6 +49,7 @@ RUN groupadd -g 9999 docker && \
       groupadd devbox -g 1000 && \
       useradd devbox -g 1000 -G docker
 COPY sudoers.d/devbox /etc/sudoers.d/devbox
-COPY --from=docker /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker:23.0.4 /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
 USER devbox
 ENTRYPOINT ["tail", "-f", "/dev/null"]
