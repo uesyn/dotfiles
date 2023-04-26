@@ -10,7 +10,7 @@ packages:
   tags:
   - precede
 - name: kubernetes/kubectl
-  version: v1.26.3
+  version: v1.27.1
   tags:
   - precede
 - name: helm/helm@v3.11.1
