@@ -88,8 +88,27 @@ make_links(){
 
 setup_tea() {
   info "Installing tea..."
+
+  tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
-  tea_url="https://tea.xyz/$(uname)/$(uname -m)"
+  tea_version="0.30.0"
+  tea_platform=
+  case "$(detect_target)" in
+    darwin-arm64)
+      tea_platform=darwin+aarch64
+      ;;
+    darwin-amd64)
+      tea_platform=darwin+x86-64
+      ;;
+    linux-amd64)
+      tea_platform=linux+x86-64
+      ;;
+    linux-arm64)
+      tea_platform=linux+aarch64
+      ;;
+    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+  esac
+  tea_url=https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+${tea_platform}.tar.xz
 
   if [ -x ${tea_path} ]; then
     if [ ! -d ${HOME}/.tea ]; then
@@ -98,7 +117,8 @@ setup_tea() {
     return
   fi
 
-  download "${tea_path}" "${tea_url}"
+  download ${tea_tmp} ${tea_url}
+  tar xf ${tea_tmp} -C ${OPT_BIN}
   chmod u+x ${tea_path}
   if [ ! -d ${HOME}/.tea ]; then
     ${tea_path} --sync
