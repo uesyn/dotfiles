@@ -25,6 +25,9 @@ export PATH=${OPT_BIN}:${PATH}
 ## local zsh
 export PATH=${OPT_DIR}/zsh/bin:${PATH}
 
+## neovim
+export PATH=${OPT_DIR}/nvim/bin:${PATH}
+
 # go
 export GO111MODULE=on
 export GOPATH=${HOME}
