@@ -185,6 +185,46 @@ setup_aqua() {
   aqua install -a --tags precede
 }
 
+install_neovim() {
+  neovim_dir=${OPT_DIR}/nvim
+  neovim_bin_dir=${neovim_dir}/bin
+  export PATH=${neovim_bin_dir}:$PATH
+  neovim_version=v0.9.0
+  info "Installing neovim..."
+
+  if [ -x "$(command -v nvim)" ]; then
+    version=$(nvim --version | grep NVIM | cut -d" " -f2)
+    if [ "${neovim_version}" = "${version}" ]; then
+      return
+    fi
+  fi
+
+  neovim_url=
+  case "$(detect_target)" in
+    darwin-arm64)
+      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
+      ;;
+    darwin-amd64)
+      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
+      ;;
+    linux-amd64)
+      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-linux64.tar.gz
+      ;;
+    linux-arm64)
+      neovim_url=https://github.com/uesyn/neovim-arm64-builder/releases/download/${neovim_version}/nvim-linux-arm64.tar.gz
+      ;;
+    *) warn "Unsupported platform for neovim: $(detect_target)"; return 0 ;;
+  esac
+
+  neovim_tmp=/tmp/neovim.tar.gz
+  download ${neovim_tmp} ${neovim_url}
+  rm -rf ${neovim_dir}
+  mkdir -p ${neovim_dir}
+  tar xf ${neovim_tmp} --strip-components=1 -C ${neovim_dir}
+  rm ${neovim_tmp}
+  info "neovim installed!"
+}
+
 make_local_configs() {
   zlogin_file=${HOME}/.zlogin
   if [ ! -f "${zlogin_file}" ]; then
@@ -238,9 +278,7 @@ TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
 
 setup_neovim() {
   info "Installing neovim and plugins..."
-  NVIM_VERSION=v0.9.0
-  tea nvim=${NVIM_VERSION} --version >/dev/null
-  ln -sfn ${TEA_PREFIX}/neovim.io/${NVIM_VERSION}/bin/nvim ${OPT_BIN}/nvim
+  install_neovim
   nvim --headless "+Lazy! restore" +qa
 }
 
