@@ -86,32 +86,34 @@ make_links(){
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
+TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
+
 setup_tea() {
   info "Installing tea..."
 
   tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
-  tea_version="0.30.0"
-  tea_platform=
+  TEA_VERSION="0.30.0"
+  TEA_PLATFORM=
   case "$(detect_target)" in
     darwin-arm64)
-      tea_platform=darwin+aarch64
+      TEA_PLATFORM=darwin+aarch64
       ;;
     darwin-amd64)
-      tea_platform=darwin+x86-64
+      TEA_PLATFORM=darwin+x86-64
       ;;
     linux-amd64)
-      tea_platform=linux+x86-64
+      TEA_PLATFORM=linux+x86-64
       ;;
     linux-arm64)
-      tea_platform=linux+aarch64
+      TEA_PLATFORM=linux+aarch64
       ;;
     *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
   esac
-  tea_url=https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+${tea_platform}.tar.xz
+  tea_url=https://github.com/teaxyz/cli/releases/download/v${TEA_VERSION}/tea-${TEA_VERSION}+${TEA_PLATFORM}.tar.xz
 
   if [ -x ${tea_path} ]; then
-    if [ ! -d ${HOME}/.tea ]; then
+    if [ ! -d ${TEA_PREFIX} ]; then
       ${tea_path} --sync
     fi
     return
@@ -274,8 +276,6 @@ EOF
   esac
 }
 
-TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
-
 setup_neovim() {
   info "Installing neovim and plugins..."
   install_neovim
@@ -299,8 +299,32 @@ setup_gh() {
 setup_rtx() {
   info "Installing rtx..."
   RTX_VERSION=v1.29.2
-  tea rtx=${RTX_VERSION} version >/dev/null
-  ln -sfn ${TEA_PREFIX}/crates.io/rtx-cli/${RTX_VERSION}/bin/rtx ${OPT_BIN}/rtx
+  if [ -x "$(command -v rtx)" ]; then
+    version=$(rtx version | cut -d" " -f1)
+    if [ "v${version}" = "${RTX_VERSION}" ]; then
+      return
+    fi
+  fi
+  RTX_PLATFORM=
+  case "$(detect_target)" in
+    darwin-arm64)
+      RTX_PLATFORM=macos-arm64
+      ;;
+    darwin-amd64)
+      RTX_PLATFORM=macos-x64
+      ;;
+    linux-amd64)
+      RTX_PLATFORM=linux-x64
+      ;;
+    linux-arm64)
+      RTX_PLATFORM=linux-arm64
+      ;;
+    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+  esac
+  rtx_tmp=/tmp/rtx.tar.gz
+  download ${rtx_tmp} https://github.com/jdxcode/rtx/releases/download/${RTX_VERSION}/rtx-${RTX_VERSION}-${RTX_PLATFORM}.tar.gz
+  tar xzf ${rtx_tmp} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
+  rm ${rtx_tmp}
   rtx plugin add rust
   rtx plugin add rust-analyzer
   rtx plugin add node
@@ -320,11 +344,11 @@ make_local_configs
 setup_tea &
 setup_zsh &
 setup_aqua &
-wait
 setup_neovim &
+setup_rtx &
+wait
 setup_jq &
 setup_gh &
-setup_rtx &
 setup_tmux &
 wait
 show_infos
