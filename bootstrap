@@ -338,10 +338,11 @@ setup_rtx() {
 setup_tmux() {
   info "Installing tmux..."
   TMUX_BIN=${OPT_BIN}/tmux
-cat <<'EOF' > ${TMUX_BIN}
+  TMUX_VERSION=3.3
+cat <<EOF > ${TMUX_BIN}
 #!/usr/bin/env sh
 
-tea --silent +github.com/tmux/tmux=3.3 tmux "$@"
+tea --silent +github.com/tmux/tmux=${TMUX_VERSION} tmux "\$@"
 EOF
   chmod +x ${TMUX_BIN}
 }
