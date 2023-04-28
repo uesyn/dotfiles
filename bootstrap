@@ -337,65 +337,61 @@ setup_rtx() {
 
 make_tea_command() {
   bin_name=$1
-  bin_version=$2
-  bin_org=$3
-  shift 3
+  shift
   depends=$@
   depend_args=
   for d in ${depends}; do
-    depend_args="+${d} ${depend_args}"
+    if [ -n ${depend_args} ]; then
+      depend_args="+${d} ${depend_args}"
+    else
+      depend_args="+${d}"
+    fi
   done
 
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
 
-tea --silent +${bin_org}=${bin_version} ${depend_args} ${bin_name} "\$@"
+tea --silent ${depend_args} ${bin_name} "\$@"
 EOF
   chmod +x ${bin_path}
 }
 
 setup_tmux() {
   info "Installing tmux..."
-  make_tea_command "tmux" "3.3" "github.com/tmux/tmux"
+  make_tea_command "tmux" "github.com/tmux/tmux=3.3"
 }
 
 setup_node() {
   info "Installing node..."
   NODE_VERSION=v20.0.0
   NPM_VERSION=9.6.5
-  make_tea_command "node" "${NODE_VERSION}" "nodejs.org"
-  make_tea_command "npx" "${NPM_VERSION}" "npmjs.com"
-  make_tea_command "npm" "${NPM_VERSION}" "npmjs.com"
+  make_tea_command "node" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
+  make_tea_command "npx" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
+  make_tea_command "npm" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
 }
 
 setup_git() {
   info "Installing git..."
-  make_tea_command "git" "2.40.0" "git-scm.org"
-}
-
-setup_curl() {
-  info "Installing curl..."
-  CURL_VERSION=8.0.1
-  make_tea_command "curl" "8.0.1" "curl.se"
+  make_tea_command "git" "git-scm.org=2.40.0"
 }
 
 setup_deno() {
   info "Installing deno..."
-  make_tea_command "deno" "1.33.0" "deno.land"
+  make_tea_command "deno" "deno.land=1.33.0"
 }
 
 setup_go() {
   info "Installing go..."
-  make_tea_command "go" "1.20.3" "go.dev"
+  make_tea_command "go" "go.dev=1.20.3"
 }
 
 setup_python() {
   info "Installing python..."
   PYTHON_VERSION=3.11.3
   PIP_VERSION=23.1.2
-  make_tea_command "python" "${PYTHON_VERSION}" "python.org" "pip.pypa.io=${PIP_VERSION}"
-  make_tea_command "pip" "${PIP_VERSION}" "pip.pypa.io" "python.org=${PYTHON_VERSION}"
+  make_tea_command "python" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
+  make_tea_command "pip" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
 }
 
 ### main ###
@@ -411,7 +407,6 @@ setup_gh
 setup_tmux
 setup_node
 setup_git
-setup_curl
 setup_deno
 setup_python
 setup_go
