@@ -276,34 +276,6 @@ EOF
   esac
 }
 
-setup_neovim() {
-  info "Installing neovim and plugins..."
-  install_neovim
-  nvim --headless "+Lazy! restore" +qa
-}
-
-setup_jq() {
-  info "Installing jq..."
-  JQ_BIN=${OPT_BIN}/jq
-cat <<'EOF' > ${JQ_BIN}
-#!/usr/bin/env sh
-
-tea --silent +stedolan.github.io/jq=1.6 jq "$@"
-EOF
-  chmod +x ${JQ_BIN}
-}
-
-setup_gh() {
-  info "Installing gh ..."
-  GH_BIN=${OPT_BIN}/gh
-cat <<'EOF' > ${GH_BIN}
-#!/usr/bin/env sh
-
-tea --silent +cli.github.com=v2.27.0 gh "$@"
-EOF
-  chmod +x ${GH_BIN}
-}
-
 setup_rtx() {
   info "Installing rtx..."
   RTX_VERSION=v1.29.2
@@ -357,6 +329,23 @@ EOF
   chmod +x ${bin_path}
 }
 
+setup_neovim() {
+  info "Installing neovim and plugins..."
+  # install_neovim
+  make_tea_command "nvim" "neovim.io=0.9.0"
+  nvim --headless "+Lazy! restore" +qa
+}
+
+setup_jq() {
+  info "Installing jq..."
+  make_tea_command "jq" "stedolan.github.io/jq=1.6"
+}
+
+setup_gh() {
+  info "Installing gh ..."
+  make_tea_command "gh" "cli.github.com=v2.27.0"
+}
+
 setup_tmux() {
   info "Installing tmux..."
   make_tea_command "tmux" "github.com/tmux/tmux=3.3"
@@ -383,7 +372,16 @@ setup_deno() {
 
 setup_go() {
   info "Installing go..."
-  make_tea_command "go" "go.dev=1.20.3"
+  GO_VERSION=1.20.3
+  GOPLS_VERSION=v0.11.0
+  make_tea_command "go" "go.dev=${GO_VERSION}"
+  gopls_path=${OPT_BIN}/gopls
+  cat <<EOF > ${gopls_path}
+#!/usr/bin/env sh
+
+tea --silent +go.dev=${GO_VERSION} go run golang.org/x/tools/gopls@${GOPLS_VERSION} "\$@"
+EOF
+  chmod +x ${gopls_path}
 }
 
 setup_python() {
