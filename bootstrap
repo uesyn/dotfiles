@@ -398,8 +398,9 @@ make_local_configs
 setup_tea &
 setup_zsh &
 setup_aqua &
-setup_neovim &
 setup_rtx &
+wait
+setup_neovim
 setup_jq
 setup_gh
 setup_tmux
