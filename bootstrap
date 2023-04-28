@@ -392,6 +392,17 @@ setup_python() {
   make_tea_command "pip" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
 }
 
+setup_rustup_init() {
+  info "Installing rustup-init..."
+  rustup_init_path=${OPT_BIN}/rustup-init
+  cat <<EOF > ${rustup_init_path}
+#!/usr/bin/env sh
+
+tea rustup-init --no-modify-path --default-toolchain nightly --profile complete -y "\$@"
+EOF
+  chmod +x ${rustup_init_path}
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -409,5 +420,6 @@ setup_git
 setup_deno
 setup_python
 setup_go
+setup_rustup_init
 wait
 show_infos

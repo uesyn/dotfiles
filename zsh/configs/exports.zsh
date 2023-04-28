@@ -79,6 +79,11 @@ export LS_COLORS
 # krew
 path=(${KREW_ROOT:-$HOME/.krew}/bin $path)
 
+# rust
+export RUSTUP_HOME=${OPT_DIR}/rust/rustup
+export CARGO_HOME=${OPT_DIR}/rust/cargo
+path=(${CARGO_HOME}/bin $path)
+
 # rtx
 if [[ -x "$(command -v rtx)" ]]; then
   eval "$(rtx activate zsh)"
