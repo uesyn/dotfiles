@@ -385,6 +385,11 @@ setup_deno() {
   make_tea_command "deno" "1.33.0" "deno.land"
 }
 
+setup_go() {
+  info "Installing go..."
+  make_tea_command "go" "1.20.3" "go.dev"
+}
+
 setup_python() {
   info "Installing python..."
   PYTHON_VERSION=3.11.3
@@ -409,5 +414,6 @@ setup_git
 setup_curl
 setup_deno
 setup_python
+setup_go
 wait
 show_infos
