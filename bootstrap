@@ -284,16 +284,24 @@ setup_neovim() {
 
 setup_jq() {
   info "Installing jq..."
-  JQ_VERSION=v1.6.0
-  tea jq=${JQ_VERSION} --version >/dev/null
-  ln -sfn ${TEA_PREFIX}/stedolan.github.io/jq/${JQ_VERSION}/bin/jq ${OPT_BIN}/jq
+  JQ_BIN=${OPT_BIN}/jq
+cat <<'EOF' > ${JQ_BIN}
+#!/usr/bin/env sh
+
+tea --silent +stedolan.github.io/jq=1.6 jq "$@"
+EOF
+  chmod +x ${JQ_BIN}
 }
 
 setup_gh() {
   info "Installing gh ..."
-  GH_VERSION=v2.27.0
-  tea gh=${GH_VERSION} version >/dev/null
-  ln -sfn ${TEA_PREFIX}/cli.github.com/${GH_VERSION}/bin/gh ${OPT_BIN}/gh
+  GH_BIN=${OPT_BIN}/gh
+cat <<'EOF' > ${GH_BIN}
+#!/usr/bin/env sh
+
+tea --silent +cli.github.com=v2.27.0 gh "$@"
+EOF
+  chmod +x ${GH_BIN}
 }
 
 setup_rtx() {
@@ -325,17 +333,64 @@ setup_rtx() {
   download ${rtx_tmp} https://github.com/jdxcode/rtx/releases/download/${RTX_VERSION}/rtx-${RTX_VERSION}-${RTX_PLATFORM}.tar.gz
   tar xzf ${rtx_tmp} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
   rm ${rtx_tmp}
-  rtx plugin add rust
-  rtx plugin add rust-analyzer
-  rtx plugin add node
 }
 
 setup_tmux() {
   info "Installing tmux..."
-  TMUX_VERSION=3.3
-  rm -f ${OPT_BIN}/tmux*
-  ln $(which tea) ${OPT_BIN}/tmux=3.3
-  ln -sfn ${OPT_BIN}/tmux=3.3 ${OPT_BIN}/tmux
+  TMUX_BIN=${OPT_BIN}/tmux
+cat <<'EOF' > ${TMUX_BIN}
+#!/usr/bin/env sh
+
+tea --silent +github.com/tmux/tmux=3.3 tmux "$@"
+EOF
+  chmod +x ${TMUX_BIN}
+}
+
+setup_node() {
+  info "Installing node..."
+  NODE_VERSION=v20.0.0
+  NODE_BIN_PATH=${OPT_BIN}/node
+  cat <<EOF > ${NODE_BIN_PATH}
+#!/usr/bin/env sh
+
+tea --silent +nodejs.org=${NODE_VERSION} node "\$@"
+EOF
+  chmod +x ${NODE_BIN_PATH}
+
+  NPM_VERSION=9.6.5
+  for bin in "npx" "npm"; do
+    NODE_TOOLS_BIN_PATH=${OPT_BIN}/${bin}
+    cat <<EOF > ${NODE_TOOLS_BIN_PATH}
+#!/usr/bin/env sh
+
+tea --silent +npmjs.com=${NPM_VERSION} ${bin} "\$@"
+EOF
+    chmod +x ${NODE_TOOLS_BIN_PATH}
+  done
+}
+
+setup_git() {
+  info "Installing git..."
+  GIT_VERSION=2.40.0
+  GIT_BIN_PATH=${OPT_BIN}/git
+  cat <<EOF > ${GIT_BIN_PATH}
+#!/usr/bin/env sh
+
+tea --silent +git-scm.org=${GIT_VERSION} git "\$@"
+EOF
+  chmod +x ${GIT_BIN_PATH}
+}
+
+setup_curl() {
+  info "Installing curl..."
+  CURL_VERSION=8.0.1
+  CURL_BIN_PATH=${OPT_BIN}/curl
+  cat <<EOF > ${CURL_BIN_PATH}
+#!/usr/bin/env sh
+
+tea --silent +curl.se=${CURL_VERSION} curl "\$@"
+EOF
+  chmod +x ${CURL_BIN_PATH}
 }
 
 ### main ###
@@ -346,9 +401,11 @@ setup_zsh &
 setup_aqua &
 setup_neovim &
 setup_rtx &
-wait
 setup_jq &
 setup_gh &
 setup_tmux &
+setup_node &
+setup_git &
+setup_curl &
 wait
 show_infos
