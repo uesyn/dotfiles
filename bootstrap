@@ -335,63 +335,62 @@ setup_rtx() {
   rm ${rtx_tmp}
 }
 
-setup_tmux() {
-  info "Installing tmux..."
-  TMUX_BIN=${OPT_BIN}/tmux
-  TMUX_VERSION=3.3
-cat <<EOF > ${TMUX_BIN}
+make_tea_command() {
+  bin_name=$1
+  bin_version=$2
+  bin_org=$3
+  shift 3
+  depends=$@
+  depend_args=
+  for d in ${depends}; do
+    depend_args="+${d} ${depend_args}"
+  done
+
+  bin_path=${OPT_BIN}/${bin_name}
+  cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
 
-tea --silent +github.com/tmux/tmux=${TMUX_VERSION} tmux "\$@"
+tea --silent +${bin_org}=${bin_version} ${depend_args} ${bin_name} "\$@"
 EOF
-  chmod +x ${TMUX_BIN}
+  chmod +x ${bin_path}
+}
+
+setup_tmux() {
+  info "Installing tmux..."
+  make_tea_command "tmux" "3.3" "github.com/tmux/tmux"
 }
 
 setup_node() {
   info "Installing node..."
   NODE_VERSION=v20.0.0
-  NODE_BIN_PATH=${OPT_BIN}/node
-  cat <<EOF > ${NODE_BIN_PATH}
-#!/usr/bin/env sh
-
-tea --silent +nodejs.org=${NODE_VERSION} node "\$@"
-EOF
-  chmod +x ${NODE_BIN_PATH}
-
   NPM_VERSION=9.6.5
-  for bin in "npx" "npm"; do
-    NODE_TOOLS_BIN_PATH=${OPT_BIN}/${bin}
-    cat <<EOF > ${NODE_TOOLS_BIN_PATH}
-#!/usr/bin/env sh
-
-tea --silent +npmjs.com=${NPM_VERSION} ${bin} "\$@"
-EOF
-    chmod +x ${NODE_TOOLS_BIN_PATH}
-  done
+  make_tea_command "node" "${NODE_VERSION}" "nodejs.org"
+  make_tea_command "npx" "${NPM_VERSION}" "npmjs.com"
+  make_tea_command "npm" "${NPM_VERSION}" "npmjs.com"
 }
 
 setup_git() {
   info "Installing git..."
-  GIT_VERSION=2.40.0
-  GIT_BIN_PATH=${OPT_BIN}/git
-  cat <<EOF > ${GIT_BIN_PATH}
-#!/usr/bin/env sh
-
-tea --silent +git-scm.org=${GIT_VERSION} git "\$@"
-EOF
-  chmod +x ${GIT_BIN_PATH}
+  make_tea_command "git" "2.40.0" "git-scm.org"
 }
 
 setup_curl() {
   info "Installing curl..."
   CURL_VERSION=8.0.1
-  CURL_BIN_PATH=${OPT_BIN}/curl
-  cat <<EOF > ${CURL_BIN_PATH}
-#!/usr/bin/env sh
+  make_tea_command "curl" "8.0.1" "curl.se"
+}
 
-tea --silent +curl.se=${CURL_VERSION} curl "\$@"
-EOF
-  chmod +x ${CURL_BIN_PATH}
+setup_deno() {
+  info "Installing deno..."
+  make_tea_command "deno" "1.33.0" "deno.land"
+}
+
+setup_python() {
+  info "Installing python..."
+  PYTHON_VERSION=3.11.3
+  PIP_VERSION=23.1.2
+  make_tea_command "python" "${PYTHON_VERSION}" "python.org" "pip.pypa.io=${PIP_VERSION}"
+  make_tea_command "pip" "${PIP_VERSION}" "pip.pypa.io" "python.org=${PYTHON_VERSION}"
 }
 
 ### main ###
@@ -402,11 +401,13 @@ setup_zsh &
 setup_aqua &
 setup_neovim &
 setup_rtx &
-setup_jq &
-setup_gh &
-setup_tmux &
-setup_node &
-setup_git &
-setup_curl &
+setup_jq
+setup_gh
+setup_tmux
+setup_node
+setup_git
+setup_curl
+setup_deno
+setup_python
 wait
 show_infos

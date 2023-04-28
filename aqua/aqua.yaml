@@ -24,8 +24,6 @@ packages:
 - name: open-policy-agent/conftest@v0.36.0
 - name: open-policy-agent/opa@v0.48.0
 - name: kubernetes-sigs/kubebuilder@v3.9.1
-- name: denoland/deno@v1.32.0
-- name: LukeChannings/deno-arm64@v1.32.0
 - name: Ladicle/kubectl-rolesum@v1.5.1
 - name: microsoft/ripgrep-prebuilt@v13.0.0-7
 - name: grafana/loki/logcli@v2.7.0
