@@ -349,7 +349,7 @@ setup_jq() {
 
 setup_gh() {
   info "Installing gh ..."
-  make_tea_command "gh" "" "cli.github.com=v2.27.0"
+  make_tea_command "gh" "--silent" "cli.github.com=v2.27.0"
 }
 
 setup_tmux() {
