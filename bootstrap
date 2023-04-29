@@ -389,8 +389,8 @@ setup_python() {
   info "Installing python..."
   PYTHON_VERSION=3.11.3
   PIP_VERSION=23.1.2
-  make_tea_command "python" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
-  make_tea_command "pip" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
+  make_tea_command "python" "" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
+  make_tea_command "pip" "" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
 }
 
 setup_rustup_init() {
