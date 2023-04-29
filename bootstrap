@@ -93,7 +93,7 @@ setup_tea() {
 
   tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
-  TEA_VERSION="0.30.0"
+  TEA_VERSION="0.31.0"
   TEA_PLATFORM=
   case "$(detect_target)" in
     darwin-arm64)
