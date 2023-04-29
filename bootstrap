@@ -309,7 +309,8 @@ setup_rtx() {
 
 make_tea_command() {
   bin_name=$1
-  shift
+  tea_args=$2
+  shift 2
   depends=$@
   depend_args=
   for d in ${depends}; do
@@ -320,11 +321,16 @@ make_tea_command() {
     fi
   done
 
+  cmd="tea ${depend_args} ${bin_name}"
+  if [ -n ${tea_args} ]; then
+    cmd="tea ${tea_args} ${depend_args} ${bin_name}"
+  fi
+
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
 
-tea --silent ${depend_args} ${bin_name} "\$@"
+${cmd} "\$@"
 EOF
   chmod +x ${bin_path}
 }
@@ -332,49 +338,44 @@ EOF
 setup_neovim() {
   info "Installing neovim and plugins..."
   # install_neovim
-  make_tea_command "nvim" "neovim.io=0.9.0"
+  make_tea_command "nvim" "" "neovim.io=0.9.0"
   nvim --headless "+Lazy! restore" +qa
 }
 
 setup_jq() {
   info "Installing jq..."
-  make_tea_command "jq" "stedolan.github.io/jq=1.6"
+  make_tea_command "jq" "--silent" "stedolan.github.io/jq=1.6"
 }
 
 setup_gh() {
   info "Installing gh ..."
-  make_tea_command "gh" "cli.github.com=v2.27.0"
+  make_tea_command "gh" "" "cli.github.com=v2.27.0"
 }
 
 setup_tmux() {
   info "Installing tmux..."
-  make_tea_command "tmux" "github.com/tmux/tmux=3.3"
+  make_tea_command "tmux" "" "github.com/tmux/tmux=3.3"
 }
 
 setup_node() {
   info "Installing node..."
   NODE_VERSION=v20.0.0
   NPM_VERSION=9.6.5
-  make_tea_command "node" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
-  make_tea_command "npx" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
-  make_tea_command "npm" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
-}
-
-setup_git() {
-  info "Installing git..."
-  make_tea_command "git" "git-scm.org=2.40.0"
+  make_tea_command "node" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
+  make_tea_command "npx" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
+  make_tea_command "npm" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
 }
 
 setup_deno() {
   info "Installing deno..."
-  make_tea_command "deno" "deno.land=1.33.0"
+  make_tea_command "deno" "--silent" "deno.land=1.33.0"
 }
 
 setup_go() {
   info "Installing go..."
   GO_VERSION=1.20.3
   GOPLS_VERSION=v0.11.0
-  make_tea_command "go" "go.dev=${GO_VERSION}"
+  make_tea_command "go" "" "go.dev=${GO_VERSION}"
   gopls_path=${OPT_BIN}/gopls
   cat <<EOF > ${gopls_path}
 #!/usr/bin/env sh
@@ -416,7 +417,6 @@ setup_jq
 setup_gh
 setup_tmux
 setup_node
-setup_git
 setup_deno
 setup_python
 setup_go
