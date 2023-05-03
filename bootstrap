@@ -93,7 +93,7 @@ setup_tea() {
 
   tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
-  TEA_VERSION="0.31.0"
+  TEA_VERSION="0.31.2"
   TEA_PLATFORM=
   case "$(detect_target)" in
     darwin-arm64)
@@ -112,11 +112,8 @@ setup_tea() {
   esac
   tea_url=https://github.com/teaxyz/cli/releases/download/v${TEA_VERSION}/tea-${TEA_VERSION}+${TEA_PLATFORM}.tar.xz
 
-  if [ -x ${tea_path} ]; then
-    if [ ! -d ${TEA_PREFIX} ]; then
-      ${tea_path} --sync
-    fi
-    return
+  if [ -x ${tea_path} ] && [ $(${tea_path} --version | cut -f2 -d' ') = ${TEA_VERSION} ]; then
+    [ ! -d ${TEA_PREFIX} ] && ${tea_path} --sync
   fi
 
   download ${tea_tmp} ${tea_url}
@@ -125,6 +122,7 @@ setup_tea() {
   if [ ! -d ${HOME}/.tea ]; then
     ${tea_path} --sync
   fi
+  rm -f ${tea_tmp}
 }
 
 setup_zsh() {
@@ -278,7 +276,7 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  RTX_VERSION=v1.29.2
+  RTX_VERSION=v1.29.3
   if [ -x "$(command -v rtx)" ]; then
     version=$(rtx version | cut -d" " -f1)
     if [ "v${version}" = "${RTX_VERSION}" ]; then
