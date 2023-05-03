@@ -84,6 +84,9 @@ export RUSTUP_HOME=${OPT_DIR}/rust/rustup
 export CARGO_HOME=${OPT_DIR}/rust/cargo
 path=(${CARGO_HOME}/bin $path)
 
+# tea
+path=(${HOME}/.local/bin $path)
+
 # rtx
 if [[ -x "$(command -v rtx)" ]]; then
   eval "$(rtx activate zsh)"
