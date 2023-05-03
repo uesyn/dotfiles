@@ -112,8 +112,9 @@ setup_tea() {
   esac
   tea_url=https://github.com/teaxyz/cli/releases/download/v${TEA_VERSION}/tea-${TEA_VERSION}+${TEA_PLATFORM}.tar.xz
 
-  if [ -x ${tea_path} ] && [ $(${tea_path} --version | cut -f2 -d' ') = ${TEA_VERSION} ]; then
+  if [ -x ${tea_path} ] && [ "$(${tea_path} --version | cut -f2 -d' ')" = ${TEA_VERSION} ]; then
     [ ! -d ${TEA_PREFIX} ] && ${tea_path} --sync
+    return
   fi
 
   download ${tea_tmp} ${tea_url}
@@ -277,11 +278,8 @@ EOF
 setup_rtx() {
   info "Installing rtx..."
   RTX_VERSION=v1.29.3
-  if [ -x "$(command -v rtx)" ]; then
-    version=$(rtx version | cut -d" " -f1)
-    if [ "v${version}" = "${RTX_VERSION}" ]; then
-      return
-    fi
+  if [ -x "$(command -v rtx)" ] && [ v"$(rtx version | cut -d" " -f1)" = ${RTX_VERSION} ]; then
+    return
   fi
   RTX_PLATFORM=
   case "$(detect_target)" in
