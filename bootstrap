@@ -2,7 +2,9 @@
 
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
+export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
 mkdir -p ${OPT_BIN}
+mkdir -p ${BOOTSTRAP_CACHE_DIR}
 export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
 
@@ -40,24 +42,60 @@ detect_target() {
   printf '%s' "$platform-$arch"
 }
 
-# fork from https://starship.rs/install.sh
-download() {
-  file="$1"
-  url="$2"
+calc_hash() {
+  echo -n "$1" | shasum -a 256 | cut -c-64
+}
 
+download() {
+  hash_key="$1"
+  url="$2"
+  file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${hash_key})"
+  tmpfile="$file.tmp"
+
+  [ -f ${file} ] && return
+
+  info "Downloading ${url}..."
   if [ -x "$(command -v curl)" ]; then
-    cmd="curl --fail --silent --location --output $file $url"
+    cmd="curl --fail --silent --location --output $tmpfile $url"
   elif [ -x "$(command -v wget)" ]; then
-    cmd="wget --quiet --output-document=$file $url"
-  elif [ -x "$(command -v fetch)" ]; then
-    cmd="fetch --quiet --output=$file $url"
+    cmd="wget --quiet --output-document=$tmpfile $url"
   else
     error "No HTTP download program (curl, wget, fetch) found, exiting..."
     return 1
   fi
 
-  $cmd && return 0 || rc=$?
-  return $rc
+  $cmd && mv $tmpfile $file && return 0
+  return $?
+}
+
+download_if_darwin_arm64() {
+  [ "$(detect_target)" != "darwin-arm64" ] && return
+  download "$1" "$2"
+  return $?
+}
+
+download_if_darwin_amd64() {
+  [ "$(detect_target)" != "darwin-amd64" ] && return
+  download "$1" "$2"
+  return $?
+}
+
+download_if_linux_arm64() {
+  [ "$(detect_target)" != "linux-arm64" ] && return
+  download "$1" "$2"
+  return $?
+}
+
+download_if_linux_amd64() {
+  [ "$(detect_target)" != "linux-amd64" ] && return
+  download "$1" "$2"
+  return $?
+}
+
+get_cache_file() {
+  key=$1
+  cache_file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${key})"
+  [ -f ${cache_file} ] && echo -n ${cache_file}
 }
 
 make_link() {
@@ -93,37 +131,20 @@ setup_tea() {
 
   tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
-  TEA_VERSION="0.31.2"
-  TEA_PLATFORM=
-  case "$(detect_target)" in
-    darwin-arm64)
-      TEA_PLATFORM=darwin+aarch64
-      ;;
-    darwin-amd64)
-      TEA_PLATFORM=darwin+x86-64
-      ;;
-    linux-amd64)
-      TEA_PLATFORM=linux+x86-64
-      ;;
-    linux-arm64)
-      TEA_PLATFORM=linux+aarch64
-      ;;
-    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
-  esac
-  tea_url=https://github.com/teaxyz/cli/releases/download/v${TEA_VERSION}/tea-${TEA_VERSION}+${TEA_PLATFORM}.tar.xz
+  tea_version="0.31.2"
 
-  if [ -x ${tea_path} ] && [ "$(${tea_path} --version | cut -f2 -d' ')" = ${TEA_VERSION} ]; then
-    [ ! -d ${TEA_PREFIX} ] && ${tea_path} --sync
-    return
-  fi
+  tea_key="tea_${tea_version}"
+  download_if_linux_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+aarch64.tar.xz
+  download_if_linux_amd64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+x86-64.tar.xz
+  download_if_darwin_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+aarch64.tar.xz
+  download_if_darwin_amd64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+x86-64.tar.xz
 
-  download ${tea_tmp} ${tea_url}
-  tar xf ${tea_tmp} -C ${OPT_BIN}
+  cache_file=$(get_cache_file "${tea_key}")
+
+  tar xJf ${cache_file} -C ${OPT_BIN}
   chmod u+x ${tea_path}
-  if [ ! -d ${HOME}/.tea ]; then
-    ${tea_path} --sync
-  fi
-  rm -f ${tea_tmp}
+  [ ! -d ${HOME}/.tea ] && ${tea_path} --sync
+  info "tea installed!"
 }
 
 setup_zsh() {
@@ -140,43 +161,17 @@ setup_zsh() {
 install_aqua() {
   aqua_version=2.3.6
   info "Installing aqua..."
-  if [ -x "$(command -v aqua)" ]; then
-    version=$(aqua version | cut -f3 -d" ")
-    if [ "${aqua_version}" = "${version}" ]; then
-      return
-    fi
-  fi
 
-  case "$(detect_target)" in
-    darwin-arm64)
-      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_arm64.tar.gz
-      ;;
-    darwin-amd64)
-      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_amd64.tar.gz
-      ;;
-    linux-amd64)
-      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_amd64.tar.gz
-      ;;
-    linux-arm64)
-      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm64.tar.gz
-      ;;
-    linux-arm)
-      aqua_url=https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm.tar.gz
-      ;;
-    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
-  esac
+  aqua_key="aqua_${aqua_version}"
+  download_if_linux_arm64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm64.tar.gz
+  download_if_linux_amd64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_amd64.tar.gz
+  download_if_darwin_arm64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_arm64.tar.gz
+  download_if_darwin_amd64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_amd64.tar.gz
 
-  aqua_tmp=/tmp/aqua.tar.gz
+  cache_file=$(get_cache_file "${aqua_key}")
   aqua_bin=${OPT_BIN}/aqua
-  aqua_bin_tmp=${OPT_BIN}/.aqua.tmp
-
-  download ${aqua_tmp} ${aqua_url}
-  tar xf ${aqua_tmp} -O aqua > ${aqua_bin_tmp}
-  chmod +x ${aqua_bin_tmp}
-  mv ${aqua_bin_tmp} ${aqua_bin}
-
-  rm ${aqua_tmp}
-  info "aqua installed!"
+  tar xzf ${cache_file} -O aqua > ${aqua_bin}
+  chmod +x ${aqua_bin}
 }
 
 setup_aqua() {
@@ -184,45 +179,27 @@ setup_aqua() {
   export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
   export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
   aqua install -a --tags precede
+  info "aqua installed!"
 }
 
 install_neovim() {
+  info "Installing neovim..."
   neovim_dir=${OPT_DIR}/nvim
   neovim_bin_dir=${neovim_dir}/bin
   export PATH=${neovim_bin_dir}:$PATH
   neovim_version=v0.9.0
-  info "Installing neovim..."
 
-  if [ -x "$(command -v nvim)" ]; then
-    version=$(nvim --version | grep NVIM | cut -d" " -f2)
-    if [ "${neovim_version}" = "${version}" ]; then
-      return
-    fi
-  fi
+  neovim_key="neovim_${neovim_version}"
+  download_if_linux_arm64 ${neovim_key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${neovim_version}/nvim-linux-arm64.tar.gz
+  download_if_linux_amd64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-linux64.tar.gz
+  download_if_darwin_arm64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
+  download_if_darwin_amd64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
 
-  neovim_url=
-  case "$(detect_target)" in
-    darwin-arm64)
-      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
-      ;;
-    darwin-amd64)
-      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
-      ;;
-    linux-amd64)
-      neovim_url=https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-linux64.tar.gz
-      ;;
-    linux-arm64)
-      neovim_url=https://github.com/uesyn/neovim-arm64-builder/releases/download/${neovim_version}/nvim-linux-arm64.tar.gz
-      ;;
-    *) warn "Unsupported platform for neovim: $(detect_target)"; return 0 ;;
-  esac
+  cache_file=$(get_cache_file ${neovim_key})
 
-  neovim_tmp=/tmp/neovim.tar.gz
-  download ${neovim_tmp} ${neovim_url}
   rm -rf ${neovim_dir}
   mkdir -p ${neovim_dir}
-  tar xf ${neovim_tmp} --strip-components=1 -C ${neovim_dir}
-  rm ${neovim_tmp}
+  tar xzf ${cache_file} --strip-components=1 -C ${neovim_dir}
   info "neovim installed!"
 }
 
@@ -277,30 +254,33 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  RTX_VERSION=v1.29.3
-  if [ -x "$(command -v rtx)" ] && [ v"$(rtx version | cut -d" " -f1)" = ${RTX_VERSION} ]; then
-    return
-  fi
-  RTX_PLATFORM=
-  case "$(detect_target)" in
-    darwin-arm64)
-      RTX_PLATFORM=macos-arm64
-      ;;
-    darwin-amd64)
-      RTX_PLATFORM=macos-x64
-      ;;
-    linux-amd64)
-      RTX_PLATFORM=linux-x64
-      ;;
-    linux-arm64)
-      RTX_PLATFORM=linux-arm64
-      ;;
-    *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
-  esac
-  rtx_tmp=/tmp/rtx.tar.gz
-  download ${rtx_tmp} https://github.com/jdxcode/rtx/releases/download/${RTX_VERSION}/rtx-${RTX_VERSION}-${RTX_PLATFORM}.tar.gz
-  tar xzf ${rtx_tmp} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
-  rm ${rtx_tmp}
+  rtx_version=v1.29.3
+  rtx_key="rtx_${rtx_version}"
+
+  download_if_linux_arm64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-linux-arm64.tar.gz
+  download_if_linux_amd64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-linux-x64.tar.gz
+  download_if_darwin_arm64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-macos-arm64.tar.gz
+  download_if_darwin_amd64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-macos-x64.tar.gz
+
+  cache_file=$(get_cache_file ${rtx_key})
+  tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
+  info "rtx installed!"
+}
+
+setup_rust_analyzer() {
+  info "Install rust-analyzer..."
+  rust_analyzer_version=2023-05-01
+  rust_analyzer_key=rust-analyzer_${rust_analyzer_version}
+
+  download_if_linux_arm64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
+  download_if_linux_amd64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-x86_64-unknown-linux-gnu.gz
+  download_if_darwin_arm64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-aarch64-apple-darwin.gz
+  download_if_darwin_amd64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-x86_64-apple-darwin.gz
+
+  cache_file=$(get_cache_file ${rust_analyzer_key})
+  rust_analyzer_bin=${OPT_BIN}/rust-analyzer
+  gunzip -k -c ${cache_file} > ${rust_analyzer_bin}
+  chmod +x ${rust_analyzer_bin}
 }
 
 make_tea_command() {
@@ -355,11 +335,11 @@ setup_tmux() {
 
 setup_node() {
   info "Installing node..."
-  NODE_VERSION=v20.0.0
-  NPM_VERSION=9.6.5
-  make_tea_command "node" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
-  make_tea_command "npx" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
-  make_tea_command "npm" "--silent" "nodejs.org=${NODE_VERSION}" "npmjs.com=${NPM_VERSION}"
+  node_version=v20.0.0
+  npm_version=9.6.5
+  make_tea_command "node" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
+  make_tea_command "npx" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
+  make_tea_command "npm" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
 }
 
 setup_deno() {
@@ -369,24 +349,24 @@ setup_deno() {
 
 setup_go() {
   info "Installing go..."
-  GO_VERSION=1.20.3
-  GOPLS_VERSION=v0.11.0
-  make_tea_command "go" "" "go.dev=${GO_VERSION}"
+  go_version=1.20.3
+  gopls_version=v0.11.0
+  make_tea_command "go" "" "go.dev=${go_version}"
   gopls_path=${OPT_BIN}/gopls
   cat <<EOF > ${gopls_path}
 #!/usr/bin/env sh
 
-tea --silent +go.dev=${GO_VERSION} go run golang.org/x/tools/gopls@${GOPLS_VERSION} "\$@"
+tea --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
 EOF
   chmod +x ${gopls_path}
 }
 
 setup_python() {
   info "Installing python..."
-  PYTHON_VERSION=3.11.3
-  PIP_VERSION=23.1.2
-  make_tea_command "python" "" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
-  make_tea_command "pip" "" "python.org=${PYTHON_VERSION}" "pip.pypa.io=${PIP_VERSION}"
+  python_version=3.11.3
+  pip_version=23.1.2
+  make_tea_command "python" "" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
+  make_tea_command "pip" "" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
 }
 
 setup_rustup_init() {
@@ -404,9 +384,10 @@ EOF
 make_links
 make_local_configs
 setup_tea &
-setup_zsh &
+# setup_zsh &
 setup_aqua &
 setup_rtx &
+setup_rust_analyzer &
 wait
 setup_neovim
 setup_jq
