@@ -148,7 +148,6 @@ setup_tea() {
   fi
   chmod u+x ${tea_path}
   [ ! -d ${HOME}/.tea ] && ${tea_path} --sync
-  info "tea installed!"
 }
 
 setup_zsh() {
@@ -159,7 +158,6 @@ setup_zsh() {
   zsh_dir=${HOME}/opt/zsh
   zsh_bin_version=6.1.1
   sh -c "$(curl -SsfL https://raw.githubusercontent.com/romkatv/zsh-bin/v${zsh_bin_version}/install)" -- -e no -d ${zsh_dir} -q
-  info "zsh installed!"
 }
 
 install_aqua() {
@@ -183,7 +181,6 @@ setup_aqua() {
   export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
   export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
   aqua install -a --tags precede
-  info "aqua installed!"
 }
 
 install_neovim() {
@@ -204,7 +201,6 @@ install_neovim() {
   rm -rf ${neovim_dir}
   mkdir -p ${neovim_dir}
   tar xzf ${cache_file} --strip-components=1 -C ${neovim_dir}
-  info "neovim installed!"
 }
 
 make_local_configs() {
@@ -268,11 +264,10 @@ setup_rtx() {
 
   cache_file=$(get_cache_file ${rtx_key})
   tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
-  info "rtx installed!"
 }
 
 setup_rust_analyzer() {
-  info "Install rust-analyzer..."
+  info "Installing rust-analyzer..."
   rust_analyzer_version=2023-05-01
   rust_analyzer_key=rust-analyzer_${rust_analyzer_version}
 
