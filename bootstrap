@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
 export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
@@ -10,17 +12,17 @@ SCRIPT_DIR="$(cd $(dirname $0); pwd)"
 
 # fork from https://starship.rs/install.sh
 info() {
-  printf '%s\n' "${BOLD}${GREY}>${NO_COLOR} $*"
+  printf '%s\n' "> $*"
 }
 
 # fork from https://starship.rs/install.sh
 warn() {
-  printf '%s\n' "${YELLOW}! $*${NO_COLOR}"
+  printf '%s\n' "! $*"
 }
 
 # fork from https://starship.rs/install.sh
 error() {
-  printf '%s\n' "${RED}x $*${NO_COLOR}" >&2
+  printf '%s\n' "x $*" >&2
 }
 
 # fork from https://starship.rs/install.sh
@@ -43,7 +45,12 @@ detect_target() {
 }
 
 calc_hash() {
-  echo -n "$1" | shasum -a 256 | cut -c-64
+  if [ -x "$(command -v sha256sum)" ]; then
+    printf "$1" | sha256sum | cut -c-64
+  elif [ -x "$(command -v shasum)" ]; then
+    printf "$1" | shasum -a 256 | cut -c-64
+  fi
+  return 1
 }
 
 download() {
@@ -92,7 +99,7 @@ download_if_linux_amd64() {
   return $?
 }
 
-get_cache_file() {
+get_cache() {
   key=$1
   cache_file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${key})"
   [ -f ${cache_file} ] && printf ${cache_file}
@@ -139,7 +146,7 @@ setup_tea() {
   download_if_darwin_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+aarch64.tar.xz
   download_if_darwin_amd64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+x86-64.tar.xz
 
-  cache_file=$(get_cache_file "${tea_key}")
+  cache_file=$(get_cache "${tea_key}")
 
   tar xJf ${cache_file} -C ${OPT_BIN}
   if [ $? -ne 0 ]; then
@@ -170,7 +177,7 @@ install_aqua() {
   download_if_darwin_arm64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_arm64.tar.gz
   download_if_darwin_amd64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_amd64.tar.gz
 
-  cache_file=$(get_cache_file "${aqua_key}")
+  cache_file=$(get_cache "${aqua_key}")
   aqua_bin=${OPT_BIN}/aqua
   tar xzf ${cache_file} -O aqua > ${aqua_bin}
   chmod +x ${aqua_bin}
@@ -196,7 +203,7 @@ install_neovim() {
   download_if_darwin_arm64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
   download_if_darwin_amd64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
 
-  cache_file=$(get_cache_file ${neovim_key})
+  cache_file=$(get_cache ${neovim_key})
 
   rm -rf ${neovim_dir}
   mkdir -p ${neovim_dir}
@@ -254,32 +261,32 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  rtx_version=v1.29.3
-  rtx_key="rtx_${rtx_version}"
+  version=v1.29.3
+  key="${version}"
 
-  download_if_linux_arm64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-linux-arm64.tar.gz
-  download_if_linux_amd64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-linux-x64.tar.gz
-  download_if_darwin_arm64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-macos-arm64.tar.gz
-  download_if_darwin_amd64 ${rtx_key} https://github.com/jdxcode/rtx/releases/download/${rtx_version}/rtx-${rtx_version}-macos-x64.tar.gz
+  download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
+  download_if_linux_amd64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-x64.tar.gz
+  download_if_darwin_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-macos-arm64.tar.gz
+  download_if_darwin_amd64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-macos-x64.tar.gz
 
-  cache_file=$(get_cache_file ${rtx_key})
+  cache_file=$(get_cache ${key})
   tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
 }
 
 setup_rust_analyzer() {
   info "Installing rust-analyzer..."
-  rust_analyzer_version=2023-05-01
-  rust_analyzer_key=rust-analyzer_${rust_analyzer_version}
+  version=2023-05-01
+  key=rust-analyzer_${version}
 
-  download_if_linux_arm64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
-  download_if_linux_amd64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-x86_64-unknown-linux-gnu.gz
-  download_if_darwin_arm64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-aarch64-apple-darwin.gz
-  download_if_darwin_amd64 ${rust_analyzer_key} https://github.com/rust-lang/rust-analyzer/releases/download/${rust_analyzer_version}/rust-analyzer-x86_64-apple-darwin.gz
+  download_if_linux_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
+  download_if_linux_amd64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-x86_64-unknown-linux-gnu.gz
+  download_if_darwin_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-apple-darwin.gz
+  download_if_darwin_amd64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-x86_64-apple-darwin.gz
 
-  cache_file=$(get_cache_file ${rust_analyzer_key})
-  rust_analyzer_bin=${OPT_BIN}/rust-analyzer
-  gunzip -k -c ${cache_file} > ${rust_analyzer_bin}
-  chmod +x ${rust_analyzer_bin}
+  cache_file=$(get_cache ${key})
+  bin=${OPT_BIN}/rust-analyzer
+  gunzip -k -c ${cache_file} > ${bin}
+  chmod +x ${bin}
 }
 
 make_tea_command() {

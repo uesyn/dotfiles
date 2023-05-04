@@ -82,7 +82,7 @@ path=(${KREW_ROOT:-$HOME/.krew}/bin $path)
 # rust
 export RUSTUP_HOME=${OPT_DIR}/rust/rustup
 export CARGO_HOME=${OPT_DIR}/rust/cargo
-path=(${CARGO_HOME}/bin $path)
+path=($path ${CARGO_HOME}/bin)
 
 # tea
 path=(${HOME}/.local/bin $path)
