@@ -375,7 +375,7 @@ setup_rustup_init() {
   cat <<EOF > ${rustup_init_path}
 #!/usr/bin/env sh
 
-tea rustup-init --no-modify-path --default-toolchain nightly --profile complete -y "\$@"
+tea rustup-init --no-modify-path --default-toolchain nightly --profile default "\$@"
 EOF
   chmod +x ${rustup_init_path}
 }
