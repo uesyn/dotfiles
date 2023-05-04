@@ -120,104 +120,104 @@ return {
         }
       })
 
-      local handlers = {
-        ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
-        ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
-      }
 
-      -- local capabilities = vim.lsp.protocol.make_client_capabilities()
-      local capabilities = require('cmp_nvim_lsp').default_capabilities()
-
-      local settings = {
-        ["rust-analyzer"] = {
-          cargo = { allFeatures = true },
-          checkOnSave = { allFeatures = true },
-          diagnostics = {
-            enable = true,
-            disabled = { "unresolved-proc-macro" },
-            enableExperimental = true,
+      local default_opts = function()
+        return {
+          handlers = {
+            ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
+            ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
           },
-        },
-        Lua = {
-          runtime = { version = 'LuaJIT' },
-          diagnostics = { globals = { 'vim' } },
-          telemetry = { enable = false },
-          hint = { enable = true },
-          completion = { enable = true, showWord = "Disable" },
-          workspace = { library = { os.getenv("VIMRUNTIME") } },
-        },
-        gopls = {
-          hints = {
-            assignVariableTypes = true,
-            compositeLiteralFields = true,
-            compositeLiteralTypes = true,
-            constantValues = true,
-            functionTypeParameters = true,
-            parameterNames = true,
-            rangeVariableTypes = true,
-          },
-        },
-      }
-
-      local function setup_handler(server_name)
-        local node_root_dir = require('lspconfig').util.root_pattern("package.json")
-        local is_node_repo = node_root_dir(vim.api.nvim_buf_get_name(0)) ~= nil
-
-        local opts = {
-          handlers = handlers,
-          capabilities = capabilities,
-          settings = settings,
-        }
-
-        if server_name == "tsserver" then
-          if not is_node_repo then
-            return
-          end
-          opts.root_dir = node_root_dir
-        elseif server_name == "eslint" then
-          if not is_node_repo then
-            return
-          end
-          opts.root_dir = node_root_dir
-        elseif server_name == "denols" then
-          if is_node_repo then
-            return
-          end
-          opts.root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts", "import_map.json")
-          opts.init_options = {
-            lint = true,
-            unstable = true,
-            suggest = {
-              imports = {
-                hosts = {
-                  ["https://deno.land"] = true,
-                  ["https://cdn.nest.land"] = true,
-                  ["https://crux.land"] = true
+          -- local capabilities = vim.lsp.protocol.make_client_capabilities()
+          capabilities = require('cmp_nvim_lsp').default_capabilities(),
+          settings = {
+            ["rust-analyzer"] = {
+              cargo = { allFeatures = true },
+              checkOnSave = { allFeatures = true },
+              diagnostics = {
+                enable = true,
+                disabled = { "unresolved-proc-macro" },
+                enableExperimental = true,
+              },
+            },
+            Lua = {
+              runtime = { version = 'LuaJIT' },
+              diagnostics = { globals = { 'vim' } },
+              telemetry = { enable = false },
+              hint = { enable = true },
+              completion = { enable = true, showWord = "Disable" },
+              workspace = { library = { os.getenv("VIMRUNTIME") } },
+            },
+            gopls = {
+              hints = {
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                constantValues = true,
+                functionTypeParameters = true,
+                parameterNames = true,
+                rangeVariableTypes = true,
+              },
+            },
+            denols = {
+              lint = true,
+              unstable = true,
+              suggest = {
+                imports = {
+                  hosts = {
+                    ["https://deno.land"] = true,
+                    ["https://cdn.nest.land"] = true,
+                    ["https://crux.land"] = true
+                  }
                 }
-              }
-            }
-          }
-        end
-        require("lspconfig")[server_name].setup(opts)
+              },
+            },
+          },
+          single_file_support = false,
+        }
       end
+
+      local direct_managed_servers = { "gopls", "rust_analyzer", "denols", "eslint", "tsserver" }
 
       require("mason").setup({ ui = { border = "rounded" } })
       require("mason-lspconfig").setup()
-      require("mason-lspconfig").setup_handlers({ setup_handler })
-
-      local servers = { "gopls", "rust_analyzer" }
-      for _, server_name in ipairs(servers) do
-        if server_name == "rust_analyzer" then
-          if vim.fn.executable("cargo") == 0 then
-            return
+      require("mason-lspconfig").setup_handlers({
+        function(server_name)
+          for _, s in ipairs(direct_managed_servers) do
+            if s == server_name then
+              return
+            end
           end
+          require("lspconfig")[server_name].setup(default_opts())
         end
+      })
 
-        require("lspconfig")[server_name].setup({
-          handlers = handlers,
-          capabilities = capabilities,
-          settings = settings,
-        })
+      local node_root_dir = require('lspconfig').util.root_pattern("package.json")
+      local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
+        "import_map.json")
+      for _, server_name in ipairs(direct_managed_servers) do
+        local opts = default_opts()
+        if server_name == "rust_analyzer" then
+          if vim.fn.executable("rust-analyzer") == 0 or vim.fn.executable("cargo") == 0 then
+            goto continue
+          end
+        elseif server_name == "tsserver" then
+          if vim.fn.executable("tsserver") == 0 then
+            goto continue
+          end
+          opts.root_dir = node_root_dir
+        elseif server_name == "eslint" then
+          if vim.fn.executable("eslint") == 0 then
+            goto continue
+          end
+          opts.root_dir = node_root_dir
+        elseif server_name == "denols" then
+          if vim.fn.executable("deno") == 0 then
+            goto continue
+          end
+          opts.root_dir = deno_root_dir
+        end
+        require("lspconfig")[server_name].setup(opts)
+        ::continue::
       end
     end
   }
