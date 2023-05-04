@@ -342,7 +342,7 @@ setup_tmux() {
 setup_node() {
   info "Installing node..."
   node_version=v20.0.0
-  npm_version=9.6.5
+  npm_version=9.6.6
   make_tea_command "node" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
   make_tea_command "npx" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
   make_tea_command "npm" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
