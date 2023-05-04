@@ -95,7 +95,7 @@ download_if_linux_amd64() {
 get_cache_file() {
   key=$1
   cache_file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${key})"
-  [ -f ${cache_file} ] && echo -n ${cache_file}
+  [ -f ${cache_file} ] && printf ${cache_file}
 }
 
 make_link() {
@@ -142,6 +142,10 @@ setup_tea() {
   cache_file=$(get_cache_file "${tea_key}")
 
   tar xJf ${cache_file} -C ${OPT_BIN}
+  if [ $? -ne 0 ]; then
+   echo "failed to execute...."
+   exit 1
+  fi
   chmod u+x ${tea_path}
   [ ! -d ${HOME}/.tea ] && ${tea_path} --sync
   info "tea installed!"
