@@ -47,8 +47,10 @@ detect_target() {
 calc_hash() {
   if [ -x "$(command -v sha256sum)" ]; then
     printf "$1" | sha256sum | cut -c-64
+    return
   elif [ -x "$(command -v shasum)" ]; then
     printf "$1" | shasum -a 256 | cut -c-64
+    return
   fi
   return 1
 }
@@ -136,7 +138,6 @@ TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
 setup_tea() {
   info "Installing tea..."
 
-  tea_tmp=/tmp/tea.tar.gz
   tea_path="${OPT_BIN}/tea"
   tea_version="0.31.2"
 
@@ -262,7 +263,7 @@ EOF
 setup_rtx() {
   info "Installing rtx..."
   version=v1.29.3
-  key="${version}"
+  key="rtx_${version}"
 
   download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
   download_if_linux_amd64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-x64.tar.gz
