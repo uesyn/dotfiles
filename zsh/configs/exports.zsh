@@ -46,7 +46,6 @@ path=(${OPT_DIR}/coreutils/bin $path)
 export AQUA_DISABLE_POLICY=true
 export AQUA_REQUIRE_CHECKSUM=false
 export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
-export AQUA_EXPERIMENTAL_X_SYS_EXEC=true
 path=(${XDG_DATA_HOME}/aquaproj-aqua/bin $path)
 
 # go
