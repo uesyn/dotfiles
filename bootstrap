@@ -337,7 +337,7 @@ setup_gh() {
 
 setup_tmux() {
   info "Installing tmux..."
-  make_tea_command "tmux" "" "github.com/tmux/tmux=3.3"
+  make_tea_command "tmux" "" "github.com/tmux/tmux=3.3a"
 }
 
 setup_node() {
