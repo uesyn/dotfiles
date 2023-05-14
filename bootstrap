@@ -358,7 +358,7 @@ setup_go() {
   info "Installing go..."
   go_version=1.20.3
   gopls_version=v0.11.0
-  make_tea_command "go" "" "go.dev=${go_version}"
+  make_tea_command "go" "--silent" "go.dev=${go_version}"
   gopls_path=${OPT_BIN}/gopls
   cat <<EOF > ${gopls_path}
 #!/usr/bin/env sh
@@ -372,8 +372,16 @@ setup_python() {
   info "Installing python..."
   python_version=3.11.3
   pip_version=23.1.2
-  make_tea_command "python" "" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
-  make_tea_command "pip" "" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
+  make_tea_command "python" "--silent" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
+  make_tea_command "pip" "--silent" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
+}
+
+setup_ruby() {
+  info "Installing ruby..."
+  ruby_version=3.2.2
+  gem_version=3.4.9
+  make_tea_command "ruby" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
+  make_tea_command "gem" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
 }
 
 setup_rustup_init() {
@@ -403,6 +411,7 @@ setup_tmux
 setup_node
 setup_deno
 setup_python
+setup_ruby
 setup_go
 setup_rustup_init
 wait
