@@ -251,6 +251,7 @@ return {
 
   {
     "romgrk/barbar.nvim",
+    version = "v1.x",
     dependencies = {
       "nvim-web-devicons",
     },
