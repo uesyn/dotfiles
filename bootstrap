@@ -366,6 +366,9 @@ setup_go() {
 tea --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
 EOF
   chmod +x ${gopls_path}
+
+  go_1_19_version=1.19.9
+  make_tea_command "go1.19" "--silent" "go.dev=${go_1_19_version}"
 }
 
 setup_python() {
