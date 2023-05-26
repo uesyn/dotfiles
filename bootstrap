@@ -361,6 +361,8 @@ setup_go() {
   go_version=1.20.3
   gopls_version=v0.11.0
   make_tea_command "go" "--silent" "go.dev=${go_version}"
+  go_1_19_version="1.19.9"
+  make_tea_command_with_bin_name "go" "go1.19" "--silent" "go.dev=${go_1_19_version}"
   gopls_path=${OPT_BIN}/gopls
   cat <<EOF > ${gopls_path}
 #!/usr/bin/env sh
@@ -368,9 +370,16 @@ setup_go() {
 tea --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
 EOF
   chmod +x ${gopls_path}
+}
 
-  go_1_19_version=1.19.9
-  make_tea_command_with_bin_name "go" "go1.19" "--silent" "go.dev=${go_1_19_version}"
+setup_kubectl() {
+  info "Installing kubectl..."
+  kubectl_version=1.27.2
+  kubectl_1_26_version=1.26.5
+  kubectl_1_25_version=1.25.10
+  make_tea_command "kubectl" "--silent" "kubernetes.io/kubectl=${kubectl_version}"
+  make_tea_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
+  make_tea_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
 }
 
 setup_python() {
@@ -419,5 +428,6 @@ setup_python
 setup_ruby
 setup_go
 setup_rustup_init
+setup_kubectl
 wait
 show_infos

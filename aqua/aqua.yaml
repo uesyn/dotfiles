@@ -9,8 +9,6 @@ packages:
 - name: junegunn/fzf@0.39.0
   tags:
   - precede
-- name: kubernetes/kubectl
-  version: v1.27.1
 - name: helm/helm@v3.11.1
 - name: golangci/golangci-lint@v1.52.2
 - name: kubernetes-sigs/kind@v0.18.0
