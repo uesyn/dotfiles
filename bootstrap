@@ -353,7 +353,7 @@ setup_node() {
 
 setup_deno() {
   info "Installing deno..."
-  make_tea_command "deno" "--silent" "deno.land=1.33.4"
+  make_tea_command "deno" "--silent" "deno.land=1.34.0"
 }
 
 setup_go() {
