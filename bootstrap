@@ -290,32 +290,34 @@ setup_rust_analyzer() {
   chmod +x ${bin}
 }
 
-make_tea_command() {
-  bin_name=$1
-  tea_args=$2
-  shift 2
+make_tea_command_with_bin_name() {
+  cmd_name=$1
+  bin_name=$2
+  tea_args=$3
+  shift 3
   depends=$@
+
   depend_args=
   for d in ${depends}; do
-    if [ -n ${depend_args} ]; then
-      depend_args="+${d} ${depend_args}"
-    else
-      depend_args="+${d}"
-    fi
+    tea_args="${tea_args} +${d}"
   done
 
-  cmd="tea ${depend_args} ${bin_name}"
-  if [ -n ${tea_args} ]; then
-    cmd="tea ${tea_args} ${depend_args} ${bin_name}"
-  fi
-
+  cmd="tea ${tea_args} ${cmd_name} \$@"
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
 
-${cmd} "\$@"
+${cmd}
 EOF
   chmod +x ${bin_path}
+}
+
+make_tea_command() {
+  cmd_name=$1
+  tea_args=$2
+  shift 2
+  depends=$@
+  make_tea_command_with_bin_name "${cmd_name}" "${cmd_name}" "${tea_args}" "${@}"
 }
 
 setup_neovim() {
@@ -368,7 +370,7 @@ EOF
   chmod +x ${gopls_path}
 
   go_1_19_version=1.19.9
-  make_tea_command "go1.19" "--silent" "go.dev=${go_1_19_version}"
+  make_tea_command_with_bin_name "go" "go1.19" "--silent" "go.dev=${go_1_19_version}"
 }
 
 setup_python() {
