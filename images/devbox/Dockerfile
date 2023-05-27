@@ -1,4 +1,4 @@
-FROM debian:bookworm
+FROM ubuntu:22.04
 ENV LANG=en_US.UTF-8
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
