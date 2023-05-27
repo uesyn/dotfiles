@@ -3,14 +3,40 @@ ENV LANG=en_US.UTF-8
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
+        ca-certificates curl gnupg gnupg2 && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update && \
+    apt install -y --no-install-recommends \
+        systemd init && \
+	rm -f /lib/systemd/system/multi-user.target.wants/* &&\
+        rm -f /etc/systemd/system/*.wants/* &&\
+        rm -f /lib/systemd/system/local-fs.target.wants/* && \
+        rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
+        rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
+        rm -f /lib/systemd/system/basic.target.wants/* && \
+        rm -f /lib/systemd/system/anaconda.target.wants/* && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
+    apt update && \
+    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update && \
+    apt install -y --no-install-recommends \
         apparmor \
         build-essential \
-        ca-certificates \
-        curl \
         dnsutils \
         git \
         git-lfs \
-        gnupg2 \
         gosu \
         iproute2 \
         iptables \
@@ -25,7 +51,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         openssh-client \
         procps \
         psmisc \
-	s6 \
         sudo \
         time \
         tzdata \
@@ -35,22 +60,12 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         zip \
         zsh \
         zstd && \
-    apt autoremove -y && \
+    rm -rf /var/lib/apt/lists/* && \
     apt clean
-# https://github.com/pyenv/pyenv/wiki#suggested-build-environment
-RUN apt install -y build-essential libssl-dev zlib1g-dev \
-        libbz2-dev libreadline-dev libsqlite3-dev curl \
-        libncursesw5-dev xz-utils tk-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev && \
-    apt autoremove -y && \
-    apt clean
+RUN locale-gen en_US.UTF-8 ja_JP.UTF-8
 RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
-      update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
-RUN echo "en_US.UTF-8 UTF-8" >> /etc/locale.gen && locale-gen
-RUN groupadd -g 9999 docker && \
-      groupadd devbox -g 1000 && \
-      useradd devbox -g 1000 -G docker
+    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+RUN groupadd devbox -g 1000 && \
+    useradd devbox -g 1000 -G docker
 COPY sudoers.d/devbox /etc/sudoers.d/devbox
-COPY --from=docker:23.0.4 /usr/local/bin/docker /usr/local/bin/docker
-COPY --from=docker/buildx-bin:latest /buildx /usr/libexec/docker/cli-plugins/docker-buildx
-USER devbox
-ENTRYPOINT ["tail", "-f", "/dev/null"]
+ENTRYPOINT ["/sbin/init"]
