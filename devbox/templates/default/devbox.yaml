@@ -3,47 +3,34 @@ kind: Pod
 metadata:
   name: devbox
 spec:
-  automountServiceAccountToken: true
+  automountServiceAccountToken: false
   securityContext:
     fsGroup: 1000
   containers:
   - name: devbox
     image: ghcr.io/uesyn/devbox
-    env:
-    - name: DOCKER_HOST
-      value: tcp://localhost:2375
+    stdin: true
     lifecycle:
       postStart:
         exec:
           command:
-          - /bin/sh
+          - gosu
+          - devbox
+          - /bin/bash
           - -c
-          - |-
-            DOTFILES_DIR="/home/devbox/src/github.com/uesyn/dotfiles"
+          - |
+            export HOME=/home/devbox
+            DOTFILES_DIR=${HOME}/src/github.com/uesyn/dotfiles
             if [[ -d ${DOTFILES_DIR} ]]; then
               exit
             fi
             git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
-            ${DOTFILES_DIR}/bootstrap
+            bash ${DOTFILES_DIR}/bootstrap
     volumeMounts:
     - name: home
       mountPath: /home/devbox
-  - name: docker
-    image: docker:23.0.4-dind
-    args:
-    - --mtu=1280
-    - --bip=172.23.0.254/24
-    - --registry-mirror=https://mirror.gcr.io
-    env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
     securityContext:
       privileged: true
-    volumeMounts:
-    - name: var-lib-docker
-      mountPath: /var/lib/docker
-    - name: home
-      mountPath: /root
   volumes:
   - name: home
     persistentVolumeClaim:

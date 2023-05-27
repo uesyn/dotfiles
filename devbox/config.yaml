@@ -2,6 +2,8 @@ template:
   loadRestrictionsNone: true
 exec:
   command:
+  - gosu
+  - devbox
   - zsh
   envs:
   - name: PROMPT_ICON
