@@ -228,6 +228,13 @@ if [[ -n "$MY_GITHUB_TOKEN" ]]; then
 fi
 EOF
   fi
+
+  bashrc_local_file=${HOME}/.bashrc.local
+  if [ ! -f "${bashrc_local_file}" ]; then
+    cat << 'EOF' > ${bashrc_local_file}
+source ${zlogin_file}
+EOF
+  fi
 }
 
 show_infos() {
