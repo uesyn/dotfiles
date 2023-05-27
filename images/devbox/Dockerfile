@@ -25,6 +25,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         openssh-client \
         procps \
         psmisc \
+	s6 \
         sudo \
         time \
         tzdata \
