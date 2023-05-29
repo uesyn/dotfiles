@@ -14,7 +14,7 @@ export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
 # aqua
-export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/global_aqua.yaml
+export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
 export PATH=${XDG_DATA_HOME}/aquaproj-aqua/bin:${PATH}
 
 ## opt
@@ -45,6 +45,9 @@ if [[ -x "$(command -v kubectl)" ]]; then
     kubectl $@
   }
 fi
+
+# krew
+export PATH=${PATH}:${HOME}/.krew/bin
 
 # load local bashrc
 touch ${HOME}/.bashrc.local
