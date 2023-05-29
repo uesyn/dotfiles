@@ -27,6 +27,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
+    systemctl disable docker && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 RUN export DEBIAN_FRONTEND=noninteractive && \
