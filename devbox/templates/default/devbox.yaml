@@ -29,6 +29,8 @@ spec:
     volumeMounts:
     - name: home
       mountPath: /home/devbox
+    - name: var-lib-docker
+      mountPath: /var/lib/docker
     securityContext:
       privileged: true
   volumes:
