@@ -41,7 +41,7 @@ alias kn='kubens'
 if [[ -x "$(command -v kubectl)" ]]; then
   kubectl() {
     unset -f kubectl
-    source <(kubectl completion zsh)
+    source <(kubectl completion bash)
     kubectl $@
   }
 fi
