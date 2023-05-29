@@ -33,6 +33,19 @@ export GO111MODULE=on
 export GOPATH=${HOME}
 export GOBIN=${OPT_BIN}
 
+# kubectl
+alias k='kubectl'
+alias ks='kubectl -n kube-system'
+alias kx='kubectx'
+alias kn='kubens'
+if [[ -x "$(command -v kubectl)" ]]; then
+  kubectl() {
+    unset -f kubectl
+    source <(kubectl completion zsh)
+    kubectl $@
+  }
+fi
+
 # load local bashrc
 touch ${HOME}/.bashrc.local
 source ${HOME}/.bashrc.local
