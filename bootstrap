@@ -309,7 +309,7 @@ make_tea_command_with_bin_name() {
     tea_args="${tea_args} +${d}"
   done
 
-  cmd="tea ${tea_args} ${cmd_name} \$@"
+  cmd="tea ${tea_args} ${cmd_name} \"\$@\""
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
