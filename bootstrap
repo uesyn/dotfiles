@@ -139,7 +139,7 @@ setup_tea() {
   info "Installing tea..."
 
   tea_path="${OPT_BIN}/tea"
-  tea_version="0.32.1"
+  tea_version="0.33.3"
 
   tea_key="tea_${tea_version}"
   download_if_linux_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+aarch64.tar.xz
