@@ -196,7 +196,7 @@ install_neovim() {
   neovim_dir=${OPT_DIR}/nvim
   neovim_bin_dir=${neovim_dir}/bin
   export PATH=${neovim_bin_dir}:$PATH
-  neovim_version=v0.9.0
+  neovim_version=v0.9.1
 
   neovim_key="neovim_${neovim_version}"
   download_if_linux_arm64 ${neovim_key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${neovim_version}/nvim-linux-arm64.tar.gz
@@ -330,7 +330,7 @@ make_tea_command() {
 setup_neovim() {
   info "Installing neovim and plugins..."
   # install_neovim
-  make_tea_command "nvim" "" "neovim.io=0.9.0"
+  make_tea_command "nvim" "" "neovim.io=0.9.1"
   nvim --headless "+Lazy! restore" +qa
 }
 
