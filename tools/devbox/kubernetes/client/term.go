@@ -1,47 +1,57 @@
 package client
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/moby/term"
 	"k8s.io/client-go/tools/remotecommand"
 )
 
 type termSizeQueue struct {
 	fd         uintptr
-	resizeChan chan *remotecommand.TerminalSize
+	resizeChan chan remotecommand.TerminalSize
 }
 
 func newTermSizeQueue(fd uintptr) *termSizeQueue {
 	return &termSizeQueue{
 		fd:         fd,
-		resizeChan: make(chan *remotecommand.TerminalSize, 1),
+		resizeChan: make(chan remotecommand.TerminalSize, 1),
 	}
 }
 
-func (t *termSizeQueue) GetTermSize() *remotecommand.TerminalSize {
+func (t *termSizeQueue) GetTermSize() remotecommand.TerminalSize {
 	wsize, err := term.GetWinsize(t.fd)
 	if err != nil {
 		panic(err)
 	}
 
-	return &remotecommand.TerminalSize{
+	return remotecommand.TerminalSize{
 		Width:  wsize.Width,
 		Height: wsize.Height,
 	}
 }
 
 func (t *termSizeQueue) startMonitor() {
-	size := t.GetTermSize()
-	t.resizeChan <- size
+	t.resizeChan <- t.GetTermSize()
 
 	go func() {
+		winch := make(chan os.Signal, 1)
+		signal.Notify(winch, syscall.SIGWINCH)
+		defer signal.Stop(winch)
+
 		for {
-			current := t.GetTermSize()
-			if current.Width == size.Width &&
-				current.Height == size.Height {
-				continue
+			select {
+			case <-winch:
+				size := t.GetTermSize()
+				select {
+				case t.resizeChan <- size:
+					// success
+				default:
+					// not sent
+				}
 			}
-			t.resizeChan <- current
-			size = current
 		}
 	}()
 }
@@ -51,5 +61,5 @@ func (t *termSizeQueue) Next() *remotecommand.TerminalSize {
 	if !ok {
 		return nil
 	}
-	return size
+	return &size
 }

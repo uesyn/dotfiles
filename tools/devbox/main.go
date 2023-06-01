@@ -8,8 +8,7 @@ import (
 )
 
 func main() {
-	ctx := context.Background()
-	if err := cmd.NewRootApp().RunContext(ctx, os.Args); err != nil {
+	if err := cmd.NewRootApp().RunContext(context.Background(), os.Args); err != nil {
 		os.Exit(1)
 	}
 }
