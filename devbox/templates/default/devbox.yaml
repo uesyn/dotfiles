@@ -10,6 +10,7 @@ spec:
   - name: devbox
     image: ghcr.io/uesyn/devbox
     stdin: true
+    tty: true
     lifecycle:
       postStart:
         exec:
