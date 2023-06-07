@@ -269,7 +269,7 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  version=v1.29.3
+  version=v1.32.0
   key="rtx_${version}"
 
   download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
