@@ -32,6 +32,8 @@ spec:
       mountPath: /home/devbox
     - name: var-lib-docker
       mountPath: /var/lib/docker
+    - name: docker-config
+      mountPath: /etc/docker
     securityContext:
       privileged: true
   volumes:
@@ -40,4 +42,7 @@ spec:
       claimName: home
   - name: var-lib-docker
     emptyDir: {}
+  - name: docker-config
+    configMap:
+      name: docker-config
   terminationGracePeriodSeconds: 1

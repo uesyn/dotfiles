@@ -70,5 +70,4 @@ RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
 RUN groupadd devbox -g 1000 && \
     useradd devbox -g 1000 -G docker
 COPY sudoers.d/devbox /etc/sudoers.d/devbox
-COPY docker /etc/docker
 ENTRYPOINT ["/sbin/init"]

@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - devbox.yaml
 - pvc.yaml
+- configmap.yaml
