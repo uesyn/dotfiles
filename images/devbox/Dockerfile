@@ -19,6 +19,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         rm -f /lib/systemd/system/anaconda.target.wants/* && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
+ENV PATH=${PATH}:/usr/libexec/docker/cli-plugins
 RUN export DEBIAN_FRONTEND=noninteractive && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
@@ -35,6 +36,7 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         apparmor \
         build-essential \
         dnsutils \
+        file \
         git \
         git-lfs \
         gosu \
