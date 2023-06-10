@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+IMAGE=gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
+VOLUME_OPTS="-v ${HOME}/.config/gcloud:${HOME}/.config/gcloud -v ${HOME}/.kube:${HOME}/.kube -v ${HOME}/.docker:${HOME}/.docker"
+CMD=${BASH_SOURCE[0]##*/}
+
+exec docker run --rm -it -e HOME ${VOLUME_OPTS} -u $(id -u) $IMAGE ${CMD} "$@"
