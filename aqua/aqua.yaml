@@ -26,7 +26,6 @@ packages:
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
 - name: ziglang/zig
   version: '0.10.1'
-- name: twistedpair/google-cloud-sdk@423.0.0
 - name: x-motemen/ghq@v1.4.1
   tags:
   - precede
