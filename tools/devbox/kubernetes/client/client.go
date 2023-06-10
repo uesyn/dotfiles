@@ -11,6 +11,7 @@ import (
 
 	"github.com/moby/term"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -44,6 +45,7 @@ func newConfig(configPath string, contextName string) clientcmd.ClientConfig {
 
 type Client interface {
 	ctrlclient.Client
+	Events(ctx context.Context, kind, name, namespace string) ([]corev1.Event, error)
 	Exec(ctx context.Context, podName, namespace, containerName string, opts ...ExecOption) error
 	PortForward(ctx context.Context, podName, namespace string, opts ...PortForwardOption) error
 }
@@ -69,6 +71,22 @@ func New(configPath string, context string) (Client, error) {
 type defaultClient struct {
 	ctrlclient.Client
 	restConfig *restclient.Config
+}
+
+func (c *defaultClient) Events(ctx context.Context, kind, name, namespace string) ([]corev1.Event, error) {
+	var list corev1.EventList
+	opts := ctrlclient.ListOptions{
+		FieldSelector: fields.AndSelectors(
+			fields.OneTermEqualSelector("involvedObject.kind", kind),
+			fields.OneTermEqualSelector("involvedObject.name", name),
+			fields.OneTermEqualSelector("metadata.namespace", namespace),
+		),
+		Limit: 100,
+	}
+	if err := c.List(ctx, &list, &opts); err != nil {
+		return nil, err
+	}
+	return list.Items, nil
 }
 
 func (c *defaultClient) Exec(ctx context.Context, podName, namespace, containerName string, opts ...ExecOption) error {

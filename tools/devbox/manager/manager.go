@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -31,6 +32,7 @@ type Manager interface {
 	List(ctx context.Context, namespace string) ([]info.DevboxInfoAccessor, error)
 	Protect(ctx context.Context, devboxName, namespace string) error
 	Unprotect(ctx context.Context, devboxName, namespace string) error
+	Events(ctx context.Context, devboxName, namespace string) (*corev1.EventList, error)
 }
 
 type manager struct {
@@ -483,4 +485,51 @@ func (m *manager) waitForDevboxPodReady(ctx context.Context, d devbox.Devbox) er
 		}
 		return nil
 	}
+}
+
+func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*corev1.EventList, error) {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
+	ctx = logr.NewContext(ctx, logger)
+
+	r, err := m.store.Get(ctx, devboxName, namespace)
+	if err != nil {
+		return nil, err
+	}
+
+	var el corev1.EventList
+	for _, obj := range r.Objects {
+		kind := obj.GetKind()
+		name := obj.GetName()
+		events, err := m.client.Events(ctx, kind, name, namespace)
+		if err != nil {
+			return nil, err
+		}
+		el.Items = append(el.Items, events...)
+	}
+	sort.Sort(sortableEvents(el.Items))
+	return &el, nil
+}
+
+type sortableEvents []corev1.Event
+
+func (list sortableEvents) Len() int {
+	return len(list)
+}
+
+func (list sortableEvents) Swap(i, j int) {
+	list[i], list[j] = list[j], list[i]
+}
+
+func (list sortableEvents) Less(i, j int) bool {
+	return eventTime(list[i]).Before(eventTime(list[j]))
+}
+
+func eventTime(event corev1.Event) time.Time {
+	if event.Series != nil {
+		return event.Series.LastObservedTime.Time
+	}
+	if !event.LastTimestamp.Time.IsZero() {
+		return event.LastTimestamp.Time
+	}
+	return event.EventTime.Time
 }

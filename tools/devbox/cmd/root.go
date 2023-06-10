@@ -60,6 +60,7 @@ func NewRootApp() *cli.App {
 			newUnprotectCommand(),
 			newUpdateCommand(),
 			newTemplateCommand(),
+			newEventCommand(),
 		},
 	}
 }
