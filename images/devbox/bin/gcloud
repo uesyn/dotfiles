@@ -4,4 +4,12 @@ IMAGE=gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
 VOLUME_OPTS="-v ${HOME}/.config/gcloud:${HOME}/.config/gcloud -v ${HOME}/.kube:${HOME}/.kube -v ${HOME}/.docker:${HOME}/.docker"
 CMD=${BASH_SOURCE[0]##*/}
 
-exec docker run --rm -it -e HOME ${VOLUME_OPTS} -u $(id -u) $IMAGE ${CMD} "$@"
+GCLOUD_CONTAINER=gcloud
+(
+  if [[ -z "$(docker ps -a -q --filter name=${GCLOUD_CONTAINER})" ]]; then
+    docker run --name ${GCLOUD_CONTAINER} -d -it -e HOME ${VOLUME_OPTS} -u $(id -u) $IMAGE tail -f /dev/null
+  fi
+  docker start ${GCLOUD_CONTAINER}
+) 2>&1 >/dev/null
+
+exec docker exec ${GCLOUD_CONTAINER} ${CMD} "$@"
