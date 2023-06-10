@@ -8,3 +8,7 @@ spec:
     persistentVolumeClaim:
       $patch: delete
     emptyDir: {}
+  - name: var-lib-docker
+    persistentVolumeClaim:
+      $patch: delete
+    emptyDir: {}

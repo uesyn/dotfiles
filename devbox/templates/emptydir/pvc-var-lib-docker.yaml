@@ -1,0 +1,5 @@
+$patch: delete
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: var-lib-docker

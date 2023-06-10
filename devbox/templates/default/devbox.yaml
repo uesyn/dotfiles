@@ -41,7 +41,8 @@ spec:
     persistentVolumeClaim:
       claimName: home
   - name: var-lib-docker
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: var-lib-docker
   - name: docker-config
     configMap:
       name: docker-config

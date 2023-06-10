@@ -4,4 +4,5 @@ resources:
 - ../default
 patches:
 - path: devbox.yaml
-- path: pvc.yaml
+- path: pvc-home.yaml
+- path: pvc-var-lib-docker.yaml
