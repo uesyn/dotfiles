@@ -47,6 +47,7 @@ return {
 
   {
     'j-hui/fidget.nvim',
+    branch = "legacy",
     event = "LspAttach",
     config = function()
       require("fidget").setup({ window = { blend = 0 } })
