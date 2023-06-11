@@ -392,9 +392,7 @@ setup_kubectl() {
 setup_python() {
   info "Installing python..."
   python_version=3.11.3
-  pip_version=23.1.2
-  make_tea_command "python" "--silent" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
-  make_tea_command "pip" "--silent" "python.org=${python_version}" "pip.pypa.io=${pip_version}"
+  make_tea_command "python" "--silent" "python.org=${python_version}"
 }
 
 setup_ruby() {
