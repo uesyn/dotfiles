@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 
 	"github.com/moby/term"
@@ -93,7 +92,8 @@ func (c *defaultClient) Exec(ctx context.Context, podName, namespace, containerN
 	execOpts := &ExecOptions{}
 	execOpts.ApplyOptions(opts)
 
-	if !term.IsTerminal(execOpts.Stdin.Fd()) {
+	fd, isTerminal := term.GetFdInfo(execOpts.Stdin)
+	if !isTerminal {
 		return fmt.Errorf("must run in terminal")
 	}
 
@@ -104,15 +104,15 @@ func (c *defaultClient) Exec(ctx context.Context, podName, namespace, containerN
 	command = append(command, execOpts.Command...)
 
 	var oldState *term.State
-	oldState, err := term.SetRawTerminal(execOpts.Stdin.Fd())
+	oldState, err := term.SetRawTerminal(fd)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_ = term.RestoreTerminal(execOpts.Stdin.Fd(), oldState)
+		_ = term.RestoreTerminal(fd, oldState)
 	}()
 
-	queue := newTermSizeQueue(execOpts.Stdin.Fd())
+	queue := newTermSizeQueue(fd)
 	queue.startMonitor()
 
 	clientset := kubernetes.NewForConfigOrDie(c.restConfig)
@@ -150,7 +150,7 @@ type ExecOption interface {
 }
 
 type ExecOptions struct {
-	Stdin   *os.File
+	Stdin   io.ReadCloser
 	Stdout  io.Writer
 	Stderr  io.Writer
 	Command []string

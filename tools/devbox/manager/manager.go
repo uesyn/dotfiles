@@ -3,11 +3,11 @@ package manager
 import (
 	"context"
 	"fmt"
-	"os"
 	"sort"
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/moby/term"
 	"github.com/uesyn/devbox/devbox"
 	"github.com/uesyn/devbox/kubernetes/client"
 	"github.com/uesyn/devbox/manager/info"
@@ -239,10 +239,11 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 		return fmt.Errorf("failed to load devbox: %w", err)
 	}
 
+	stdin, stdout, stderr := term.StdStreams()
 	opts := &client.ExecOptions{
-		Stdin:   os.Stdin,
-		Stdout:  os.Stdout,
-		Stderr:  os.Stderr,
+		Stdin:   stdin,
+		Stdout:  stdout,
+		Stderr:  stderr,
 		Command: command,
 		Envs:    envs,
 	}
