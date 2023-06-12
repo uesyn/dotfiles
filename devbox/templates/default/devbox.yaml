@@ -11,6 +11,7 @@ spec:
     image: ghcr.io/uesyn/devbox
     stdin: true
     tty: true
+    workingDir: /home/devbox
     lifecycle:
       postStart:
         exec:
