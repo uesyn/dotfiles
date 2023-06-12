@@ -61,11 +61,16 @@ function _shutdown_prompt() {
   fi
 }
 
+function _python_prompt() {
+  if [[ -n "${VIRTUAL_ENV}" ]]; then
+    echo -n " 🐍 %F{#99CC33}venv%f"
+  fi
+}
+
 function _my_prompt() {
-  local os_prompt dir_prompt git_prompt shutdown_prompt
+  local os_prompt dir_prompt git_prompt shutdown_prompt kube_prompt python_prompt short_dir_prompt
 
   shutdown_prompt='$(_shutdown_prompt)'
-
   os_prompt=""
   case $OSTYPE in
     darwin*) os_prompt=" %F{#ff79c6} %f" ;;
@@ -74,16 +79,12 @@ function _my_prompt() {
   if [[ -n "${PROMPT_ICON}" ]]; then
     os_prompt=" %F{#ff79c6}${PROMPT_ICON} %f"
   fi
-
   short_dir_prompt="%c"
-
   dir_prompt=" %F{#fabd2f} %f%~"
-
   git_prompt='$(_git_prompt)'
-
   kube_prompt='$(_kube_prompt)'
-
-  PROMPT="${shutdown_prompt}${os_prompt}${short_dir_prompt}${git_prompt}${kube_prompt}${new_line}
+  python_prompt='$(_python_prompt)'
+  PROMPT="${shutdown_prompt}${os_prompt}${short_dir_prompt}${git_prompt}${kube_prompt}${python_prompt}${new_line}
  %F{#a89984}%f "
   RPROMPT="${dir_prompt}"
 }

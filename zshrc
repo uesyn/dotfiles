@@ -10,6 +10,7 @@ for config (
 	"git-prompt"
 	"prompt"
 	"lazy"
+	"hooks"
 ) {
   source ${HOME}/.config/zsh/configs/${config}.zsh
 }

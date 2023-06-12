@@ -78,6 +78,9 @@ export LS_COLORS
 # krew
 path=(${KREW_ROOT:-$HOME/.krew}/bin $path)
 
+# python
+export VIRTUAL_ENV_DISABLE_PROMPT=y
+
 # rust
 export RUSTUP_HOME=${OPT_DIR}/rust/rustup
 export CARGO_HOME=${OPT_DIR}/rust/cargo
