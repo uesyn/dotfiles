@@ -92,7 +92,11 @@ func (c *defaultClient) Exec(ctx context.Context, podName, namespace, containerN
 	execOpts := &ExecOptions{}
 	execOpts.ApplyOptions(opts)
 
-	fd, isTerminal := term.GetFdInfo(execOpts.Stdin)
+	inFd, isTerminal := term.GetFdInfo(execOpts.Stdin)
+	if !isTerminal {
+		return fmt.Errorf("must run in terminal")
+	}
+	outFd, isTerminal := term.GetFdInfo(execOpts.Stdout)
 	if !isTerminal {
 		return fmt.Errorf("must run in terminal")
 	}
@@ -104,15 +108,15 @@ func (c *defaultClient) Exec(ctx context.Context, podName, namespace, containerN
 	command = append(command, execOpts.Command...)
 
 	var oldState *term.State
-	oldState, err := term.SetRawTerminal(fd)
+	oldState, err := term.SetRawTerminal(inFd)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		_ = term.RestoreTerminal(fd, oldState)
+		_ = term.RestoreTerminal(inFd, oldState)
 	}()
 
-	queue := newTermSizeQueue(fd)
+	queue := newTermSizeQueue(outFd)
 	queue.startMonitor()
 
 	clientset := kubernetes.NewForConfigOrDie(c.restConfig)
