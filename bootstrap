@@ -365,7 +365,7 @@ setup_deno() {
 
 setup_go() {
   info "Installing go..."
-  go_version=1.20.3
+  go_version=1.20.5
   gopls_version=v0.12.2
   go_1_19_version="1.19.9"
   make_tea_command "go" "--silent" "go.dev=${go_version}"
