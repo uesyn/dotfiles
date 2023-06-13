@@ -18,12 +18,13 @@ get_venv_path() {
   done
 }
 
-auto_python_venv() {
-  local d=${PWD}
+autoload_python_venv() {
   local vpath="$(get_venv_path)"
 
-  if [[ -n ${vpath} ]]; then
-    source ${vpath}/bin/activate > /dev/null 2>&1
+  if [[ -f ${vpath}/bin/activate ]]; then
+    if [[ -z "$(command -v deactivate)" ]]; then
+      source ${vpath}/bin/activate > /dev/null 2>&1
+    fi
     return
   fi
 
@@ -32,5 +33,4 @@ auto_python_venv() {
   fi
 }
 
-add-zsh-hook chpwd auto_python_venv
-auto_python_venv
+add-zsh-hook precmd auto_python_venv
