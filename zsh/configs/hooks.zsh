@@ -33,4 +33,4 @@ autoload_python_venv() {
   fi
 }
 
-add-zsh-hook precmd auto_python_venv
+add-zsh-hook precmd autoload_python_venv
