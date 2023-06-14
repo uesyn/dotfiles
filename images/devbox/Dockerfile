@@ -1,4 +1,4 @@
-FROM debian:12
+FROM ubuntu:22.04
 ENV LANG=en_US.UTF-8
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
@@ -22,9 +22,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 ENV PATH=${PATH}:/usr/libexec/docker/cli-plugins
 RUN export DEBIAN_FRONTEND=noninteractive && \
     install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
