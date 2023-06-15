@@ -83,3 +83,8 @@ function t() {
 
 # nvim
 [[ -x "$(command -v nvim)" ]] && alias vim="nvim"
+
+# python
+function venv() {
+  python -m venv .venv
+}
