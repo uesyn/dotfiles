@@ -88,3 +88,7 @@ function t() {
 function venv() {
   python -m venv .venv
 }
+
+function pip() {
+  python -m pip "$@"
+}
