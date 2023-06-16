@@ -4,11 +4,7 @@ metadata:
   name: devbox
 spec:
   volumes:
-  - name: home
-    persistentVolumeClaim:
-      $patch: delete
-    emptyDir: {}
-  - name: var-lib-docker
+  - name: data
     persistentVolumeClaim:
       $patch: delete
     emptyDir: {}

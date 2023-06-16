@@ -29,21 +29,20 @@ spec:
             git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
             bash ${DOTFILES_DIR}/bootstrap
     volumeMounts:
-    - name: home
+    - name: data
       mountPath: /home/devbox
-    - name: var-lib-docker
+      subPath: home
+    - name: data
       mountPath: /var/lib/docker
+      subPath: var-lib-docker
     - name: docker-config
       mountPath: /etc/docker
     securityContext:
       privileged: true
   volumes:
-  - name: home
+  - name: data
     persistentVolumeClaim:
-      claimName: home
-  - name: var-lib-docker
-    persistentVolumeClaim:
-      claimName: var-lib-docker
+      claimName: data
   - name: docker-config
     configMap:
       name: docker-config

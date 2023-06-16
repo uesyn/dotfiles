@@ -1,5 +1,0 @@
-$patch: delete
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: home

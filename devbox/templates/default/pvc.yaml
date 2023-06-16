@@ -1,21 +1,10 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: home
+  name: data
 spec:
   accessModes:
   - ReadWriteOnce
   resources:
     requests:
-      storage: 20Gi
----
-kind: PersistentVolumeClaim
-apiVersion: v1
-metadata:
-  name: var-lib-docker
-spec:
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 30Gi
+      storage: 50Gi
