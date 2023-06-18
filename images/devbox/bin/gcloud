@@ -12,4 +12,4 @@ GCLOUD_CONTAINER=gcloud
   docker start ${GCLOUD_CONTAINER}
 ) 2>&1 >/dev/null
 
-exec docker exec ${GCLOUD_CONTAINER} ${CMD} "$@"
+exec docker exec -it -u $(id -u) ${GCLOUD_CONTAINER} ${CMD} "$@"
