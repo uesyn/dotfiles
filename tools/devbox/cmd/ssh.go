@@ -38,11 +38,6 @@ func newSSHCommand() *cli.Command {
 				Usage:   "template name",
 			},
 			&cli.StringSliceFlag{
-				Name:  "address",
-				Value: cli.NewStringSlice("127.0.0.1"),
-				Usage: "Addresses are binded for port-forward",
-			},
-			&cli.StringSliceFlag{
 				Name:    "port",
 				Aliases: []string{"p"},
 				Usage:   "Forwarded ports",
@@ -80,31 +75,22 @@ func newSSHCommand() *cli.Command {
 			ctx := logr.NewContext(cCtx.Context, logger)
 
 			// Port forward
-			var addresses []string
-			for i := range params.Addresses {
-				addresses = append(addresses, params.Addresses[i])
-			}
-			var ports []string
-			for i := range params.Ports {
-				ports = append(ports, params.Ports[i])
-			}
-
-			localPortNum, err := getFreePort()
+			localPort, err := getFreePort()
 			if err != nil {
 				logger.Error(err, "failed to get free port for SSH")
 				return err
 			}
-			localPort := strconv.Itoa(localPortNum)
-			ports = append(ports, fmt.Sprintf("%s:%s", localPort, params.SSHPort))
 
+			const localhost = "localhost"
 			go func() {
+				addresses := []string{localhost}
+				ports := []string{fmt.Sprintf("%d:%s", localPort, params.SSHPort)}
 				err := params.Manager.PortForward(ctx, params.Name, params.Namespace, ports, addresses)
 				if err != nil {
 					logger.Error(err, "failed to forward ports")
 				}
 			}()
 
-			const localhost = "localhost"
 			timeout := time.After(30 * time.Second)
 			for {
 				select {
@@ -121,20 +107,25 @@ func newSSHCommand() *cli.Command {
 				break
 			}
 
-			// SSH
 			execConfig := params.Config.GetExecConfig()
-			sshOpts := ssh.Options{
-				User:         params.SSHUser,
-				Port:         strconv.Itoa(localPortNum),
-				Address:      localhost,
-				IdentityFile: params.SSHIdentityFile,
-			}
 			envs, err := execConfig.GetEnvs()
 			if err != nil {
 				logger.Error(err, "failed to load envs config")
 				return err
 			}
-			if err := sshOpts.Run(cCtx.Context, params.Shell, envs); err != nil {
+			sshOpts := ssh.Options{
+				User:           params.SSHUser,
+				Port:           localPort,
+				IdentityFile:   params.SSHIdentityFile,
+				Envs:           envs,
+				Shell:          params.Shell,
+				ForwardedPorts: params.Ports,
+			}
+			if err := sshOpts.Complete(); err != nil {
+				logger.Error(err, "failed to complete ssh options")
+				return err
+			}
+			if err := sshOpts.Run(cCtx.Context); err != nil {
 				logger.Error(err, "failed to run ssh")
 				return err
 			}
@@ -162,8 +153,8 @@ func getFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func isListening(addr string, port string) bool {
-	address := net.JoinHostPort(addr, port)
+func isListening(addr string, port int) bool {
+	address := net.JoinHostPort(addr, strconv.Itoa(port))
 	conn, err := net.DialTimeout("tcp", address, time.Second)
 	if err != nil {
 		return false
