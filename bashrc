@@ -85,6 +85,21 @@ detect_target() {
   printf '%s' "$platform-$arch"
 }
 
+function z() {
+  if [[ -x "$(command -v zellij)" ]]; then
+    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
+    zellij attach -c
+    return
+  fi
+}
+
+function t() {
+  if [[ -x "$(command -v tmux)" ]]; then
+    tmux new-session -ADs main
+    return
+  fi
+}
+
 function d() {
   if [[ ! -x "$(command -v devbox)" ]]; then
     local devbox=${OPT_DIR}/bin/devbox
