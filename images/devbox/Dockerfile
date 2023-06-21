@@ -6,7 +6,6 @@ ENV LANG=en_US.UTF-8
 ENV container docker
 # systemd exits on SIGRTMIN+3, not SIGTERM (which re-executes it)
 # https://bugzilla.redhat.com/show_bug.cgi?id=1201657
-ENV container docker
 STOPSIGNAL SIGRTMIN+3
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
@@ -25,17 +24,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
         rm -f /lib/systemd/system/basic.target.wants/* && \
         rm -f /lib/systemd/system/anaconda.target.wants/* && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt clean
-ENV PATH=${PATH}:/usr/libexec/docker/cli-plugins
-RUN export DEBIAN_FRONTEND=noninteractive && \
-    install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
-    chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
-    apt update && \
-    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -72,6 +60,22 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         zstd && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
+ENV PATH=${PATH}:/usr/libexec/docker/cli-plugins
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+         "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
+    apt update && \
+    apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt clean
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt update && \
+    apt install -y --no-install-recommends \
+    openssh-server && \
+    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 RUN locale-gen en_US.UTF-8 ja_JP.UTF-8
 RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
