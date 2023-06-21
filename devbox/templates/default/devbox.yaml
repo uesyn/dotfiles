@@ -28,6 +28,11 @@ spec:
             fi
             git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
             bash ${DOTFILES_DIR}/bootstrap
+            export SSH_DIR=${HOME}/.ssh
+            export AUTHORIZED_KEYS=${SSH_DIR}/authorized_keys
+            mkdir -p ${SSH_DIR}
+            echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILyZa1D5S8H02Z6HJA3Sk6Ira//HFo7RLLbuHRbUA6Po' > ${AUTHORIZED_KEYS}
+            chmod 700 ${SSH_DIR}; chmod 600 ${AUTHORIZED_KEYS}; chown -R devbox ${SSH_DIR}
     volumeMounts:
     - name: data
       mountPath: /home/devbox
