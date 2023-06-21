@@ -66,6 +66,7 @@ func newExecCommand() *cli.Command {
 			envs, err := execConfig.GetEnvs()
 			if err != nil {
 				logger.Error(err, "failed to load envs config")
+				return err
 			}
 			err = params.Manager.Exec(ctx, params.Name, params.Namespace, execConfig.GetCommand(), envs)
 			if err != nil {

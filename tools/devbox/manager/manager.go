@@ -25,7 +25,7 @@ type Manager interface {
 	Run(ctx context.Context, templateName, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Delete(ctx context.Context, devboxName, namespace string) error
 	Update(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
-	Exec(ctx context.Context, devboxName, namespace string, shell []string, envs map[string]string) error
+	Exec(ctx context.Context, devboxName, namespace string, command []string, envs map[string]string) error
 	PortForward(ctx context.Context, devboxName, namespace string, forwardedPorts []string, addresses []string) error
 	Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Stop(ctx context.Context, devboxName, namespace string) error

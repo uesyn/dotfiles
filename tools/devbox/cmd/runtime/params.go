@@ -17,18 +17,22 @@ import (
 
 type Params struct {
 	// Flag Values
-	LogLevel     string
-	ConfigPath   string
-	Name         string
-	Namespace    string
-	AllNamespace bool
-	KubeConfig   string
-	KubeContext  string
-	TemplateName string
-	SelectNodes  bool
-	DeleteYes    bool
-	Addresses    []string
-	Ports        []string
+	LogLevel        string
+	ConfigPath      string
+	Name            string
+	Namespace       string
+	AllNamespace    bool
+	KubeConfig      string
+	KubeContext     string
+	TemplateName    string
+	SelectNodes     bool
+	DeleteYes       bool
+	Addresses       []string
+	Ports           []string
+	Shell           string
+	SSHPort         string
+	SSHUser         string
+	SSHIdentityFile string
 
 	Logger         logr.Logger
 	KubeClient     client.Client
@@ -51,6 +55,10 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	p.DeleteYes = cCtx.Bool("yes")
 	p.Addresses = cCtx.StringSlice("address")
 	p.Ports = cCtx.StringSlice("port")
+	p.Shell = cCtx.String("shell")
+	p.SSHPort = cCtx.String("ssh-port")
+	p.SSHUser = cCtx.String("ssh-user")
+	p.SSHIdentityFile = util.ExpandPath(cCtx.String("ssh-identity-file"))
 	{
 		level, err := logrus.ParseLevel(cCtx.String("loglevel"))
 		if err != nil {

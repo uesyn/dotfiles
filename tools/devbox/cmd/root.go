@@ -54,6 +54,7 @@ func NewRootApp() *cli.App {
 			newDeleteCommand(),
 			newStartCommand(),
 			newStopCommand(),
+			newSSHCommand(),
 			newExecCommand(),
 			newListCommand(),
 			newProtectCommand(),
