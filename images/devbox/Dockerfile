@@ -16,14 +16,16 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
     apt install -y --no-install-recommends \
-        systemd init && \
-	rm -f /lib/systemd/system/multi-user.target.wants/* &&\
-        rm -f /etc/systemd/system/*.wants/* &&\
+        systemd && \
+        find /lib/systemd/system/sysinit.target.wants/ -name "systemd-tmpfiles-setup.service" -delete && \
+        rm -f /lib/systemd/system/multi-user.target.wants/* && \
+        rm -f /etc/systemd/system/*.wants/* && \
         rm -f /lib/systemd/system/local-fs.target.wants/* && \
         rm -f /lib/systemd/system/sockets.target.wants/*udev* && \
         rm -f /lib/systemd/system/sockets.target.wants/*initctl* && \
         rm -f /lib/systemd/system/basic.target.wants/* && \
-        rm -f /lib/systemd/system/anaconda.target.wants/* && \
+        echo "ReadKMsg=no" >> /etc/systemd/journald.conf && \
+        ln -s "$(which systemd)" /sbin/init && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 RUN export DEBIAN_FRONTEND=noninteractive && \
@@ -80,7 +82,7 @@ RUN locale-gen en_US.UTF-8 ja_JP.UTF-8
 RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 RUN groupadd devbox -g 1000 && \
-    useradd devbox -g 1000 -G docker
+    useradd devbox -s /usr/bin/zsh -g 1000 -G docker
 COPY sudoers.d/devbox /etc/sudoers.d/devbox
 COPY bin/ /usr/local/bin/
 ENTRYPOINT ["/sbin/init"]
