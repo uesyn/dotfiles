@@ -62,12 +62,7 @@ func newExecCommand() *cli.Command {
 			}
 
 			// Exec
-			envs, err := params.Config.GetEnvs()
-			if err != nil {
-				logger.Error(err, "failed to load envs config")
-				return err
-			}
-			err = params.Manager.Exec(ctx, params.Name, params.Namespace, params.Config.GetExecConfig().GetCommand(), envs)
+			err := params.Manager.Exec(ctx, params.Name, params.Namespace, params.ExecCommand, params.Envs)
 			if err != nil {
 				logger.Error(err, "failed to exec devbox")
 				return err

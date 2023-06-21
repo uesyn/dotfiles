@@ -1,6 +1,8 @@
 template:
   loadRestrictionsNone: true
 ssh:
+  user: devbox
+  port: 22
   shell: zsh
 exec:
   command:

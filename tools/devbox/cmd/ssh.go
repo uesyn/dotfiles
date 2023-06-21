@@ -31,37 +31,15 @@ func newSSHCommand() *cli.Command {
 				Usage:   "kubernetes namespace where devbox run",
 				EnvVars: []string{"DEVBOX_NAMESPACE"},
 			},
-			&cli.StringFlag{
-				Name:    "template",
-				Aliases: []string{"t"},
-				Value:   "default",
-				Usage:   "template name",
-			},
 			&cli.StringSliceFlag{
 				Name:    "port",
 				Aliases: []string{"p"},
 				Usage:   "Forwarded ports. e.g., 8080:80, 8080",
 			},
 			&cli.StringFlag{
-				Name:  "ssh-port",
-				Usage: "Port listened by ssh server on devbox",
-				Value: "22",
-			},
-			&cli.StringFlag{
-				Name:  "ssh-user",
-				Usage: "Username to be logged in",
-				Value: "devbox",
-			},
-			&cli.StringFlag{
 				Name:    "ssh-identity-file",
 				Aliases: []string{"i"},
 				Usage:   "Identity file for SSH authentication",
-			},
-			&cli.StringFlag{
-				Name:    "shell",
-				Aliases: []string{"s"},
-				Usage:   "shell",
-				Value:   "bash",
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
@@ -84,7 +62,7 @@ func newSSHCommand() *cli.Command {
 			const localhost = "localhost"
 			go func() {
 				addresses := []string{localhost}
-				ports := []string{fmt.Sprintf("%d:%s", localPort, params.SSHPort)}
+				ports := []string{fmt.Sprintf("%d:%d", localPort, params.SSHPort)}
 				err := params.Manager.PortForward(ctx, params.Name, params.Namespace, ports, addresses)
 				if err != nil {
 					logger.Error(err, "failed to forward ports")
@@ -107,17 +85,12 @@ func newSSHCommand() *cli.Command {
 				break
 			}
 
-			envs, err := params.Config.GetEnvs()
-			if err != nil {
-				logger.Error(err, "failed to load envs config")
-				return err
-			}
 			sshOpts := ssh.Options{
 				User:           params.SSHUser,
 				Port:           localPort,
 				IdentityFile:   params.SSHIdentityFile,
-				Envs:           envs,
-				Shell:          params.Shell,
+				Envs:           params.Envs,
+				Shell:          params.SSHShell,
 				ForwardedPorts: params.Ports,
 			}
 			if err := sshOpts.Complete(); err != nil {

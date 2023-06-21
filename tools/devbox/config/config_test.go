@@ -29,6 +29,13 @@ func TestLoad(t *testing.T) {
 		assert.Equal(t, wantIsLoadRestrictionsNone, gotConfig.GetTemplateConfig().IsLoadRestrictionsNone())
 	})
 
+	t.Run("should get ssh config", func(t *testing.T) {
+		wantUser, wantPort, wantSSHShell := "foo", 2222, "baz"
+		assert.Equal(t, wantUser, gotConfig.GetSSHConfig().GetUser())
+		assert.Equal(t, wantPort, gotConfig.GetSSHConfig().GetPort())
+		assert.Equal(t, wantSSHShell, gotConfig.GetSSHConfig().GetShell())
+	})
+
 	t.Run("should get exec config", func(t *testing.T) {
 		beforeBAR := os.Getenv("BAR")
 		os.Setenv("BAR", "bar")

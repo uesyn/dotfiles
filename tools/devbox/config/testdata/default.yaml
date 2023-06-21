@@ -3,6 +3,10 @@ template:
 exec:
   command:
   - zsh
+ssh:
+  user: foo
+  port: 2222
+  shell: baz
 envs:
 - name: FOO
   raw: foo

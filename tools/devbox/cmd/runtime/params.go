@@ -16,9 +16,8 @@ import (
 )
 
 type Params struct {
-	// Flag Values
-	LogLevel        string
 	ConfigPath      string
+	LogLevel        string
 	Name            string
 	Namespace       string
 	AllNamespace    bool
@@ -29,22 +28,23 @@ type Params struct {
 	DeleteYes       bool
 	Addresses       []string
 	Ports           []string
-	Shell           string
-	SSHPort         string
+	SSHShell        string
+	SSHPort         int
 	SSHUser         string
 	SSHIdentityFile string
+	Envs            map[string]string
+	ExecCommand     []string
 
 	Logger         logr.Logger
 	KubeClient     client.Client
-	Config         config.Config
 	TemplateLoader template.Loader
 	ReleaseStore   release.Store
 	Manager        manager.Manager
 }
 
 func (p *Params) SetParams(cCtx *cli.Context) error {
+	p.ConfigPath = util.ExpandPath(cCtx.String("config"))
 	p.LogLevel = cCtx.String("loglevel")
-	p.ConfigPath = cCtx.String("config")
 	p.Name = cCtx.String("name")
 	p.Namespace = cCtx.String("namespace")
 	p.AllNamespace = cCtx.Bool("all")
@@ -55,40 +55,43 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	p.DeleteYes = cCtx.Bool("yes")
 	p.Addresses = cCtx.StringSlice("address")
 	p.Ports = cCtx.StringSlice("port")
-	p.Shell = cCtx.String("shell")
-	p.SSHPort = cCtx.String("ssh-port")
-	p.SSHUser = cCtx.String("ssh-user")
 	p.SSHIdentityFile = util.ExpandPath(cCtx.String("ssh-identity-file"))
-	{
-		level, err := logrus.ParseLevel(cCtx.String("loglevel"))
-		if err != nil {
-			return err
-		}
-		logrusLog := logrus.New()
-		logrusLog.SetLevel(level)
-		logger := logrusr.New(logrusLog).WithName("devbox")
-		p.Logger = logger
+
+	conf, err := config.Load(p.ConfigPath)
+	if err != nil {
+		return err
 	}
-	{
-		c, err := config.Load(util.ExpandPath(p.ConfigPath))
-		if err != nil {
-			return err
-		}
-		p.Config = c
+
+	logLevel, err := logrus.ParseLevel(p.LogLevel)
+	if err != nil {
+		return err
 	}
-	{
-		c, err := client.New(util.ExpandPath(p.KubeConfig), p.KubeContext)
-		if err != nil {
-			return err
-		}
-		p.KubeClient = c
+	logrusLog := logrus.New()
+	logrusLog.SetLevel(logLevel)
+	logger := logrusr.New(logrusLog).WithName("devbox")
+	p.Logger = logger
+
+	kubeClient, err := client.New(util.ExpandPath(p.KubeConfig), p.KubeContext)
+	if err != nil {
+		return err
 	}
-	{
-		templateDir := util.ExpandPath(filepath.Join(filepath.Dir(p.ConfigPath), "templates"))
-		isLoadRestrictionsNone := p.Config.GetTemplateConfig().IsLoadRestrictionsNone()
-		p.TemplateLoader = template.NewLoader(templateDir, isLoadRestrictionsNone)
-	}
+	p.KubeClient = kubeClient
+
+	templateDir := util.ExpandPath(filepath.Join(filepath.Dir(p.ConfigPath), "templates"))
+	isLoadRestrictionsNone := conf.GetTemplateConfig().IsLoadRestrictionsNone()
+	p.TemplateLoader = template.NewLoader(templateDir, isLoadRestrictionsNone)
+
 	p.ReleaseStore = release.NewDefaultStore(p.KubeClient)
 	p.Manager = manager.New(p.KubeClient, p.ReleaseStore, p.TemplateLoader)
+	envs, err := conf.GetEnvs()
+	if err != nil {
+		return err
+	}
+	p.Envs = envs
+	p.ExecCommand = conf.GetExecConfig().GetCommand()
+
+	p.SSHShell = conf.GetSSHConfig().GetShell()
+	p.SSHPort = conf.GetSSHConfig().GetPort()
+	p.SSHUser = conf.GetSSHConfig().GetUser()
 	return nil
 }
