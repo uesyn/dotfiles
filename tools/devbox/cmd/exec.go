@@ -38,7 +38,7 @@ func newExecCommand() *cli.Command {
 			&cli.StringSliceFlag{
 				Name:    "port",
 				Aliases: []string{"p"},
-				Usage:   "Forwarded ports",
+				Usage:   "Forwarded ports. e.g., 8080:80, 8080",
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
@@ -62,13 +62,12 @@ func newExecCommand() *cli.Command {
 			}
 
 			// Exec
-			execConfig := params.Config.GetExecConfig()
-			envs, err := execConfig.GetEnvs()
+			envs, err := params.Config.GetEnvs()
 			if err != nil {
 				logger.Error(err, "failed to load envs config")
 				return err
 			}
-			err = params.Manager.Exec(ctx, params.Name, params.Namespace, execConfig.GetCommand(), envs)
+			err = params.Manager.Exec(ctx, params.Name, params.Namespace, params.Config.GetExecConfig().GetCommand(), envs)
 			if err != nil {
 				logger.Error(err, "failed to exec devbox")
 				return err

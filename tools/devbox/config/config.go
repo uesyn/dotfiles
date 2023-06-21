@@ -10,11 +10,11 @@ import (
 type Config interface {
 	GetExecConfig() ExecConfig
 	GetTemplateConfig() TemplateConfig
+	GetEnvs() (map[string]string, error)
 }
 
 type ExecConfig interface {
 	GetCommand() []string
-	GetEnvs() (map[string]string, error)
 }
 
 type TemplateConfig interface {
@@ -36,14 +36,28 @@ func Load(file string) (Config, error) {
 type config struct {
 	Template template `json:"template,omitempty"`
 	Exec     exec     `json:"exec,omitempty"`
+	Envs     []env    `json:"envs,omitempty"`
+}
+
+func (c *config) GetTemplateConfig() TemplateConfig {
+	return &c.Template
 }
 
 func (c *config) GetExecConfig() ExecConfig {
 	return &c.Exec
 }
 
-func (c *config) GetTemplateConfig() TemplateConfig {
-	return &c.Template
+func (e *config) GetEnvs() (map[string]string, error) {
+	envMap := map[string]string{}
+	for _, env := range e.Envs {
+		name := env.Name
+		v, err := env.GetValue()
+		if err != nil {
+			return nil, err
+		}
+		envMap[name] = v
+	}
+	return envMap, nil
 }
 
 type template struct {
@@ -56,24 +70,10 @@ func (t *template) IsLoadRestrictionsNone() bool {
 
 type exec struct {
 	Command []string `json:"command,omitempty"`
-	Envs    []env    `json:"envs,omitempty"`
 }
 
 func (e *exec) GetCommand() []string {
 	return e.Command
-}
-
-func (e *exec) GetEnvs() (map[string]string, error) {
-	envMap := map[string]string{}
-	for _, env := range e.Envs {
-		name := env.Name
-		v, err := env.GetValue()
-		if err != nil {
-			return nil, err
-		}
-		envMap[name] = v
-	}
-	return envMap, nil
 }
 
 type env struct {

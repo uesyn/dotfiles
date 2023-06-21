@@ -40,7 +40,7 @@ func newSSHCommand() *cli.Command {
 			&cli.StringSliceFlag{
 				Name:    "port",
 				Aliases: []string{"p"},
-				Usage:   "Forwarded ports",
+				Usage:   "Forwarded ports. e.g., 8080:80, 8080",
 			},
 			&cli.StringFlag{
 				Name:  "ssh-port",
@@ -55,7 +55,7 @@ func newSSHCommand() *cli.Command {
 			&cli.StringFlag{
 				Name:    "ssh-identity-file",
 				Aliases: []string{"i"},
-				Usage:   "SSH identity file",
+				Usage:   "Identity file for SSH authentication",
 			},
 			&cli.StringFlag{
 				Name:    "shell",
@@ -107,8 +107,7 @@ func newSSHCommand() *cli.Command {
 				break
 			}
 
-			execConfig := params.Config.GetExecConfig()
-			envs, err := execConfig.GetEnvs()
+			envs, err := params.Config.GetEnvs()
 			if err != nil {
 				logger.Error(err, "failed to load envs config")
 				return err

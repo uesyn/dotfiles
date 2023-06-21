@@ -43,7 +43,7 @@ func TestLoad(t *testing.T) {
 		gotCommand := gotConfig.GetExecConfig().GetCommand()
 		assert.Equal(t, wantCommand, gotCommand)
 
-		gotEnvs, err := gotConfig.GetExecConfig().GetEnvs()
+		gotEnvs, err := gotConfig.GetEnvs()
 		assert.NoError(t, err)
 		assert.Equal(t, wantEnvs, gotEnvs)
 	})
