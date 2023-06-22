@@ -11,7 +11,7 @@ packages:
   - precede
 - name: helm/helm@v3.11.1
 - name: golangci/golangci-lint@v1.52.2
-- name: kubernetes-sigs/kind@v0.18.0
+- name: kubernetes-sigs/kind@v0.20.0
 - name: kubernetes-sigs/kustomize@kustomize/v5.0.1
 - name: mikefarah/yq@v4.24.4
 - name: github/hub@v2.14.2
