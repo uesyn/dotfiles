@@ -24,12 +24,6 @@ func newExecCommand() *cli.Command {
 				Usage:   "kubernetes namespace where devbox run",
 				EnvVars: []string{"DEVBOX_NAMESPACE"},
 			},
-			&cli.StringFlag{
-				Name:    "template",
-				Aliases: []string{"t"},
-				Value:   "default",
-				Usage:   "template name",
-			},
 			&cli.StringSliceFlag{
 				Name:  "address",
 				Value: cli.NewStringSlice("127.0.0.1"),
