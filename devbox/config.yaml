@@ -3,7 +3,8 @@ template:
 ssh:
   user: devbox
   port: 22
-  shell: zsh
+  command:
+  - zsh
 exec:
   command:
   - gosu
