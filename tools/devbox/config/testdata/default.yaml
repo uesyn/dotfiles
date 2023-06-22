@@ -6,7 +6,8 @@ exec:
 ssh:
   user: foo
   port: 2222
-  shell: baz
+  command:
+  - baz
 envs:
 - name: FOO
   raw: foo

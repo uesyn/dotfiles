@@ -90,7 +90,7 @@ func newSSHCommand() *cli.Command {
 				Port:           localPort,
 				IdentityFile:   params.SSHIdentityFile,
 				Envs:           params.Envs,
-				Shell:          params.SSHShell,
+				Command:        params.SSHCommand,
 				ForwardedPorts: params.Ports,
 			}
 			if err := sshOpts.Complete(); err != nil {

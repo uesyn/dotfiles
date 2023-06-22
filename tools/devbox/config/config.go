@@ -33,7 +33,7 @@ type ExecConfig interface {
 type SSHConfig interface {
 	GetUser() string
 	GetPort() int
-	GetShell() string
+	GetCommand() []string
 }
 
 type TemplateConfig interface {
@@ -81,33 +81,36 @@ func (t *template) IsLoadRestrictionsNone() bool {
 }
 
 type ssh struct {
-	User  string `json:"user,omitempty"`
-	Port  int    `json:"port,omitempty"`
-	Shell string `json:"shell,omitempty"`
+	User    string   `json:"user,omitempty"`
+	Port    int      `json:"port,omitempty"`
+	Command []string `json:"command,omitempty"`
 }
 
+const defaultUser = "devbox"
+
 func (s *ssh) GetUser() string {
-	const defaultUser = "devbox"
 	if len(s.User) == 0 {
 		return defaultUser
 	}
 	return s.User
 }
 
+const defaultSSHPort = 22
+
 func (s *ssh) GetPort() int {
-	const defaultSSHPort = 22
 	if s.Port == 0 {
 		return defaultSSHPort
 	}
 	return s.Port
 }
 
-func (s *ssh) GetShell() string {
-	const defaultShell = "sh"
-	if len(s.Shell) == 0 {
-		return defaultShell
+var defaultCommand = []string{"sh"}
+
+func (s *ssh) GetCommand() []string {
+	if len(s.Command) == 0 {
+		return defaultCommand
 	}
-	return s.Shell
+	return s.Command
 }
 
 type exec struct {
@@ -115,6 +118,9 @@ type exec struct {
 }
 
 func (e *exec) GetCommand() []string {
+	if len(e.Command) == 0 {
+		return defaultCommand
+	}
 	return e.Command
 }
 

@@ -16,7 +16,7 @@ type Options struct {
 	Address        string
 	IdentityFile   string
 	Envs           map[string]string
-	Shell          string
+	Command        []string
 	ForwardedPorts []string
 }
 
@@ -97,7 +97,7 @@ func (o *Options) buildSSHCommandArgs() ([]string, error) {
 	for k, v := range o.Envs {
 		args = append(args, k+"="+v)
 	}
-	args = append(args, o.Shell)
+	args = append(args, o.Command...)
 	return args, nil
 }
 

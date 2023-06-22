@@ -30,10 +30,10 @@ func TestLoad(t *testing.T) {
 	})
 
 	t.Run("should get ssh config", func(t *testing.T) {
-		wantUser, wantPort, wantSSHShell := "foo", 2222, "baz"
+		wantUser, wantPort, wantSSHShell := "foo", 2222, []string{"baz"}
 		assert.Equal(t, wantUser, gotConfig.GetSSHConfig().GetUser())
 		assert.Equal(t, wantPort, gotConfig.GetSSHConfig().GetPort())
-		assert.Equal(t, wantSSHShell, gotConfig.GetSSHConfig().GetShell())
+		assert.Equal(t, wantSSHShell, gotConfig.GetSSHConfig().GetCommand())
 	})
 
 	t.Run("should get exec config", func(t *testing.T) {

@@ -28,7 +28,7 @@ type Params struct {
 	DeleteYes       bool
 	Addresses       []string
 	Ports           []string
-	SSHShell        string
+	SSHCommand      []string
 	SSHPort         int
 	SSHUser         string
 	SSHIdentityFile string
@@ -90,7 +90,7 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	p.Envs = envs
 	p.ExecCommand = conf.GetExecConfig().GetCommand()
 
-	p.SSHShell = conf.GetSSHConfig().GetShell()
+	p.SSHCommand = conf.GetSSHConfig().GetCommand()
 	p.SSHPort = conf.GetSSHConfig().GetPort()
 	p.SSHUser = conf.GetSSHConfig().GetUser()
 	return nil
