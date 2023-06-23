@@ -339,6 +339,12 @@ setup_jq() {
   make_tea_command "jq" "--silent" "stedolan.github.io/jq=1.6"
 }
 
+setup_yq() {
+  info "Installing yq..."
+  version=v4.34.1
+  make_tea_command "yq" "--silent" "github.com/mikefarah/yq=${version}"
+}
+
 setup_gh() {
   info "Installing gh ..."
   make_tea_command "gh" "--silent" "cli.github.com=v2.29.0"
@@ -347,6 +353,12 @@ setup_gh() {
 setup_tmux() {
   info "Installing tmux..."
   make_tea_command "tmux" "" "github.com/tmux/tmux=3.3a"
+}
+
+setup_zellij() {
+  info "Installing zellij..."
+  version=v0.37.2
+  make_tea_command "zellij" "" "crates.io/zellij=${version}"
 }
 
 setup_node() {
@@ -381,12 +393,73 @@ EOF
 
 setup_kubectl() {
   info "Installing kubectl..."
-  kubectl_version=1.27.2
+  kubectl_version=1.27.3
   kubectl_1_26_version=1.26.5
   kubectl_1_25_version=1.25.10
   make_tea_command "kubectl" "--silent" "kubernetes.io/kubectl=${kubectl_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
+}
+
+setup_kind() {
+  info "Installing kind..."
+  kind_version=0.20.0
+  make_tea_command "kind" "" "kind.sigs.k8s.io=${kind_version}"
+}
+
+setup_minikube() {
+  info "Installing minikube..."
+  minikube_version=1.30.1
+  make_tea_command "minikube" "" "kubernetes.io/minikube=${minikube_version}"
+}
+
+setup_kustomize() {
+  info "Installing kustomize..."
+  version=v5.1.0
+  make_tea_command "kustomize" "--silent" "kubernetes.io/kustomize=${version}"
+}
+
+setup_helm() {
+  info "Installing helm..."
+  version=v3.12.1
+  make_tea_command "helm" "--silent" "helm.sh=${version}"
+}
+
+setup_kubectx() {
+  info "Installing kubectx and kubens..."
+  version=v0.9.4
+  make_tea_command "kubectx" "" "kubectx.dev=${version}"
+  make_tea_command "kubens" "" "kubectx.dev=${version}"
+}
+
+setup_fzf() {
+  info "Installing fzf..."
+  fzf_version=0.42.0
+  make_tea_command "fzf" "--silent" "github.com/junegunn/fzf=${fzf_version}"
+}
+
+setup_ripgrep() {
+  info "Installing ripgrep..."
+  ripgrep_version=13.0.0
+  make_tea_command "rg" "--silent" "crates.io/ripgrep=${ripgrep_version}"
+}
+
+setup_golangci_lint() {
+  info "Installing golangci-lint..."
+  version=v1.53.3
+  make_tea_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
+}
+
+setup_vault() {
+  info "Installing vault..."
+  version=v1.14.0
+  make_tea_command "vault" "--silent" "vaultproject.io=${version}"
+}
+
+setup_zig() {
+  info "Installing zig..."
+  version=0.10.1
+  make_tea_command "zig" "--silent" "ziglang.org=${version}"
 }
 
 setup_python() {
@@ -425,14 +498,26 @@ setup_rust_analyzer &
 wait
 setup_neovim
 setup_jq
+setup_yq
 setup_gh
 setup_tmux
+setup_zellij
 setup_node
 setup_deno
 setup_python
 setup_ruby
 setup_go
+setup_zig
 setup_rustup_init
 setup_kubectl
+setup_kustomize
+setup_helm
+setup_minikube
+setup_kind
+setup_kubectx
+setup_fzf
+setup_ripgrep
+setup_golangci_lint
+setup_vault
 wait
 show_infos
