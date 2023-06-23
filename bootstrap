@@ -327,6 +327,12 @@ make_tea_command() {
   make_tea_command_with_bin_name "${cmd_name}" "${cmd_name}" "${tea_args}" "${@}"
 }
 
+setup_zsh() {
+  info "Installing zsh..."
+  version=5.9.0
+  make_tea_command "zsh" "--silent" "zsh.sourceforge.io=${version}"
+}
+
 setup_neovim() {
   info "Installing neovim and plugins..."
   # install_neovim
@@ -336,7 +342,8 @@ setup_neovim() {
 
 setup_jq() {
   info "Installing jq..."
-  make_tea_command "jq" "--silent" "stedolan.github.io/jq=1.6"
+  version=1.6
+  make_tea_command "jq" "--silent" "stedolan.github.io/jq=${version}"
 }
 
 setup_yq() {
@@ -496,6 +503,7 @@ setup_aqua &
 setup_rtx &
 setup_rust_analyzer &
 wait
+setup_zsh
 setup_neovim
 setup_jq
 setup_yq
