@@ -41,7 +41,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         iproute2 \
         iptables \
         iputils-ping \
-        jq \
         less \
         locales \
         lsof \
