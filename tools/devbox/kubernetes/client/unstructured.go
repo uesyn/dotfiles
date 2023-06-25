@@ -67,6 +67,16 @@ func (u *UnstructuredClient) getResourceInterface(obj *unstructured.Unstructured
 	return nr, nil
 }
 
+type GetOptions = metav1.GetOptions
+
+func (u *UnstructuredClient) Get(ctx context.Context, obj *unstructured.Unstructured, opts metav1.GetOptions) (*unstructured.Unstructured, error) {
+	dr, err := u.getResourceInterface(obj)
+	if err != nil {
+		return nil, err
+	}
+	return dr.Get(ctx, obj.GetName(), opts)
+}
+
 type CreateOptions = metav1.CreateOptions
 
 func (u *UnstructuredClient) Create(ctx context.Context, obj *unstructured.Unstructured, opts metav1.CreateOptions) (*unstructured.Unstructured, error) {

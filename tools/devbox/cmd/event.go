@@ -37,9 +37,8 @@ func newEventCommand() *cli.Command {
 				return err
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-			ctx := logr.NewContext(cCtx.Context, logger)
 
-			el, err := params.Manager.Events(ctx, params.Name, params.Namespace)
+			el, err := params.Manager.Events(cCtx.Context, params.Name, params.Namespace)
 			if err != nil {
 				logger.Error(err, "failed to get events")
 				return err

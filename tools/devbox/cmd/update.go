@@ -41,17 +41,16 @@ func newUpdateCommand() *cli.Command {
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			ctx := logr.NewContext(cCtx.Context, logger)
 			var ms []mutator.PodMutator
 			if params.SelectNodes {
-				nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, params.ClientSet)
+				nodes, err := cmdutil.SelectNodesWithFuzzyFinder(cCtx.Context, params.ClientSet)
 				if err != nil {
 					logger.Error(err, "failed to get nodes")
 					return err
 				}
 				ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
 			}
-			if err := params.Manager.Update(ctx, params.Name, params.Namespace, ms...); err != nil {
+			if err := params.Manager.Update(cCtx.Context, params.Name, params.Namespace, ms...); err != nil {
 				logger.Error(err, "failed to update devbox")
 				return err
 			}

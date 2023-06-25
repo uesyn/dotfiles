@@ -12,6 +12,7 @@ import (
 	"github.com/uesyn/devbox/devbox"
 	"github.com/uesyn/devbox/kubernetes/client"
 	"github.com/uesyn/devbox/kubernetes/scheme"
+	kubeutil "github.com/uesyn/devbox/kubernetes/util"
 	"github.com/uesyn/devbox/manager/info"
 	"github.com/uesyn/devbox/mutator"
 	"github.com/uesyn/devbox/release"
@@ -23,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -83,12 +85,8 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 	}
 
 	failureHandler := func() {
-		if err := m.deleteDevboxPod(ctx, d); err != nil {
-			logger.Error(err, "failed to clean up devbox pod")
-			return
-		}
-		if err := m.deleteDependencies(ctx, d); err != nil {
-			logger.Error(err, "failed to clean up devbox dependencies")
+		if err := m.deleteDevbox(ctx, d); err != nil {
+			logger.Error(err, "failed to clean up devbox objects")
 			return
 		}
 		logger.Info("clean up devbox release")
@@ -97,46 +95,43 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 		}
 	}
 
-	if err := m.applyDependencies(ctx, d); err != nil {
+	if err := m.applyDevbox(ctx, d, mutators...); err != nil {
 		failureHandler()
-		return fmt.Errorf("failed to create devbox dependencies: %w", err)
-	}
-	if err := m.createDevboxPod(ctx, d, mutators...); err != nil {
-		failureHandler()
-		return fmt.Errorf("failed to create devbox devbox: %w", err)
+		return fmt.Errorf("failed to apply devbox object: %w", err)
 	}
 	return nil
 }
 
-func (m *manager) createDevboxPod(ctx context.Context, d devbox.Devbox, mutators ...mutator.PodMutator) error {
-	pod, err := d.GetDevboxPod(mutators...)
+func (m *manager) mutateDevbox(ctx context.Context, u *unstructured.Unstructured, mutators ...mutator.PodMutator) (*unstructured.Unstructured, error) {
+	devboxPod := &corev1.Pod{}
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(u.Object, &devboxPod)
 	if err != nil {
+		return nil, err
+	}
+	for _, m := range mutators {
+		m.Mutate(devboxPod)
+	}
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(devboxPod)
+	if err != nil {
+		return nil, err
+	}
+	unst := &unstructured.Unstructured{Object: obj}
+	unst.SetGroupVersionKind(schema.GroupVersionKind{Version: "v1", Kind: "Pod"})
+	return unst, nil
+}
+
+func (m *manager) applyDevbox(ctx context.Context, d devbox.Devbox, mutators ...mutator.PodMutator) error {
+	var objs []*unstructured.Unstructured
+	obj, err := m.mutateDevbox(ctx, d.GetDevbox(), mutators...)
+	if err != nil {
+		return fmt.Errorf("failed to mutate devbox: %w", err)
+	}
+	objs = append(objs, obj)
+	objs = append(objs, d.GetDependencies()...)
+	if err := m.apply(ctx, objs...); err != nil {
 		return err
 	}
-	return m.create(ctx, false, pod)
-}
-
-func (m *manager) create(ctx context.Context, ignoreAlreadyExists bool, objs ...*unstructured.Unstructured) error {
-	for _, obj := range objs {
-		gvk := obj.GroupVersionKind()
-		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		l.V(2).Info("create object", "obj", obj)
-		_, err := m.unstructured.Create(ctx, obj, client.CreateOptions{})
-		if ignoreAlreadyExists && apierrors.IsAlreadyExists(err) {
-			l.Info("object has already existed", "obj", obj)
-			continue
-		}
-		if err != nil {
-			l.Error(err, "failed to create")
-			return err
-		}
-		l.Info("object was created")
-	}
 	return nil
-}
-
-func (m *manager) applyDependencies(ctx context.Context, d devbox.Devbox) error {
-	return m.apply(ctx, d.GetDependencies()...)
 }
 
 func (m *manager) apply(ctx context.Context, objs ...*unstructured.Unstructured) error {
@@ -178,28 +173,23 @@ func (m *manager) Delete(ctx context.Context, devboxName, namespace string) erro
 	if err != nil {
 		return err
 	}
-	if err := m.deleteDevboxPod(ctx, d); err != nil {
-		return fmt.Errorf("failed to delete devbox pod: %w", err)
+	if err := m.deleteDevbox(ctx, d); err != nil {
+		return err
 	}
-	if err := m.deleteDependencies(ctx, d); err != nil {
-		return fmt.Errorf("failed to delete devbox dependencies: %w", err)
-	}
-	if err := m.waitForDevboxPodTerminated(ctx, d); err != nil {
-		return fmt.Errorf("failed to wait devbox pod terminated: %w", err)
+	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, d.GetDevbox()); err != nil {
+		return fmt.Errorf("failed to wait devbox terminated: %w", err)
 	}
 	return m.store.Delete(ctx, devboxName, namespace)
 }
 
-func (m *manager) deleteDevboxPod(ctx context.Context, d devbox.Devbox) error {
-	pod, err := d.GetDevboxPod()
-	if err != nil {
-		return err
+func (m *manager) deleteDevbox(ctx context.Context, d devbox.Devbox) error {
+	var objs []*unstructured.Unstructured
+	objs = append(objs, d.GetDependencies()...)
+	objs = append(objs, d.GetDevbox())
+	if err := m.delete(ctx, objs...); err != nil {
+		return fmt.Errorf("failed to delete devbox object: %w", err)
 	}
-	return m.delete(ctx, pod)
-}
-
-func (m *manager) deleteDependencies(ctx context.Context, d devbox.Devbox) error {
-	return m.delete(ctx, d.GetDependencies()...)
+	return nil
 }
 
 func (m *manager) delete(ctx context.Context, objs ...*unstructured.Unstructured) error {
@@ -224,9 +214,15 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 	if err != nil {
 		return err
 	}
+
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
 		return fmt.Errorf("failed to load devbox: %w", err)
+	}
+
+	pod, err := m.getDevboxPod(ctx, d)
+	if err != nil {
+		return fmt.Errorf("failed to get devbox pod: %w", err)
 	}
 
 	stdin, stdout, stderr := term.StdStreams()
@@ -234,20 +230,31 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 		Stdin:     stdin,
 		Stdout:    stdout,
 		Stderr:    stderr,
-		Container: "devbox", // TODO: Select container with selector.
+		Container: pod.Spec.Containers[0].Name, // TODO: Select container with selector.
 		Command:   command,
 		Envs:      envs,
 	}
 
-	if err := m.waitForDevboxPodReady(ctx, d); err != nil {
-		return fmt.Errorf("coudn't wait for devbox pod ready")
+	obj := d.GetDevbox()
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "ContainersReady"); err != nil {
+		return fmt.Errorf("could not wait for devbox pod ready: %w", err)
 	}
+	return m.unstructured.Exec(ctx, obj, opts)
+}
 
-	pod, err := d.GetDevboxPod()
-	if err != nil {
-		return err
+var unsupportedDevboxKind = errors.New("unsupported devbox kind")
+
+func (m *manager) getDevboxPod(ctx context.Context, d devbox.Devbox) (*corev1.Pod, error) {
+	obj := d.GetDevbox()
+	if obj.GetKind() != "Pod" {
+		return nil, unsupportedDevboxKind
 	}
-	return m.unstructured.Exec(ctx, pod, opts)
+	pod := &corev1.Pod{}
+	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, &pod)
+	if err != nil {
+		return nil, err
+	}
+	return pod, nil
 }
 
 func (m *manager) PortForward(ctx context.Context, devboxName, namespace string, forwardedPorts []string, addresses []string) error {
@@ -274,16 +281,12 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 	l := logr.FromContextOrDiscard(ctx)
 	l.Info("enable port forward", "ports", forwardedPorts, "addresses", addresses)
 
-	pod, err := d.GetDevboxPod()
-	if err != nil {
-		return fmt.Errorf("failed to get devbox pod object: %w", err)
-	}
-
+	obj := d.GetDevbox()
 	opts := client.PortForwardOptions{
 		Addresses: addresses,
 		Ports:     forwardedPorts,
 	}
-	return m.unstructured.PortForward(ctx, pod, opts)
+	return m.unstructured.PortForward(ctx, obj, opts)
 }
 
 func (m *manager) Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error {
@@ -298,10 +301,17 @@ func (m *manager) Start(ctx context.Context, devboxName, namespace string, mutat
 	if err != nil {
 		return fmt.Errorf("failed to load devbox from release: %w", err)
 	}
-	if err := m.waitForDevboxPodTerminated(ctx, d); err != nil {
-		return fmt.Errorf("failed to wait devbox pod terminated: %w", err)
+
+	obj := d.GetDevbox()
+	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
+		return fmt.Errorf("could not wait devbox object terminated: %w", err)
 	}
-	return m.createDevboxPod(ctx, d, mutators...)
+
+	mutated, err := m.mutateDevbox(ctx, obj, mutators...)
+	if err != nil {
+		return fmt.Errorf("failed to mutate devbox: %w", err)
+	}
+	return m.apply(ctx, mutated)
 }
 
 func (m *manager) Stop(ctx context.Context, devboxName, namespace string) error {
@@ -316,8 +326,8 @@ func (m *manager) Stop(ctx context.Context, devboxName, namespace string) error 
 	if err != nil {
 		return fmt.Errorf("failed to load devbox from release: %w", err)
 	}
-	if err := m.deleteDevboxPod(ctx, d); err != nil {
-		return fmt.Errorf("failed to delete devbox pod: %w", err)
+	if err := m.delete(ctx, d.GetDevbox()); err != nil {
+		return fmt.Errorf("failed to delete devbox object: %w", err)
 	}
 	return nil
 }
@@ -334,11 +344,12 @@ func (m *manager) Update(ctx context.Context, devboxName, namespace string, muta
 	if err != nil {
 		return fmt.Errorf("failed to load devbox from release: %w", err)
 	}
-	if err := m.deleteDevboxPod(ctx, d); err != nil {
-		return fmt.Errorf("failed to delete devbox pod: %w", err)
+	obj := d.GetDevbox()
+	if err := m.delete(ctx, obj); err != nil {
+		return fmt.Errorf("failed to delete devbox object: %w", err)
 	}
-	if err := m.waitForDevboxPodTerminated(ctx, d); err != nil {
-		return fmt.Errorf("failed to wait devbox pod terminated: %w", err)
+	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
+		return fmt.Errorf("failed to wait devbox object terminated: %w", err)
 	}
 
 	d, err = m.loader.Load(r.TemplateName, r.Name, r.Namespace)
@@ -349,11 +360,8 @@ func (m *manager) Update(ctx context.Context, devboxName, namespace string, muta
 	if err := m.store.Update(ctx, devboxName, namespace, r); err != nil {
 		return fmt.Errorf("failed to update release: %w", err)
 	}
-	if err := m.applyDependencies(ctx, d); err != nil {
-		return fmt.Errorf("failed to create devbox dependencies: %w", err)
-	}
-	if err := m.createDevboxPod(ctx, d, mutators...); err != nil {
-		return fmt.Errorf("failed to create devbox pod: %w", err)
+	if err := m.applyDevbox(ctx, d, mutators...); err != nil {
+		return fmt.Errorf("failed to apply devbox object: %w", err)
 	}
 	return nil
 }
@@ -400,15 +408,12 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 		if err != nil {
 			return nil, fmt.Errorf("failed to load devbox from release: %w", err)
 		}
-		pod, err := d.GetDevboxPod()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get devbox object: %w", err)
-		}
+		obj := d.GetDevbox()
 		info := info.NewDevboxInfoAccessor(
 			m.clientset,
 			r.Name,
-			pod.GetName(),
-			pod.GetNamespace(),
+			obj.GetName(),
+			obj.GetNamespace(),
 			r.TemplateName,
 			r.Protect,
 		)
@@ -418,63 +423,6 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 		infos = append(infos, info)
 	}
 	return infos, nil
-}
-
-func (m *manager) waitForDevboxPodTerminated(ctx context.Context, d devbox.Devbox) error {
-	pod, err := d.GetDevboxPod()
-	if err != nil {
-		return err
-	}
-	logger := logr.FromContextOrDiscard(ctx).WithValues("podName", pod.GetName(), "namespace", pod.GetNamespace())
-	for {
-		fresh, err := m.clientset.CoreV1().Pods(pod.GetNamespace()).Get(ctx, pod.GetName(), metav1.GetOptions{})
-		if err == nil {
-			if fresh.DeletionTimestamp.IsZero() {
-				return fmt.Errorf("devbox pod is not deleted")
-			}
-			logger.V(1).Info("devbox pod has not been terminated yet")
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		if err != nil && !apierrors.IsNotFound(err) {
-			return err
-		}
-		return nil
-	}
-}
-
-func (m *manager) waitForDevboxPodReady(ctx context.Context, d devbox.Devbox) error {
-	pod, err := d.GetDevboxPod()
-	if err != nil {
-		return err
-	}
-	logger := logr.FromContextOrDiscard(ctx).WithValues("podName", pod.GetName(), "namespace", pod.GetNamespace())
-	for {
-		fresh, err := m.clientset.CoreV1().Pods(pod.GetNamespace()).Get(ctx, pod.GetName(), metav1.GetOptions{})
-		if err != nil {
-			return err
-		}
-		if !fresh.DeletionTimestamp.IsZero() {
-			return fmt.Errorf("pod is terminating")
-		}
-		ready := false
-		for _, cond := range fresh.Status.Conditions {
-			if cond.Type != corev1.PodReady {
-				continue
-			}
-			if cond.Status != corev1.ConditionTrue {
-				continue
-			}
-			ready = true
-			break
-		}
-		if !ready {
-			logger.V(1).Info("devbox pod has not been ready yet")
-			time.Sleep(500 * time.Millisecond)
-			continue
-		}
-		return nil
-	}
 }
 
 func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*corev1.EventList, error) {

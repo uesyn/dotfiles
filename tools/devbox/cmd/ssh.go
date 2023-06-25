@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"errors"
+	"context"
 	"fmt"
 	"net"
 	"strconv"
@@ -11,6 +11,7 @@ import (
 	"github.com/uesyn/devbox/cmd/runtime"
 	"github.com/uesyn/devbox/ssh"
 	"github.com/urfave/cli/v2"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func newSSHCommand() *cli.Command {
@@ -50,7 +51,6 @@ func newSSHCommand() *cli.Command {
 				return err
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-			ctx := logr.NewContext(cCtx.Context, logger)
 
 			// Port forward
 			localPort, err := getFreePort()
@@ -63,26 +63,21 @@ func newSSHCommand() *cli.Command {
 			go func() {
 				addresses := []string{localhost}
 				ports := []string{fmt.Sprintf("%d:%d", localPort, params.SSHPort)}
-				err := params.Manager.PortForward(ctx, params.Name, params.Namespace, ports, addresses)
+				err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, ports, addresses)
 				if err != nil {
 					logger.Error(err, "failed to forward ports")
 				}
 			}()
 
-			timeout := time.After(30 * time.Second)
-			for {
-				select {
-				case <-timeout:
-					err := errors.New("timeout exceeded")
-					logger.Error(err, "failed to wait for port-forwarding")
-					return err
-				default:
+			err = wait.PollUntilContextTimeout(cCtx.Context, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
+				if isListening(localhost, localPort) {
+					return true, nil
 				}
-				if !isListening(localhost, localPort) {
-					time.Sleep(100 * time.Millisecond)
-					continue
-				}
-				break
+				return false, nil
+			})
+			if err != nil {
+				logger.Error(err, "failed to wait ssh server is listened")
+				return err
 			}
 
 			sshOpts := ssh.Options{

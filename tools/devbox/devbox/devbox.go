@@ -3,15 +3,11 @@ package devbox
 import (
 	"fmt"
 
-	"github.com/uesyn/devbox/mutator"
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type Devbox interface {
-	GetDevboxPod(...mutator.PodMutator) (*unstructured.Unstructured, error)
+	GetDevbox() *unstructured.Unstructured
 	GetDependencies() []*unstructured.Unstructured
 	ToUnstructureds() []*unstructured.Unstructured
 }
@@ -39,7 +35,7 @@ func separateObjectsForPodAndDependencies(objs []*unstructured.Unstructured) (*u
 	var dependencies []*unstructured.Unstructured
 	for _, obj := range objs {
 		obj := obj
-		if isDevboxPod(obj) {
+		if isDevbox(obj) {
 			if devbox == nil {
 				devbox = obj
 				continue
@@ -51,27 +47,12 @@ func separateObjectsForPodAndDependencies(objs []*unstructured.Unstructured) (*u
 	return devbox, dependencies, nil
 }
 
-func isDevboxPod(obj *unstructured.Unstructured) bool {
+func isDevbox(obj *unstructured.Unstructured) bool {
 	return obj.GetKind() == "Pod"
 }
 
-func (d *devbox) GetDevboxPod(mutators ...mutator.PodMutator) (*unstructured.Unstructured, error) {
-	devboxUnstuctured := d.pod.DeepCopy()
-	devboxPod := &corev1.Pod{}
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(devboxUnstuctured.Object, &devboxPod)
-	if err != nil {
-		return nil, err
-	}
-	for _, m := range mutators {
-		m.Mutate(devboxPod)
-	}
-	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(devboxPod)
-	if err != nil {
-		return nil, err
-	}
-	unst := &unstructured.Unstructured{Object: obj}
-	unst.SetGroupVersionKind(schema.GroupVersionKind{Version: "v1", Kind: "Pod"})
-	return unst, nil
+func (d *devbox) GetDevbox() *unstructured.Unstructured {
+	return d.pod.DeepCopy()
 }
 
 func (d *devbox) GetDependencies() []*unstructured.Unstructured {

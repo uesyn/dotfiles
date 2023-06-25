@@ -41,7 +41,6 @@ func newDeleteCommand() *cli.Command {
 				return err
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-			ctx := logr.NewContext(cCtx.Context, logger)
 
 			if !params.DeleteYes {
 				if ok := deleteConfirmationPrompt(params.Name); !ok {
@@ -49,7 +48,7 @@ func newDeleteCommand() *cli.Command {
 				}
 			}
 
-			if err := params.Manager.Delete(ctx, params.Name, params.Namespace); err != nil {
+			if err := params.Manager.Delete(cCtx.Context, params.Name, params.Namespace); err != nil {
 				logger.Error(err, "failed to delete")
 				return err
 			}

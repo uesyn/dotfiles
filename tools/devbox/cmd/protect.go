@@ -33,8 +33,7 @@ func newProtectCommand() *cli.Command {
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			ctx := logr.NewContext(cCtx.Context, logger)
-			if err := params.Manager.Protect(ctx, params.Name, params.Namespace); err != nil {
+			if err := params.Manager.Protect(cCtx.Context, params.Name, params.Namespace); err != nil {
 				logger.Error(err, "failed to protect devbox")
 				return err
 			}

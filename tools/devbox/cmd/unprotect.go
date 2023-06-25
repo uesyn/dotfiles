@@ -33,8 +33,7 @@ func newUnprotectCommand() *cli.Command {
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			ctx := logr.NewContext(cCtx.Context, logger)
-			if err := params.Manager.Unprotect(ctx, params.Name, params.Namespace); err != nil {
+			if err := params.Manager.Unprotect(cCtx.Context, params.Name, params.Namespace); err != nil {
 				logger.Error(err, "failed to unprotect devbox")
 				return err
 			}

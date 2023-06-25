@@ -38,13 +38,12 @@ func newListCommand() *cli.Command {
 				return err
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-			ctx := logr.NewContext(cCtx.Context, logger)
 
 			namespace := params.Namespace
 			if params.AllNamespace {
 				namespace = metav1.NamespaceAll
 			}
-			infos, err := params.Manager.List(ctx, namespace)
+			infos, err := params.Manager.List(cCtx.Context, namespace)
 			if err != nil {
 				logger.Error(err, "failed to list infos")
 				os.Exit(1)
@@ -60,7 +59,7 @@ func newListCommand() *cli.Command {
 			}
 			var rows []metav1.TableRow
 			for _, info := range infos {
-				phase, err := info.GetPhase(ctx)
+				phase, err := info.GetPhase(cCtx.Context)
 				if err != nil {
 					logger.Error(err, "failed to get devbox info")
 					os.Exit(1)

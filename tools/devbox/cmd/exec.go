@@ -43,12 +43,11 @@ func newExecCommand() *cli.Command {
 				return err
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-			ctx := logr.NewContext(cCtx.Context, logger)
 
 			// Port forward
 			if len(params.Ports) > 0 && len(params.Addresses) > 0 {
 				go func() {
-					err := params.Manager.PortForward(ctx, params.Name, params.Namespace, params.Ports, params.Addresses)
+					err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, params.Ports, params.Addresses)
 					if err != nil {
 						logger.Error(err, "failed to forward ports")
 					}
@@ -56,7 +55,7 @@ func newExecCommand() *cli.Command {
 			}
 
 			// Exec
-			err := params.Manager.Exec(ctx, params.Name, params.Namespace, params.ExecCommand, params.Envs)
+			err := params.Manager.Exec(cCtx.Context, params.Name, params.Namespace, params.ExecCommand, params.Envs)
 			if err != nil {
 				logger.Error(err, "failed to exec devbox")
 				return err
