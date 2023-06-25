@@ -158,16 +158,6 @@ setup_tea() {
   [ ! -d ${HOME}/.tea ] && ${tea_path} --sync
 }
 
-setup_zsh() {
-  info "Installing zsh..."
-  if [ -x "$(command -v zsh)" ]; then
-    return
-  fi
-  zsh_dir=${HOME}/opt/zsh
-  zsh_bin_version=6.1.1
-  sh -c "$(curl -SsfL https://raw.githubusercontent.com/romkatv/zsh-bin/v${zsh_bin_version}/install)" -- -e no -d ${zsh_dir} -q
-}
-
 install_aqua() {
   aqua_version=2.8.0
   info "Installing aqua..."
@@ -498,7 +488,6 @@ EOF
 make_links
 make_local_configs
 setup_tea &
-# setup_zsh &
 setup_aqua &
 setup_rtx &
 setup_rust_analyzer &
@@ -527,5 +516,4 @@ setup_fzf
 setup_ripgrep
 setup_golangci_lint
 setup_vault
-wait
 show_infos
