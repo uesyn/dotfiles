@@ -13,6 +13,7 @@ import (
 	"github.com/uesyn/devbox/template"
 	"github.com/uesyn/devbox/util"
 	"github.com/urfave/cli/v2"
+	"k8s.io/client-go/kubernetes"
 )
 
 type Params struct {
@@ -36,9 +37,8 @@ type Params struct {
 	ExecCommand     []string
 
 	Logger         logr.Logger
-	KubeClient     client.Client
+	ClientSet      kubernetes.Interface
 	TemplateLoader template.Loader
-	ReleaseStore   release.Store
 	Manager        manager.Manager
 }
 
@@ -71,25 +71,24 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	logger := logrusr.New(logrusLog).WithName("devbox")
 	p.Logger = logger
 
-	kubeClient, err := client.New(util.ExpandPath(p.KubeConfig), p.KubeContext)
-	if err != nil {
-		return err
-	}
-	p.KubeClient = kubeClient
-
 	templateDir := util.ExpandPath(filepath.Join(filepath.Dir(p.ConfigPath), "templates"))
 	isLoadRestrictionsNone := conf.GetTemplateConfig().IsLoadRestrictionsNone()
 	p.TemplateLoader = template.NewLoader(templateDir, isLoadRestrictionsNone)
 
-	p.ReleaseStore = release.NewDefaultStore(p.KubeClient)
-	p.Manager = manager.New(p.KubeClient, p.ReleaseStore, p.TemplateLoader)
+	restConfig, err := client.NewRESTConfig(util.ExpandPath(p.KubeConfig), p.KubeContext)
+	if err != nil {
+		return err
+	}
+	p.ClientSet = kubernetes.NewForConfigOrDie(restConfig)
+	releaseStore := release.NewDefaultStore(p.ClientSet)
+	p.Manager = manager.New(restConfig, releaseStore, p.TemplateLoader)
+
 	envs, err := conf.GetEnvs()
 	if err != nil {
 		return err
 	}
 	p.Envs = envs
 	p.ExecCommand = conf.GetExecConfig().GetCommand()
-
 	p.SSHCommand = conf.GetSSHConfig().GetCommand()
 	p.SSHPort = conf.GetSSHConfig().GetPort()
 	p.SSHUser = conf.GetSSHConfig().GetUser()

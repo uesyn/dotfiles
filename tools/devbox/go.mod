@@ -19,7 +19,6 @@ require (
 	k8s.io/client-go v0.27.1
 	k8s.io/kubectl v0.27.1
 	k8s.io/utils v0.0.0-20230406110748-d93618cff8a2
-	sigs.k8s.io/controller-runtime v0.14.6
 	sigs.k8s.io/kustomize/api v0.13.2
 	sigs.k8s.io/kustomize/kyaml v0.14.1
 	sigs.k8s.io/yaml v1.3.0
@@ -34,7 +33,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
-	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/exponent-io/jsonpath v0.0.0-20151013193312-d6023ce2651d // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.6.0 // indirect
@@ -79,8 +77,6 @@ require (
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.starlark.net v0.0.0-20230302034142-4b1e35fe2254 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
 	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
 	golang.org/x/sys v0.7.0 // indirect

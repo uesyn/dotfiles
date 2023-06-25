@@ -7,10 +7,11 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 type Devbox interface {
-	GetDevboxPod(...mutator.PodMutator) (*corev1.Pod, error)
+	GetDevboxPod(...mutator.PodMutator) (*unstructured.Unstructured, error)
 	GetDependencies() []*unstructured.Unstructured
 	ToUnstructureds() []*unstructured.Unstructured
 }
@@ -54,7 +55,7 @@ func isDevboxPod(obj *unstructured.Unstructured) bool {
 	return obj.GetKind() == "Pod"
 }
 
-func (d *devbox) GetDevboxPod(mutators ...mutator.PodMutator) (*corev1.Pod, error) {
+func (d *devbox) GetDevboxPod(mutators ...mutator.PodMutator) (*unstructured.Unstructured, error) {
 	devboxUnstuctured := d.pod.DeepCopy()
 	devboxPod := &corev1.Pod{}
 	err := runtime.DefaultUnstructuredConverter.FromUnstructured(devboxUnstuctured.Object, &devboxPod)
@@ -64,7 +65,13 @@ func (d *devbox) GetDevboxPod(mutators ...mutator.PodMutator) (*corev1.Pod, erro
 	for _, m := range mutators {
 		m.Mutate(devboxPod)
 	}
-	return devboxPod, nil
+	obj, err := runtime.DefaultUnstructuredConverter.ToUnstructured(devboxPod)
+	if err != nil {
+		return nil, err
+	}
+	unst := &unstructured.Unstructured{Object: obj}
+	unst.SetGroupVersionKind(schema.GroupVersionKind{Version: "v1", Kind: "Pod"})
+	return unst, nil
 }
 
 func (d *devbox) GetDependencies() []*unstructured.Unstructured {

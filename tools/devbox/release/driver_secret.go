@@ -10,14 +10,15 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/kubernetes/client"
 	"github.com/uesyn/devbox/util"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta "k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/client-go/kubernetes"
 )
 
 var _ Driver = (*secretDriver)(nil)
@@ -29,10 +30,10 @@ const (
 )
 
 type secretDriver struct {
-	c client.Client
+	c kubernetes.Interface
 }
 
-func newSecretDriver(c client.Client) *secretDriver {
+func newSecretDriver(c kubernetes.Interface) *secretDriver {
 	return &secretDriver{c: c}
 }
 
@@ -44,7 +45,7 @@ func (d *secretDriver) Create(ctx context.Context, devboxName, namespace string,
 	if err != nil {
 		return err
 	}
-	err = d.c.Create(ctx, secret)
+	_, err = d.c.CoreV1().Secrets(namespace).Create(ctx, secret, meta.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		logger.V(1).Info("release already exists")
 		return ErrAlreadyExists
@@ -57,15 +58,11 @@ func (d *secretDriver) Get(ctx context.Context, devboxName, namespace string) (*
 	logger.V(1).Info("get release from kubernetes secrets")
 
 	secretName := secretNameFromDevboxName(devboxName)
-	secret := corev1.Secret{}
-	if err := d.c.Get(
-		ctx,
-		ctrlclient.ObjectKey{Name: secretName, Namespace: namespace},
-		&secret,
-	); err != nil {
+	secret, err := d.c.CoreV1().Secrets(namespace).Get(ctx, secretName, metav1.GetOptions{})
+	if err != nil {
 		return nil, err
 	}
-	return d.extractRelease(&secret)
+	return d.extractRelease(secret)
 }
 
 func (d *secretDriver) Delete(ctx context.Context, devboxName, namespace string) error {
@@ -77,11 +74,14 @@ func (d *secretDriver) Delete(ctx context.Context, devboxName, namespace string)
 	secret.SetName(name)
 	secret.SetNamespace(namespace)
 
-	err := d.c.Delete(ctx, &secret)
+	err := d.c.CoreV1().Secrets(namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if apierrors.IsNotFound(err) {
 		logger.V(1).Info("secret not found", "secretName", name)
 	}
-	return ctrlclient.IgnoreNotFound(err)
+	if err != nil && apierrors.IsNotFound(err) {
+		return err
+	}
+	return nil
 }
 
 const (
@@ -97,22 +97,28 @@ func (d *secretDriver) Update(ctx context.Context, devboxName, namespace string,
 		return err
 	}
 
-	return d.c.Patch(ctx, secret, ctrlclient.Apply, &ctrlclient.PatchOptions{
+	data, err := json.Marshal(secret)
+	if err != nil {
+		return err
+	}
+	if _, err := d.c.CoreV1().Secrets(namespace).Patch(ctx, secret.GetName(), types.ApplyPatchType, data, metav1.PatchOptions{
 		Force:        util.Pointer(true),
 		FieldManager: fieldManager,
-	})
+	}); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *secretDriver) List(ctx context.Context, namespace string) ([]*Release, error) {
 	logger := logr.FromContextOrDiscard(ctx)
 	logger.V(1).Info("get releases to list from kubernetes secrets", namespaceKey, namespace)
 
-	secrets := corev1.SecretList{}
 	labelSelector := labels.Set{devboxInfoSecretLabalKey: devboxInfoSecretLabalValue}.AsSelector()
-	if err := d.c.List(ctx, &secrets, &ctrlclient.ListOptions{
-		LabelSelector: labelSelector,
-		Namespace:     namespace,
-	}); err != nil {
+	secrets, err := d.c.CoreV1().Secrets(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: labelSelector.String(),
+	})
+	if err != nil {
 		return nil, err
 	}
 

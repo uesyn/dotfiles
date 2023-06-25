@@ -44,7 +44,7 @@ func newUpdateCommand() *cli.Command {
 			ctx := logr.NewContext(cCtx.Context, logger)
 			var ms []mutator.PodMutator
 			if params.SelectNodes {
-				nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, params.KubeClient)
+				nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, params.ClientSet)
 				if err != nil {
 					logger.Error(err, "failed to get nodes")
 					return err

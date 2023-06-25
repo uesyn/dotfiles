@@ -3,16 +3,16 @@ package info
 import (
 	"context"
 
-	"github.com/uesyn/devbox/kubernetes/client"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 var _ DevboxInfoAccessor = (*devboxInfoAccessor)(nil)
 
 type devboxInfoAccessor struct {
-	client       client.Client
+	clientset    kubernetes.Interface
 	devboxName   string
 	podName      string
 	namespace    string
@@ -20,9 +20,9 @@ type devboxInfoAccessor struct {
 	protected    bool
 }
 
-func NewDevboxInfoAccessor(c client.Client, devboxName, podName, namespace, templateName string, protected bool) DevboxInfoAccessor {
+func NewDevboxInfoAccessor(clientset kubernetes.Interface, devboxName, podName, namespace, templateName string, protected bool) DevboxInfoAccessor {
 	return &devboxInfoAccessor{
-		client:       c,
+		clientset:    clientset,
 		devboxName:   devboxName,
 		podName:      podName,
 		namespace:    namespace,
@@ -48,12 +48,7 @@ func (a *devboxInfoAccessor) Protected() bool {
 }
 
 func (a *devboxInfoAccessor) GetPhase(ctx context.Context) (DevboxPhase, error) {
-	objKey := ctrlclient.ObjectKey{
-		Namespace: a.namespace,
-		Name:      a.podName,
-	}
-	pod := corev1.Pod{}
-	err := a.client.Get(ctx, objKey, &pod)
+	pod, err := a.clientset.CoreV1().Pods(a.namespace).Get(ctx, a.podName, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
 		return DevboxStopped, nil
 	} else if err != nil {

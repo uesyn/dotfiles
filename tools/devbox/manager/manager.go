@@ -2,6 +2,7 @@ package manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"github.com/moby/term"
 	"github.com/uesyn/devbox/devbox"
 	"github.com/uesyn/devbox/kubernetes/client"
+	"github.com/uesyn/devbox/kubernetes/scheme"
 	"github.com/uesyn/devbox/manager/info"
 	"github.com/uesyn/devbox/mutator"
 	"github.com/uesyn/devbox/release"
@@ -17,8 +19,12 @@ import (
 	"github.com/uesyn/devbox/util"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type Manager interface {
@@ -36,15 +42,24 @@ type Manager interface {
 }
 
 type manager struct {
-	client client.Client
-	loader template.Loader
-	store  release.Store
+	scheme       *runtime.Scheme
+	restConfig   *rest.Config
+	unstructured *client.UnstructuredClient
+	clientset    kubernetes.Interface
+	loader       template.Loader
+	store        release.Store
 }
 
 var _ Manager = (*manager)(nil)
 
-func New(c client.Client, s release.Store, loader template.Loader) *manager {
-	return &manager{client: c, store: s, loader: loader}
+func New(restConfig *rest.Config, s release.Store, loader template.Loader) *manager {
+	return &manager{
+		scheme:       scheme.Scheme,
+		unstructured: client.NewUnstructuredClient(restConfig),
+		clientset:    kubernetes.NewForConfigOrDie(restConfig),
+		store:        s,
+		loader:       loader,
+	}
 }
 
 func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace string, mutators ...mutator.PodMutator) error {
@@ -93,14 +108,6 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 	return nil
 }
 
-func (m *manager) getGVK(obj ctrlclient.Object) (*schema.GroupVersionKind, error) {
-	gvks, _, err := m.client.Scheme().ObjectKinds(obj)
-	if err != nil {
-		return nil, err
-	}
-	return &gvks[0], nil
-}
-
 func (m *manager) createDevboxPod(ctx context.Context, d devbox.Devbox, mutators ...mutator.PodMutator) error {
 	pod, err := d.GetDevboxPod(mutators...)
 	if err != nil {
@@ -109,14 +116,12 @@ func (m *manager) createDevboxPod(ctx context.Context, d devbox.Devbox, mutators
 	return m.create(ctx, false, pod)
 }
 
-func (m *manager) create(ctx context.Context, ignoreAlreadyExists bool, objs ...ctrlclient.Object) error {
+func (m *manager) create(ctx context.Context, ignoreAlreadyExists bool, objs ...*unstructured.Unstructured) error {
 	for _, obj := range objs {
-		l := logr.FromContextOrDiscard(ctx)
-		if gvk, err := m.getGVK(obj); err == nil {
-			l = l.WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		}
+		gvk := obj.GroupVersionKind()
+		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
 		l.V(2).Info("create object", "obj", obj)
-		err := m.client.Create(ctx, obj)
+		_, err := m.unstructured.Create(ctx, obj, client.CreateOptions{})
 		if ignoreAlreadyExists && apierrors.IsAlreadyExists(err) {
 			l.Info("object has already existed", "obj", obj)
 			continue
@@ -131,27 +136,19 @@ func (m *manager) create(ctx context.Context, ignoreAlreadyExists bool, objs ...
 }
 
 func (m *manager) applyDependencies(ctx context.Context, d devbox.Devbox) error {
-	var objs []ctrlclient.Object
-	for _, o := range d.GetDependencies() {
-		o := o
-		objs = append(objs, o)
-	}
-	return m.apply(ctx, objs...)
+	return m.apply(ctx, d.GetDependencies()...)
 }
 
-func (m *manager) apply(ctx context.Context, objs ...ctrlclient.Object) error {
+func (m *manager) apply(ctx context.Context, objs ...*unstructured.Unstructured) error {
 	for _, obj := range objs {
-		l := logr.FromContextOrDiscard(ctx)
-		if gvk, err := m.getGVK(obj); err == nil {
-			l = l.WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		}
+		gvk := obj.GroupVersionKind()
+		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
 		l.V(2).Info("apply object", "obj", obj)
-		opts := &ctrlclient.PatchOptions{
+		opts := client.PatchOptions{
 			Force:        util.Pointer(true),
 			FieldManager: "devbox",
 		}
-		err := m.client.Patch(ctx, obj, ctrlclient.Apply, opts)
-		if err != nil {
+		if _, err := m.unstructured.Apply(ctx, obj, opts); err != nil {
 			l.Error(err, "failed to apply")
 			return err
 		}
@@ -202,22 +199,15 @@ func (m *manager) deleteDevboxPod(ctx context.Context, d devbox.Devbox) error {
 }
 
 func (m *manager) deleteDependencies(ctx context.Context, d devbox.Devbox) error {
-	var objs []ctrlclient.Object
-	for _, o := range d.GetDependencies() {
-		o := o
-		objs = append(objs, o)
-	}
-	return m.delete(ctx, objs...)
+	return m.delete(ctx, d.GetDependencies()...)
 }
 
-func (m *manager) delete(ctx context.Context, objs ...ctrlclient.Object) error {
+func (m *manager) delete(ctx context.Context, objs ...*unstructured.Unstructured) error {
 	for _, obj := range objs {
-		l := logr.FromContextOrDiscard(ctx)
-		if gvk, err := m.getGVK(obj); err == nil {
-			l = l.WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		}
+		gvk := obj.GroupVersionKind()
+		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
 		l.V(2).Info("delete object", "obj", obj)
-		err := m.client.Delete(ctx, obj)
+		err := m.unstructured.Delete(ctx, obj, client.DeleteOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
@@ -240,12 +230,13 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 	}
 
 	stdin, stdout, stderr := term.StdStreams()
-	opts := &client.ExecOptions{
-		Stdin:   stdin,
-		Stdout:  stdout,
-		Stderr:  stderr,
-		Command: command,
-		Envs:    envs,
+	opts := client.ExecOptions{
+		Stdin:     stdin,
+		Stdout:    stdout,
+		Stderr:    stderr,
+		Container: "devbox", // TODO: Select container with selector.
+		Command:   command,
+		Envs:      envs,
 	}
 
 	if err := m.waitForDevboxPodReady(ctx, d); err != nil {
@@ -256,8 +247,7 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 	if err != nil {
 		return err
 	}
-	// Exec first container
-	return m.client.Exec(ctx, pod.GetName(), pod.GetNamespace(), pod.Spec.Containers[0].Name, opts)
+	return m.unstructured.Exec(ctx, pod, opts)
 }
 
 func (m *manager) PortForward(ctx context.Context, devboxName, namespace string, forwardedPorts []string, addresses []string) error {
@@ -265,10 +255,10 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 	ctx = logr.NewContext(ctx, logger)
 
 	if len(forwardedPorts) == 0 {
-		return fmt.Errorf("must set forwarded ports")
+		return errors.New("must set forwarded ports")
 	}
 	if len(addresses) == 0 {
-		return fmt.Errorf("must set address to be bind")
+		return errors.New("must set address to be bind")
 	}
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
@@ -289,11 +279,11 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 		return fmt.Errorf("failed to get devbox pod object: %w", err)
 	}
 
-	portForwardOptions := client.PortForwardOptions{
+	opts := client.PortForwardOptions{
 		Addresses: addresses,
 		Ports:     forwardedPorts,
 	}
-	return m.client.PortForward(ctx, pod.GetName(), pod.GetNamespace(), &portForwardOptions)
+	return m.unstructured.PortForward(ctx, pod, opts)
 }
 
 func (m *manager) Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error {
@@ -415,7 +405,7 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 			return nil, fmt.Errorf("failed to get devbox object: %w", err)
 		}
 		info := info.NewDevboxInfoAccessor(
-			m.client,
+			m.clientset,
 			r.Name,
 			pod.GetName(),
 			pod.GetNamespace(),
@@ -436,10 +426,8 @@ func (m *manager) waitForDevboxPodTerminated(ctx context.Context, d devbox.Devbo
 		return err
 	}
 	logger := logr.FromContextOrDiscard(ctx).WithValues("podName", pod.GetName(), "namespace", pod.GetNamespace())
-	objKey := ctrlclient.ObjectKeyFromObject(pod)
 	for {
-		fresh := corev1.Pod{}
-		err := m.client.Get(ctx, objKey, &fresh)
+		fresh, err := m.clientset.CoreV1().Pods(pod.GetNamespace()).Get(ctx, pod.GetName(), metav1.GetOptions{})
 		if err == nil {
 			if fresh.DeletionTimestamp.IsZero() {
 				return fmt.Errorf("devbox pod is not deleted")
@@ -448,7 +436,10 @@ func (m *manager) waitForDevboxPodTerminated(ctx context.Context, d devbox.Devbo
 			time.Sleep(500 * time.Millisecond)
 			continue
 		}
-		return ctrlclient.IgnoreNotFound(err)
+		if err != nil && !apierrors.IsNotFound(err) {
+			return err
+		}
+		return nil
 	}
 }
 
@@ -458,10 +449,8 @@ func (m *manager) waitForDevboxPodReady(ctx context.Context, d devbox.Devbox) er
 		return err
 	}
 	logger := logr.FromContextOrDiscard(ctx).WithValues("podName", pod.GetName(), "namespace", pod.GetNamespace())
-	objKey := ctrlclient.ObjectKeyFromObject(pod)
 	for {
-		fresh := corev1.Pod{}
-		err := m.client.Get(ctx, objKey, &fresh)
+		fresh, err := m.clientset.CoreV1().Pods(pod.GetNamespace()).Get(ctx, pod.GetName(), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -497,18 +486,26 @@ func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*co
 		return nil, err
 	}
 
-	var el corev1.EventList
+	var eventList corev1.EventList
 	for _, obj := range r.Objects {
 		kind := obj.GetKind()
 		name := obj.GetName()
-		events, err := m.client.Events(ctx, kind, name, namespace)
+		opts := metav1.ListOptions{
+			FieldSelector: fields.AndSelectors(
+				fields.OneTermEqualSelector("involvedObject.kind", kind),
+				fields.OneTermEqualSelector("involvedObject.name", name),
+				fields.OneTermEqualSelector("metadata.namespace", namespace),
+			).String(),
+			Limit: 100,
+		}
+		el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
 		if err != nil {
 			return nil, err
 		}
-		el.Items = append(el.Items, events...)
+		eventList.Items = append(eventList.Items, el.Items...)
 	}
-	sort.Sort(sortableEvents(el.Items))
-	return &el, nil
+	sort.Sort(sortableEvents(eventList.Items))
+	return &eventList, nil
 }
 
 type sortableEvents []corev1.Event

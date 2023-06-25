@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/kubernetes/client"
+	"k8s.io/client-go/kubernetes"
 )
 
 type Store interface {
@@ -23,7 +23,7 @@ type store struct {
 
 var _ Store = &store{}
 
-func NewDefaultStore(c client.Client) *store {
+func NewDefaultStore(c kubernetes.Interface) *store {
 	return NewStore(newSecretDriver(c))
 }
 
