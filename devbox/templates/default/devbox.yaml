@@ -6,6 +6,7 @@ spec:
   automountServiceAccountToken: false
   securityContext:
     fsGroup: 1000
+    fsGroupChangePolicy: OnRootMismatch
   containers:
   - name: devbox
     image: ghcr.io/uesyn/devbox
