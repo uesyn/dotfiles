@@ -1,17 +1,10 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"net"
-	"strconv"
-	"time"
-
 	"github.com/go-logr/logr"
 	"github.com/uesyn/devbox/cmd/runtime"
-	"github.com/uesyn/devbox/ssh"
+	"github.com/uesyn/devbox/manager"
 	"github.com/urfave/cli/v2"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func newSSHCommand() *cli.Command {
@@ -50,82 +43,30 @@ func newSSHCommand() *cli.Command {
 				logger.Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			// Port forward
-			localPort, err := getFreePort()
+			opts := []manager.SSHOption{}
+			if len(params.SSHUser) > 0 {
+				opts = append(opts, manager.WithSSHUser(params.SSHUser))
+			}
+			if len(params.SSHIdentityFile) > 0 {
+				opts = append(opts, manager.WithSSHIdentityFile(params.SSHIdentityFile))
+			}
+			if len(params.Envs) > 0 {
+				opts = append(opts, manager.WithSSHEnvs(params.Envs))
+			}
+			if len(params.SSHCommand) > 0 {
+				opts = append(opts, manager.WithSSHCommand(params.SSHCommand))
+			}
+			if len(params.Ports) > 0 {
+				opts = append(opts, manager.WithSSHForwardedPorts(params.Ports))
+			}
+
+			err := params.Manager.SSH(cCtx.Context, params.Name, params.Namespace, params.SSHPort, opts...)
 			if err != nil {
-				logger.Error(err, "failed to get free port for SSH")
-				return err
-			}
-
-			const localhost = "localhost"
-			go func() {
-				addresses := []string{localhost}
-				ports := []string{fmt.Sprintf("%d:%d", localPort, params.SSHPort)}
-				err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, ports, addresses)
-				if err != nil {
-					logger.Error(err, "failed to forward ports")
-				}
-			}()
-
-			err = wait.PollUntilContextTimeout(cCtx.Context, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
-				if isListening(localhost, localPort) {
-					return true, nil
-				}
-				return false, nil
-			})
-			if err != nil {
-				logger.Error(err, "failed to wait ssh server is listened")
-				return err
-			}
-
-			sshOpts := ssh.Options{
-				User:           params.SSHUser,
-				Port:           localPort,
-				IdentityFile:   params.SSHIdentityFile,
-				Envs:           params.Envs,
-				Command:        params.SSHCommand,
-				ForwardedPorts: params.Ports,
-			}
-			if err := sshOpts.Complete(); err != nil {
-				logger.Error(err, "failed to complete ssh options")
-				return err
-			}
-			if err := sshOpts.Run(cCtx.Context); err != nil {
-				logger.Error(err, "failed to run ssh")
+				logger.Error(err, "failed to ssh devbox")
 				return err
 			}
 			return nil
 		},
 	}
-}
-
-func getFreePort() (int, error) {
-	const invalidPort = -1
-
-	a, err := net.ResolveTCPAddr("tcp", "localhost:0")
-	if err != nil {
-		return invalidPort, err
-	}
-
-	l, err := net.ListenTCP("tcp", a)
-	if err != nil {
-		return invalidPort, err
-	}
-
-	if err := l.Close(); err != nil {
-		return invalidPort, err
-	}
-	return l.Addr().(*net.TCPAddr).Port, nil
-}
-
-func isListening(addr string, port int) bool {
-	address := net.JoinHostPort(addr, strconv.Itoa(port))
-	conn, err := net.DialTimeout("tcp", address, time.Second)
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-	return true
 }

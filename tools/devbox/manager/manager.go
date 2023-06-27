@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -16,6 +18,7 @@ import (
 	"github.com/uesyn/devbox/manager/info"
 	"github.com/uesyn/devbox/mutator"
 	"github.com/uesyn/devbox/release"
+	"github.com/uesyn/devbox/ssh"
 	"github.com/uesyn/devbox/template"
 	"github.com/uesyn/devbox/util"
 	corev1 "k8s.io/api/core/v1"
@@ -25,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -33,8 +37,9 @@ type Manager interface {
 	Run(ctx context.Context, templateName, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Delete(ctx context.Context, devboxName, namespace string) error
 	Update(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
-	Exec(ctx context.Context, devboxName, namespace string, command []string, envs map[string]string) error
-	PortForward(ctx context.Context, devboxName, namespace string, forwardedPorts []string, addresses []string) error
+	Exec(ctx context.Context, devboxName, namespace string, opts ...ExecOption) error
+	PortForward(ctx context.Context, devboxName, namespace string, opts ...PortForwardOption) error
+	SSH(ctx context.Context, devboxName, namespace string, containerSSHPort int, opts ...SSHOption) error
 	Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Stop(ctx context.Context, devboxName, namespace string) error
 	List(ctx context.Context, namespace string) ([]info.DevboxInfoAccessor, error)
@@ -206,7 +211,37 @@ func (m *manager) delete(ctx context.Context, objs ...*unstructured.Unstructured
 	return nil
 }
 
-func (m *manager) Exec(ctx context.Context, devboxName, namespace string, command []string, envs map[string]string) error {
+type ExecOption interface {
+	apply(opts *client.ExecOptions) *client.ExecOptions
+}
+
+func WithExecCommand(command []string) ExecOption {
+	return &withExecCommand{command: command}
+}
+
+type withExecCommand struct {
+	command []string
+}
+
+func (o *withExecCommand) apply(opts *client.ExecOptions) *client.ExecOptions {
+	opts.Command = o.command
+	return opts
+}
+
+func WithExecEnvs(envs map[string]string) ExecOption {
+	return &withExecEnvs{envs: envs}
+}
+
+type withExecEnvs struct {
+	envs map[string]string
+}
+
+func (o *withExecEnvs) apply(opts *client.ExecOptions) *client.ExecOptions {
+	opts.Envs = o.envs
+	return opts
+}
+
+func (m *manager) Exec(ctx context.Context, devboxName, namespace string, opts ...ExecOption) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
@@ -226,20 +261,22 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, comman
 	}
 
 	stdin, stdout, stderr := term.StdStreams()
-	opts := client.ExecOptions{
+	execOpts := &client.ExecOptions{
 		Stdin:     stdin,
 		Stdout:    stdout,
 		Stderr:    stderr,
 		Container: pod.Spec.Containers[0].Name, // TODO: Select container with selector.
-		Command:   command,
-		Envs:      envs,
+	}
+
+	for _, o := range opts {
+		execOpts = o.apply(execOpts)
 	}
 
 	obj := d.GetDevbox()
 	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "ContainersReady"); err != nil {
 		return fmt.Errorf("could not wait for devbox pod ready: %w", err)
 	}
-	return m.unstructured.Exec(ctx, obj, opts)
+	return m.unstructured.Exec(ctx, obj, *execOpts)
 }
 
 var unsupportedDevboxKind = errors.New("unsupported devbox kind")
@@ -257,16 +294,43 @@ func (m *manager) getDevboxPod(ctx context.Context, d devbox.Devbox) (*corev1.Po
 	return pod, nil
 }
 
-func (m *manager) PortForward(ctx context.Context, devboxName, namespace string, forwardedPorts []string, addresses []string) error {
+type PortForwardOption interface {
+	apply(opts *client.PortForwardOptions) *client.PortForwardOptions
+}
+
+func WithPortForwardPorts(ports []string) PortForwardOption {
+	return &withPortFowardPorts{
+		ports: ports,
+	}
+}
+
+type withPortFowardPorts struct {
+	ports []string
+}
+
+func (o *withPortFowardPorts) apply(opts *client.PortForwardOptions) *client.PortForwardOptions {
+	opts.Ports = o.ports
+	return opts
+}
+
+func WithPortForwardAddresses(addresses []string) PortForwardOption {
+	return &withPortFowardAddresses{
+		addresses: addresses,
+	}
+}
+
+type withPortFowardAddresses struct {
+	addresses []string
+}
+
+func (o *withPortFowardAddresses) apply(opts *client.PortForwardOptions) *client.PortForwardOptions {
+	opts.Addresses = o.addresses
+	return opts
+}
+
+func (m *manager) PortForward(ctx context.Context, devboxName, namespace string, opts ...PortForwardOption) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
-
-	if len(forwardedPorts) == 0 {
-		return errors.New("must set forwarded ports")
-	}
-	if len(addresses) == 0 {
-		return errors.New("must set address to be bind")
-	}
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
@@ -278,15 +342,164 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 		return fmt.Errorf("failed to load devbox: %w", err)
 	}
 
-	l := logr.FromContextOrDiscard(ctx)
-	l.Info("enable port forward", "ports", forwardedPorts, "addresses", addresses)
-
 	obj := d.GetDevbox()
-	opts := client.PortForwardOptions{
-		Addresses: addresses,
-		Ports:     forwardedPorts,
+	pfOpts := &client.PortForwardOptions{}
+	for _, o := range opts {
+		pfOpts = o.apply(pfOpts)
 	}
-	return m.unstructured.PortForward(ctx, obj, opts)
+	logger.Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
+
+	return m.unstructured.PortForward(ctx, obj, *pfOpts)
+}
+
+type SSHOption interface {
+	apply(opts *ssh.Options) *ssh.Options
+}
+
+func WithSSHUser(user string) SSHOption {
+	return &withSSHUser{user: user}
+}
+
+type withSSHUser struct {
+	user string
+}
+
+func (o *withSSHUser) apply(opts *ssh.Options) *ssh.Options {
+	opts.User = o.user
+	return opts
+}
+
+func WithSSHIdentityFile(file string) SSHOption {
+	return &withSSHIdentityFile{file: file}
+}
+
+type withSSHIdentityFile struct {
+	file string
+}
+
+func (o *withSSHIdentityFile) apply(opts *ssh.Options) *ssh.Options {
+	opts.IdentityFile = o.file
+	return opts
+}
+
+func WithSSHCommand(command []string) SSHOption {
+	return &withSSHCommand{command: command}
+}
+
+type withSSHCommand struct {
+	command []string
+}
+
+func (o *withSSHCommand) apply(opts *ssh.Options) *ssh.Options {
+	opts.Command = o.command
+	return opts
+}
+
+func WithSSHEnvs(envs map[string]string) SSHOption {
+	return &withSSHEnvs{envs: envs}
+}
+
+type withSSHEnvs struct {
+	envs map[string]string
+}
+
+func (o *withSSHEnvs) apply(opts *ssh.Options) *ssh.Options {
+	opts.Envs = o.envs
+	return opts
+}
+
+func WithSSHForwardedPorts(ports []string) SSHOption {
+	return &withSSHForwardedPorts{ports: ports}
+}
+
+type withSSHForwardedPorts struct {
+	ports []string
+}
+
+func (o *withSSHForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
+	opts.ForwardedPorts = o.ports
+	return opts
+}
+
+func (m *manager) SSH(ctx context.Context, devboxName, namespace string, containerSSHPort int, opts ...SSHOption) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
+	ctx = logr.NewContext(ctx, logger)
+
+	localPort, err := getFreePort()
+	if err != nil {
+		logger.Error(err, "failed to get free port for SSH")
+		return err
+	}
+
+	const localhost = "127.0.0.1"
+	sshOpts := &ssh.Options{Address: localhost, Port: localPort}
+	for _, o := range opts {
+		sshOpts = o.apply(sshOpts)
+	}
+	logger.Info(fmt.Sprintf("%+v", sshOpts))
+
+	if err := sshOpts.Complete(); err != nil {
+		logger.Error(err, "failed to complete ssh options")
+		return err
+	}
+
+	// Port forward
+	go func() {
+		opts := []PortForwardOption{
+			WithPortForwardAddresses([]string{localhost}),
+			WithPortForwardPorts([]string{fmt.Sprintf("%d:%d", localPort, containerSSHPort)}),
+		}
+		err := m.PortForward(ctx, devboxName, namespace, opts...)
+		if err != nil {
+			logger.Error(err, "failed to forward ports")
+		}
+	}()
+
+	err = wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
+		if isListening(localhost, localPort) {
+			return true, nil
+		}
+		return false, nil
+	})
+	if err != nil {
+		logger.Error(err, "failed to wait ssh server is listened")
+		return err
+	}
+
+	if err := sshOpts.Run(ctx); err != nil {
+		logger.Error(err, "failed to run ssh")
+		return err
+	}
+	return nil
+}
+
+func getFreePort() (int, error) {
+	const invalidPort = -1
+
+	a, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	if err != nil {
+		return invalidPort, err
+	}
+
+	l, err := net.ListenTCP("tcp", a)
+	if err != nil {
+		return invalidPort, err
+	}
+
+	if err := l.Close(); err != nil {
+		return invalidPort, err
+	}
+	return l.Addr().(*net.TCPAddr).Port, nil
+}
+
+func isListening(addr string, port int) bool {
+	address := net.JoinHostPort(addr, strconv.Itoa(port))
+	conn, err := net.DialTimeout("tcp", address, time.Second)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+	return true
 }
 
 func (m *manager) Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error {

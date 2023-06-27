@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/go-logr/logr"
 	"github.com/uesyn/devbox/cmd/runtime"
+	"github.com/uesyn/devbox/manager"
 	"github.com/urfave/cli/v2"
 )
 
@@ -47,7 +48,11 @@ func newExecCommand() *cli.Command {
 			// Port forward
 			if len(params.Ports) > 0 && len(params.Addresses) > 0 {
 				go func() {
-					err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, params.Ports, params.Addresses)
+					opts := []manager.PortForwardOption{
+						manager.WithPortForwardAddresses(params.Addresses),
+						manager.WithPortForwardPorts(params.Ports),
+					}
+					err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, opts...)
 					if err != nil {
 						logger.Error(err, "failed to forward ports")
 					}
@@ -55,7 +60,14 @@ func newExecCommand() *cli.Command {
 			}
 
 			// Exec
-			err := params.Manager.Exec(cCtx.Context, params.Name, params.Namespace, params.ExecCommand, params.Envs)
+			opts := []manager.ExecOption{}
+			if len(params.ExecCommand) > 0 {
+				opts = append(opts, manager.WithExecCommand(params.ExecCommand))
+			}
+			if len(params.Envs) > 0 {
+				opts = append(opts, manager.WithExecEnvs(params.Envs))
+			}
+			err := params.Manager.Exec(cCtx.Context, params.Name, params.Namespace, opts...)
 			if err != nil {
 				logger.Error(err, "failed to exec devbox")
 				return err
