@@ -50,11 +50,7 @@ func newUpdateCommand() *cli.Command {
 				}
 				ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
 			}
-			if err := params.Manager.Update(cCtx.Context, params.Name, params.Namespace, ms...); err != nil {
-				logger.Error(err, "failed to update devbox")
-				return err
-			}
-			return nil
+			return params.Manager.Update(cCtx.Context, params.Name, params.Namespace, ms...)
 		},
 	}
 }

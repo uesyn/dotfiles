@@ -73,10 +73,11 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	logger.V(1).Info("create devbox release")
+	logger.Info("create devbox release")
 	d, err := m.loader.Load(templateName, devboxName, namespace)
 	if err != nil {
-		return fmt.Errorf("failed to load template: %w", err)
+		logger.Error(err, "failed to load template")
+		return err
 	}
 	r := &release.Release{
 		Name:         devboxName,
@@ -86,6 +87,7 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 	}
 
 	if err := m.store.Create(ctx, devboxName, namespace, r); err != nil {
+		logger.Error(err, "failed to create devbox release")
 		return err
 	}
 
@@ -102,7 +104,8 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 
 	if err := m.applyDevbox(ctx, d, mutators...); err != nil {
 		failureHandler()
-		return fmt.Errorf("failed to apply devbox object: %w", err)
+		logger.Error(err, "failed to apply devbox object")
+		return err
 	}
 	return nil
 }
@@ -157,13 +160,15 @@ func (m *manager) apply(ctx context.Context, objs ...*unstructured.Unstructured)
 	return nil
 }
 
+var protectedError = errors.New("protected")
+
 func (m *manager) Delete(ctx context.Context, devboxName, namespace string) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if apierrors.IsNotFound(err) {
-		logger.Info("devbox already deleted")
+		logger.Info("devbox already has been deleted")
 		return nil
 	}
 	if err != nil {
@@ -171,20 +176,29 @@ func (m *manager) Delete(ctx context.Context, devboxName, namespace string) erro
 		return err
 	}
 	if r.Protect {
-		return fmt.Errorf("protected")
+		logger.Error(protectedError, "failed to delete devbox")
+		return protectedError
 	}
 
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
+		logger.Error(err, "failed to load devbox object from release")
 		return err
 	}
 	if err := m.deleteDevbox(ctx, d); err != nil {
+		logger.Error(err, "failed to delete devbox")
 		return err
 	}
 	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, d.GetDevbox()); err != nil {
-		return fmt.Errorf("failed to wait devbox terminated: %w", err)
+		logger.Error(err, "failed to wait for devbox to be deleted")
+		return err
 	}
-	return m.store.Delete(ctx, devboxName, namespace)
+	if err := m.store.Delete(ctx, devboxName, namespace); err != nil {
+		logger.Error(err, "failed to clean up devbox release")
+		return err
+	}
+	logger.Info("devbox was deleted")
+	return nil
 }
 
 func (m *manager) deleteDevbox(ctx context.Context, d devbox.Devbox) error {
@@ -247,17 +261,20 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, opts .
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
-		return fmt.Errorf("failed to load devbox: %w", err)
+		logger.Error(err, "failed to load devbox")
+		return err
 	}
 
 	pod, err := m.getDevboxPod(ctx, d)
 	if err != nil {
-		return fmt.Errorf("failed to get devbox pod: %w", err)
+		logger.Error(err, "failed to load devbox pod")
+		return err
 	}
 
 	stdin, stdout, stderr := term.StdStreams()
@@ -274,9 +291,15 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, opts .
 
 	obj := d.GetDevbox()
 	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "ContainersReady"); err != nil {
-		return fmt.Errorf("could not wait for devbox pod ready: %w", err)
+		logger.Error(err, "failed to wait for devbox to be deleted")
+		return err
 	}
-	return m.unstructured.Exec(ctx, obj, *execOpts)
+
+	if err := m.unstructured.Exec(ctx, obj, *execOpts); err != nil {
+		logger.Error(err, "failed to exec")
+		return err
+	}
+	return nil
 }
 
 var unsupportedDevboxKind = errors.New("unsupported devbox kind")
@@ -334,12 +357,14 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
-		return fmt.Errorf("failed to load devbox: %w", err)
+		logger.Error(err, "failed to load devbox")
+		return err
 	}
 
 	obj := d.GetDevbox()
@@ -347,9 +372,18 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 	for _, o := range opts {
 		pfOpts = o.apply(pfOpts)
 	}
-	logger.Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
 
-	return m.unstructured.PortForward(ctx, obj, *pfOpts)
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "ContainersReady"); err != nil {
+		logger.Error(err, "failed to wait for devbox to become ready")
+		return err
+	}
+
+	logger.Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
+	if err := m.unstructured.PortForward(ctx, obj, *pfOpts); err != nil {
+		logger.Error(err, "failed to forward ports")
+		return err
+	}
+	return nil
 }
 
 type SSHOption interface {
@@ -425,6 +459,23 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
+	r, err := m.store.Get(ctx, devboxName, namespace)
+	if err != nil {
+		logger.Error(err, "failed to get release")
+		return err
+	}
+
+	d, err := devbox.NewDevbox(r.Objects)
+	if err != nil {
+		logger.Error(err, "failed to load devbox")
+		return err
+	}
+
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, d.GetDevbox(), "ContainersReady"); err != nil {
+		logger.Error(err, "failed to wait for devbox to become ready")
+		return err
+	}
+
 	localPort, err := getFreePort()
 	if err != nil {
 		logger.Error(err, "failed to get free port for SSH")
@@ -436,14 +487,13 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 	for _, o := range opts {
 		sshOpts = o.apply(sshOpts)
 	}
-	logger.Info(fmt.Sprintf("%+v", sshOpts))
 
 	if err := sshOpts.Complete(); err != nil {
 		logger.Error(err, "failed to complete ssh options")
 		return err
 	}
 
-	// Port forward
+	// Port forward to connect ssh to container.
 	go func() {
 		opts := []PortForwardOption{
 			WithPortForwardAddresses([]string{localhost}),
@@ -461,8 +511,9 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		}
 		return false, nil
 	})
+
 	if err != nil {
-		logger.Error(err, "failed to wait ssh server is listened")
+		logger.Error(err, "failed to wait for the ssh server to be listened")
 		return err
 	}
 
@@ -471,6 +522,16 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 	return nil
+}
+
+func isListening(addr string, port int) bool {
+	address := net.JoinHostPort(addr, strconv.Itoa(port))
+	conn, err := net.DialTimeout("tcp", address, time.Second)
+	if err != nil {
+		return false
+	}
+	defer conn.Close()
+	return true
 }
 
 func getFreePort() (int, error) {
@@ -492,39 +553,37 @@ func getFreePort() (int, error) {
 	return l.Addr().(*net.TCPAddr).Port, nil
 }
 
-func isListening(addr string, port int) bool {
-	address := net.JoinHostPort(addr, strconv.Itoa(port))
-	conn, err := net.DialTimeout("tcp", address, time.Second)
-	if err != nil {
-		return false
-	}
-	defer conn.Close()
-	return true
-}
-
 func (m *manager) Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
-		return fmt.Errorf("failed to load devbox from release: %w", err)
+		logger.Error(err, "failed to load devbox from release")
+		return err
 	}
 
 	obj := d.GetDevbox()
 	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
-		return fmt.Errorf("could not wait devbox object terminated: %w", err)
+		logger.Error(err, "failed to wait for devbox object to be terminated")
+		return err
 	}
 
 	mutated, err := m.mutateDevbox(ctx, obj, mutators...)
 	if err != nil {
-		return fmt.Errorf("failed to mutate devbox: %w", err)
+		logger.Error(err, "failed to mutate devbox")
+		return err
 	}
-	return m.apply(ctx, mutated)
+	if err := m.apply(ctx, mutated); err != nil {
+		logger.Error(err, "failed to start devbox")
+		return err
+	}
+	return nil
 }
 
 func (m *manager) Stop(ctx context.Context, devboxName, namespace string) error {
@@ -533,14 +592,17 @@ func (m *manager) Stop(ctx context.Context, devboxName, namespace string) error 
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
-		return fmt.Errorf("failed to load devbox from release: %w", err)
+		logger.Error(err, "failed to load devbox from release")
+		return err
 	}
 	if err := m.delete(ctx, d.GetDevbox()); err != nil {
-		return fmt.Errorf("failed to delete devbox object: %w", err)
+		logger.Error(err, "failed to delete devbox object")
+		return err
 	}
 	return nil
 }
@@ -551,30 +613,37 @@ func (m *manager) Update(ctx context.Context, devboxName, namespace string, muta
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 	d, err := devbox.NewDevbox(r.Objects)
 	if err != nil {
-		return fmt.Errorf("failed to load devbox from release: %w", err)
+		logger.Error(err, "failed to load devbox from release")
+		return err
 	}
 	obj := d.GetDevbox()
 	if err := m.delete(ctx, obj); err != nil {
-		return fmt.Errorf("failed to delete devbox object: %w", err)
+		logger.Error(err, "failed to delete devbox object")
+		return err
 	}
 	if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
-		return fmt.Errorf("failed to wait devbox object terminated: %w", err)
+		logger.Error(err, "failed to wait devbox object terminated")
+		return err
 	}
 
 	d, err = m.loader.Load(r.TemplateName, r.Name, r.Namespace)
 	if err != nil {
-		return fmt.Errorf("failed to load template: %w", err)
+		logger.Error(err, "failed to load template")
+		return err
 	}
 	r.Objects = d.ToUnstructureds()
 	if err := m.store.Update(ctx, devboxName, namespace, r); err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+		logger.Error(err, "failed to update release")
+		return err
 	}
 	if err := m.applyDevbox(ctx, d, mutators...); err != nil {
-		return fmt.Errorf("failed to apply devbox object: %w", err)
+		logger.Error(err, "failed to apply devbox object")
+		return err
 	}
 	return nil
 }
@@ -585,11 +654,13 @@ func (m *manager) Protect(ctx context.Context, devboxName, namespace string) err
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 	r.Protect = true
 	if err := m.store.Update(ctx, devboxName, namespace, r); err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+		logger.Error(err, "failed to update release")
+		return err
 	}
 	return nil
 }
@@ -600,26 +671,33 @@ func (m *manager) Unprotect(ctx context.Context, devboxName, namespace string) e
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return err
 	}
 	r.Protect = false
 	if err := m.store.Update(ctx, devboxName, namespace, r); err != nil {
-		return fmt.Errorf("failed to update release: %w", err)
+		logger.Error(err, "failed to update release")
+		return err
 	}
 	return nil
 }
 
 func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfoAccessor, error) {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("namespace", namespace)
+	ctx = logr.NewContext(ctx, logger)
+
 	releases, err := m.store.List(ctx, namespace)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get releases: %w", err)
+		logger.Error(err, "failed to update release")
+		return nil, err
 	}
 
 	var infos []info.DevboxInfoAccessor
 	for _, r := range releases {
 		d, err := devbox.NewDevbox(r.Objects)
 		if err != nil {
-			return nil, fmt.Errorf("failed to load devbox from release: %w", err)
+			logger.Error(err, "failed to load devbox from release")
+			return nil, err
 		}
 		obj := d.GetDevbox()
 		info := info.NewDevboxInfoAccessor(
@@ -630,9 +708,6 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 			r.TemplateName,
 			r.Protect,
 		)
-		if err != nil {
-			return nil, err
-		}
 		infos = append(infos, info)
 	}
 	return infos, nil
@@ -644,6 +719,7 @@ func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*co
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
+		logger.Error(err, "failed to get release")
 		return nil, err
 	}
 
@@ -661,6 +737,7 @@ func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*co
 		}
 		el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
 		if err != nil {
+			logger.Error(err, "failed to get event list")
 			return nil, err
 		}
 		eventList.Items = append(eventList.Items, el.Items...)

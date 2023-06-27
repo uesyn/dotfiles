@@ -43,7 +43,6 @@ func newExecCommand() *cli.Command {
 				logger.Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
 			// Port forward
 			if len(params.Ports) > 0 && len(params.Addresses) > 0 {
@@ -52,10 +51,7 @@ func newExecCommand() *cli.Command {
 						manager.WithPortForwardAddresses(params.Addresses),
 						manager.WithPortForwardPorts(params.Ports),
 					}
-					err := params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, opts...)
-					if err != nil {
-						logger.Error(err, "failed to forward ports")
-					}
+					params.Manager.PortForward(cCtx.Context, params.Name, params.Namespace, opts...)
 				}()
 			}
 
@@ -67,12 +63,7 @@ func newExecCommand() *cli.Command {
 			if len(params.Envs) > 0 {
 				opts = append(opts, manager.WithExecEnvs(params.Envs))
 			}
-			err := params.Manager.Exec(cCtx.Context, params.Name, params.Namespace, opts...)
-			if err != nil {
-				logger.Error(err, "failed to exec devbox")
-				return err
-			}
-			return nil
+			return params.Manager.Exec(cCtx.Context, params.Name, params.Namespace, opts...)
 		},
 	}
 }

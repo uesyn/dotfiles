@@ -3,7 +3,6 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"os"
 
 	"github.com/fatih/color"
 	"github.com/go-logr/logr"
@@ -75,7 +74,7 @@ func newTemplateShowCommand() *cli.Command {
 			tmpl, err := params.TemplateLoader.Load(params.TemplateName, "NAME", "NAMESPACE")
 			if err != nil {
 				logger.Error(err, "failed to load template")
-				os.Exit(1)
+				return err
 			}
 			var output [][]byte
 			for _, manifest := range tmpl.ToUnstructureds() {
@@ -84,6 +83,7 @@ func newTemplateShowCommand() *cli.Command {
 				})
 				if err != nil {
 					logger.Error(err, "failed to marshal template to yaml")
+					return err
 				}
 				output = append(output, contents)
 			}

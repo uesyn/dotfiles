@@ -61,12 +61,7 @@ func newSSHCommand() *cli.Command {
 				opts = append(opts, manager.WithSSHForwardedPorts(params.Ports))
 			}
 
-			err := params.Manager.SSH(cCtx.Context, params.Name, params.Namespace, params.SSHPort, opts...)
-			if err != nil {
-				logger.Error(err, "failed to ssh devbox")
-				return err
-			}
-			return nil
+			return params.Manager.SSH(cCtx.Context, params.Name, params.Namespace, params.SSHPort, opts...)
 		},
 	}
 }

@@ -50,11 +50,7 @@ func newStartCommand() *cli.Command {
 				}
 				ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
 			}
-			if err := params.Manager.Start(cCtx.Context, params.Name, params.Namespace, ms...); err != nil {
-				logger.Error(err, "failed to start devbox")
-				return err
-			}
-			return nil
+			return params.Manager.Start(cCtx.Context, params.Name, params.Namespace, ms...)
 		},
 	}
 }

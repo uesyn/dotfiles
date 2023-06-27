@@ -40,15 +40,15 @@ func newEventCommand() *cli.Command {
 
 			el, err := params.Manager.Events(cCtx.Context, params.Name, params.Namespace)
 			if err != nil {
-				logger.Error(err, "failed to get events")
 				return err
 			}
 			w := printers.GetNewTabWriter(os.Stdout)
+			defer w.Flush()
 			printer := cmdevents.NewEventPrinter(false, false)
 			if err := printer.PrintObj(el, w); err != nil {
 				logger.Error(err, "failed to print events")
+				return err
 			}
-			w.Flush()
 			return nil
 		},
 	}

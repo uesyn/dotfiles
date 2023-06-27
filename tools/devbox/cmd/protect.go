@@ -25,19 +25,12 @@ func newProtectCommand() *cli.Command {
 			},
 		},
 		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
 			params := &runtime.Params{}
 			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+				logr.FromContextOrDiscard(cCtx.Context).Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-
-			if err := params.Manager.Protect(cCtx.Context, params.Name, params.Namespace); err != nil {
-				logger.Error(err, "failed to protect devbox")
-				return err
-			}
-			return nil
+			return params.Manager.Protect(cCtx.Context, params.Name, params.Namespace)
 		},
 	}
 }

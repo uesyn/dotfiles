@@ -56,11 +56,7 @@ func newRunCommand() *cli.Command {
 				}
 				ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
 			}
-			if err := params.Manager.Run(cCtx.Context, params.TemplateName, params.Name, params.Namespace, ms...); err != nil {
-				logger.Error(err, "failed to run devbox")
-				return err
-			}
-			return nil
+			return params.Manager.Run(cCtx.Context, params.TemplateName, params.Name, params.Namespace, ms...)
 		},
 	}
 }

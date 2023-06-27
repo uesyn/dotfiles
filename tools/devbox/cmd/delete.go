@@ -40,19 +40,12 @@ func newDeleteCommand() *cli.Command {
 				logger.Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-
 			if !params.DeleteYes {
 				if ok := deleteConfirmationPrompt(params.Name); !ok {
 					os.Exit(1)
 				}
 			}
-
-			if err := params.Manager.Delete(cCtx.Context, params.Name, params.Namespace); err != nil {
-				logger.Error(err, "failed to delete")
-				return err
-			}
-			return nil
+			return params.Manager.Delete(cCtx.Context, params.Name, params.Namespace)
 		},
 	}
 }

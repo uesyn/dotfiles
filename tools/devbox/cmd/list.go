@@ -45,8 +45,7 @@ func newListCommand() *cli.Command {
 			}
 			infos, err := params.Manager.List(cCtx.Context, namespace)
 			if err != nil {
-				logger.Error(err, "failed to list infos")
-				os.Exit(1)
+				return err
 			}
 
 			printer := printers.NewTablePrinter(printers.PrintOptions{})
@@ -62,7 +61,7 @@ func newListCommand() *cli.Command {
 				phase, err := info.GetPhase(cCtx.Context)
 				if err != nil {
 					logger.Error(err, "failed to get devbox info")
-					os.Exit(1)
+					return err
 				}
 				row := metav1.TableRow{
 					Cells: []interface{}{
@@ -79,10 +78,7 @@ func newListCommand() *cli.Command {
 				ColumnDefinitions: columns,
 				Rows:              rows,
 			}
-			if err := printer.PrintObj(table, os.Stdout); err != nil {
-				logger.Error(err, "failed to print list")
-			}
-			return nil
+			return printer.PrintObj(table, os.Stdout)
 		},
 	}
 }
