@@ -4,3 +4,5 @@
 aqua.yaml
 aqua.yml
 .vim-lsp-settings
+venv
+.venv
