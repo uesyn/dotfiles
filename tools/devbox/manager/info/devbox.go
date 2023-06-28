@@ -1,18 +1,15 @@
 package info
 
 import (
-	"context"
-
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	listerscorev1 "k8s.io/client-go/listers/core/v1"
 )
 
 var _ DevboxInfoAccessor = (*devboxInfoAccessor)(nil)
 
 type devboxInfoAccessor struct {
-	clientset    kubernetes.Interface
+	podLister    listerscorev1.PodLister
 	devboxName   string
 	podName      string
 	namespace    string
@@ -20,9 +17,9 @@ type devboxInfoAccessor struct {
 	protected    bool
 }
 
-func NewDevboxInfoAccessor(clientset kubernetes.Interface, devboxName, podName, namespace, templateName string, protected bool) DevboxInfoAccessor {
+func NewDevboxInfoAccessor(podLister listerscorev1.PodLister, devboxName, podName, namespace, templateName string, protected bool) DevboxInfoAccessor {
 	return &devboxInfoAccessor{
-		clientset:    clientset,
+		podLister:    podLister,
 		devboxName:   devboxName,
 		podName:      podName,
 		namespace:    namespace,
@@ -47,17 +44,42 @@ func (a *devboxInfoAccessor) Protected() bool {
 	return a.protected
 }
 
-func (a *devboxInfoAccessor) GetPhase(ctx context.Context) (DevboxPhase, error) {
-	pod, err := a.clientset.CoreV1().Pods(a.namespace).Get(ctx, a.podName, metav1.GetOptions{})
+func (a *devboxInfoAccessor) GetPhase() DevboxPhase {
+	pod, err := a.podLister.Pods(a.namespace).Get(a.podName)
 	if apierrors.IsNotFound(err) {
-		return DevboxStopped, nil
-	} else if err != nil {
-		return "", err
+		return DevboxStopped
+	}
+	if err != nil {
+		return DevboxUnknown
 	}
 	if !pod.GetDeletionTimestamp().IsZero() {
-		return DevboxTerminating, nil
+		return DevboxTerminating
 	}
-	return podPhaseToDevboxPhase(pod.Status.Phase), nil
+	return podPhaseToDevboxPhase(pod.Status.Phase)
+}
+
+func (a *devboxInfoAccessor) GetNode() string {
+	pod, err := a.podLister.Pods(a.namespace).Get(a.podName)
+	if err != nil {
+		return ""
+	}
+	return pod.Spec.NodeName
+}
+
+func (a *devboxInfoAccessor) IsReady() bool {
+	pod, err := a.podLister.Pods(a.namespace).Get(a.podName)
+	if err != nil {
+		return false
+	}
+	for _, cond := range pod.Status.Conditions {
+		if cond.Type != corev1.ContainersReady {
+			continue
+		}
+		if cond.Status == corev1.ConditionTrue {
+			return true
+		}
+	}
+	return false
 }
 
 func podPhaseToDevboxPhase(phase corev1.PodPhase) DevboxPhase {

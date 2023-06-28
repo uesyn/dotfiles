@@ -1,24 +1,23 @@
 package info
 
-import (
-	"context"
-)
-
 type DevboxPhase string
+type DevboxCondition string
 
 const (
 	DevboxPending     DevboxPhase = "Pending"
 	DevboxRunning     DevboxPhase = "Running"
 	DevboxStopped     DevboxPhase = "Stopped"
 	DevboxFailed      DevboxPhase = "Failed"
-	DevboxUnknown     DevboxPhase = "Unknown"
 	DevboxTerminating DevboxPhase = "Terminating"
+	DevboxUnknown     DevboxPhase = "Unknown"
 )
 
 type DevboxInfoAccessor interface {
 	GetDevboxName() string
 	GetNamespace() string
 	GetTemplateName() string
-	GetPhase(context.Context) (DevboxPhase, error)
+	GetPhase() DevboxPhase
+	GetNode() string
+	IsReady() bool
 	Protected() bool
 }

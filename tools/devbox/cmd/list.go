@@ -53,22 +53,21 @@ func newListCommand() *cli.Command {
 				{Name: "Name", Type: "string"},
 				{Name: "Namespace", Type: "string"},
 				{Name: "Template", Type: "string"},
-				{Name: "Status", Type: "string"},
+				{Name: "Ready", Type: "bool"},
+				{Name: "Phase", Type: "string"},
+				{Name: "Node", Type: "string"},
 				{Name: "Protected", Type: "bool"},
 			}
 			var rows []metav1.TableRow
 			for _, info := range infos {
-				phase, err := info.GetPhase(cCtx.Context)
-				if err != nil {
-					logger.Error(err, "failed to get devbox info")
-					return err
-				}
 				row := metav1.TableRow{
 					Cells: []interface{}{
 						info.GetDevboxName(),
 						info.GetNamespace(),
 						info.GetTemplateName(),
-						phase,
+						info.IsReady(),
+						info.GetPhase(),
+						info.GetNode(),
 						info.Protected(),
 					},
 				}

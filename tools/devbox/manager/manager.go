@@ -29,8 +29,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
 type Manager interface {
@@ -692,6 +694,14 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 		return nil, err
 	}
 
+	factory := informers.NewSharedInformerFactoryWithOptions(m.clientset, 0, informers.WithNamespace(namespace))
+	informer := factory.Core().V1().Pods()
+	go informer.Informer().Run(ctx.Done())
+	if !cache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
+		logger.Error(err, "failed to cache sync for informer")
+		return nil, err
+	}
+
 	var infos []info.DevboxInfoAccessor
 	for _, r := range releases {
 		d, err := devbox.NewDevbox(r.Objects)
@@ -701,7 +711,7 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 		}
 		obj := d.GetDevbox()
 		info := info.NewDevboxInfoAccessor(
-			m.clientset,
+			informer.Lister(),
 			r.Name,
 			obj.GetName(),
 			obj.GetNamespace(),
