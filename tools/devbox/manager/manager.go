@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net"
-	"sort"
 	"strconv"
 	"time"
 
@@ -29,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
+	pkgwatch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -47,7 +47,7 @@ type Manager interface {
 	List(ctx context.Context, namespace string) ([]info.DevboxInfoAccessor, error)
 	Protect(ctx context.Context, devboxName, namespace string) error
 	Unprotect(ctx context.Context, devboxName, namespace string) error
-	Events(ctx context.Context, devboxName, namespace string) (*corev1.EventList, error)
+	Events(ctx context.Context, devboxName, namespace string, watch bool, handler func(obj runtime.Object) error) error
 }
 
 type manager struct {
@@ -723,37 +723,85 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevboxInfo
 	return infos, nil
 }
 
-func (m *manager) Events(ctx context.Context, devboxName, namespace string) (*corev1.EventList, error) {
+func (m *manager) Events(ctx context.Context, devboxName, namespace string, watch bool, handler func(obj runtime.Object) error) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
 	r, err := m.store.Get(ctx, devboxName, namespace)
 	if err != nil {
 		logger.Error(err, "failed to get release")
-		return nil, err
+		return err
 	}
 
 	var eventList corev1.EventList
+	eventCh := make(chan *corev1.Event, 1)
+	errCh := make(chan error, 1)
 	for _, obj := range r.Objects {
-		kind := obj.GetKind()
-		name := obj.GetName()
+		fieldSelector := fields.AndSelectors(
+			fields.OneTermEqualSelector("involvedObject.kind", obj.GetKind()),
+			fields.OneTermEqualSelector("involvedObject.name", obj.GetName()),
+			fields.OneTermEqualSelector("metadata.namespace", namespace),
+		).String()
 		opts := metav1.ListOptions{
-			FieldSelector: fields.AndSelectors(
-				fields.OneTermEqualSelector("involvedObject.kind", kind),
-				fields.OneTermEqualSelector("involvedObject.name", name),
-				fields.OneTermEqualSelector("metadata.namespace", namespace),
-			).String(),
-			Limit: 100,
+			FieldSelector: fieldSelector,
+			Limit:         100,
 		}
 		el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
 		if err != nil {
 			logger.Error(err, "failed to get event list")
-			return nil, err
+			return err
 		}
 		eventList.Items = append(eventList.Items, el.Items...)
+
+		if watch {
+			wOpts := metav1.ListOptions{
+				FieldSelector:   fieldSelector,
+				ResourceVersion: el.ListMeta.ResourceVersion,
+			}
+			wi, err := m.clientset.CoreV1().Events(namespace).Watch(ctx, wOpts)
+			if err != nil {
+				logger.Error(err, "failed to get watch interface")
+				return err
+			}
+			go func() {
+				for {
+					select {
+					case e := <-wi.ResultChan():
+						switch e.Type {
+						case pkgwatch.Added, pkgwatch.Deleted, pkgwatch.Modified:
+							event, _ := e.Object.(*corev1.Event)
+							eventCh <- event
+						case pkgwatch.Error:
+							errCh <- fmt.Errorf("failed to get watch object: %v", e.Object)
+						}
+					case <-ctx.Done():
+						return
+					}
+				}
+			}()
+		}
 	}
-	sort.Sort(sortableEvents(eventList.Items))
-	return &eventList, nil
+
+	if err := handler(&eventList); err != nil {
+		return err
+	}
+	if watch {
+		for {
+			select {
+			case event := <-eventCh:
+				if err := handler(event); err != nil {
+					logger.Error(err, "failed to handle event")
+					return err
+				}
+			case err := <-errCh:
+				logger.Error(err, "failed to watch event")
+				return err
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	}
+	return nil
 }
 
 type sortableEvents []corev1.Event

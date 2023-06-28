@@ -33,6 +33,7 @@ type Params struct {
 	SSHPort         int
 	SSHUser         string
 	SSHIdentityFile string
+	Watch           bool
 	Envs            map[string]string
 	ExecCommand     []string
 
@@ -56,6 +57,7 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	p.Addresses = cCtx.StringSlice("address")
 	p.Ports = cCtx.StringSlice("port")
 	p.SSHIdentityFile = util.ExpandPath(cCtx.String("ssh-identity-file"))
+	p.Watch = cCtx.Bool("watch")
 
 	conf, err := config.Load(p.ConfigPath)
 	if err != nil {

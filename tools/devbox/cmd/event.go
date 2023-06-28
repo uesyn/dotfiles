@@ -6,6 +6,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/uesyn/devbox/cmd/runtime"
 	"github.com/urfave/cli/v2"
+	kuberuntime "k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/cli-runtime/pkg/printers"
 	cmdevents "k8s.io/kubectl/pkg/cmd/events"
 )
@@ -28,6 +29,12 @@ func newEventCommand() *cli.Command {
 				Usage:   "kubernetes namespace where devbox run",
 				EnvVars: []string{"DEVBOX_NAMESPACE"},
 			},
+			&cli.BoolFlag{
+				Name:    "watch",
+				Aliases: []string{"w"},
+				Value:   false,
+				Usage:   "watch events",
+			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			logger := logr.FromContextOrDiscard(cCtx.Context)
@@ -38,15 +45,19 @@ func newEventCommand() *cli.Command {
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			el, err := params.Manager.Events(cCtx.Context, params.Name, params.Namespace)
-			if err != nil {
-				return err
-			}
 			w := printers.GetNewTabWriter(os.Stdout)
-			defer w.Flush()
 			printer := cmdevents.NewEventPrinter(false, false)
-			if err := printer.PrintObj(el, w); err != nil {
-				logger.Error(err, "failed to print events")
+			handler := func(obj kuberuntime.Object) error {
+				defer w.Flush()
+				if err := printer.PrintObj(obj, w); err != nil {
+					logger.Error(err, "failed to print events")
+					return err
+				}
+				return nil
+			}
+
+			err := params.Manager.Events(cCtx.Context, params.Name, params.Namespace, params.Watch, handler)
+			if err != nil {
 				return err
 			}
 			return nil
