@@ -1,5 +1,31 @@
 return {
   {
+    'echasnovski/mini.files',
+    version = false,
+    dependencies = {
+      "nvim-web-devicons",
+    },
+    keys = "<Leader>fo",
+    config = function()
+      require('mini.files').setup({
+        mappings = {
+          close       = '<S-q>',
+          go_in       = 'l',
+          go_in_plus  = 'L',
+          go_out      = 'h',
+          go_out_plus = 'H',
+          reset       = '<BS>',
+          show_help   = '?',
+          synchronize = '=',
+          trim_left   = '<',
+          trim_right  = '>',
+        },
+      })
+      vim.keymap.set('n', '<Leader>fo', ':lua MiniFiles.open()<CR>')
+    end
+  },
+
+  {
     "nvim-tree/nvim-tree.lua",
     dependencies = {
       "nvim-web-devicons",
@@ -24,17 +50,17 @@ return {
           mappings = {
             custom_only = true,
             list = {
-              { key = "u", action = "dir_up" },
+              { key = "u",    action = "dir_up" },
               { key = "<CR>", action = "cd" },
-              { key = "l", action = "edit" },
-              { key = "h", action = "close_node" },
-              { key = "p", action = "preview" },
-              { key = "r", action = "refresh" },
-              { key = "F", action = "create" },
-              { key = "D", action = "remove" },
-              { key = "R", action = "full_rename" },
-              { key = "c", action = "copy" },
-              { key = "x", action = "cut" },
+              { key = "l",    action = "edit" },
+              { key = "h",    action = "close_node" },
+              { key = "p",    action = "preview" },
+              { key = "r",    action = "refresh" },
+              { key = "F",    action = "create" },
+              { key = "D",    action = "remove" },
+              { key = "R",    action = "full_rename" },
+              { key = "c",    action = "copy" },
+              { key = "x",    action = "cut" },
             },
           },
         },
@@ -55,6 +81,7 @@ return {
       'nvim-web-devicons',
       'MunifTanjim/nui.nvim',
     },
+    enabled = false,
     keys = { "<Leader>fo" },
     version = "v2.x",
     -- keys = "<Leader>fo",
@@ -120,8 +147,8 @@ return {
           git_status = {
             symbols = {
               -- Change type
-              added     = "", -- or "✚", but this is redundant info if you use git_status_colors on the name
-              modified  = "", -- or "", but this is redundant info if you use git_status_colors on the name
+              added     = "",  -- or "✚", but this is redundant info if you use git_status_colors on the name
+              modified  = "",  -- or "", but this is redundant info if you use git_status_colors on the name
               deleted   = "✖", -- this can only be used in the git_status source
               renamed   = "", -- this can only be used in the git_status source
               -- Status type
@@ -226,9 +253,9 @@ return {
               --".null-ls_*",
             },
           },
-          follow_current_file = false, -- This will find and focus the file in the active buffer every
+          follow_current_file = false,            -- This will find and focus the file in the active buffer every
           -- time the current file is changed while the tree is open.
-          group_empty_dirs = false, -- when true, empty folders will be grouped together
+          group_empty_dirs = false,               -- when true, empty folders will be grouped together
           hijack_netrw_behavior = "open_default", -- netrw disabled, opening a directory opens neo-tree
           -- in whatever position is specified in window.position
           -- "open_current",  -- netrw disabled, opening a directory opens within the
@@ -240,7 +267,7 @@ return {
         buffers = {
           follow_current_file = true, -- This will find and focus the file in the active buffer every
           -- time the current file is changed while the tree is open.
-          group_empty_dirs = true, -- when true, empty folders will be grouped together
+          group_empty_dirs = true,    -- when true, empty folders will be grouped together
           show_unloaded = true,
         },
         git_status = {
