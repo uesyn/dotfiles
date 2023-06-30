@@ -30,6 +30,7 @@ return {
           vim.keymap.set('n', '<C-n>', '<Nop>', { buffer = true })
           vim.keymap.set('n', '<C-p>', '<Nop>', { buffer = true })
           vim.keymap.set('n', '<S-q>', '<Nop>', { buffer = true })
+          vim.keymap.set('n', '<S-k>', '<Nop>', { buffer = true })
         end
       })
       vim.api.nvim_create_augroup('minifiles-help', {})
