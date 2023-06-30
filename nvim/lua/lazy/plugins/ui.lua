@@ -165,8 +165,12 @@ return {
       }
 
       ins_left {
-        require("nvim-navic").get_location,
-        cond = require("nvim-navic").is_available,
+        function()
+          return require("nvim-navic").get_location()
+        end,
+        cond = function()
+          return require("nvim-navic").is_available()
+        end
       }
 
       ins_left {
