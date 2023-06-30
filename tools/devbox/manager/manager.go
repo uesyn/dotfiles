@@ -656,7 +656,8 @@ func (m *manager) Update(ctx context.Context, devboxName, namespace string, muta
 		logger.Error(err, "failed to load template")
 		return err
 	}
-	r.Objects = d.ToUnstructureds()
+	r.Objects = []*unstructured.Unstructured{d.GetDevbox()}
+	r.Objects = append(r.Objects, d.GetDependencies()...)
 	if err := m.store.Update(ctx, devboxName, namespace, r); err != nil {
 		logger.Error(err, "failed to update release")
 		return err
