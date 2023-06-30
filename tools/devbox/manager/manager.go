@@ -478,14 +478,38 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 
-	localPort, err := getFreePort()
-	if err != nil {
-		logger.Error(err, "failed to get free port for SSH")
-		return err
+	const localhost = "127.0.0.1"
+
+	var sshAddr string
+	var sshPort int
+
+	pod, err := m.getDevboxPod(ctx, d)
+	needPortForward := !isListening(pod.Status.PodIP, containerSSHPort)
+	if needPortForward {
+		localPort, err := getFreePort()
+		if err != nil {
+			logger.Error(err, "failed to get free port for SSH")
+			return err
+		}
+		sshAddr = localhost
+		sshPort = localPort
+
+		go func() {
+			opts := []PortForwardOption{
+				WithPortForwardAddresses([]string{localhost}),
+				WithPortForwardPorts([]string{fmt.Sprintf("%d:%d", localPort, containerSSHPort)}),
+			}
+			err := m.PortForward(ctx, devboxName, namespace, opts...)
+			if err != nil {
+				logger.Error(err, "failed to forward ports")
+			}
+		}()
+	} else {
+		sshAddr = pod.Status.PodIP
+		sshPort = containerSSHPort
 	}
 
-	const localhost = "127.0.0.1"
-	sshOpts := &ssh.Options{Address: localhost, Port: localPort}
+	sshOpts := &ssh.Options{Address: sshAddr, Port: sshPort}
 	for _, o := range opts {
 		sshOpts = o.apply(sshOpts)
 	}
@@ -495,20 +519,8 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 
-	// Port forward to connect ssh to container.
-	go func() {
-		opts := []PortForwardOption{
-			WithPortForwardAddresses([]string{localhost}),
-			WithPortForwardPorts([]string{fmt.Sprintf("%d:%d", localPort, containerSSHPort)}),
-		}
-		err := m.PortForward(ctx, devboxName, namespace, opts...)
-		if err != nil {
-			logger.Error(err, "failed to forward ports")
-		}
-	}()
-
 	err = wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
-		if isListening(localhost, localPort) {
+		if isListening(sshAddr, sshPort) {
 			return true, nil
 		}
 		return false, nil
@@ -528,7 +540,7 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 
 func isListening(addr string, port int) bool {
 	address := net.JoinHostPort(addr, strconv.Itoa(port))
-	conn, err := net.DialTimeout("tcp", address, time.Second)
+	conn, err := net.DialTimeout("tcp", address, 500*time.Second)
 	if err != nil {
 		return false
 	}
