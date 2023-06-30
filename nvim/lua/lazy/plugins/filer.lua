@@ -9,7 +9,7 @@ return {
     config = function()
       require('mini.files').setup({
         mappings = {
-          close       = 'Q',
+          close       = '<Leader>fo',
           go_in       = 'l',
           go_in_plus  = 'L',
           go_out      = 'h',
@@ -27,9 +27,20 @@ return {
         group = 'minifiles',
         pattern = 'minifiles',
         callback = function()
-          vim.keymap.set('n', '<Leader>fo', ':lua MiniFiles.close()<CR>', { buffer = true })
           vim.keymap.set('n', '<C-n>', '<Nop>', { buffer = true })
           vim.keymap.set('n', '<C-p>', '<Nop>', { buffer = true })
+          vim.keymap.set('n', '<S-q>', '<Nop>', { buffer = true })
+        end
+      })
+      vim.api.nvim_create_augroup('minifiles-help', {})
+      vim.api.nvim_create_autocmd("FileType", {
+        group = 'minifiles-help',
+        pattern = 'minifiles-help',
+        callback = function()
+          vim.keymap.set('n', '<C-n>', '<Nop>', { buffer = true })
+          vim.keymap.set('n', '<C-p>', '<Nop>', { buffer = true })
+          vim.keymap.set('n', '<S-q>', '<Nop>', { buffer = true })
+          vim.keymap.set('n', '<Leader>fo', '<Nop>', { buffer = true })
         end
       })
     end
