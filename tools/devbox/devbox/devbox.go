@@ -9,7 +9,6 @@ import (
 type Devbox interface {
 	GetDevbox() *unstructured.Unstructured
 	GetDependencies() []*unstructured.Unstructured
-	ToUnstructureds() []*unstructured.Unstructured
 }
 
 type devbox struct {
@@ -61,15 +60,5 @@ func (d *devbox) GetDependencies() []*unstructured.Unstructured {
 		obj := d.DeepCopy()
 		dependencies = append(dependencies, obj)
 	}
-	return dependencies
-}
-
-func (d *devbox) ToUnstructureds() []*unstructured.Unstructured {
-	var dependencies []*unstructured.Unstructured
-	for _, d := range d.dependencies {
-		obj := d.DeepCopy()
-		dependencies = append(dependencies, obj)
-	}
-	dependencies = append(dependencies, d.pod.DeepCopy())
 	return dependencies
 }

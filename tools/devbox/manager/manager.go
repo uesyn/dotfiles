@@ -81,11 +81,14 @@ func (m *manager) Run(ctx context.Context, templateName, devboxName, namespace s
 		logger.Error(err, "failed to load template")
 		return err
 	}
+	var objs []*unstructured.Unstructured
+	objs = append(objs, d.GetDevbox())
+	objs = append(objs, d.GetDependencies()...)
 	r := &release.Release{
 		Name:         devboxName,
 		Namespace:    namespace,
 		TemplateName: templateName,
-		Objects:      d.ToUnstructureds(),
+		Objects:      objs,
 	}
 
 	if err := m.store.Create(ctx, devboxName, namespace, r); err != nil {
@@ -311,8 +314,7 @@ func (m *manager) getDevboxPod(ctx context.Context, d devbox.Devbox) (*corev1.Po
 	if obj.GetKind() != "Pod" {
 		return nil, unsupportedDevboxKind
 	}
-	pod := &corev1.Pod{}
-	err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, &pod)
+	pod, err := m.clientset.CoreV1().Pods(obj.GetNamespace()).Get(ctx, obj.GetName(), metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -484,6 +486,10 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 	var sshPort int
 
 	pod, err := m.getDevboxPod(ctx, d)
+	if err != nil {
+		logger.Error(err, "failed to get devbox pod")
+		return err
+	}
 	needPortForward := !isListening(pod.Status.PodIP, containerSSHPort)
 	if needPortForward {
 		localPort, err := getFreePort()
@@ -540,7 +546,7 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 
 func isListening(addr string, port int) bool {
 	address := net.JoinHostPort(addr, strconv.Itoa(port))
-	conn, err := net.DialTimeout("tcp", address, 500*time.Second)
+	conn, err := net.DialTimeout("tcp", address, 3*time.Second)
 	if err != nil {
 		return false
 	}
