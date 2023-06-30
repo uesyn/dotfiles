@@ -21,7 +21,7 @@ return {
           trim_right  = '>',
         },
       })
-      vim.keymap.set('n', '<Leader>fo', ':lua MiniFiles.open()<CR>')
+      vim.keymap.set('n', '<Leader>fo', ':lua MiniFiles.open()<CR>', { silent = true })
       vim.api.nvim_create_augroup('minifiles', {})
       vim.api.nvim_create_autocmd("FileType", {
         group = 'minifiles',
