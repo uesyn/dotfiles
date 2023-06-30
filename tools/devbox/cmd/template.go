@@ -8,6 +8,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/uesyn/devbox/cmd/runtime"
 	"github.com/urfave/cli/v2"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
@@ -76,8 +77,13 @@ func newTemplateShowCommand() *cli.Command {
 				logger.Error(err, "failed to load template")
 				return err
 			}
+
+			var objs []*unstructured.Unstructured
+			objs = append(objs, tmpl.GetDevbox())
+			objs = append(objs, tmpl.GetDependencies()...)
+
 			var output [][]byte
-			for _, manifest := range tmpl.ToUnstructureds() {
+			for _, manifest := range objs {
 				contents, err := yaml.MarshalWithOptions(manifest.Object, &yaml.EncoderOptions{
 					SeqIndent: yaml.CompactSequenceStyle,
 				})
