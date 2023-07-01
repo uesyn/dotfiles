@@ -33,7 +33,7 @@ jobs:
         with:
           name: devbox_release_${{ matrix.goos }}_${{ matrix.goarch }}
           path: |
-            tools/devbox/_output/devbox_${{ matrix.goos }}_${{ matrix.goarch }}
+            tools/devbox/_output/devbox_${{ matrix.goos }}_${{ matrix.goarch }}.gz
           retention-days: 1
   publish:
     needs: [ 'build' ]
