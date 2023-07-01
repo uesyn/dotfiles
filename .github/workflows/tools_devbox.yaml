@@ -6,6 +6,7 @@ on:
     - main
     paths:
     - 'tools/devbox/**'
+    - '.github/workflows/tools_devbox.yaml'
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,6 +28,7 @@ jobs:
           cd tools/devbox
           OUTPUT=_output/devbox_${{ matrix.goos }}_${{ matrix.goarch }}
           go build  -ldflags="-w -s" -trimpath -o ${OUTPUT}
+          gzip ${OUTPUT}
       - uses: actions/upload-artifact@v3
         with:
           name: devbox_release_${{ matrix.goos }}_${{ matrix.goarch }}
