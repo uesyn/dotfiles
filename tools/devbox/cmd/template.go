@@ -36,7 +36,7 @@ func newTemplateListCommand() *cli.Command {
 				logger.Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
+			logger = logger.WithValues("devboxName", params.Name)
 
 			templates, err := params.TemplateLoader.ListTemplates()
 			if err != nil {
@@ -70,7 +70,7 @@ func newTemplateShowCommand() *cli.Command {
 				logger.Error(err, "failed to set params")
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
+			logger = logger.WithValues("devboxName", params.Name)
 
 			tmpl, err := params.TemplateLoader.Load(params.TemplateName, "NAME", "NAMESPACE")
 			if err != nil {

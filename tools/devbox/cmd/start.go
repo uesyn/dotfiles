@@ -18,13 +18,6 @@ func newStartCommand() *cli.Command {
 				Value: "default",
 				Usage: "devbox name",
 			},
-			&cli.StringFlag{
-				Name:    "namespace",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
-			},
 			&cli.BoolFlag{
 				Name:    "select-nodes",
 				Aliases: []string{"s"},

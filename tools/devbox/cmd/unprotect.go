@@ -16,13 +16,6 @@ func newUnprotectCommand() *cli.Command {
 				Value: "default",
 				Usage: "devbox name",
 			},
-			&cli.StringFlag{
-				Name:    "namespace",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
-			},
 		},
 		Action: func(cCtx *cli.Context) error {
 			params := &runtime.Params{}

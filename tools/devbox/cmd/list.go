@@ -15,21 +15,6 @@ func newListCommand() *cli.Command {
 		Name:    "list",
 		Usage:   "List devbox",
 		Aliases: []string{"ls"},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "namespace",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
-			},
-			&cli.BoolFlag{
-				Name:    "all",
-				Aliases: []string{"a"},
-				Value:   false,
-				Usage:   "if present, list devboxes across all namespaces.",
-			},
-		},
 		Action: func(cCtx *cli.Context) error {
 			logger := logr.FromContextOrDiscard(cCtx.Context)
 			params := &runtime.Params{}
@@ -39,11 +24,7 @@ func newListCommand() *cli.Command {
 			}
 			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
 
-			namespace := params.Namespace
-			if params.AllNamespace {
-				namespace = metav1.NamespaceAll
-			}
-			infos, err := params.Manager.List(cCtx.Context, namespace)
+			infos, err := params.Manager.List(cCtx.Context, params.Namespace)
 			if err != nil {
 				return err
 			}

@@ -1,11 +1,14 @@
 package runtime
 
 import (
+	"errors"
+	"os"
 	"path/filepath"
 
 	"github.com/bombsimon/logrusr/v4"
 	"github.com/go-logr/logr"
 	"github.com/sirupsen/logrus"
+	"github.com/uesyn/devbox/common"
 	"github.com/uesyn/devbox/config"
 	"github.com/uesyn/devbox/kubernetes/client"
 	"github.com/uesyn/devbox/manager"
@@ -22,8 +25,9 @@ type Params struct {
 	Name            string
 	Namespace       string
 	AllNamespace    bool
-	KubeConfig      string
-	KubeContext     string
+	InitNamespace   string
+	InitKubeConfig  string
+	InitKubeContext string
 	TemplateName    string
 	SelectNodes     bool
 	DeleteYes       bool
@@ -46,11 +50,21 @@ type Params struct {
 func (p *Params) SetParams(cCtx *cli.Context) error {
 	p.ConfigPath = util.ExpandPath(cCtx.String("config"))
 	p.LogLevel = cCtx.String("loglevel")
+	p.InitNamespace = cCtx.String("namespace")
+	p.InitKubeConfig = cCtx.String("kubeconfig")
+	p.InitKubeContext = cCtx.String("context")
+
+	if cCtx.Command.Name == "init" {
+		return nil
+	}
+
+	devboxKubeConfigPath := util.ExpandPath(common.DevboxKubeConfigPath)
+	if _, err := os.Stat(devboxKubeConfigPath); err != nil {
+		return errors.New("must run `devbox init`")
+	}
+
 	p.Name = cCtx.String("name")
-	p.Namespace = cCtx.String("namespace")
 	p.AllNamespace = cCtx.Bool("all")
-	p.KubeConfig = cCtx.String("kubeconfig")
-	p.KubeContext = cCtx.String("context")
 	p.TemplateName = cCtx.String("template")
 	p.SelectNodes = cCtx.Bool("select-nodes")
 	p.DeleteYes = cCtx.Bool("yes")
@@ -77,7 +91,13 @@ func (p *Params) SetParams(cCtx *cli.Context) error {
 	isLoadRestrictionsNone := conf.GetTemplateConfig().IsLoadRestrictionsNone()
 	p.TemplateLoader = template.NewLoader(templateDir, isLoadRestrictionsNone)
 
-	restConfig, err := client.NewRESTConfig(util.ExpandPath(p.KubeConfig), p.KubeContext)
+	clientConfig := client.NewClientConfig(util.ExpandPath(devboxKubeConfigPath), "")
+	namespace, _, err := clientConfig.Namespace()
+	if err != nil {
+		return err
+	}
+	p.Namespace = namespace
+	restConfig, err := clientConfig.ClientConfig()
 	if err != nil {
 		return err
 	}

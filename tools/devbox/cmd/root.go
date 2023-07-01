@@ -20,17 +20,6 @@ func NewRootApp() *cli.App {
 				EnvVars: []string{"DEVBOX_CONFIG"},
 			},
 			&cli.StringFlag{
-				Name:    "context",
-				Usage:   "the name of the kubeconfig context to use",
-				EnvVars: []string{"DEVBOX_CONTEXT"},
-			},
-			&cli.StringFlag{
-				Name:    "kubeconfig",
-				Usage:   "path to kubeconfig file",
-				Value:   "${HOME}/.kube/config",
-				EnvVars: []string{"DEVBOX_KUBECONFIG", "KUBECONFIG"},
-			},
-			&cli.StringFlag{
 				Name:    "loglevel",
 				Usage:   "log level",
 				Value:   "info",
@@ -50,6 +39,7 @@ func NewRootApp() *cli.App {
 			return nil
 		},
 		Commands: []*cli.Command{
+			newInitCommand(),
 			newRunCommand(),
 			newDeleteCommand(),
 			newStartCommand(),

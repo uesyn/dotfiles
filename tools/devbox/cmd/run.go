@@ -19,13 +19,6 @@ func newRunCommand() *cli.Command {
 				Usage: "devbox name",
 			},
 			&cli.StringFlag{
-				Name:    "namespace",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
-			},
-			&cli.StringFlag{
 				Name:    "template",
 				Aliases: []string{"t"},
 				Value:   "default",
