@@ -6,6 +6,7 @@ return {
       "nvim-web-devicons",
     },
     keys = "<Leader>fo",
+    enabled = false,
     config = function()
       require('mini.files').setup({
         mappings = {
@@ -103,7 +104,7 @@ return {
       'nvim-web-devicons',
       'MunifTanjim/nui.nvim',
     },
-    enabled = false,
+    enabled = true,
     keys = { "<Leader>fo" },
     version = "v2.x",
     -- keys = "<Leader>fo",
