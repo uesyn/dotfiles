@@ -18,9 +18,10 @@ func newEventCommand() *cli.Command {
 		Aliases: []string{"events"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "name",
-				Value: "default",
-				Usage: "devbox name",
+				Name:    "name",
+				Aliases: []string{"n"},
+				Value:   "default",
+				Usage:   "devbox name",
 			},
 			&cli.BoolFlag{
 				Name:    "watch",

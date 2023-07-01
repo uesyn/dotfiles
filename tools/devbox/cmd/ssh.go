@@ -14,16 +14,10 @@ func newSSHCommand() *cli.Command {
 		Aliases: []string{"s"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "name",
-				Value: "default",
-				Usage: "devbox name",
-			},
-			&cli.StringFlag{
-				Name:    "namespace",
+				Name:    "name",
 				Aliases: []string{"n"},
 				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
+				Usage:   "devbox name",
 			},
 			&cli.StringSliceFlag{
 				Name:    "port",

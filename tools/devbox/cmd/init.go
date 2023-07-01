@@ -21,7 +21,6 @@ func newInitCommand() *cli.Command {
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "namespace",
-				Aliases: []string{"n"},
 				Value:   "default",
 				Usage:   "kubernetes namespace where devbox run",
 				EnvVars: []string{"DEVBOX_NAMESPACE"},

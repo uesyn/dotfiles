@@ -14,9 +14,10 @@ func newStartCommand() *cli.Command {
 		Usage: "Start devbox",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "name",
-				Value: "default",
-				Usage: "devbox name",
+				Name:    "name",
+				Aliases: []string{"n"},
+				Value:   "default",
+				Usage:   "devbox name",
 			},
 			&cli.BoolFlag{
 				Name:    "select-nodes",

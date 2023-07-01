@@ -14,9 +14,10 @@ func newExecCommand() *cli.Command {
 		Aliases: []string{"e"},
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:  "name",
-				Value: "default",
-				Usage: "devbox name",
+				Name:    "name",
+				Aliases: []string{"n"},
+				Value:   "default",
+				Usage:   "devbox name",
 			},
 			&cli.StringSliceFlag{
 				Name:  "address",
