@@ -1,12 +1,17 @@
 package cmd
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/go-logr/logr"
 	"github.com/uesyn/devbox/cmd/runtime"
 	"github.com/uesyn/devbox/common"
 	"github.com/uesyn/devbox/initialize"
 	"github.com/uesyn/devbox/kubernetes/client"
 	"github.com/urfave/cli/v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 func newInitCommand() *cli.Command {
@@ -47,11 +52,41 @@ func newInitCommand() *cli.Command {
 				return err
 			}
 
+			curContext, err := getCurrentContext(config)
+			if err != nil {
+				logger.Error(err, "Failed to get context for devbox")
+				return err
+			}
+			cluster, namespace := getCluster(curContext), getNamespace(curContext)
+
 			if err := client.WriteKubeconfig(*config, common.DevboxKubeConfigPath); err != nil {
 				logger.Error(err, "Failed to write kubeconfig for devbox")
 				return err
 			}
+
+			logger.Info(fmt.Sprintf("generated kubeconfig at %s for devbox", common.DevboxKubeConfigPath),
+				"context", config.CurrentContext, "cluster", cluster, "namespace", namespace)
 			return nil
 		},
 	}
+}
+
+func getCurrentContext(config *clientcmdapi.Config) (*clientcmdapi.Context, error) {
+	context, found := config.Contexts[config.CurrentContext]
+	if !found {
+		return nil, errors.New("context not found")
+	}
+	return context, nil
+}
+
+func getCluster(context *clientcmdapi.Context) string {
+	return context.Cluster
+}
+
+func getNamespace(context *clientcmdapi.Context) string {
+	namespace := context.Namespace
+	if len(namespace) == 0 {
+		namespace = metav1.NamespaceDefault
+	}
+	return namespace
 }
