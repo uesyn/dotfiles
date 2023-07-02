@@ -1,64 +1,121 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"os"
 
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cmdutil "github.com/uesyn/devbox/cmd/util"
+	"github.com/uesyn/devbox/manager"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/printers"
+	"k8s.io/client-go/kubernetes"
 )
 
-func newListCommand() *cli.Command {
-	return &cli.Command{
-		Name:    "list",
-		Usage:   "List devbox",
+type ListOptions struct {
+	namespace string
+	clientset kubernetes.Interface
+	manager   manager.Manager
+}
+
+func (o *ListOptions) AddFlags(fs *pflag.FlagSet) {}
+
+func (o *ListOptions) Complete(f cmdutil.Factory) error {
+	m, err := f.Manager()
+	if err != nil {
+		return err
+	}
+	o.manager = m
+
+	namespace, _, err := f.Namespace()
+	if err != nil {
+		return err
+	}
+	o.namespace = namespace
+
+	clientset, err := f.KubeClientSet()
+	if err != nil {
+		return err
+	}
+	o.clientset = clientset
+	return nil
+}
+
+func (o *ListOptions) Validate() error {
+	if o.manager == nil {
+		return errors.New("must set manager")
+	}
+
+	if o.clientset == nil {
+		return errors.New("must set clientset")
+	}
+	return nil
+}
+
+func (o *ListOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("namespace", o.namespace)
+	infos, err := o.manager.List(ctx, o.namespace)
+	if err != nil {
+		logger.Error(err, "failed to get list infos")
+		return err
+	}
+
+	printer := printers.NewTablePrinter(printers.PrintOptions{})
+	columns := []metav1.TableColumnDefinition{
+		{Name: "Name", Type: "string"},
+		{Name: "Namespace", Type: "string"},
+		{Name: "Template", Type: "string"},
+		{Name: "Ready", Type: "bool"},
+		{Name: "Phase", Type: "string"},
+		{Name: "Node", Type: "string"},
+		{Name: "Protected", Type: "bool"},
+	}
+
+	var rows []metav1.TableRow
+	for _, info := range infos {
+		row := metav1.TableRow{
+			Cells: []interface{}{
+				info.GetDevboxName(),
+				info.GetNamespace(),
+				info.GetTemplateName(),
+				info.IsReady(),
+				info.GetPhase(),
+				info.GetNode(),
+				info.Protected(),
+			},
+		}
+		rows = append(rows, row)
+	}
+	table := &metav1.Table{
+		ColumnDefinitions: columns,
+		Rows:              rows,
+	}
+	return printer.PrintObj(table, os.Stdout)
+}
+
+func NewListCmd(f cmdutil.Factory) *cobra.Command {
+	o := &ListOptions{}
+	cmd := &cobra.Command{
+		Use:     "list",
 		Aliases: []string{"ls"},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+		Short:   "List devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-
-			infos, err := params.Manager.List(cCtx.Context, params.Namespace)
-			if err != nil {
+			if err := o.Validate(); err != nil {
 				return err
 			}
-
-			printer := printers.NewTablePrinter(printers.PrintOptions{})
-			columns := []metav1.TableColumnDefinition{
-				{Name: "Name", Type: "string"},
-				{Name: "Namespace", Type: "string"},
-				{Name: "Template", Type: "string"},
-				{Name: "Ready", Type: "bool"},
-				{Name: "Phase", Type: "string"},
-				{Name: "Node", Type: "string"},
-				{Name: "Protected", Type: "bool"},
+			if err := o.Run(ctx); err != nil {
+				return err
 			}
-			var rows []metav1.TableRow
-			for _, info := range infos {
-				row := metav1.TableRow{
-					Cells: []interface{}{
-						info.GetDevboxName(),
-						info.GetNamespace(),
-						info.GetTemplateName(),
-						info.IsReady(),
-						info.GetPhase(),
-						info.GetNode(),
-						info.Protected(),
-					},
-				}
-				rows = append(rows, row)
-			}
-			table := &metav1.Table{
-				ColumnDefinitions: columns,
-				Rows:              rows,
-			}
-			return printer.PrintObj(table, os.Stdout)
+			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }

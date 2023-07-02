@@ -1,30 +1,87 @@
 package cmd
 
 import (
-	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
-	"github.com/urfave/cli/v2"
+	"context"
+	"errors"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cmdutil "github.com/uesyn/devbox/cmd/util"
+	"github.com/uesyn/devbox/manager"
+	"k8s.io/client-go/kubernetes"
 )
 
-func newStopCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "stop",
-		Usage: "Stop devbox",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "devbox name",
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logr.FromContextOrDiscard(cCtx.Context).Error(err, "failed to set params")
+type StopOptions struct {
+	name string
+
+	namespace string
+	clientset kubernetes.Interface
+	manager   manager.Manager
+}
+
+func (o *StopOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+}
+
+func (o *StopOptions) Complete(f cmdutil.Factory) error {
+	m, err := f.Manager()
+	if err != nil {
+		return err
+	}
+	o.manager = m
+
+	namespace, _, err := f.Namespace()
+	if err != nil {
+		return err
+	}
+	o.namespace = namespace
+
+	clientset, err := f.KubeClientSet()
+	if err != nil {
+		return err
+	}
+	o.clientset = clientset
+	return nil
+}
+
+func (o *StopOptions) Validate() error {
+	if len(o.name) == 0 {
+		return errors.New("must set --name flag")
+	}
+
+	if o.manager == nil {
+		return errors.New("must set manager")
+	}
+
+	if o.clientset == nil {
+		return errors.New("must set clientset")
+	}
+	return nil
+}
+
+func (o *StopOptions) Run(ctx context.Context) error {
+	return o.manager.Stop(ctx, o.name, o.namespace)
+}
+
+func NewStopCmd(f cmdutil.Factory) *cobra.Command {
+	o := &StopOptions{}
+	cmd := &cobra.Command{
+		Use:   "stop",
+		Short: "Stop devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			return params.Manager.Stop(cCtx.Context, params.Name, params.Namespace)
+			if err := o.Validate(); err != nil {
+				return err
+			}
+			if err := o.Run(ctx); err != nil {
+				return err
+			}
+			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }

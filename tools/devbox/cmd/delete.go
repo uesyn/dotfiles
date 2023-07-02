@@ -1,47 +1,79 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
-	"os"
 
-	"github.com/go-logr/logr"
 	"github.com/manifoldco/promptui"
-	"github.com/uesyn/devbox/cmd/runtime"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cmdutil "github.com/uesyn/devbox/cmd/util"
+	"github.com/uesyn/devbox/manager"
 )
 
-func newDeleteCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "delete",
-		Usage: "Delete devbox",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "devbox name",
-			},
-			&cli.BoolFlag{
-				Name:  "yes",
-				Value: false,
-				Usage: "if present, delete devbox resources without any confirmation",
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+type DeleteOptions struct {
+	name string
+
+	namespace string
+	manager   manager.Manager
+}
+
+func (o *DeleteOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+}
+
+func (o *DeleteOptions) Complete(f cmdutil.Factory) error {
+	m, err := f.Manager()
+	if err != nil {
+		return err
+	}
+	o.manager = m
+
+	namespace, _, err := f.Namespace()
+	if err != nil {
+		return err
+	}
+	o.namespace = namespace
+	return nil
+}
+
+func (o *DeleteOptions) Validate() error {
+	if len(o.name) == 0 {
+		return errors.New("must set --name flag")
+	}
+
+	if o.manager == nil {
+		return errors.New("must set manager")
+	}
+	return nil
+}
+
+func (o *DeleteOptions) Run(ctx context.Context) error {
+	return o.manager.Delete(ctx, o.name, o.namespace)
+}
+
+func NewDeleteCmd(f cmdutil.Factory) *cobra.Command {
+	o := &DeleteOptions{}
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			if !params.DeleteYes {
-				if ok := deleteConfirmationPrompt(params.Name); !ok {
-					os.Exit(1)
-				}
+			if err := o.Validate(); err != nil {
+				return err
 			}
-			return params.Manager.Delete(cCtx.Context, params.Name, params.Namespace)
+			if err := o.Run(ctx); err != nil {
+				return err
+			}
+			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }
 
 func deleteConfirmationPrompt(devboxName string) bool {

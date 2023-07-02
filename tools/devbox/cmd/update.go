@@ -1,50 +1,98 @@
 package cmd
 
 import (
+	"context"
+	"errors"
+
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/devbox/cmd/util"
+	"github.com/uesyn/devbox/manager"
 	"github.com/uesyn/devbox/mutator"
-	"github.com/urfave/cli/v2"
+	"k8s.io/client-go/kubernetes"
 )
 
-func newUpdateCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "update",
-		Usage: "Update devbox",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "devbox name",
-			},
-			&cli.BoolFlag{
-				Name:    "select-nodes",
-				Aliases: []string{"s"},
-				Value:   false,
-				Usage:   "select node to run on with fuzzy finder",
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+type UpdateOptions struct {
+	name        string
+	selectNodes bool
+
+	namespace string
+	clientset kubernetes.Interface
+	manager   manager.Manager
+}
+
+func (o *UpdateOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "select node to run on with fuzzy finder")
+}
+
+func (o *UpdateOptions) Complete(f cmdutil.Factory) error {
+	m, err := f.Manager()
+	if err != nil {
+		return err
+	}
+	o.manager = m
+
+	clientset, err := f.KubeClientSet()
+	if err != nil {
+		return err
+	}
+	o.clientset = clientset
+
+	namespace, _, err := f.Namespace()
+	if err != nil {
+		return err
+	}
+	o.namespace = namespace
+	return nil
+}
+
+func (o *UpdateOptions) Validate() error {
+	if len(o.name) == 0 {
+		return errors.New("must set --name flag")
+	}
+
+	if o.manager == nil {
+		return errors.New("must set manager")
+	}
+	return nil
+}
+
+func (o *UpdateOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", o.name, "namespace", o.namespace)
+
+	var ms []mutator.PodMutator
+	if o.selectNodes {
+		nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, o.clientset)
+		if err != nil {
+			logger.Error(err, "failed to get nodes")
+			return err
+		}
+		ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
+	}
+	return o.manager.Update(ctx, o.name, o.namespace, ms...)
+}
+
+func NewUpdateCmd(f cmdutil.Factory) *cobra.Command {
+	o := &UpdateOptions{}
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name, "namespace", params.Namespace)
-
-			var ms []mutator.PodMutator
-			if params.SelectNodes {
-				nodes, err := cmdutil.SelectNodesWithFuzzyFinder(cCtx.Context, params.ClientSet)
-				if err != nil {
-					logger.Error(err, "failed to get nodes")
-					return err
-				}
-				ms = append(ms, mutator.NewNodeAffinityMutator(nodes))
+			if err := o.Validate(); err != nil {
+				return err
 			}
-			return params.Manager.Update(cCtx.Context, params.Name, params.Namespace, ms...)
+			if err := o.Run(ctx); err != nil {
+				return err
+			}
+			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }

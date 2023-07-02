@@ -1,73 +1,95 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 	"github.com/uesyn/devbox/common"
 	"github.com/uesyn/devbox/initialize"
 	"github.com/uesyn/devbox/kubernetes/client"
-	"github.com/urfave/cli/v2"
+	"github.com/uesyn/devbox/util"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func newInitCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "init",
-		Usage: "initialize devbox configs",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "namespace",
-				Value:   "default",
-				Usage:   "kubernetes namespace where devbox run",
-				EnvVars: []string{"DEVBOX_NAMESPACE"},
-			},
-			&cli.StringFlag{
-				Name:    "context",
-				Usage:   "the name of the kubeconfig context to use",
-				EnvVars: []string{"DEVBOX_CONTEXT"},
-			},
-			&cli.StringFlag{
-				Name:    "kubeconfig",
-				Usage:   "path to kubeconfig file",
-				Value:   "${HOME}/.kube/config",
-				EnvVars: []string{"DEVBOX_KUBECONFIG", "KUBECONFIG"},
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+type InitOptions struct {
+	Namespace   string
+	KubeContext string
+	KubeConfig  string
+}
+
+func (o *InitOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVar(&o.Namespace, "namespace", metav1.NamespaceDefault, "kubernetes namespace where devbox run")
+	fs.StringVar(&o.KubeContext, "context", "", "the name of the kubeconfig context to use")
+	fs.StringVar(&o.KubeConfig, "kubeconfig", common.DevboxKubeConfigPath, "path to kubeconfig file")
+}
+
+func (o *InitOptions) Complete() error {
+	o.KubeConfig = util.ExpandPath(o.KubeConfig)
+	return nil
+}
+
+func (o *InitOptions) Validate() error {
+	if len(o.Namespace) == 0 {
+		return errors.New("must set --namespace flag")
+	}
+	if len(o.KubeConfig) == 0 {
+		return errors.New("must set --kubeconfig flag")
+	}
+	return nil
+}
+
+func (o *InitOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	config, err := initialize.GenerateDevboxKubeconfig(o.KubeConfig, o.KubeContext, o.Namespace)
+	if err != nil {
+		logger.Error(err, "Failed to generate kubeconfig for devbox")
+		return err
+	}
+
+	curContext, err := getCurrentContext(config)
+	if err != nil {
+		logger.Error(err, "Failed to get context for devbox")
+		return err
+	}
+	cluster, namespace := getCluster(curContext), getNamespace(curContext)
+
+	if err := client.WriteKubeconfig(*config, common.DevboxKubeConfigPath); err != nil {
+		logger.Error(err, "Failed to write kubeconfig for devbox")
+		return err
+	}
+
+	logger.Info(fmt.Sprintf("Generated kubeconfig at %s for devbox", common.DevboxKubeConfigPath),
+		"context", config.CurrentContext, "cluster", cluster, "namespace", namespace)
+	return nil
+}
+
+func NewInitCmd() *cobra.Command {
+	o := &InitOptions{}
+	cmd := &cobra.Command{
+		Use:   "init",
+		Short: "Init devbox command",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(); err != nil {
 				return err
 			}
-
-			config, err := initialize.GenerateDevboxKubeconfig(params.InitKubeConfig, params.InitKubeContext, params.InitNamespace)
-			if err != nil {
-				logger.Error(err, "Failed to generate kubeconfig for devbox")
+			if err := o.Validate(); err != nil {
 				return err
 			}
-
-			curContext, err := getCurrentContext(config)
-			if err != nil {
-				logger.Error(err, "Failed to get context for devbox")
+			if err := o.Run(ctx); err != nil {
 				return err
 			}
-			cluster, namespace := getCluster(curContext), getNamespace(curContext)
-
-			if err := client.WriteKubeconfig(*config, common.DevboxKubeConfigPath); err != nil {
-				logger.Error(err, "Failed to write kubeconfig for devbox")
-				return err
-			}
-
-			logger.Info(fmt.Sprintf("generated kubeconfig at %s for devbox", common.DevboxKubeConfigPath),
-				"context", config.CurrentContext, "cluster", cluster, "namespace", namespace)
 			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }
 
 func getCurrentContext(config *clientcmdapi.Config) (*clientcmdapi.Context, error) {

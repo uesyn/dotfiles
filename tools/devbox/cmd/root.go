@@ -1,57 +1,56 @@
 package cmd
 
 import (
-	"github.com/bombsimon/logrusr/v4"
 	"github.com/go-logr/logr"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
+	"github.com/uesyn/devbox/cmd/options"
 )
 
-func NewRootApp() *cli.App {
-	return &cli.App{
-		Name:  "devbox",
-		Usage: "CLI to manage devboxes",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "config",
-				Usage:   "path of devbox config",
-				Value:   "${HOME}/.config/devbox/config.yaml",
-				Aliases: []string{"c"},
-				EnvVars: []string{"DEVBOX_CONFIG"},
-			},
-			&cli.StringFlag{
-				Name:    "loglevel",
-				Usage:   "log level",
-				Value:   "info",
-				EnvVars: []string{"DEVBOX_LOGLEVEL"},
-			},
-		},
-		Before: func(cCtx *cli.Context) error {
-			level, err := logrus.ParseLevel(cCtx.String("loglevel"))
-			if err != nil {
-				logrus.Errorf("failed to parse log level: %v", err)
+func NewRootCmd() *cobra.Command {
+	devboxFlags := &options.DevboxFlags{}
+	logFlags := &options.LogFlags{}
+
+	cmd := &cobra.Command{
+		Use:       "CLI to manage devboxes",
+		ValidArgs: []string{},
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if err := devboxFlags.Complete(); err != nil {
 				return err
 			}
-			logrusLog := logrus.New()
-			logrusLog.SetLevel(level)
-			logger := logrusr.New(logrusLog).WithName("devbox")
-			cCtx.Context = logr.NewContext(cCtx.Context, logger)
+			if err := devboxFlags.Validate(); err != nil {
+				return err
+			}
+			if err := logFlags.Validate(); err != nil {
+				return err
+			}
+			logger, err := logFlags.ToLogger()
+			if err != nil {
+				return err
+			}
+			ctx := logr.NewContext(cmd.Context(), logger)
+			cmd.SetContext(ctx)
 			return nil
 		},
-		Commands: []*cli.Command{
-			newInitCommand(),
-			newRunCommand(),
-			newDeleteCommand(),
-			newStartCommand(),
-			newStopCommand(),
-			newSSHCommand(),
-			newExecCommand(),
-			newListCommand(),
-			newProtectCommand(),
-			newUnprotectCommand(),
-			newUpdateCommand(),
-			newTemplateCommand(),
-			newEventCommand(),
-		},
+		SilenceErrors: false,
+		SilenceUsage:  false,
 	}
+
+	devboxFlags.AddFlags(cmd.PersistentFlags())
+	logFlags.AddFlags(cmd.PersistentFlags())
+
+	cmd.AddCommand(NewInitCmd())
+	cmd.AddCommand(NewRunCmd(devboxFlags))
+	cmd.AddCommand(NewDeleteCmd(devboxFlags))
+	cmd.AddCommand(NewStartCmd(devboxFlags))
+	cmd.AddCommand(NewStopCmd(devboxFlags))
+	cmd.AddCommand(NewProtectCmd(devboxFlags))
+	cmd.AddCommand(NewUnprotectCmd(devboxFlags))
+	cmd.AddCommand(NewListCmd(devboxFlags))
+	cmd.AddCommand(NewExecCmd(devboxFlags))
+	cmd.AddCommand(NewEventCmd(devboxFlags))
+	cmd.AddCommand(NewSSHCmd(devboxFlags))
+	cmd.AddCommand(NewTemplateCmd(devboxFlags))
+	cmd.AddCommand(NewUpdateCmd(devboxFlags))
+
+	return cmd
 }

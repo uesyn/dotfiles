@@ -1,61 +1,143 @@
 package cmd
 
 import (
-	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
+	"context"
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cmdutil "github.com/uesyn/devbox/cmd/util"
 	"github.com/uesyn/devbox/manager"
-	"github.com/urfave/cli/v2"
 )
 
-func newSSHCommand() *cli.Command {
-	return &cli.Command{
-		Name:    "ssh",
-		Usage:   "SSH to devbox",
-		Aliases: []string{"s"},
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "name",
-				Aliases: []string{"n"},
-				Value:   "default",
-				Usage:   "devbox name",
-			},
-			&cli.StringSliceFlag{
-				Name:    "port",
-				Aliases: []string{"p"},
-				Usage:   "Forwarded ports. e.g., 8080:80, 8080",
-			},
-			&cli.StringFlag{
-				Name:    "ssh-identity-file",
-				Aliases: []string{"i"},
-				Usage:   "Identity file for SSH authentication",
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+type SSHOptions struct {
+	name         string
+	ports        []string
+	identityFile string
+
+	sshUser    string
+	sshPort    int
+	sshCommand []string
+	sshEnvs    map[string]string
+	namespace  string
+	manager    manager.Manager
+}
+
+func (o *SSHOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.StringArrayVarP(&o.ports, "port", "p", nil, "Forwarded ports. e.g., 8080:80, 8080")
+	fs.StringVarP(&o.identityFile, "ssh-identity-file", "i", "", "Identity file for SSH authentication")
+}
+
+func (o *SSHOptions) Complete(f cmdutil.Factory) error {
+	m, err := f.Manager()
+	if err != nil {
+		return err
+	}
+	o.manager = m
+
+	namespace, _, err := f.Namespace()
+	if err != nil {
+		return err
+	}
+	o.namespace = namespace
+
+	conf, err := f.DevboxConfig()
+	if err != nil {
+		return err
+	}
+	sshConf := conf.GetSSHConfig()
+	o.sshUser = sshConf.GetUser()
+	if len(o.sshUser) == 0 {
+		o.sshUser = "root"
+	}
+	o.sshPort = sshConf.GetPort()
+	if o.sshPort == 0 {
+		o.sshPort = 22
+	}
+	o.sshCommand = sshConf.GetCommand()
+	if len(o.sshCommand) == 0 {
+		o.sshCommand = []string{"sh"}
+	}
+
+	envs, err := conf.GetEnvs()
+	if err != nil {
+		return err
+	}
+	o.sshEnvs = envs
+	return nil
+}
+
+func (o *SSHOptions) Validate() error {
+	if len(o.name) == 0 {
+		return errors.New("must set --name flag")
+	}
+
+	if len(o.identityFile) != 0 {
+		if _, err := os.Stat(o.identityFile); err != nil {
+			return fmt.Errorf("failed to read ssh identity file:%w", err)
+		}
+	}
+
+	if len(o.sshUser) == 0 {
+		return errors.New("must set ssh user")
+	}
+
+	if o.sshPort == 0 {
+		return errors.New("must set ssh port")
+	}
+
+	if len(o.sshCommand) == 0 {
+		return errors.New("must set ssh command")
+	}
+
+	if o.manager == nil {
+		return errors.New("must set manager")
+	}
+	return nil
+}
+
+func (o *SSHOptions) Run(ctx context.Context) error {
+	opts := []manager.SSHOption{}
+	if len(o.sshUser) > 0 {
+		opts = append(opts, manager.WithSSHUser(o.sshUser))
+	}
+	if len(o.identityFile) > 0 {
+		opts = append(opts, manager.WithSSHIdentityFile(o.identityFile))
+	}
+	if len(o.sshEnvs) > 0 {
+		opts = append(opts, manager.WithSSHEnvs(o.sshEnvs))
+	}
+	if len(o.sshCommand) > 0 {
+		opts = append(opts, manager.WithSSHCommand(o.sshCommand))
+	}
+	if len(o.ports) > 0 {
+		opts = append(opts, manager.WithSSHForwardedPorts(o.ports))
+	}
+	return o.manager.SSH(ctx, o.name, o.namespace, o.sshPort, opts...)
+}
+
+func NewSSHCmd(f cmdutil.Factory) *cobra.Command {
+	o := &SSHOptions{}
+	cmd := &cobra.Command{
+		Use:   "ssh",
+		Short: "SSH devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-
-			opts := []manager.SSHOption{}
-			if len(params.SSHUser) > 0 {
-				opts = append(opts, manager.WithSSHUser(params.SSHUser))
+			if err := o.Validate(); err != nil {
+				return err
 			}
-			if len(params.SSHIdentityFile) > 0 {
-				opts = append(opts, manager.WithSSHIdentityFile(params.SSHIdentityFile))
+			if err := o.Run(ctx); err != nil {
+				return err
 			}
-			if len(params.Envs) > 0 {
-				opts = append(opts, manager.WithSSHEnvs(params.Envs))
-			}
-			if len(params.SSHCommand) > 0 {
-				opts = append(opts, manager.WithSSHCommand(params.SSHCommand))
-			}
-			if len(params.Ports) > 0 {
-				opts = append(opts, manager.WithSSHForwardedPorts(params.Ports))
-			}
-
-			return params.Manager.SSH(cCtx.Context, params.Name, params.Namespace, params.SSHPort, opts...)
+			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }

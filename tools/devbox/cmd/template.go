@@ -2,103 +2,165 @@ package cmd
 
 import (
 	"bytes"
+	"context"
+	"errors"
 	"fmt"
 
 	"github.com/fatih/color"
 	"github.com/go-logr/logr"
-	"github.com/uesyn/devbox/cmd/runtime"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
+	cmdutil "github.com/uesyn/devbox/cmd/util"
+	"github.com/uesyn/devbox/template"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
-func newTemplateCommand() *cli.Command {
-	return &cli.Command{
-		Name:    "template",
-		Usage:   "Utility for devbox templates",
-		Aliases: []string{"t"},
-		Subcommands: []*cli.Command{
-			newTemplateListCommand(),
-			newTemplateShowCommand(),
-		},
-	}
+type TemplateShowOptions struct {
+	name string
+
+	loader template.Loader
 }
 
-func newTemplateListCommand() *cli.Command {
-	return &cli.Command{
-		Name:    "list",
-		Usage:   "List devbox templates",
-		Aliases: []string{"ls"},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
-				return err
-			}
-			logger = logger.WithValues("devboxName", params.Name)
+func (o *TemplateShowOptions) AddFlags(fs *pflag.FlagSet) {
+	fs.StringVarP(&o.name, "name", "n", "", "template name")
+}
 
-			templates, err := params.TemplateLoader.ListTemplates()
-			if err != nil {
-				logger.Error(err, "failed to list templates")
+func (o *TemplateShowOptions) Complete(f cmdutil.Factory) error {
+	loader, err := f.TemplateLoader()
+	if err != nil {
+		return err
+	}
+	o.loader = loader
+	return nil
+}
+
+func (o *TemplateShowOptions) Validate() error {
+	if len(o.name) == 0 {
+		return errors.New("must set --name flag")
+	}
+
+	if o.loader == nil {
+		return errors.New("must set template loader")
+	}
+	return nil
+}
+
+func (o *TemplateShowOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("templateName", o.name)
+
+	tmpl, err := o.loader.Load(o.name, "NAME", "NAMESPACE")
+	if err != nil {
+		logger.Error(err, "failed to load template")
+		return err
+	}
+
+	var objs []*unstructured.Unstructured
+	objs = append(objs, tmpl.GetDevbox())
+	objs = append(objs, tmpl.GetDependencies()...)
+
+	var output [][]byte
+	for _, manifest := range objs {
+		contents, err := yaml.MarshalWithOptions(manifest.Object, &yaml.EncoderOptions{
+			SeqIndent: yaml.CompactSequenceStyle,
+		})
+		if err != nil {
+			logger.Error(err, "failed to marshal template to yaml")
+			return err
+		}
+		output = append(output, contents)
+	}
+	c := color.New(color.FgRed)
+	c.Add(color.Bold)
+	c.Add(color.Italic)
+	fmt.Println(string(bytes.Join(output, []byte("---\n"))))
+	return nil
+}
+
+func NewTemplateShowCmd(f cmdutil.Factory) *cobra.Command {
+	o := &TemplateShowOptions{}
+	cmd := &cobra.Command{
+		Use:   "show",
+		Short: "Show a template for devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			for _, t := range templates {
-				fmt.Println(t)
+			if err := o.Validate(); err != nil {
+				return err
+			}
+			if err := o.Run(ctx); err != nil {
+				return err
 			}
 			return nil
 		},
 	}
+	o.AddFlags(cmd.Flags())
+	return cmd
 }
 
-func newTemplateShowCommand() *cli.Command {
-	return &cli.Command{
-		Name:  "show",
-		Usage: "Show devbox templates",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "template",
-				Aliases: []string{"t"},
-				Value:   "default",
-				Usage:   "template name",
-			},
-		},
-		Action: func(cCtx *cli.Context) error {
-			logger := logr.FromContextOrDiscard(cCtx.Context)
-			params := &runtime.Params{}
-			if err := params.SetParams(cCtx); err != nil {
-				logger.Error(err, "failed to set params")
+type TemplateListOptions struct {
+	loader template.Loader
+}
+
+func (o *TemplateListOptions) Complete(f cmdutil.Factory) error {
+	loader, err := f.TemplateLoader()
+	if err != nil {
+		return err
+	}
+	o.loader = loader
+	return nil
+}
+
+func (o *TemplateListOptions) Validate() error {
+	if o.loader == nil {
+		return errors.New("must set template loader")
+	}
+	return nil
+}
+
+func (o *TemplateListOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx)
+
+	templates, err := o.loader.ListTemplates()
+	if err != nil {
+		logger.Error(err, "failed to list templates")
+		return err
+	}
+	for _, t := range templates {
+		fmt.Println(t)
+	}
+	return nil
+}
+
+func NewTemplateListCmd(f cmdutil.Factory) *cobra.Command {
+	o := &TemplateListOptions{}
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "list templates for devbox",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			ctx := cmd.Context()
+			if err := o.Complete(f); err != nil {
 				return err
 			}
-			logger = logger.WithValues("devboxName", params.Name)
-
-			tmpl, err := params.TemplateLoader.Load(params.TemplateName, "NAME", "NAMESPACE")
-			if err != nil {
-				logger.Error(err, "failed to load template")
+			if err := o.Validate(); err != nil {
 				return err
 			}
-
-			var objs []*unstructured.Unstructured
-			objs = append(objs, tmpl.GetDevbox())
-			objs = append(objs, tmpl.GetDependencies()...)
-
-			var output [][]byte
-			for _, manifest := range objs {
-				contents, err := yaml.MarshalWithOptions(manifest.Object, &yaml.EncoderOptions{
-					SeqIndent: yaml.CompactSequenceStyle,
-				})
-				if err != nil {
-					logger.Error(err, "failed to marshal template to yaml")
-					return err
-				}
-				output = append(output, contents)
+			if err := o.Run(ctx); err != nil {
+				return err
 			}
-			c := color.New(color.FgRed)
-			c.Add(color.Bold)
-			c.Add(color.Italic)
-			fmt.Printf("[%s]\n", c.Sprint(params.TemplateName))
-			fmt.Println(string(bytes.Join(output, []byte("---\n"))))
 			return nil
 		},
 	}
+	return cmd
+}
+
+func NewTemplateCmd(f cmdutil.Factory) *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "template",
+	}
+	cmd.AddCommand(NewTemplateShowCmd(f))
+	cmd.AddCommand(NewTemplateListCmd(f))
+	return cmd
 }
