@@ -10,7 +10,4 @@ func main() {
 	if err := cmd.NewRootCmd().Execute(); err != nil {
 		os.Exit(1)
 	}
-	//	if err := cmd.NewRootApp().RunContext(context.Background(), os.Args); err != nil {
-	//		os.Exit(1)
-	//	}
 }
