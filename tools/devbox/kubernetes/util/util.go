@@ -42,7 +42,7 @@ func WaitForCondition(ctx context.Context, timeout time.Duration, uClient *clien
 			if !ok {
 				return false, conditionTypeNotFoundError
 			}
-			if strings.ToUpper(ct) != strings.ToUpper(condType) {
+			if strings.EqualFold(ct, condType) {
 				continue
 			}
 

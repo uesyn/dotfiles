@@ -12,7 +12,8 @@ import (
 )
 
 type DeleteOptions struct {
-	name string
+	name  string
+	force bool
 
 	namespace string
 	manager   manager.Manager
@@ -20,6 +21,7 @@ type DeleteOptions struct {
 
 func (o *DeleteOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.BoolVar(&o.force, "force", false, "delete devbox forcibly")
 }
 
 func (o *DeleteOptions) Complete(f cmdutil.Factory) error {
@@ -49,6 +51,9 @@ func (o *DeleteOptions) Validate() error {
 }
 
 func (o *DeleteOptions) Run(ctx context.Context) error {
+	if !o.force && !deleteConfirmationPrompt(o.name) {
+		return nil
+	}
 	return o.manager.Delete(ctx, o.name, o.namespace)
 }
 

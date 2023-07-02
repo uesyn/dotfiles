@@ -18,15 +18,13 @@ func (t *termSizeQueue) startMonitor() {
 		defer signal.Stop(winch)
 
 		for {
+			<-winch
+			size := t.GetTermSize()
 			select {
-			case <-winch:
-				size := t.GetTermSize()
-				select {
-				case t.resizeChan <- size:
-					// success
-				default:
-					// not sent
-				}
+			case t.resizeChan <- size:
+				// success
+			default:
+				// not sent
 			}
 		}
 	}()

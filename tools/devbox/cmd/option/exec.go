@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/devbox/cmd/util"
 	"github.com/uesyn/devbox/manager"
@@ -78,6 +79,8 @@ func (o *ExecOptions) Validate() error {
 }
 
 func (o *ExecOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", o.name, "namespace", o.namespace)
+
 	// Port forward
 	if len(o.ports) > 0 && len(o.addresses) > 0 {
 		go func() {
@@ -85,7 +88,9 @@ func (o *ExecOptions) Run(ctx context.Context) error {
 				manager.WithPortForwardAddresses(o.addresses),
 				manager.WithPortForwardPorts(o.ports),
 			}
-			o.manager.PortForward(ctx, o.name, o.namespace, opts...)
+			if err := o.manager.PortForward(ctx, o.name, o.namespace, opts...); err != nil {
+				logger.Error(err, "failed to forward ports")
+			}
 		}()
 	}
 

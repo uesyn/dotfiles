@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"time"
 
@@ -52,7 +53,6 @@ type Manager interface {
 
 type manager struct {
 	scheme       *runtime.Scheme
-	restConfig   *rest.Config
 	unstructured *client.UnstructuredClient
 	clientset    kubernetes.Interface
 	loader       template.Loader
@@ -801,6 +801,7 @@ func (m *manager) Events(ctx context.Context, devboxName, namespace string, watc
 		}
 	}
 
+	sort.Sort(sortableEvents(eventList.Items))
 	if err := handler(&eventList); err != nil {
 		return err
 	}
