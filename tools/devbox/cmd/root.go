@@ -52,6 +52,7 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(NewSSHCmd(devboxFlags))
 	cmd.AddCommand(NewTemplateCmd(devboxFlags))
 	cmd.AddCommand(NewUpdateCmd(devboxFlags))
+	cmd.AddCommand(NewRestartCmd(devboxFlags))
 
 	return cmd
 }

@@ -24,7 +24,7 @@ type InitOptions struct {
 func (o *InitOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.Namespace, "namespace", metav1.NamespaceDefault, "kubernetes namespace where devbox run")
 	fs.StringVar(&o.KubeContext, "context", "", "the name of the kubeconfig context to use")
-	fs.StringVar(&o.KubeConfig, "kubeconfig", common.DevboxKubeConfigPath, "path to kubeconfig file")
+	fs.StringVar(&o.KubeConfig, "kubeconfig", "${HOME}/.kube/config", "path to kubeconfig file")
 }
 
 func (o *InitOptions) Complete() error {
