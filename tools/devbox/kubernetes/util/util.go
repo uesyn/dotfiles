@@ -12,10 +12,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-var terminatingError = errors.New("terminating")
-var conditionFieldNotFound = errors.New("condition field not found")
-var conditionTypeNotFoundError = errors.New("condition type not found")
-var conditionStatusNotFoundError = errors.New("condition status not found")
+const (
+	ConditionReady = "Ready"
+)
+
+var (
+	terminatingError             = errors.New("terminating")
+	conditionFieldNotFound       = errors.New("condition field not found")
+	conditionTypeNotFoundError   = errors.New("condition type not found")
+	conditionStatusNotFoundError = errors.New("condition status not found")
+)
 
 func WaitForCondition(ctx context.Context, timeout time.Duration, uClient *client.UnstructuredClient, obj *unstructured.Unstructured, condType string) error {
 	return wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, timeout, true, func(context.Context) (bool, error) {

@@ -295,7 +295,7 @@ func (m *manager) Exec(ctx context.Context, devboxName, namespace string, opts .
 	}
 
 	obj := d.GetDevbox()
-	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "Ready"); err != nil {
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, kubeutil.ConditionReady); err != nil {
 		logger.Error(err, "failed to wait for devbox to be deleted")
 		return err
 	}
@@ -377,7 +377,7 @@ func (m *manager) PortForward(ctx context.Context, devboxName, namespace string,
 		pfOpts = o.apply(pfOpts)
 	}
 
-	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, "Ready"); err != nil {
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, obj, kubeutil.ConditionReady); err != nil {
 		logger.Error(err, "failed to wait for devbox to become ready")
 		return err
 	}
@@ -475,7 +475,7 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 
-	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, d.GetDevbox(), "Ready"); err != nil {
+	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, d.GetDevbox(), kubeutil.ConditionReady); err != nil {
 		logger.Error(err, "failed to wait for devbox to become ready")
 		return err
 	}
