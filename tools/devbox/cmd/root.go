@@ -3,12 +3,12 @@ package cmd
 import (
 	"github.com/go-logr/logr"
 	"github.com/spf13/cobra"
-	"github.com/uesyn/devbox/cmd/options"
+	"github.com/uesyn/devbox/cmd/option"
 )
 
 func NewRootCmd() *cobra.Command {
-	devboxFlags := &options.DevboxFlags{}
-	logFlags := &options.LogFlags{}
+	devboxFlags := &option.DevboxFlags{}
+	logFlags := &option.LogFlags{}
 
 	cmd := &cobra.Command{
 		Use:       "devbox",
