@@ -11,7 +11,8 @@ func NewRootCmd() *cobra.Command {
 	logFlags := &options.LogFlags{}
 
 	cmd := &cobra.Command{
-		Use:       "CLI to manage devboxes",
+		Use:       "devbox",
+		Short:     "CLI to manage devboxes",
 		ValidArgs: []string{},
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			if err := devboxFlags.Complete(); err != nil {
