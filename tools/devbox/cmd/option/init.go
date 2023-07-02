@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
@@ -19,12 +20,14 @@ type InitOptions struct {
 	Namespace   string
 	KubeContext string
 	KubeConfig  string
+	Recreate    bool
 }
 
 func (o *InitOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVar(&o.Namespace, "namespace", metav1.NamespaceDefault, "kubernetes namespace where devbox run")
 	fs.StringVar(&o.KubeContext, "context", "", "the name of the kubeconfig context to use")
 	fs.StringVar(&o.KubeConfig, "kubeconfig", "${HOME}/.kube/config", "path to kubeconfig file")
+	fs.BoolVarP(&o.Recreate, "recreate", "r", false, "recreate devbox kubeconfig")
 }
 
 func (o *InitOptions) Complete() error {
@@ -45,6 +48,12 @@ func (o *InitOptions) Validate() error {
 func (o *InitOptions) Run(ctx context.Context) error {
 	logger := logr.FromContextOrDiscard(ctx)
 
+	devboxKubeConfigPath := util.ExpandPath(common.DevboxKubeConfigPath)
+	if _, err := os.Stat(devboxKubeConfigPath); err == nil && !o.Recreate {
+		logger.Info("already initialized")
+		return nil
+	}
+
 	config, err := initialize.GenerateDevboxKubeconfig(o.KubeConfig, o.KubeContext, o.Namespace)
 	if err != nil {
 		logger.Error(err, "Failed to generate kubeconfig for devbox")
@@ -58,12 +67,12 @@ func (o *InitOptions) Run(ctx context.Context) error {
 	}
 	cluster, namespace := getCluster(curContext), getNamespace(curContext)
 
-	if err := client.WriteKubeconfig(*config, common.DevboxKubeConfigPath); err != nil {
+	if err := client.WriteKubeconfig(*config, devboxKubeConfigPath); err != nil {
 		logger.Error(err, "Failed to write kubeconfig for devbox")
 		return err
 	}
 
-	logger.Info(fmt.Sprintf("Generated kubeconfig at %s for devbox", common.DevboxKubeConfigPath),
+	logger.Info(fmt.Sprintf("Generated kubeconfig at %s for devbox", devboxKubeConfigPath),
 		"context", config.CurrentContext, "cluster", cluster, "namespace", namespace)
 	return nil
 }
