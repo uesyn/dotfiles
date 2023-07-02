@@ -2,6 +2,7 @@ package option
 
 import (
 	"errors"
+	"os"
 
 	"github.com/bombsimon/logrusr/v4"
 	"github.com/go-logr/logr"
@@ -56,24 +57,50 @@ func (o *DevboxFlags) Validate() error {
 	return nil
 }
 
+func (o *DevboxFlags) setKubeConfig() error {
+	if o.kubeConfig != nil {
+		return nil
+	}
+
+	if _, err := os.Stat(o.devboxKubeconfigPath); err != nil {
+		return errors.New("must run `devbox init` before")
+	}
+	o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	return nil
+}
+
+func (o *DevboxFlags) setDevboxConfig() error {
+	if o.devboxConfig != nil {
+		return nil
+	}
+
+	devboxConfig, err := config.Load(o.configPath)
+	if err != nil {
+		return err
+	}
+	o.devboxConfig = devboxConfig
+	return nil
+}
+
 func (o *DevboxFlags) KubeRawConfig() (clientcmdapi.Config, error) {
-	if o.kubeConfig == nil {
-		o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	if err := o.setKubeConfig(); err != nil {
+		return clientcmdapi.Config{}, err
 	}
 	return o.kubeConfig.RawConfig()
 }
 
 func (o *DevboxFlags) KubeRESTClientConfig() (*restclient.Config, error) {
-	if o.kubeConfig == nil {
-		o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	if err := o.setKubeConfig(); err != nil {
+		return nil, err
 	}
 	return o.kubeConfig.ClientConfig()
 }
 
 func (o *DevboxFlags) KubeClientSet() (kubernetes.Interface, error) {
-	if o.kubeConfig == nil {
-		o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	if err := o.setKubeConfig(); err != nil {
+		return nil, err
 	}
+
 	restConfig, err := o.kubeConfig.ClientConfig()
 	if err != nil {
 		return nil, err
@@ -87,34 +114,26 @@ func (o *DevboxFlags) KubeClientSet() (kubernetes.Interface, error) {
 }
 
 func (o *DevboxFlags) Namespace() (string, bool, error) {
-	if o.kubeConfig == nil {
-		o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	if err := o.setKubeConfig(); err != nil {
+		return "", false, err
 	}
 	return o.kubeConfig.Namespace()
 }
 
 func (o *DevboxFlags) DevboxConfig() (config.Config, error) {
-	if o.devboxConfig == nil {
-		devboxConfig, err := config.Load(o.configPath)
-		if err != nil {
-			return nil, err
-		}
-		o.devboxConfig = devboxConfig
+	if err := o.setDevboxConfig(); err != nil {
+		return nil, err
 	}
 	return o.devboxConfig, nil
 }
 
 func (o *DevboxFlags) Manager() (manager.Manager, error) {
-	if o.kubeConfig == nil {
-		o.kubeConfig = client.NewClientConfig(o.devboxKubeconfigPath, o.devboxKubeContext)
+	if err := o.setKubeConfig(); err != nil {
+		return nil, err
 	}
 
-	if o.devboxConfig == nil {
-		devboxConfig, err := config.Load(o.configPath)
-		if err != nil {
-			return nil, err
-		}
-		o.devboxConfig = devboxConfig
+	if err := o.setDevboxConfig(); err != nil {
+		return nil, err
 	}
 
 	restConfig, err := o.kubeConfig.ClientConfig()
@@ -136,12 +155,8 @@ func (o *DevboxFlags) Manager() (manager.Manager, error) {
 }
 
 func (o *DevboxFlags) TemplateLoader() (template.Loader, error) {
-	if o.devboxConfig == nil {
-		devboxConfig, err := config.Load(o.configPath)
-		if err != nil {
-			return nil, err
-		}
-		o.devboxConfig = devboxConfig
+	if err := o.setDevboxConfig(); err != nil {
+		return nil, err
 	}
 
 	return template.NewLoader(
