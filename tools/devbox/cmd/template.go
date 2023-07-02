@@ -32,8 +32,9 @@ func newTemplateShowCmd(f cmdutil.Factory) *cobra.Command {
 func newTemplateListCmd(f cmdutil.Factory) *cobra.Command {
 	o := &option.TemplateListOptions{}
 	cmd := &cobra.Command{
-		Use:   "list",
-		Short: "list templates for devbox",
+		Use:     "list",
+		Aliases: []string{"ls"},
+		Short:   "List templates for devbox",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			if err := o.Complete(f); err != nil {
@@ -53,7 +54,8 @@ func newTemplateListCmd(f cmdutil.Factory) *cobra.Command {
 
 func NewTemplateCmd(f cmdutil.Factory) *cobra.Command {
 	cmd := &cobra.Command{
-		Use: "template",
+		Use:   "template",
+		Short: "Template utils",
 	}
 	cmd.AddCommand(newTemplateShowCmd(f))
 	cmd.AddCommand(newTemplateListCmd(f))
