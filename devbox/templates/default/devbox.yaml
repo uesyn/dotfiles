@@ -24,10 +24,9 @@ spec:
           - |
             export HOME=/home/devbox
             DOTFILES_DIR=${HOME}/src/github.com/uesyn/dotfiles
-            if [[ -d ${DOTFILES_DIR} ]]; then
-              exit
+            if [[ ! -d ${DOTFILES_DIR} ]]; then
+              git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
             fi
-            git clone https://github.com/uesyn/dotfiles ${DOTFILES_DIR}
             bash ${DOTFILES_DIR}/bootstrap
             export SSH_DIR=${HOME}/.ssh
             export AUTHORIZED_KEYS=${SSH_DIR}/authorized_keys
