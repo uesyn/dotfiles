@@ -30,11 +30,17 @@ type DevboxFlags struct {
 	devboxConfig config.Config
 }
 
+const defaultDevboxConfigPath = "${HOME}/.config/devbox/config.yaml"
+
 func (o *DevboxFlags) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&o.configPath, "config", "${HOME}/.config/devbox/config.yaml", "path to devbox config file")
-	fs.StringVar(&o.templatesDirPath, "templates-dir", "${HOME}/.config/devbox/templates", "path to devbox templates dir")
-	fs.StringVar(&o.devboxKubeContext, "devbox-kubecontext", "", "context name to use in a given devbox-kubeconfig file")
-	fs.StringVar(&o.devboxKubeconfigPath, "devbox-kubeconfig", "${HOME}/.local/share/devbox/kubeconfig", "path to devbox kubeconfig file")
+	devboxConfigPath := defaultDevboxConfigPath
+	if v := os.Getenv("DEVBOX_CONFIG"); len(v) > 0 {
+		devboxConfigPath = v
+	}
+	fs.StringVar(&o.configPath, "config", devboxConfigPath, "Path to devbox config file, available to overwrite with DEVBOX_CONFIG env")
+	fs.StringVar(&o.templatesDirPath, "templates-dir", "${HOME}/.config/devbox/templates", "Path to devbox templates dir")
+	fs.StringVar(&o.devboxKubeContext, "devbox-kubecontext", "", "Context name to use in a given devbox-kubeconfig file")
+	fs.StringVar(&o.devboxKubeconfigPath, "devbox-kubeconfig", "${HOME}/.local/share/devbox/kubeconfig", "Path to devbox kubeconfig file")
 }
 
 func (o *DevboxFlags) Complete() error {

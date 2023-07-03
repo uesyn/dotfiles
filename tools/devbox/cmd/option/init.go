@@ -24,10 +24,10 @@ type InitOptions struct {
 }
 
 func (o *InitOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVar(&o.Namespace, "namespace", metav1.NamespaceDefault, "kubernetes namespace where devbox run")
-	fs.StringVar(&o.KubeContext, "context", "", "the name of the kubeconfig context to use")
-	fs.StringVar(&o.KubeConfig, "kubeconfig", "${HOME}/.kube/config", "path to kubeconfig file")
-	fs.BoolVarP(&o.Recreate, "recreate", "r", false, "recreate devbox kubeconfig")
+	fs.StringVar(&o.Namespace, "namespace", metav1.NamespaceDefault, "Kubernetes namespace where devbox run")
+	fs.StringVar(&o.KubeContext, "context", "", "Name of the kubeconfig context to use")
+	fs.StringVar(&o.KubeConfig, "kubeconfig", "${HOME}/.kube/config", "Path to kubeconfig file")
+	fs.BoolVarP(&o.Recreate, "recreate", "r", false, "Recreate devbox kubeconfig")
 }
 
 func (o *InitOptions) Complete() error {

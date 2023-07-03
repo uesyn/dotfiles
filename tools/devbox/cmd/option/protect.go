@@ -17,7 +17,7 @@ type ProtectOptions struct {
 }
 
 func (o *ProtectOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
 }
 
 func (o *ProtectOptions) Complete(f cmdutil.Factory) error {

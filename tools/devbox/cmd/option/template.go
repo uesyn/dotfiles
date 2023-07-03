@@ -22,7 +22,7 @@ type TemplateShowOptions struct {
 }
 
 func (o *TemplateShowOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "", "template name")
+	fs.StringVarP(&o.name, "name", "n", "", "Template name")
 }
 
 func (o *TemplateShowOptions) Complete(f cmdutil.Factory) error {

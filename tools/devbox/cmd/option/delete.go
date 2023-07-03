@@ -20,8 +20,8 @@ type DeleteOptions struct {
 }
 
 func (o *DeleteOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
-	fs.BoolVar(&o.yes, "yes", false, "delete devbox without any confirmation")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
+	fs.BoolVar(&o.yes, "yes", false, "Delete devbox without any confirmation")
 }
 
 func (o *DeleteOptions) Complete(f cmdutil.Factory) error {

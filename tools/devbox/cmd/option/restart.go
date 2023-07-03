@@ -22,8 +22,8 @@ type RestartOptions struct {
 }
 
 func (o *RestartOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
-	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "select node to run on with fuzzy finder")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
+	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
 }
 
 func (o *RestartOptions) Complete(f cmdutil.Factory) error {

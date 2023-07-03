@@ -22,8 +22,8 @@ type StartOptions struct {
 }
 
 func (o *StartOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
-	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "select node to run on with fuzzy finder")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
+	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
 }
 
 func (o *StartOptions) Complete(f cmdutil.Factory) error {

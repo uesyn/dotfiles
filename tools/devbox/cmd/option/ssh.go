@@ -25,7 +25,7 @@ type SSHOptions struct {
 }
 
 func (o *SSHOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
 	fs.StringArrayVarP(&o.ports, "port", "p", nil, "Forwarded ports. e.g., 8080:80, 8080")
 	fs.StringVarP(&o.identityFile, "ssh-identity-file", "i", "", "Identity file for SSH authentication")
 }

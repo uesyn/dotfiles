@@ -24,9 +24,9 @@ type RunOptions struct {
 }
 
 func (o *RunOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.Name, "name", "n", "default", "devbox name")
-	fs.StringVarP(&o.TemplateName, "template", "t", "default", "template name")
-	fs.BoolVarP(&o.SelectNodes, "select-nodes", "s", false, "select node to run on with fuzzy finder")
+	fs.StringVarP(&o.Name, "name", "n", "default", "Devbox name")
+	fs.StringVarP(&o.TemplateName, "template", "t", "default", "Template name")
+	fs.BoolVarP(&o.SelectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
 }
 
 func (o *RunOptions) Complete(f util.Factory) error {

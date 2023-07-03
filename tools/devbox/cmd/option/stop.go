@@ -19,7 +19,7 @@ type StopOptions struct {
 }
 
 func (o *StopOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
 }
 
 func (o *StopOptions) Complete(f cmdutil.Factory) error {

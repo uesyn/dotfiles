@@ -23,8 +23,8 @@ type EventOptions struct {
 }
 
 func (o *EventOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
-	fs.BoolVarP(&o.watch, "watch", "w", false, "watch events")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
+	fs.BoolVarP(&o.watch, "watch", "w", false, "Watch events")
 }
 
 func (o *EventOptions) Complete(f cmdutil.Factory) error {

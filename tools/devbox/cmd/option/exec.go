@@ -22,7 +22,7 @@ type ExecOptions struct {
 }
 
 func (o *ExecOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.name, "name", "n", "default", "devbox name")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devbox name")
 	fs.StringArrayVar(&o.addresses, "address", []string{"127.0.0.1"}, "Addresses are binded for port-forward")
 	fs.StringArrayVarP(&o.ports, "port", "p", nil, "Forwarded ports. e.g., 8080:80, 8080")
 }
