@@ -31,14 +31,19 @@ type DevboxFlags struct {
 }
 
 const defaultDevboxConfigPath = "${HOME}/.config/devbox/config.yaml"
+const defaultDevboxTemplatesDirPath = "${HOME}/.config/devbox/templates"
 
 func (o *DevboxFlags) AddFlags(fs *pflag.FlagSet) {
 	devboxConfigPath := defaultDevboxConfigPath
 	if v := os.Getenv("DEVBOX_CONFIG"); len(v) > 0 {
 		devboxConfigPath = v
 	}
+	devboxTemplatesDirPath := defaultDevboxTemplatesDirPath
+	if v := os.Getenv("DEVBOX_TEMPLATES"); len(v) > 0 {
+		devboxTemplatesDirPath = v
+	}
 	fs.StringVar(&o.configPath, "config", devboxConfigPath, "Path to devbox config file, available to overwrite with DEVBOX_CONFIG env")
-	fs.StringVar(&o.templatesDirPath, "templates-dir", "${HOME}/.config/devbox/templates", "Path to devbox templates dir")
+	fs.StringVar(&o.templatesDirPath, "templates-dir", devboxTemplatesDirPath, "Path to devbox templates dir, available to overwrite with DEVBOX_TEMPLATES env")
 	fs.StringVar(&o.devboxKubeContext, "devbox-kubecontext", "", "Context name to use in a given devbox-kubeconfig file")
 	fs.StringVar(&o.devboxKubeconfigPath, "devbox-kubeconfig", "${HOME}/.local/share/devbox/kubeconfig", "Path to devbox kubeconfig file")
 }
