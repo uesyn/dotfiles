@@ -66,6 +66,18 @@ func (a *devboxInfoAccessor) GetNode() string {
 	return pod.Spec.NodeName
 }
 
+func (a *devboxInfoAccessor) GetIPs() []string {
+	pod, err := a.podLister.Pods(a.namespace).Get(a.podName)
+	if err != nil {
+		return nil
+	}
+	var ips []string
+	for _, ip := range pod.Status.PodIPs {
+		ips = append(ips, ip.IP)
+	}
+	return ips
+}
+
 func (a *devboxInfoAccessor) IsReady() bool {
 	pod, err := a.podLister.Pods(a.namespace).Get(a.podName)
 	if err != nil {

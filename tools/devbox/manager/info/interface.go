@@ -18,6 +18,7 @@ type DevboxInfoAccessor interface {
 	GetTemplateName() string
 	GetPhase() DevboxPhase
 	GetNode() string
+	GetIPs() []string
 	IsReady() bool
 	Protected() bool
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
@@ -70,6 +71,7 @@ func (o *ListOptions) Run(ctx context.Context) error {
 		{Name: "Ready", Type: "bool"},
 		{Name: "Phase", Type: "string"},
 		{Name: "Node", Type: "string"},
+		{Name: "IPs", Type: "string"},
 		{Name: "Protected", Type: "bool"},
 	}
 
@@ -83,6 +85,7 @@ func (o *ListOptions) Run(ctx context.Context) error {
 				info.IsReady(),
 				info.GetPhase(),
 				info.GetNode(),
+				strings.Join(info.GetIPs(), ","),
 				info.Protected(),
 			},
 		}
