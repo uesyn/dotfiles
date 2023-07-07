@@ -4,3 +4,6 @@ resources:
 - devbox.yaml
 - pvc.yaml
 - configmap.yaml
+- service.yaml
+configurations:
+- kustomizeconfig/pod.yaml
