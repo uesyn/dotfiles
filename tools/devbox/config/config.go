@@ -32,7 +32,6 @@ type ExecConfig interface {
 
 type SSHConfig interface {
 	GetUser() string
-	GetPort() int
 	GetCommand() []string
 }
 
@@ -82,7 +81,6 @@ func (t *template) IsLoadRestrictionsNone() bool {
 
 type ssh struct {
 	User    string   `json:"user,omitempty"`
-	Port    int      `json:"port,omitempty"`
 	Command []string `json:"command,omitempty"`
 }
 
@@ -93,15 +91,6 @@ func (s *ssh) GetUser() string {
 		return defaultUser
 	}
 	return s.User
-}
-
-const defaultSSHPort = 22
-
-func (s *ssh) GetPort() int {
-	if s.Port == 0 {
-		return defaultSSHPort
-	}
-	return s.Port
 }
 
 var defaultCommand = []string{"sh"}

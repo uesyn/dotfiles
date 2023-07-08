@@ -5,7 +5,6 @@ exec:
   - zsh
 ssh:
   user: foo
-  port: 2222
   command:
   - baz
 envs:

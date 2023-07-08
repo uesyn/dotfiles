@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: devbox
+  annotations:
+    devbox.uesyn.net/devbox: "true"
   labels:
     app: devbox
 spec:
@@ -47,6 +49,9 @@ spec:
       mountPath: /etc/docker
     securityContext:
       privileged: true
+    ports:
+    - name: ssh
+      containerPort: 22
   volumes:
   - name: data
     persistentVolumeClaim:

@@ -17,7 +17,6 @@ type SSHOptions struct {
 	identityFile string
 
 	sshUser    string
-	sshPort    int
 	sshCommand []string
 	sshEnvs    map[string]string
 	namespace  string
@@ -52,10 +51,6 @@ func (o *SSHOptions) Complete(f cmdutil.Factory) error {
 	if len(o.sshUser) == 0 {
 		o.sshUser = "root"
 	}
-	o.sshPort = sshConf.GetPort()
-	if o.sshPort == 0 {
-		o.sshPort = 22
-	}
 	o.sshCommand = sshConf.GetCommand()
 	if len(o.sshCommand) == 0 {
 		o.sshCommand = []string{"sh"}
@@ -82,10 +77,6 @@ func (o *SSHOptions) Validate() error {
 
 	if len(o.sshUser) == 0 {
 		return errors.New("must set ssh user")
-	}
-
-	if o.sshPort == 0 {
-		return errors.New("must set ssh port")
 	}
 
 	if len(o.sshCommand) == 0 {
@@ -115,5 +106,5 @@ func (o *SSHOptions) Run(ctx context.Context) error {
 	if len(o.ports) > 0 {
 		opts = append(opts, manager.WithSSHForwardedPorts(o.ports))
 	}
-	return o.manager.SSH(ctx, o.name, o.namespace, o.sshPort, opts...)
+	return o.manager.SSH(ctx, o.name, o.namespace, opts...)
 }

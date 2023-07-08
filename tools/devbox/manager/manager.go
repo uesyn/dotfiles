@@ -26,8 +26,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	pkgwatch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/informers"
@@ -36,13 +38,18 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+const (
+	sshPortName = "ssh"
+	localhost   = "127.0.0.1"
+)
+
 type Manager interface {
 	Run(ctx context.Context, templateName, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Delete(ctx context.Context, devboxName, namespace string) error
 	Update(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Exec(ctx context.Context, devboxName, namespace string, opts ...ExecOption) error
 	PortForward(ctx context.Context, devboxName, namespace string, opts ...PortForwardOption) error
-	SSH(ctx context.Context, devboxName, namespace string, containerSSHPort int, opts ...SSHOption) error
+	SSH(ctx context.Context, devboxName, namespace string, opts ...SSHOption) error
 	Start(ctx context.Context, devboxName, namespace string, mutators ...mutator.PodMutator) error
 	Stop(ctx context.Context, devboxName, namespace string) error
 	List(ctx context.Context, namespace string) ([]info.DevboxInfoAccessor, error)
@@ -459,7 +466,7 @@ func (o *withSSHForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
 	return opts
 }
 
-func (m *manager) SSH(ctx context.Context, devboxName, namespace string, containerSSHPort int, opts ...SSHOption) error {
+func (m *manager) SSH(ctx context.Context, devboxName, namespace string, opts ...SSHOption) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devboxName", devboxName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
@@ -480,18 +487,13 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 
-	const localhost = "127.0.0.1"
-
-	var sshAddr string
-	var sshPort int
-
-	pod, err := m.getDevboxPod(ctx, d)
+	sshAddr, sshPort, sshContainerPort, err := m.getSSHIPPort(ctx, d)
 	if err != nil {
-		logger.Error(err, "failed to get devbox pod")
+		logger.Error(err, "Failed to get IP and Port for SSH")
 		return err
 	}
-	needPortForward := !isListening(pod.Status.PodIP, containerSSHPort)
-	if needPortForward {
+
+	if !isListening(sshAddr, sshPort) {
 		localPort, err := getFreePort()
 		if err != nil {
 			logger.Error(err, "failed to get free port for SSH")
@@ -503,16 +505,13 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		go func() {
 			opts := []PortForwardOption{
 				WithPortForwardAddresses([]string{localhost}),
-				WithPortForwardPorts([]string{fmt.Sprintf("%d:%d", localPort, containerSSHPort)}),
+				WithPortForwardPorts([]string{fmt.Sprintf("%d:%d", localPort, sshContainerPort)}),
 			}
 			err := m.PortForward(ctx, devboxName, namespace, opts...)
 			if err != nil {
 				logger.Error(err, "failed to forward ports")
 			}
 		}()
-	} else {
-		sshAddr = pod.Status.PodIP
-		sshPort = containerSSHPort
 	}
 
 	sshOpts := &ssh.Options{Address: sshAddr, Port: sshPort}
@@ -542,6 +541,80 @@ func (m *manager) SSH(ctx context.Context, devboxName, namespace string, contain
 		return err
 	}
 	return nil
+}
+
+func (m *manager) getSSHService(ctx context.Context, d devbox.Devbox) (*corev1.Service, error) {
+	obj := d.GetSSHService()
+	if obj == nil {
+		return nil, apierrors.NewNotFound(schema.GroupResource{Resource: "services"}, "")
+	}
+	return m.clientset.CoreV1().Services(obj.GetNamespace()).Get(ctx, obj.GetName(), metav1.GetOptions{})
+}
+
+func (m *manager) getSSHTargetPodAndService(ctx context.Context, d devbox.Devbox) (devboxPod *corev1.Pod, svc *corev1.Service, err error) {
+	svc, err = m.getSSHService(ctx, d)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	selector := labels.SelectorFromSet(svc.Spec.Selector)
+	podList, err := m.clientset.CoreV1().Pods(svc.GetNamespace()).List(ctx, metav1.ListOptions{
+		LabelSelector: selector.String(),
+	})
+	if err != nil || len(podList.Items) == 0 {
+		return nil, nil, err
+	}
+	devboxPod = &podList.Items[0]
+	return
+}
+
+func getPortFromTargetPort(targetPort intstr.IntOrString, ports []corev1.ContainerPort) (int, error) {
+	if targetPort.Type == intstr.Int {
+		return int(targetPort.IntValue()), nil
+	}
+
+	portName := targetPort.String()
+	for _, pp := range ports {
+		if pp.Name == portName {
+			return int(pp.ContainerPort), nil
+		}
+	}
+	return -1, errors.New("port not found")
+}
+
+func (m *manager) getSSHIPPort(ctx context.Context, d devbox.Devbox) (ip string, svcPort int, containerPort int, err error) {
+	var pod *corev1.Pod
+	var svc *corev1.Service
+
+	pod, svc, err = m.getSSHTargetPodAndService(ctx, d)
+	if err != nil {
+		return "", -1, -1, err
+	}
+
+	for _, p := range svc.Spec.Ports {
+		if p.Name != sshPortName {
+			continue
+		}
+
+		switch svc.Spec.Type {
+		case corev1.ServiceTypeNodePort:
+			ip = pod.Status.HostIP
+			svcPort = int(p.NodePort)
+		case corev1.ServiceTypeClusterIP:
+			ip = pod.Status.PodIP
+			svcPort = int(p.Port)
+		default:
+			return "", -1, -1, fmt.Errorf("%s is not supported service type", svc.Spec.Type)
+		}
+
+		containerPort, err = getPortFromTargetPort(p.TargetPort, pod.Spec.Containers[0].Ports)
+		if err != nil {
+			return "", -1, -1, err
+		}
+		return ip, svcPort, containerPort, nil
+	}
+
+	return "", -1, -1, errors.New("ssh service targets were not found")
 }
 
 func isListening(addr string, port int) bool {
