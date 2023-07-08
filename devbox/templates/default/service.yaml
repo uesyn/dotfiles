@@ -6,4 +6,3 @@ spec:
   clusterIP: None
   selector:
     app: devbox
-    service: devbox

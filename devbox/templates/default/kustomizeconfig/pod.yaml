@@ -1,7 +1,7 @@
 nameReference:
-- kind: Service
+- kind: Pod
   fieldSpecs:
-  - path: metadata/labels/service
+  - path: metadata/labels/app
     kind: Pod
-  - path: spec/selector/service
+  - path: spec/selector/app
     kind: Service
