@@ -1,0 +1,55 @@
+name: Devbox command Release
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - main
+    paths:
+    - 'tools/devcon/**'
+    - '.github/workflows/tools_devcon.yaml'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [ 'darwin', 'linux' ]
+        goarch: [ 'arm64', 'amd64' ]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: 'tools/devcon/go.mod'
+          cache-dependency-path: 'tools/devcon/go.sum'
+      - env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          cd tools/devcon
+          OUTPUT=_output/devcon_${{ matrix.goos }}_${{ matrix.goarch }}
+          go build  -ldflags="-w -s" -trimpath -o ${OUTPUT}
+          gzip ${OUTPUT}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: devcon_release_${{ matrix.goos }}_${{ matrix.goarch }}
+          path: |
+            tools/devcon/_output/devcon_${{ matrix.goos }}_${{ matrix.goarch }}.gz
+          retention-days: 1
+  publish:
+    needs: [ 'build' ]
+    runs-on: ubuntu-latest
+    env:
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        id: download
+      - run: |
+          echo ${{steps.test.outputs.download-path}}
+          ls ${{steps.test.outputs.download-path}}
+          find ${{steps.test.outputs.download-path}}
+      - run: |
+          gh release delete devcon/nightly --yes || true
+          git push origin :devcon/nightly || true
+          gh release create -t devcon/nightly devcon/nightly devcon_release_*/*
