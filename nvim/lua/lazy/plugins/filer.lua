@@ -304,7 +304,7 @@ return {
         }
       })
 
-      vim.keymap.set('n', '<Leader>fo', '<Cmd>Neotree float reveal toggle<CR>)')
+      vim.keymap.set('n', '<Leader>fo', '<Cmd>Neotree reveal toggle<CR>)')
     end
   },
 }
