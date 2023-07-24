@@ -328,6 +328,8 @@ setup_neovim() {
   # install_neovim
   make_tea_command "nvim" "" "neovim.io=0.9.1"
   nvim --headless "+Lazy! restore" +qa
+  git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
+  nvim --headless "+Lazy! restore" +qa
 }
 
 setup_jq() {
