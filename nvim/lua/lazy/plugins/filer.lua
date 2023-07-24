@@ -106,7 +106,7 @@ return {
     },
     enabled = true,
     keys = { "<Leader>fo" },
-    version = "v3.x",
+    branch = "v3.x",
     -- keys = "<Leader>fo",
     init = function()
       vim.g.neo_tree_remove_legacy_commands = 1
