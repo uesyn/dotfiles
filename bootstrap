@@ -493,7 +493,7 @@ setup_mc() {
   cat <<EOF > ${mc_path}
 #!/usr/bin/env sh
 
-docker run -u $(id -u) --rm -v ${HOME}:${HOME} -w $(pwd) -v ${HOME}:${HOME} -i minio/mc:RELEASE.2023-07-21T20-44-27Z "\$@"
+docker run -u $(id -u) --rm -e HOME=${HOME} -w $(pwd) -v ${HOME}:${HOME} -v ${HOME}:${HOME} -i minio/mc:RELEASE.2023-07-21T20-44-27Z "\$@"
 EOF
   chmod +x ${mc_path}
 }
