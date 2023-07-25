@@ -139,7 +139,7 @@ setup_tea() {
   info "Installing tea..."
 
   tea_path="${OPT_BIN}/tea"
-  tea_version="0.37.0"
+  tea_version="0.38.4"
 
   tea_key="tea_${tea_version}"
   download_if_linux_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+aarch64.tar.xz
@@ -259,7 +259,7 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  version=v1.33.0
+  version=v1.34.1
   key="rtx_${version}"
 
   download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
@@ -273,7 +273,7 @@ setup_rtx() {
 
 setup_rust_analyzer() {
   info "Installing rust-analyzer..."
-  version=2023-05-01
+  version=2023-07-24
   key=rust-analyzer_${version}
 
   download_if_linux_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
@@ -346,7 +346,7 @@ setup_yq() {
 
 setup_gh() {
   info "Installing gh ..."
-  make_tea_command "gh" "--silent" "cli.github.com=v2.31.0"
+  make_tea_command "gh" "--silent" "cli.github.com=v2.32.1"
 }
 
 setup_tmux() {
@@ -371,12 +371,13 @@ setup_node() {
 
 setup_deno() {
   info "Installing deno..."
-  make_tea_command "deno" "--silent" "deno.land=1.35.0"
+  deno_version=1.35.2
+  make_tea_command "deno" "--silent" "deno.land=${deno_version}"
 }
 
 setup_go() {
   info "Installing go..."
-  go_version=1.20.5
+  go_version=1.20.6
   gopls_version=v0.12.4
   go_1_19_version="1.19.9"
   make_tea_command "go" "--silent" "go.dev=${go_version}"
@@ -392,7 +393,7 @@ EOF
 
 setup_kubectl() {
   info "Installing kubectl..."
-  kubectl_version=1.27.3
+  kubectl_version=1.27.4
   kubectl_1_26_version=1.26.5
   kubectl_1_25_version=1.25.10
   make_tea_command "kubectl" "--silent" "kubernetes.io/kubectl=${kubectl_version}"
@@ -408,7 +409,7 @@ setup_kind() {
 
 setup_minikube() {
   info "Installing minikube..."
-  minikube_version=1.30.1
+  minikube_version=1.31.1
   make_tea_command "minikube" "" "kubernetes.io/minikube=${minikube_version}"
 }
 
@@ -420,13 +421,13 @@ setup_kustomize() {
 
 setup_helm() {
   info "Installing helm..."
-  version=v3.12.1
+  version=v3.12.2
   make_tea_command "helm" "--silent" "helm.sh=${version}"
 }
 
 setup_kubectx() {
   info "Installing kubectx and kubens..."
-  version=v0.9.4
+  version=v0.9.5
   make_tea_command "kubectx" "" "kubectx.dev=${version}"
   make_tea_command "kubens" "" "kubectx.dev=${version}"
 }
