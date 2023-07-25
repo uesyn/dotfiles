@@ -49,6 +49,9 @@ spec:
       subPath: var-lib-docker
     - name: docker-config
       mountPath: /etc/docker
+    - name: tls-certs
+      mountPath: /etc/ssl/certs
+      readOnly: true
     securityContext:
       privileged: true
     ports:
@@ -61,6 +64,9 @@ spec:
   - name: docker-config
     configMap:
       name: docker-config
+  - name: tls-certs
+    hostPath:
+      path: /etc/ssl/certs
   dnsPolicy: Default
   dnsConfig:
     options:
