@@ -177,40 +177,37 @@ return {
         }
       end
 
-      local direct_managed_servers = { "gopls", "rust_analyzer", "denols", "eslint", "tsserver" }
+      local direct_managed_servers = { "gopls", "rust_analyzer", "denols" }
+      local node_root_dir = require('lspconfig').util.root_pattern("package.json")
+      local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
+        "import_map.json")
 
       require("mason").setup({ ui = { border = "rounded" } })
       require("mason-lspconfig").setup()
       require("mason-lspconfig").setup_handlers({
         function(server_name)
+          local opts = default_opts()
+          if server_name == "tsserver" then
+            opts.root_dir = node_root_dir
+          elseif server_name == "eslint" then
+            opts.root_dir = node_root_dir
+          end
+
           for _, s in ipairs(direct_managed_servers) do
             if s == server_name then
               return
             end
           end
-          require("lspconfig")[server_name].setup(default_opts())
+          require("lspconfig")[server_name].setup(opts)
         end
       })
 
-      local node_root_dir = require('lspconfig').util.root_pattern("package.json")
-      local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
-        "import_map.json")
       for _, server_name in ipairs(direct_managed_servers) do
         local opts = default_opts()
         if server_name == "rust_analyzer" then
           if vim.fn.executable("rust-analyzer") == 0 or vim.fn.executable("cargo") == 0 then
             goto continue
           end
-        elseif server_name == "tsserver" then
-          if vim.fn.executable("tsserver") == 0 then
-            goto continue
-          end
-          opts.root_dir = node_root_dir
-        elseif server_name == "eslint" then
-          if vim.fn.executable("eslint") == 0 then
-            goto continue
-          end
-          opts.root_dir = node_root_dir
         elseif server_name == "denols" then
           if vim.fn.executable("deno") == 0 then
             goto continue
