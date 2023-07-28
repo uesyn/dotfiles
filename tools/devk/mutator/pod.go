@@ -4,11 +4,9 @@ import (
 	"errors"
 
 	"github.com/uesyn/dotfiles/tools/devk/common"
-	kubeutil "github.com/uesyn/dotfiles/tools/devk/kubernetes/util"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type Mutator interface {
@@ -39,73 +37,64 @@ func (a *nodeAffinity) Mutate(obj *unstructured.Unstructured) (*unstructured.Uns
 
 	switch obj.GetKind() {
 	case "Pod":
-		pod := corev1.Pod{}
-		err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, &pod)
-		if err != nil {
+		if err := a.mutateNodeAffinity(obj); err != nil {
 			return nil, err
 		}
-		a.mutateNodeAffinity(&pod)
-		a.mutateNodeToleration(&pod)
-		return kubeutil.RuntimeObjectToUnstructured(&pod)
+		if err := a.mutateNodeToleration(obj); err != nil {
+			return nil, err
+		}
+		return obj, nil
 	default:
 		return nil, errors.New("unsupported kind")
 	}
 }
 
-func (a *nodeAffinity) mutateNodeAffinity(pod *corev1.Pod) {
+func (a *nodeAffinity) mutateNodeAffinity(obj *unstructured.Unstructured) error {
 	if len(a.nodes) == 0 {
-		return
+		return nil
 	}
 
-	var nodeSelectorTerms []corev1.NodeSelectorTerm
+	var matchFields []interface{}
 	for _, node := range a.nodes {
-		nodeSelectorTerm := corev1.NodeSelectorTerm{
-			MatchFields: []corev1.NodeSelectorRequirement{
-				{
-					Key:      "metadata.name",
-					Operator: corev1.NodeSelectorOpIn,
-					Values:   []string{node.GetName()},
-				},
-			},
+		matchField := map[string]interface{}{
+			"key":      "metadata.name",
+			"operator": "In",
+			"values":   []interface{}{node.GetName()},
 		}
-		nodeSelectorTerms = append(nodeSelectorTerms, nodeSelectorTerm)
+		matchFields = append(matchFields, matchField)
 	}
 
-	nodeAffinity := &corev1.NodeAffinity{
-		RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{
-			NodeSelectorTerms: nodeSelectorTerms,
+	nodeSelectorTerms := []interface{}{
+		map[string]interface{}{
+			"matchFields": matchFields,
 		},
 	}
 
-	if pod.Spec.Affinity == nil {
-		pod.Spec.Affinity = &corev1.Affinity{}
+	affinity := map[string]interface{}{
+		"nodeAffinity": map[string]interface{}{
+			"requiredDuringSchedulingIgnoredDuringExecution": map[string]interface{}{
+				"nodeSelectorTerms": nodeSelectorTerms,
+			},
+		},
 	}
-	pod.Spec.Affinity.NodeAffinity = nodeAffinity
+
+	if err := unstructured.SetNestedMap(obj.Object, affinity, "spec", "affinity"); err != nil {
+		return err
+	}
+	return nil
 }
 
-func (a *nodeAffinity) mutateNodeToleration(pod *corev1.Pod) {
+func (a *nodeAffinity) mutateNodeToleration(obj *unstructured.Unstructured) error {
 	if len(a.nodes) == 0 {
-		return
+		return nil
 	}
-	tolerationKeyValue := make(map[string]string)
-	for _, toleration := range pod.Spec.Tolerations {
-		tolerationKeyValue[toleration.Key] = toleration.Value
+	tolerations := []interface{}{
+		map[string]interface{}{
+			"operator": "Exists",
+		},
 	}
-
-	var tolerations []corev1.Toleration
-	for _, node := range a.nodes {
-		for _, taint := range node.Spec.Taints {
-			toleration := corev1.Toleration{
-				Key:      taint.Key,
-				Operator: corev1.TolerationOpExists,
-			}
-
-			value, found := tolerationKeyValue[toleration.Key]
-			if found && value == toleration.Value {
-				continue
-			}
-			tolerations = append(tolerations, toleration)
-		}
+	if err := unstructured.SetNestedSlice(obj.Object, tolerations, "spec", "tolerations"); err != nil {
+		return err
 	}
-	pod.Spec.Tolerations = tolerations
+	return nil
 }
