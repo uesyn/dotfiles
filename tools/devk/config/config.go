@@ -1,134 +1,100 @@
 package config
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
 	"os"
 
 	"sigs.k8s.io/yaml"
 )
 
-type Config interface {
-	GetExecConfig() ExecConfig
-	GetSSHConfig() SSHConfig
-	GetTemplateConfig() TemplateConfig
-	GetEnvs() (map[string]string, error)
-}
-
-func Load(file string) (Config, error) {
+func Load(file string) (*Config, error) {
 	contents, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}
-	c := config{}
+	c := Config{}
 	if err := yaml.Unmarshal(contents, &c); err != nil {
+		return nil, err
+	}
+	if err := c.complete(); err != nil {
+		return nil, err
+	}
+	if err := c.validate(); err != nil {
 		return nil, err
 	}
 	return &c, nil
 }
 
-type ExecConfig interface {
-	GetCommand() []string
+type Config struct {
+	Template Template `json:"template,omitempty"`
+	SSH      *SSH     `json:"ssh,omitempty"`
+	Exec     *Exec    `json:"exec,omitempty"`
+	Envs     []Env    `json:"envs,omitempty"`
 }
 
-type SSHConfig interface {
-	GetUser() string
-	GetCommand() []string
-}
-
-type TemplateConfig interface {
-	IsLoadRestrictionsNone() bool
-}
-
-type config struct {
-	Template template `json:"template,omitempty"`
-	SSH      ssh      `json:"ssh,omitempty"`
-	Exec     exec     `json:"exec,omitempty"`
-	Envs     []env    `json:"envs,omitempty"`
-}
-
-func (c *config) GetTemplateConfig() TemplateConfig {
-	return &c.Template
-}
-
-func (c *config) GetSSHConfig() SSHConfig {
-	return &c.SSH
-}
-
-func (c *config) GetExecConfig() ExecConfig {
-	return &c.Exec
-}
-
-func (e *config) GetEnvs() (map[string]string, error) {
-	envMap := map[string]string{}
-	for _, env := range e.Envs {
-		name := env.Name
-		v, err := env.GetValue()
-		if err != nil {
-			return nil, err
+func (c *Config) complete() error {
+	if c.SSH == nil {
+		c.SSH = &SSH{
+			Command: []string{"sh"},
 		}
-		envMap[name] = v
 	}
-	return envMap, nil
+	if c.Exec == nil {
+		c.Exec = &Exec{
+			Command: []string{"sh"},
+		}
+	}
+	return nil
 }
 
-type template struct {
+var noNameFieldError = errors.New("no name field")
+var noValueFieldError = errors.New("no value field")
+
+func (c *Config) validate() error {
+	for _, env := range c.Envs {
+		if len(env.Name) == 0 {
+			return noNameFieldError
+		}
+		if len(env.Value) == 0 {
+			return noValueFieldError
+		}
+	}
+	return nil
+}
+
+type Template struct {
 	LoadRestrictionsNone bool `json:"loadRestrictionsNone,omitempty"`
 }
 
-func (t *template) IsLoadRestrictionsNone() bool {
-	return t.LoadRestrictionsNone
-}
-
-type ssh struct {
-	User    string   `json:"user,omitempty"`
+type SSH struct {
 	Command []string `json:"command,omitempty"`
 }
 
-const defaultUser = "devk"
-
-func (s *ssh) GetUser() string {
-	if len(s.User) == 0 {
-		return defaultUser
-	}
-	return s.User
-}
-
-var defaultCommand = []string{"sh"}
-
-func (s *ssh) GetCommand() []string {
-	if len(s.Command) == 0 {
-		return defaultCommand
-	}
-	return s.Command
-}
-
-type exec struct {
+type Exec struct {
 	Command []string `json:"command,omitempty"`
 }
 
-func (e *exec) GetCommand() []string {
-	if len(e.Command) == 0 {
-		return defaultCommand
-	}
-	return e.Command
+type Env struct {
+	Name  string
+	Value string
 }
 
-type env struct {
-	Name    string  `json:"name"`
-	Raw     *string `json:"raw"`
-	HostEnv *string `json:"hostEnv"`
-}
-
-func (e *env) GetName() string {
-	return e.Name
-}
-
-func (v *env) GetValue() (string, error) {
-	if v.Raw != nil {
-		return *v.Raw, nil
+func (e *Env) UnmarshalJSON(data []byte) error {
+	type envRaw struct {
+		Name    string  `json:"name"`
+		Raw     *string `json:"raw"`
+		HostEnv *string `json:"hostEnv"`
 	}
-	if v.HostEnv != nil {
-		return os.Getenv(*v.HostEnv), nil
+	raw := envRaw{}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
 	}
-	return "", fmt.Errorf("must set raw, hostEnv or command")
+	e.Name = raw.Name
+	if raw.Raw != nil {
+		e.Value = *raw.Raw
+	}
+	if raw.HostEnv != nil {
+		e.Value = os.Getenv(*raw.HostEnv)
+	}
+	return nil
 }

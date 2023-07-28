@@ -27,7 +27,7 @@ type DevkFlags struct {
 	devkKubeconfigPath string
 
 	kubeConfig clientcmd.ClientConfig
-	devkConfig config.Config
+	devkConfig *config.Config
 }
 
 const defaultDevkConfigPath = "${HOME}/.config/devk/config.yaml"
@@ -131,7 +131,7 @@ func (o *DevkFlags) Namespace() (string, bool, error) {
 	return o.kubeConfig.Namespace()
 }
 
-func (o *DevkFlags) DevkConfig() (config.Config, error) {
+func (o *DevkFlags) DevkConfig() (*config.Config, error) {
 	if err := o.setDevkConfig(); err != nil {
 		return nil, err
 	}
@@ -158,10 +158,10 @@ func (o *DevkFlags) Manager() (manager.Manager, error) {
 	}
 	releaseStore := release.NewDefaultStore(clientset)
 
-	loader := template.NewLoader(
-		o.templatesDirPath,
-		o.devkConfig.GetTemplateConfig().IsLoadRestrictionsNone(),
-	)
+	loader, err := o.TemplateLoader()
+	if err != nil {
+		return nil, err
+	}
 	return manager.New(restConfig, releaseStore, loader), nil
 }
 
@@ -172,7 +172,7 @@ func (o *DevkFlags) TemplateLoader() (template.Loader, error) {
 
 	return template.NewLoader(
 		o.templatesDirPath,
-		o.devkConfig.GetTemplateConfig().IsLoadRestrictionsNone(),
+		o.devkConfig.Template.LoadRestrictionsNone,
 	), nil
 }
 

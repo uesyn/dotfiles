@@ -14,7 +14,7 @@ type Factory interface {
 	KubeRESTClientConfig() (*restclient.Config, error)
 	KubeClientSet() (kubernetes.Interface, error)
 	Namespace() (string, bool, error)
-	DevkConfig() (config.Config, error)
+	DevkConfig() (*config.Config, error)
 	Manager() (manager.Manager, error)
 	TemplateLoader() (template.Loader, error)
 }

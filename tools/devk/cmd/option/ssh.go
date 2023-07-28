@@ -47,15 +47,14 @@ func (o *SSHOptions) Complete(f cmdutil.Factory) error {
 	if err != nil {
 		return err
 	}
-	sshConf := conf.GetSSHConfig()
-	o.sshCommand = sshConf.GetCommand()
+	o.sshCommand = conf.SSH.Command
 	if len(o.sshCommand) == 0 {
 		o.sshCommand = []string{"sh"}
 	}
 
-	envs, err := conf.GetEnvs()
-	if err != nil {
-		return err
+	envs := make(map[string]string)
+	for _, env := range conf.Envs {
+		envs[env.Name] = env.Value
 	}
 	o.sshEnvs = envs
 	return nil

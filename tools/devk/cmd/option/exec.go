@@ -50,12 +50,12 @@ func (o *ExecOptions) Complete(f cmdutil.Factory) error {
 	if err != nil {
 		return err
 	}
-	envs, err := conf.GetEnvs()
-	if err != nil {
-		return err
+	envs := make(map[string]string)
+	for _, env := range conf.Envs {
+		envs[env.Name] = env.Value
 	}
 	o.execEnvs = envs
-	o.execCommand = conf.GetExecConfig().GetCommand()
+	o.execCommand = conf.Exec.Command
 	return nil
 }
 

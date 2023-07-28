@@ -2,9 +2,8 @@ template:
   loadRestrictionsNone: true
 exec:
   command:
-  - zsh
+  - foo
 ssh:
-  user: foo
   command:
   - baz
 envs:
