@@ -30,6 +30,8 @@ type nodeAffinity struct {
 	nodes    []corev1.Node
 }
 
+var unSupportedKindError = errors.New("unsupported kind")
+
 func (a *nodeAffinity) Mutate(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	if !a.selector.Matches(labels.Set(obj.GetLabels())) {
 		return obj, nil
@@ -45,7 +47,7 @@ func (a *nodeAffinity) Mutate(obj *unstructured.Unstructured) (*unstructured.Uns
 		}
 		return obj, nil
 	default:
-		return nil, errors.New("unsupported kind")
+		return nil, unSupportedKindError
 	}
 }
 
