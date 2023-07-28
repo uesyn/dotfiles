@@ -48,15 +48,11 @@ func (c *Config) complete() error {
 }
 
 var noNameFieldError = errors.New("no name field")
-var noValueFieldError = errors.New("no value field")
 
 func (c *Config) validate() error {
 	for _, env := range c.Envs {
 		if len(env.Name) == 0 {
 			return noNameFieldError
-		}
-		if len(env.Value) == 0 {
-			return noValueFieldError
 		}
 	}
 	return nil
