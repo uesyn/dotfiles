@@ -83,7 +83,7 @@ func (d *secretDriver) Delete(ctx context.Context, devkName, namespace string) e
 	{
 		secretName := secretNameFromDevboxName(devkName)
 		err := d.c.CoreV1().Secrets(namespace).Delete(ctx, secretName, metav1.DeleteOptions{})
-		if err != nil && apierrors.IsNotFound(err) {
+		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 	}
