@@ -101,26 +101,26 @@ function t() {
 }
 
 function d() {
-  if [[ ! -x "$(command -v devbox)" ]]; then
-    local devbox=${OPT_DIR}/bin/devbox
+  if [[ ! -x "$(command -v devk)" ]]; then
+    local devk=${OPT_DIR}/bin/devk
     local bin_name
     case "$(detect_target)" in
       darwin-arm64)
-        bin_name=devbox_darwin_arm64
+        bin_name=devk_darwin_arm64
         ;;
       darwin-amd64)
-        bin_name=devbox_darwin_amd64
+        bin_name=devk_darwin_amd64
         ;;
       linux-amd64)
-        bin_name=devbox_linux_amd64
+        bin_name=devk_linux_amd64
         ;;
       linux-arm64)
-        bin_name=devbox_linux_arm64
+        bin_name=devk_linux_arm64
         ;;
       *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
     esac
-    curl -L -o ${devbox} https://github.com/uesyn/dotfiles/releases/download/devbox%2Fnightly/${bin_name}
-    chmod +x ${devbox}
+    curl -sSfL "https://github.com/uesyn/dotfiles/releases/download/devk%2Fnightly/${bin_name}.gz" | gunzip - > ${devk}
+    chmod +x ${devk}
   fi
-  devbox "$@"
+  devk "$@"
 }
