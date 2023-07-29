@@ -4,8 +4,6 @@ metadata:
   name: devbox
   labels:
     app: devbox
-    devk.uesyn.dev/part-of: "core"
-    devk.uesyn.dev/update-policy: "recreate"
 spec:
   automountServiceAccountToken: false
   securityContext:

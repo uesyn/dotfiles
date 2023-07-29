@@ -1,9 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    devk.uesyn.dev/ssh-user: "devbox"
   labels:
-    devk.uesyn.dev/part-of: "ssh"
-  name: devbox-ssh
+    devk.uesyn.dev/part-of: "selector"
+  name: devbox
 spec:
   type: NodePort
   selector:

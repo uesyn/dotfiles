@@ -3,7 +3,6 @@ package mutator
 import (
 	"errors"
 
-	"github.com/uesyn/dotfiles/tools/devk/common"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -17,9 +16,7 @@ func NewNodeAffinityMutator(nodes []corev1.Node, selector labels.Selector) Mutat
 	return &nodeAffinity{selector: selector, nodes: nodes}
 }
 
-var defaultSelector = labels.SelectorFromSet(labels.Set{
-	common.DevkPartOfLabelKey: common.DevkPartOfCore,
-})
+var defaultSelector = labels.Everything()
 
 func NewDefaultNodeAffinityMutator(nodes []corev1.Node) Mutator {
 	return &nodeAffinity{selector: defaultSelector, nodes: nodes}

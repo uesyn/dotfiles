@@ -39,6 +39,20 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+var (
+	notStopPolicyRetainSelector = func() labels.Selector {
+		req, err := labels.NewRequirement(
+			common.DevkStopPolicyLabelKey,
+			selection.NotEquals,
+			[]string{common.DevkStopPolicyRetain},
+		)
+		if err != nil {
+			panic(err)
+		}
+		return labels.NewSelector().Add(*req)
+	}()
+)
+
 const (
 	sshPortName = "ssh"
 	localhost   = "127.0.0.1"
@@ -223,7 +237,7 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	pod, err := m.getWorkerPod(ctx, devkName, namespace)
+	pod, _, err := m.getDevkPodAndService(ctx, devkName, namespace)
 	if err != nil {
 		logger.Error(err, "failed to load devk pod")
 		return err
@@ -253,18 +267,19 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 	return nil
 }
 
-func (m *manager) getWorkerPod(ctx context.Context, devkName string, namespace string) (*corev1.Pod, error) {
-	selector := map[string]string{
-		common.DevkNameLabelKey: devkName,
-	}
-	pods, err := m.getPodsMatchingSelector(ctx, namespace, selector)
+func (m *manager) getDevkPodAndService(ctx context.Context, devkName string, namespace string) (*corev1.Pod, *corev1.Service, error) {
+	svc, err := m.getSelectorService(ctx, devkName, namespace)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+	pods, err := m.getPodsForService(ctx, svc)
+	if err != nil {
+		return nil, nil, err
 	}
 	sort.Slice(pods, func(i, j int) bool {
 		return pods[i].CreationTimestamp.Before(&pods[j].CreationTimestamp)
 	})
-	return &pods[0], nil
+	return &pods[0], svc, nil
 }
 
 type PortForwardOption interface {
@@ -305,7 +320,7 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	pod, err := m.getWorkerPod(ctx, devkName, namespace)
+	pod, _, err := m.getDevkPodAndService(ctx, devkName, namespace)
 	if err != nil {
 		logger.Error(err, "failed to get devk pod")
 		return err
@@ -389,15 +404,9 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, useServic
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	sshService, err := m.getSSHService(ctx, devkName, namespace)
+	sshPod, sshService, err := m.getDevkPodAndService(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get SSH Service")
-		return err
-	}
-
-	sshPod, err := m.getSSHPod(ctx, devkName, sshService)
-	if err != nil {
-		logger.Error(err, "failed to get Pod selectored by SSH Service")
+		logger.Error(err, "failed to get Service or Pod")
 		return err
 	}
 
@@ -457,28 +466,16 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, useServic
 		return err
 	}
 
-	if err := sshOpts.Connect(ctx, m.sshUser(sshPod), sshIP, sshPort); err != nil {
+	if err := sshOpts.Connect(ctx, m.sshUser(sshService), sshIP, sshPort); err != nil {
 		logger.Error(err, "failed to run ssh")
 		return err
 	}
 	return nil
 }
 
-func (m *manager) getSSHPod(ctx context.Context, devkName string, sshService *corev1.Service) (*corev1.Pod, error) {
-	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", sshService.GetNamespace())
-	sshPods, err := m.getPodsMatchingSelector(ctx, sshService.GetNamespace(), sshService.Spec.Selector)
-	if err != nil {
-		logger.Error(err, "failed to get Pod selectored by SSH Service")
-		return nil, err
-	}
-	sort.Slice(sshPods, func(i, j int) bool {
-		return sshPods[i].CreationTimestamp.Before(&sshPods[j].CreationTimestamp)
-	})
-	return &sshPods[0], nil
-}
+const defaultSSHUser = "root"
 
-func (m *manager) sshUser(pod *corev1.Pod) string {
-	const defaultSSHUser = "devbox"
+func (m *manager) sshUser(pod *corev1.Service) string {
 	annotations := pod.GetAnnotations()
 	if len(annotations) == 0 {
 		return defaultSSHUser
@@ -552,10 +549,9 @@ func (m *manager) sshServicePort(svc *corev1.Service) (*corev1.ServicePort, erro
 	return nil, errors.New("ssh service port was not found")
 }
 
-func (m *manager) getSSHService(ctx context.Context, devkName, namespace string) (*corev1.Service, error) {
+func (m *manager) getSelectorService(ctx context.Context, devkName, namespace string) (*corev1.Service, error) {
 	selector := labels.Set{
-		common.DevkNameLabelKey:   devkName,
-		common.DevkPartOfLabelKey: common.DevkPartOfSSH,
+		common.DevkNameLabelKey: devkName,
 	}.AsSelector().String()
 	svcList, err := m.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector,
@@ -563,19 +559,32 @@ func (m *manager) getSSHService(ctx context.Context, devkName, namespace string)
 	if err != nil {
 		return nil, err
 	}
-
 	if len(svcList.Items) == 0 {
-		return nil, errors.New("service for ssh was not found")
+		return nil, errors.New("selector service was not found")
+	}
+	if len(svcList.Items) == 1 {
+		return &svcList.Items[0], nil
+	}
+
+	selector = labels.Set{
+		common.DevkNameLabelKey:   devkName,
+		common.DevkPartOfLabelKey: common.DevkPartOfSelector,
+	}.AsSelector().String()
+	svcList, err = m.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: selector,
+	})
+	if len(svcList.Items) == 0 {
+		return nil, errors.New("selector service was not found")
 	}
 	if len(svcList.Items) > 1 {
-		return nil, errors.New("too many services for ssh")
+		return nil, errors.New("too many services")
 	}
 	return &svcList.Items[0], nil
 }
 
-func (m *manager) getPodsMatchingSelector(ctx context.Context, namespace string, selector map[string]string) ([]corev1.Pod, error) {
-	labelSelector := labels.Set(selector).AsSelector()
-	podList, err := m.clientset.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+func (m *manager) getPodsForService(ctx context.Context, svc *corev1.Service) ([]corev1.Pod, error) {
+	labelSelector := labels.Set(svc.Spec.Selector).AsSelector()
+	podList, err := m.clientset.CoreV1().Pods(svc.GetNamespace()).List(ctx, metav1.ListOptions{
 		LabelSelector: labelSelector.String(),
 	})
 	if err != nil {
@@ -647,22 +656,12 @@ func (m *manager) Stop(ctx context.Context, devkName, namespace string) error {
 		return err
 	}
 	manifests := manifest.NewManifests(r.Objects)
-	req, err := labels.NewRequirement(
-		common.DevkStopPolicyLabelKey,
-		selection.NotEquals,
-		[]string{common.DevkStopPolicyRetain},
-	)
-	if err != nil {
-		logger.Error(err, "failed to generate requirement")
-		return err
-	}
-	selector := labels.NewSelector().Add(*req)
-	toBeDeleted := manifests.Filter(selector).ToObjects()
-	if err := m.delete(ctx, toBeDeleted...); err != nil {
+	toDelete := manifests.Filter(notStopPolicyRetainSelector).ToObjects()
+	if err := m.delete(ctx, toDelete...); err != nil {
 		logger.Error(err, "failed to delete devk object")
 		return err
 	}
-	for _, obj := range toBeDeleted {
+	for _, obj := range toDelete {
 		if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
 			logger.Error(err, "failed to wait devk object terminated")
 			return err
@@ -680,15 +679,14 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, mutato
 		logger.Error(err, "failed to get release")
 		return err
 	}
+
 	oldManifests := manifest.NewManifests(r.Objects)
-	toBeRecreated := oldManifests.Filter(labels.SelectorFromSet(labels.Set{
-		common.DevkUpdatePolicyLabelKey: common.DevkUpdatePolicyRecreate,
-	})).ToObjects()
-	if err := m.delete(ctx, toBeRecreated...); err != nil {
+	toRecreate := oldManifests.Filter(notStopPolicyRetainSelector).ToObjects()
+	if err := m.delete(ctx, toRecreate...); err != nil {
 		logger.Error(err, "failed to delete devk object")
 		return err
 	}
-	for _, obj := range toBeRecreated {
+	for _, obj := range toRecreate {
 		if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
 			logger.Error(err, "failed to wait devk object terminated")
 			return err
