@@ -34,22 +34,27 @@ func (a *nodeAffinity) Mutate(obj *unstructured.Unstructured) (*unstructured.Uns
 		return obj, nil
 	}
 
-	switch obj.GetKind() {
-	case "Pod":
-		if err := a.mutateNodeAffinity(obj); err != nil {
-			return nil, err
-		}
-		if err := a.mutateNodeToleration(obj); err != nil {
-			return nil, err
-		}
-		return obj, nil
-	default:
-		return nil, unSupportedKindError
+	if err := a.mutateNodeAffinity(obj); err != nil {
+		return nil, err
 	}
+	if err := a.mutateNodeToleration(obj); err != nil {
+		return nil, err
+	}
+	return obj, nil
 }
 
 func (a *nodeAffinity) mutateNodeAffinity(obj *unstructured.Unstructured) error {
 	if len(a.nodes) == 0 {
+		return nil
+	}
+
+	var fields []string
+	switch obj.GetKind() {
+	case "Pod":
+		fields = []string{"spec", "affinity"}
+	case "Deployment", "StatefulSet":
+		fields = []string{"spec", "template", "spec", "affinity"}
+	default:
 		return nil
 	}
 
@@ -77,7 +82,7 @@ func (a *nodeAffinity) mutateNodeAffinity(obj *unstructured.Unstructured) error 
 		},
 	}
 
-	if err := unstructured.SetNestedMap(obj.Object, affinity, "spec", "affinity"); err != nil {
+	if err := unstructured.SetNestedMap(obj.Object, affinity, fields...); err != nil {
 		return err
 	}
 	return nil
@@ -87,12 +92,23 @@ func (a *nodeAffinity) mutateNodeToleration(obj *unstructured.Unstructured) erro
 	if len(a.nodes) == 0 {
 		return nil
 	}
+
+	var fields []string
+	switch obj.GetKind() {
+	case "Pod":
+		fields = []string{"spec", "tolerations"}
+	case "Deployment", "StatefulSet":
+		fields = []string{"spec", "template", "spec", "tolerations"}
+	default:
+		return nil
+	}
+
 	tolerations := []interface{}{
 		map[string]interface{}{
 			"operator": "Exists",
 		},
 	}
-	if err := unstructured.SetNestedSlice(obj.Object, tolerations, "spec", "tolerations"); err != nil {
+	if err := unstructured.SetNestedSlice(obj.Object, tolerations, fields...); err != nil {
 		return err
 	}
 	return nil
