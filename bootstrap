@@ -379,7 +379,7 @@ setup_go() {
   info "Installing go..."
   go_version=1.20.6
   gopls_version=v0.12.4
-  go_1_19_version="1.19.9"
+  go_1_19_version="1.19.11"
   make_tea_command "go" "--silent" "go.dev=${go_version}"
   make_tea_command_with_bin_name "go" "go1.19" "--silent" "go.dev=${go_1_19_version}"
   gopls_path=${OPT_BIN}/gopls
@@ -456,12 +456,6 @@ setup_vault() {
   make_tea_command "vault" "--silent" "vaultproject.io=${version}"
 }
 
-setup_zig() {
-  info "Installing zig..."
-  version=0.10.1
-  make_tea_command "zig" "--silent" "ziglang.org=${version}"
-}
-
 setup_python() {
   info "Installing python..."
   python_version=3.11.3
@@ -518,7 +512,6 @@ setup_deno
 setup_python
 setup_ruby
 setup_go
-setup_zig
 setup_rustup_init
 setup_kubectl
 setup_kustomize
