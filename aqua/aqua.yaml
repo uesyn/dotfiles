@@ -5,7 +5,7 @@ registries:
 packages:
 - name: stern/stern@v1.24.0
 - name: github/hub@v2.14.2
-- name: open-policy-agent/conftest@v0.36.0
+- name: open-policy-agent/conftest@v0.44.1
 - name: open-policy-agent/opa@v0.48.0
 - name: kubernetes-sigs/kubebuilder@v3.9.1
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
