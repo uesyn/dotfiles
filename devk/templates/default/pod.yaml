@@ -12,6 +12,10 @@ spec:
   containers:
   - name: devbox
     image: ghcr.io/uesyn/devbox
+    resources:
+      requests:
+        cpu: 500m
+        memory: 2Gi
     stdin: true
     tty: true
     workingDir: /home/devbox
