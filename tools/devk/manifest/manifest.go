@@ -1,6 +1,8 @@
 package manifest
 
 import (
+	"fmt"
+
 	"github.com/uesyn/dotfiles/tools/devk/mutator"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
@@ -19,8 +21,26 @@ type manifests struct {
 
 var _ ManifestsBuilder = &manifests{}
 
-func NewManifests(objs []*unstructured.Unstructured) ManifestsBuilder {
-	return &manifests{objs: objs}
+func NewManifests(objs []*unstructured.Unstructured) (ManifestsBuilder, error) {
+	svcCounter := 0
+	workloadCounter := 0
+	for _, o := range objs {
+		switch o.GetKind() {
+		case "Service":
+			svcCounter++
+		case "Pod", "Deployment", "StatefulSet", "Job", "CronJob":
+			workloadCounter++
+		}
+	}
+
+	if svcCounter > 2 {
+		return nil, fmt.Errorf("too many services manifests")
+	}
+	if workloadCounter > 2 {
+		return nil, fmt.Errorf("too many workload manifests")
+	}
+
+	return &manifests{objs: objs}, nil
 }
 
 func (ms *manifests) Filter(selector labels.Selector) ManifestsBuilder {
@@ -31,7 +51,7 @@ func (ms *manifests) Filter(selector labels.Selector) ManifestsBuilder {
 			objs = append(objs, obj.DeepCopy())
 		}
 	}
-	return NewManifests(objs)
+	return &manifests{objs: objs}
 }
 
 func (ms *manifests) Mutate(mutators ...mutator.Mutator) (ManifestsBuilder, error) {
@@ -47,7 +67,7 @@ func (ms *manifests) Mutate(mutators ...mutator.Mutator) (ManifestsBuilder, erro
 		}
 		objs = append(objs, obj)
 	}
-	return NewManifests(objs), nil
+	return &manifests{objs: objs}, nil
 }
 
 func (ms *manifests) MustMutate(mutators ...mutator.Mutator) ManifestsBuilder {

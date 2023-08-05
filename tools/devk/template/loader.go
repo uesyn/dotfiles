@@ -48,7 +48,7 @@ func (l *loader) Load(templateName, name, namespace string) (manifest.ManifestsB
 	if err != nil {
 		return nil, err
 	}
-	return manifest.NewManifests(objs), nil
+	return manifest.NewManifests(objs)
 }
 
 var (

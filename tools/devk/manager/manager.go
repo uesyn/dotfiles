@@ -567,8 +567,7 @@ func (m *manager) getSelectorService(ctx context.Context, devkName, namespace st
 	}
 
 	selector = labels.Set{
-		common.DevkNameLabelKey:   devkName,
-		common.DevkPartOfLabelKey: common.DevkPartOfSelector,
+		common.DevkNameLabelKey: devkName,
 	}.AsSelector().String()
 	svcList, err = m.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: selector,
@@ -636,7 +635,11 @@ func (m *manager) Start(ctx context.Context, devkName, namespace string, mutator
 		logger.Error(err, "failed to get release")
 		return err
 	}
-	manifests := manifest.NewManifests(r.Objects)
+	manifests, err := manifest.NewManifests(r.Objects)
+	if err != nil {
+		logger.Error(err, "failed to get manifests")
+		return err
+	}
 
 	mutateds := manifests.MustMutate(mutators...).ToObjects()
 	if err := m.apply(ctx, mutateds...); err != nil {
@@ -655,7 +658,11 @@ func (m *manager) Stop(ctx context.Context, devkName, namespace string) error {
 		logger.Error(err, "failed to get release")
 		return err
 	}
-	manifests := manifest.NewManifests(r.Objects)
+	manifests, err := manifest.NewManifests(r.Objects)
+	if err != nil {
+		logger.Error(err, "failed to get manifests")
+		return err
+	}
 	toDelete := manifests.Filter(notStopPolicyRetainSelector).ToObjects()
 	if err := m.delete(ctx, toDelete...); err != nil {
 		logger.Error(err, "failed to delete devk object")
@@ -680,7 +687,11 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, mutato
 		return err
 	}
 
-	oldManifests := manifest.NewManifests(r.Objects)
+	oldManifests, err := manifest.NewManifests(r.Objects)
+	if err != nil {
+		logger.Error(err, "failed to get manifests")
+		return err
+	}
 	toRecreate := oldManifests.Filter(notStopPolicyRetainSelector).ToObjects()
 	if err := m.delete(ctx, toRecreate...); err != nil {
 		logger.Error(err, "failed to delete devk object")
