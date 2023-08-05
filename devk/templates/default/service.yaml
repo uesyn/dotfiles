@@ -6,8 +6,6 @@ metadata:
   name: devbox
 spec:
   type: NodePort
-  selector:
-    app: devbox
   ports:
   - name: ssh
     port: 22
