@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 IMAGE=gcr.io/google.com/cloudsdktool/google-cloud-cli:latest
-VOLUME_OPTS="-v ${HOME}/.config/gcloud:${HOME}/.config/gcloud -v ${HOME}/.kube:${HOME}/.kube -v ${HOME}/.docker:${HOME}/.docker"
+VOLUME_OPTS="-v ${HOME}:${HOME}"
 CMD=${BASH_SOURCE[0]##*/}
 
 GCLOUD_CONTAINER=gcloud
@@ -12,4 +12,4 @@ GCLOUD_CONTAINER=gcloud
   docker start ${GCLOUD_CONTAINER}
 ) 2>&1 >/dev/null
 
-exec docker exec -i -u $(id -u) ${GCLOUD_CONTAINER} ${CMD} "$@"
+exec docker exec -i -w $(pwd) -u $(id -u) ${GCLOUD_CONTAINER} ${CMD} "$@"
