@@ -9,7 +9,7 @@ spec:
     fsGroupChangePolicy: OnRootMismatch
   containers:
   - name: devbox
-    image: ghcr.io/uesyn/devbox
+    image: ghcr.io/uesyn/devcontainer
     resources:
       requests:
         cpu: 500m
