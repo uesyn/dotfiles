@@ -273,7 +273,7 @@ setup_rtx() {
 
 setup_rust_analyzer() {
   info "Installing rust-analyzer..."
-  version=2023-07-24
+  version=2023-08-07
   key=rust-analyzer_${version}
 
   download_if_linux_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
