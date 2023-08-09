@@ -1,7 +1,6 @@
 template:
   loadRestrictionsNone: true
 ssh:
-  port: 22
   command:
   - zsh
 exec:
