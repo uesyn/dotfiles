@@ -8,9 +8,6 @@ if [[ -z "$(git remote -v)" ]]; then
   exit 0
 fi
 
-## check secrets
-git secrets --pre_commit_hook -- "$@"
-
 ## check protected branches
 git_allow_file=".git/git_allow"
 [[ -f ${git_allow_file} ]] && exit 0

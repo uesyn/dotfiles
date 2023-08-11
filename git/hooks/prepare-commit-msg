@@ -1,4 +1,0 @@
-#!/usr/bin/env bash
-set -e -o pipefail
-
-git secrets --prepare_commit_msg_hook -- "$@"
