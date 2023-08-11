@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM debian:12
 ENV LANG=en_US.UTF-8
 # add metadata, must be done after the squashing
 # first tell systemd that it is in docker (it will check for the container env)
@@ -64,9 +64,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 ENV PATH=${PATH}:/usr/libexec/docker/cli-plugins
 RUN export DEBIAN_FRONTEND=noninteractive && \
     install -m 0755 -d /etc/apt/keyrings && \
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
-    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+    echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" > /etc/apt/sources.list.d/docker.list && \
     apt update && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
@@ -77,7 +77,9 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt install -y --no-install-recommends \
     openssh-server && \
     sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
-RUN locale-gen en_US.UTF-8 ja_JP.UTF-8
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    sed -i '/ja_JP.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
 RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
     update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 RUN groupadd devbox -g 1000 && \
