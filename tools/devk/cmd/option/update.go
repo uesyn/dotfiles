@@ -15,6 +15,7 @@ import (
 type UpdateOptions struct {
 	name        string
 	selectNodes bool
+	gpuNum      int
 
 	namespace string
 	clientset kubernetes.Interface
@@ -24,6 +25,7 @@ type UpdateOptions struct {
 func (o *UpdateOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
 	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
+	fs.IntVar(&o.gpuNum, "gpu", 0, "Amount of GPU")
 }
 
 func (o *UpdateOptions) Complete(f cmdutil.Factory) error {
@@ -69,6 +71,9 @@ func (o *UpdateOptions) Run(ctx context.Context) error {
 			return err
 		}
 		ms = append(ms, mutator.NewDefaultNodeAffinityMutator(nodes))
+	}
+	if o.gpuNum > 0 {
+		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
 	return o.manager.Update(ctx, o.name, o.namespace, ms...)
 }

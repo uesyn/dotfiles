@@ -8,10 +8,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-type Mutator interface {
-	Mutate(*unstructured.Unstructured) (*unstructured.Unstructured, error)
-}
-
 func NewNodeAffinityMutator(nodes []corev1.Node, selector labels.Selector) Mutator {
 	return &nodeAffinity{selector: selector, nodes: nodes}
 }

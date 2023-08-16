@@ -14,19 +14,21 @@ import (
 )
 
 type RunOptions struct {
-	Name         string
-	TemplateName string
-	SelectNodes  bool
+	name         string
+	templateName string
+	selectNodes  bool
+	gpuNum       int
 
-	Namespace string
-	ClientSet kubernetes.Interface
-	Manager   manager.Manager
+	namespace string
+	clientSet kubernetes.Interface
+	manager   manager.Manager
 }
 
 func (o *RunOptions) AddFlags(fs *pflag.FlagSet) {
-	fs.StringVarP(&o.Name, "name", "n", "default", "Devk name")
-	fs.StringVarP(&o.TemplateName, "template", "t", "default", "Template name")
-	fs.BoolVarP(&o.SelectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
+	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
+	fs.StringVarP(&o.templateName, "template", "t", "default", "Template name")
+	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
+	fs.IntVar(&o.gpuNum, "gpu", 0, "Amount of GPU")
 }
 
 func (o *RunOptions) Complete(f util.Factory) error {
@@ -34,45 +36,48 @@ func (o *RunOptions) Complete(f util.Factory) error {
 	if err != nil {
 		return err
 	}
-	o.Namespace = namespace
+	o.namespace = namespace
 
 	clientset, err := f.KubeClientSet()
 	if err != nil {
 		return err
 	}
-	o.ClientSet = clientset
+	o.clientSet = clientset
 
 	manager, err := f.Manager()
 	if err != nil {
 		return err
 	}
-	o.Manager = manager
+	o.manager = manager
 	return nil
 }
 
 func (o *RunOptions) Validate() error {
-	if len(o.Name) == 0 {
+	if len(o.name) == 0 {
 		return errors.New("must set --name flag")
 	}
-	if len(o.TemplateName) == 0 {
+	if len(o.templateName) == 0 {
 		return errors.New("must set --template flag")
 	}
-	if len(o.Namespace) == 0 {
+	if len(o.namespace) == 0 {
 		return errors.New("must set Namespace")
 	}
 	return nil
 }
 
 func (o *RunOptions) Run(ctx context.Context) error {
-	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.Name, "namespace", o.Namespace)
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.name, "namespace", o.namespace)
 	var ms []mutator.Mutator
-	if o.SelectNodes {
-		nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, o.ClientSet)
+	if o.selectNodes {
+		nodes, err := cmdutil.SelectNodesWithFuzzyFinder(ctx, o.clientSet)
 		if err != nil {
 			logger.Error(err, "failed to get nodes")
 			return err
 		}
 		ms = append(ms, mutator.NewDefaultNodeAffinityMutator(nodes))
 	}
-	return o.Manager.Run(ctx, o.TemplateName, o.Name, o.Namespace, ms...)
+	if o.gpuNum > 0 {
+		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
+	}
+	return o.manager.Run(ctx, o.templateName, o.name, o.namespace, ms...)
 }
