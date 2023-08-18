@@ -393,10 +393,12 @@ EOF
 
 setup_kubectl() {
   info "Installing kubectl..."
-  kubectl_version=1.27.4
+  kubectl_version=1.28.0
+  kubectl_1_27_version=1.27.4
   kubectl_1_26_version=1.26.5
   kubectl_1_25_version=1.25.10
   make_tea_command "kubectl" "--silent" "kubernetes.io/kubectl=${kubectl_version}"
+  make_tea_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
 }
@@ -409,19 +411,19 @@ setup_kind() {
 
 setup_minikube() {
   info "Installing minikube..."
-  minikube_version=1.31.1
+  minikube_version=1.31.2
   make_tea_command "minikube" "" "kubernetes.io/minikube=${minikube_version}"
 }
 
 setup_kustomize() {
   info "Installing kustomize..."
-  version=v5.1.0
+  version=v5.1.1
   make_tea_command "kustomize" "--silent" "kubernetes.io/kustomize=${version}"
 }
 
 setup_helm() {
   info "Installing helm..."
-  version=v3.12.2
+  version=v3.12.3
   make_tea_command "helm" "--silent" "helm.sh=${version}"
 }
 
@@ -446,13 +448,13 @@ setup_ripgrep() {
 
 setup_golangci_lint() {
   info "Installing golangci-lint..."
-  version=v1.53.3
+  version=v1.54.1
   make_tea_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
 }
 
 setup_vault() {
   info "Installing vault..."
-  version=v1.14.0
+  version=v1.14.1
   make_tea_command "vault" "--silent" "vaultproject.io=${version}"
 }
 
