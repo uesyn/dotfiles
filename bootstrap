@@ -371,7 +371,7 @@ setup_node() {
 
 setup_deno() {
   info "Installing deno..."
-  deno_version=1.36.0
+  deno_version=1.36.4
   make_tea_command "deno" "--silent" "deno.land=${deno_version}"
 }
 
