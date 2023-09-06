@@ -356,7 +356,7 @@ setup_tmux() {
 
 setup_zellij() {
   info "Installing zellij..."
-  version=v0.37.2
+  version=v0.38.1
   make_tea_command "zellij" "" "crates.io/zellij=${version}"
 }
 
