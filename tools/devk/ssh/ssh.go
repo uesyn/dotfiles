@@ -10,15 +10,16 @@ import (
 )
 
 type Options struct {
-	IdentityFile   string
-	Envs           map[string]string
-	Command        []string
-	ForwardedPorts []string
+	IdentityFile         string
+	Envs                 map[string]string
+	Command              []string
+	LocalForwardedPorts  []string
+	RemoteForwardedPorts []string
 }
 
 type ForwardedPort struct {
-	Remote int
-	Local  int
+	From int
+	To   int
 }
 
 func (o *Options) Complete() error {
@@ -29,7 +30,7 @@ func (o *Options) Complete() error {
 		}
 	}
 
-	for _, p := range o.ForwardedPorts {
+	for _, p := range o.LocalForwardedPorts {
 		_, err := o.parseForwardedPort(p)
 		if err != nil {
 			return err
@@ -63,13 +64,21 @@ func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, erro
 		args = append(args, "-i", o.IdentityFile)
 	}
 	const localhost = "localhost"
-	for _, port := range o.ForwardedPorts {
+	for _, port := range o.LocalForwardedPorts {
 		fp, err := o.parseForwardedPort(port)
 		if err != nil {
 			return nil, err
 		}
-		opt := fmt.Sprintf("%d:%s:%d", fp.Local, localhost, fp.Remote)
+		opt := fmt.Sprintf("%d:%s:%d", fp.From, localhost, fp.To)
 		args = append(args, "-L", opt)
+	}
+	for _, port := range o.RemoteForwardedPorts {
+		fp, err := o.parseForwardedPort(port)
+		if err != nil {
+			return nil, err
+		}
+		opt := fmt.Sprintf("%d:%s:%d", fp.From, localhost, fp.To)
+		args = append(args, "-R", opt)
 	}
 	args = append(args, fmt.Sprintf("%s@%s", user, ip))
 	args = append(args, "--")
@@ -96,7 +105,7 @@ func (o *Options) parseForwardedPort(port string) (*ForwardedPort, error) {
 		return nil, fmt.Errorf("failed to parse port: %w", err)
 	}
 	return &ForwardedPort{
-		Remote: r,
-		Local:  l,
+		To:   r,
+		From: l,
 	}, nil
 }

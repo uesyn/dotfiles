@@ -387,16 +387,29 @@ func (o *withSSHEnvs) apply(opts *ssh.Options) *ssh.Options {
 	return opts
 }
 
-func WithSSHForwardedPorts(ports []string) SSHOption {
-	return &withSSHForwardedPorts{ports: ports}
-}
-
-type withSSHForwardedPorts struct {
+type withSSHLocalForwardedPorts struct {
 	ports []string
 }
 
-func (o *withSSHForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
-	opts.ForwardedPorts = o.ports
+func WithSSHLocalForwardedPorts(ports []string) SSHOption {
+	return &withSSHLocalForwardedPorts{ports: ports}
+}
+
+func (o *withSSHLocalForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
+	opts.LocalForwardedPorts = o.ports
+	return opts
+}
+
+type withSSHRemoteForwardedPorts struct {
+	ports []string
+}
+
+func WithSSHRemoteForwardedPorts(ports []string) SSHOption {
+	return &withSSHRemoteForwardedPorts{ports: ports}
+}
+
+func (o *withSSHRemoteForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
+	opts.RemoteForwardedPorts = o.ports
 	return opts
 }
 
