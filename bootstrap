@@ -472,6 +472,11 @@ setup_ruby() {
   make_tea_command "gem" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
 }
 
+setup_aws() {
+  info "Installing aws..."
+  make_tea_command "aws" "--silent" "aws.amazon.com/cli"
+}
+
 setup_rustup_init() {
   info "Installing rustup-init..."
   rustup_init_path=${OPT_BIN}/rustup-init
@@ -513,6 +518,7 @@ setup_node
 setup_deno
 setup_python
 setup_ruby
+setup_aws
 setup_go
 setup_rustup_init
 setup_kubectl
