@@ -334,7 +334,7 @@ setup_neovim() {
 
 setup_jq() {
   info "Installing jq..."
-  version=1.6
+  version=1.7
   make_tea_command "jq" "--silent" "stedolan.github.io/jq=${version}"
 }
 
