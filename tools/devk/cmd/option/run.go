@@ -14,10 +14,9 @@ import (
 )
 
 type RunOptions struct {
-	name         string
-	templateName string
-	selectNodes  bool
-	gpuNum       int
+	name        string
+	selectNodes bool
+	gpuNum      int
 
 	namespace string
 	clientSet kubernetes.Interface
@@ -26,7 +25,6 @@ type RunOptions struct {
 
 func (o *RunOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
-	fs.StringVarP(&o.templateName, "template", "t", "default", "Template name")
 	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
 	fs.IntVar(&o.gpuNum, "gpu", 0, "Amount of GPU")
 }
@@ -56,9 +54,6 @@ func (o *RunOptions) Validate() error {
 	if len(o.name) == 0 {
 		return errors.New("must set --name flag")
 	}
-	if len(o.templateName) == 0 {
-		return errors.New("must set --template flag")
-	}
 	if len(o.namespace) == 0 {
 		return errors.New("must set Namespace")
 	}
@@ -79,5 +74,5 @@ func (o *RunOptions) Run(ctx context.Context) error {
 	if o.gpuNum > 0 {
 		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
-	return o.manager.Run(ctx, o.templateName, o.name, o.namespace, ms...)
+	return o.manager.Run(ctx, o.name, o.namespace, ms...)
 }

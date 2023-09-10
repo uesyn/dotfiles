@@ -15,7 +15,6 @@ const (
 type DevkInfoAccessor interface {
 	GetDevkName() string
 	GetNamespace() string
-	GetTemplateName() string
 	GetPhase() DevkPhase
 	GetNode() string
 	GetIPs() []string

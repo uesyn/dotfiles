@@ -1,9 +1,9 @@
 package mutator
 
 import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 type Mutator interface {
-	Mutate(*unstructured.Unstructured) (*unstructured.Unstructured, error)
+	Mutate(pod *applyconfigurationscorev1.PodApplyConfiguration) error
 }

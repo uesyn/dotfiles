@@ -67,7 +67,6 @@ func (o *ListOptions) Run(ctx context.Context) error {
 	columns := []metav1.TableColumnDefinition{
 		{Name: "Name", Type: "string"},
 		{Name: "Namespace", Type: "string"},
-		{Name: "Template", Type: "string"},
 		{Name: "Ready", Type: "bool"},
 		{Name: "Phase", Type: "string"},
 		{Name: "Node", Type: "string"},
@@ -81,7 +80,6 @@ func (o *ListOptions) Run(ctx context.Context) error {
 			Cells: []interface{}{
 				info.GetDevkName(),
 				info.GetNamespace(),
-				info.GetTemplateName(),
 				info.IsReady(),
 				info.GetPhase(),
 				info.GetNode(),
