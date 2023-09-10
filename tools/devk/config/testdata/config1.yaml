@@ -1,9 +1,9 @@
-template:
-  loadRestrictionsNone: true
 exec:
   command:
   - foo
 ssh:
+  user: foo
+  port: 2222
   command:
   - baz
 envs:
@@ -11,3 +11,15 @@ envs:
   raw: foo
 - name: BAR
   hostEnv: BAR
+podSpec:
+  subdomain: foo
+pvcs:
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    name: foo-pvc
+cms:
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    name: foo-config

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 func TestLoad(t *testing.T) {
@@ -16,11 +17,8 @@ func TestLoad(t *testing.T) {
 		}
 		os.Setenv("BAR", "bar")
 		wantConfig := &Config{
-			Template: Template{
-				LoadRestrictionsNone: true,
-			},
 			Exec: &Exec{Command: []string{"foo"}},
-			SSH:  &SSH{Command: []string{"baz"}},
+			SSH:  &SSH{Command: []string{"baz"}, User: "foo", Port: 2222},
 			Envs: []Env{
 				{
 					Name:  "FOO",
@@ -31,17 +29,21 @@ func TestLoad(t *testing.T) {
 					Value: "bar",
 				},
 			},
-		}
-		gotConfig, err := Load(testConfigFile)
-		assert.NoError(t, err)
-		assert.Equal(t, wantConfig, gotConfig)
-	}
-
-	{
-		testConfigFile := "testdata/empty.yaml"
-		wantConfig := &Config{
-			Exec: &Exec{Command: []string{"sh"}},
-			SSH:  &SSH{Command: []string{"sh"}},
+			Pod: applyconfigurationscorev1.PodSpec().WithSubdomain("foo"),
+			PVCs: []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration{
+				func() applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration {
+					pvc := applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration{}
+					pvc.WithName("foo-pvc").WithKind("PersistentVolumeClaim").WithAPIVersion("v1")
+					return pvc
+				}(),
+			},
+			ConfigMaps: []applyconfigurationscorev1.ConfigMapApplyConfiguration{
+				func() applyconfigurationscorev1.ConfigMapApplyConfiguration {
+					cm := applyconfigurationscorev1.ConfigMapApplyConfiguration{}
+					cm.WithName("foo-config").WithKind("ConfigMap").WithAPIVersion("v1")
+					return cm
+				}(),
+			},
 		}
 		gotConfig, err := Load(testConfigFile)
 		assert.NoError(t, err)

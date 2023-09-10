@@ -1,12 +1,26 @@
 package util
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 )
 
 func Pointer[T any](value T) *T {
 	return &value
+}
+
+func DeepCopy[T any](obj T) T {
+	out := new(T)
+	bytes, err := json.Marshal(obj)
+	if err != nil {
+		panic("Failed to marshal")
+	}
+	err = json.Unmarshal(bytes, out)
+	if err != nil {
+		panic("Failed to unmarshal")
+	}
+	return *out
 }
 
 func ExpandPath(path string) string {

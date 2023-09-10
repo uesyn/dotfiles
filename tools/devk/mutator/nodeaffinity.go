@@ -4,108 +4,44 @@ import (
 	"errors"
 
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/labels"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
-func NewNodeAffinityMutator(nodes []corev1.Node, selector labels.Selector) Mutator {
-	return &nodeAffinity{selector: selector, nodes: nodes}
+func NewNodeAffinityMutator(nodes []corev1.Node) Mutator {
+	return &nodeAffinity{nodes: nodes}
 }
 
-var defaultSelector = labels.Everything()
-
 func NewDefaultNodeAffinityMutator(nodes []corev1.Node) Mutator {
-	return &nodeAffinity{selector: defaultSelector, nodes: nodes}
+	return &nodeAffinity{nodes: nodes}
 }
 
 type nodeAffinity struct {
-	selector labels.Selector
-	nodes    []corev1.Node
+	nodes []corev1.Node
 }
 
-var unSupportedKindError = errors.New("unsupported kind")
-
-func (a *nodeAffinity) Mutate(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
-	if !a.selector.Matches(labels.Set(obj.GetLabels())) {
-		return obj, nil
-	}
-
-	if err := a.mutateNodeAffinity(obj); err != nil {
-		return nil, err
-	}
-	if err := a.mutateNodeToleration(obj); err != nil {
-		return nil, err
-	}
-	return obj, nil
-}
-
-func (a *nodeAffinity) mutateNodeAffinity(obj *unstructured.Unstructured) error {
+func (a *nodeAffinity) Mutate(pod *applyconfigurationscorev1.PodApplyConfiguration) error {
 	if len(a.nodes) == 0 {
 		return nil
 	}
 
-	var fields []string
-	switch obj.GetKind() {
-	case "Pod":
-		fields = []string{"spec", "affinity"}
-	case "Deployment", "StatefulSet":
-		fields = []string{"spec", "template", "spec", "affinity"}
-	default:
-		return nil
+	if pod == nil || pod.Spec == nil {
+		return errors.New("spec field not found")
 	}
 
-	var matchFields []interface{}
+	var nodeSelectorTerms []*applyconfigurationscorev1.NodeSelectorTermApplyConfiguration
 	for _, node := range a.nodes {
-		matchField := map[string]interface{}{
-			"key":      "metadata.name",
-			"operator": "In",
-			"values":   []interface{}{node.GetName()},
-		}
-		matchFields = append(matchFields, matchField)
+		nodeSelectorTerm := applyconfigurationscorev1.NodeSelectorTerm().WithMatchFields(
+			applyconfigurationscorev1.NodeSelectorRequirement().
+				WithKey("metadata.name").
+				WithOperator(corev1.NodeSelectorOpIn).
+				WithValues(node.GetName()))
+		nodeSelectorTerms = append(nodeSelectorTerms, nodeSelectorTerm)
 	}
-
-	nodeSelectorTerms := []interface{}{
-		map[string]interface{}{
-			"matchFields": matchFields,
-		},
-	}
-
-	affinity := map[string]interface{}{
-		"nodeAffinity": map[string]interface{}{
-			"requiredDuringSchedulingIgnoredDuringExecution": map[string]interface{}{
-				"nodeSelectorTerms": nodeSelectorTerms,
-			},
-		},
-	}
-
-	if err := unstructured.SetNestedMap(obj.Object, affinity, fields...); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *nodeAffinity) mutateNodeToleration(obj *unstructured.Unstructured) error {
-	if len(a.nodes) == 0 {
-		return nil
-	}
-
-	var fields []string
-	switch obj.GetKind() {
-	case "Pod":
-		fields = []string{"spec", "tolerations"}
-	case "Deployment", "StatefulSet":
-		fields = []string{"spec", "template", "spec", "tolerations"}
-	default:
-		return nil
-	}
-
-	tolerations := []interface{}{
-		map[string]interface{}{
-			"operator": "Exists",
-		},
-	}
-	if err := unstructured.SetNestedSlice(obj.Object, tolerations, fields...); err != nil {
-		return err
-	}
+	affinity := applyconfigurationscorev1.Affinity().WithNodeAffinity(
+		applyconfigurationscorev1.NodeAffinity().WithRequiredDuringSchedulingIgnoredDuringExecution(
+			applyconfigurationscorev1.NodeSelector().WithNodeSelectorTerms(nodeSelectorTerms...)),
+	)
+	pod.Spec.WithAffinity(affinity)
+	pod.Spec.WithTolerations(applyconfigurationscorev1.Toleration().WithOperator(corev1.TolerationOpExists))
 	return nil
 }

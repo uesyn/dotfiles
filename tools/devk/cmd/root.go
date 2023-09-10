@@ -50,7 +50,6 @@ func NewRootCmd() *cobra.Command {
 	cmd.AddCommand(NewExecCmd(devkFlags))
 	cmd.AddCommand(NewEventCmd(devkFlags))
 	cmd.AddCommand(NewSSHCmd(devkFlags))
-	cmd.AddCommand(NewTemplateCmd(devkFlags))
 	cmd.AddCommand(NewUpdateCmd(devkFlags))
 	cmd.AddCommand(NewRestartCmd(devkFlags))
 

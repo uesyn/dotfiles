@@ -12,6 +12,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/moby/term"
 	"github.com/uesyn/dotfiles/tools/devk/common"
+	"github.com/uesyn/dotfiles/tools/devk/config"
 	"github.com/uesyn/dotfiles/tools/devk/kubernetes/client"
 	"github.com/uesyn/dotfiles/tools/devk/kubernetes/scheme"
 	kubeutil "github.com/uesyn/dotfiles/tools/devk/kubernetes/util"
@@ -20,51 +21,31 @@ import (
 	"github.com/uesyn/dotfiles/tools/devk/mutator"
 	"github.com/uesyn/dotfiles/tools/devk/release"
 	"github.com/uesyn/dotfiles/tools/devk/ssh"
-	"github.com/uesyn/dotfiles/tools/devk/template"
-	"github.com/uesyn/dotfiles/tools/devk/util"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/selection"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/apimachinery/pkg/util/wait"
 	pkgwatch "k8s.io/apimachinery/pkg/watch"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
 
-var (
-	notStopPolicyRetainSelector = func() labels.Selector {
-		req, err := labels.NewRequirement(
-			common.DevkStopPolicyLabelKey,
-			selection.NotEquals,
-			[]string{common.DevkStopPolicyRetain},
-		)
-		if err != nil {
-			panic(err)
-		}
-		return labels.NewSelector().Add(*req)
-	}()
-)
-
 const (
-	sshPortName = "ssh"
-	localhost   = "127.0.0.1"
+	localhost = "127.0.0.1"
 )
 
 type Manager interface {
-	Run(ctx context.Context, templateName, devkName, namespace string, mutators ...mutator.Mutator) error
+	Run(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
 	Delete(ctx context.Context, devkName, namespace string) error
 	Update(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
 	Exec(ctx context.Context, devkName, namespace string, opts ...ExecOption) error
 	PortForward(ctx context.Context, devkName, namespace string, opts ...PortForwardOption) error
-	SSH(ctx context.Context, devkName, namespace string, useServiceIP bool, opts ...SSHOption) error
+	SSH(ctx context.Context, devkName, namespace string, opts ...SSHOption) error
 	Start(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
 	Stop(ctx context.Context, devkName, namespace string) error
 	List(ctx context.Context, namespace string) ([]info.DevkInfoAccessor, error)
@@ -79,13 +60,13 @@ type manager struct {
 	exec         *client.ExecClient
 	portforward  *client.PortForwardClient
 	clientset    kubernetes.Interface
-	loader       template.Loader
+	config       *config.Config
 	store        release.Store
 }
 
 var _ Manager = (*manager)(nil)
 
-func New(restConfig *rest.Config, s release.Store, loader template.Loader) *manager {
+func New(restConfig *rest.Config, s release.Store, c *config.Config) *manager {
 	return &manager{
 		scheme:       scheme.Scheme,
 		unstructured: client.NewUnstructuredClient(restConfig),
@@ -93,25 +74,20 @@ func New(restConfig *rest.Config, s release.Store, loader template.Loader) *mana
 		portforward:  client.NewPortForwardClient(restConfig),
 		clientset:    kubernetes.NewForConfigOrDie(restConfig),
 		store:        s,
-		loader:       loader,
+		config:       c,
 	}
 }
 
-func (m *manager) Run(ctx context.Context, templateName, devkName, namespace string, mutators ...mutator.Mutator) error {
+func (m *manager) Run(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
 	logger.Info("create devk release")
-	manifests, err := m.loader.Load(templateName, devkName, namespace)
-	if err != nil {
-		logger.Error(err, "failed to load template")
-		return err
-	}
+	manifests := manifest.Generate(devkName, namespace, m.config.Pod, m.config.ConfigMaps, m.config.PVCs)
 	r := &release.Release{
-		Name:         devkName,
-		Namespace:    namespace,
-		TemplateName: templateName,
-		Objects:      manifests.ToObjects(),
+		Name:      devkName,
+		Namespace: namespace,
+		Manifests: manifests,
 	}
 
 	if err := m.store.Create(ctx, devkName, namespace, r); err != nil {
@@ -120,7 +96,7 @@ func (m *manager) Run(ctx context.Context, templateName, devkName, namespace str
 	}
 
 	failureHandler := func() {
-		if err := m.delete(ctx, r.Objects...); err != nil {
+		if err := m.deleteObjects(ctx, manifests.Pod, manifests.ConfigMaps, manifests.PVCs); err != nil {
 			logger.Error(err, "failed to clean up devk objects")
 			return
 		}
@@ -130,8 +106,8 @@ func (m *manager) Run(ctx context.Context, templateName, devkName, namespace str
 		}
 	}
 
-	mutateds := manifests.MustMutate(mutators...).ToObjects()
-	if err := m.apply(ctx, mutateds...); err != nil {
+	mutated := manifests.MustMutate(mutators...)
+	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
 		failureHandler()
 		logger.Error(err, "failed to apply devk object")
 		return err
@@ -139,21 +115,46 @@ func (m *manager) Run(ctx context.Context, templateName, devkName, namespace str
 	return nil
 }
 
-func (m *manager) apply(ctx context.Context, objs ...*unstructured.Unstructured) error {
-	for _, obj := range objs {
-		gvk := obj.GroupVersionKind()
-		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		l.V(2).Info("apply object", "obj", obj)
-		opts := client.PatchOptions{
-			Force:        util.Pointer(true),
-			FieldManager: common.FieldManager,
-		}
-		if _, err := m.unstructured.Apply(ctx, obj, opts); err != nil {
-			l.Error(err, "failed to apply")
+func (m *manager) applyObjects(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, cms []applyconfigurationscorev1.ConfigMapApplyConfiguration, pvcs []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration) error {
+	opts := metav1.ApplyOptions{
+		Force:        true,
+		FieldManager: common.FieldManager,
+	}
+
+	if pod != nil {
+		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "Pod", "objName", *pod.Name)
+		l.V(2).Info("apply object", "obj", pod)
+		_, err := m.clientset.CoreV1().Pods(*pod.Namespace).Apply(ctx, pod, opts)
+		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 		l.Info("object was applied")
 	}
+
+	if len(cms) > 0 {
+		for _, cm := range cms {
+			l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "ConfigMap", "objName", *cm.Name)
+			l.V(2).Info("apply object", "obj", cm)
+			_, err := m.clientset.CoreV1().ConfigMaps(*cm.Namespace).Apply(ctx, &cm, opts)
+			if err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			l.Info("object was applied")
+		}
+	}
+
+	if len(pvcs) > 0 {
+		for _, pvc := range pvcs {
+			l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "PersistentVolumeClaim", "objName", *pvc.Name)
+			l.V(2).Info("apply object", "obj", pvc)
+			_, err := m.clientset.CoreV1().PersistentVolumeClaims(*pvc.Namespace).Apply(ctx, &pvc, opts)
+			if err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			l.Info("object was applied")
+		}
+	}
+
 	return nil
 }
 
@@ -177,7 +178,7 @@ func (m *manager) Delete(ctx context.Context, devkName, namespace string) error 
 		return protectedError
 	}
 
-	if err := m.delete(ctx, r.Objects...); err != nil {
+	if err := m.deleteObjects(ctx, r.Manifests.Pod, r.Manifests.ConfigMaps, r.Manifests.PVCs); err != nil {
 		logger.Error(err, "failed to delete devk")
 		return err
 	}
@@ -189,17 +190,41 @@ func (m *manager) Delete(ctx context.Context, devkName, namespace string) error 
 	return nil
 }
 
-func (m *manager) delete(ctx context.Context, objs ...*unstructured.Unstructured) error {
-	for _, obj := range objs {
-		gvk := obj.GroupVersionKind()
-		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", gvk.Kind, "objName", obj.GetName())
-		l.V(2).Info("delete object", "obj", obj)
-		err := m.unstructured.Delete(ctx, obj, client.DeleteOptions{})
+func (m *manager) deleteObjects(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, cms []applyconfigurationscorev1.ConfigMapApplyConfiguration, pvcs []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration) error {
+	if pod != nil {
+		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "Pod", "objName", *pod.Name)
+		l.V(2).Info("delete object", "obj", pod)
+		err := m.clientset.CoreV1().Pods(*pod.Namespace).Delete(ctx, *pod.Name, metav1.DeleteOptions{})
 		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 		l.Info("object was deleted")
 	}
+
+	if len(cms) > 0 {
+		for _, cm := range cms {
+			l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "ConfigMap", "objName", *cm.Name)
+			l.V(2).Info("delete object", "obj", cm)
+			err := m.clientset.CoreV1().ConfigMaps(*cm.Namespace).Delete(ctx, *cm.Name, metav1.DeleteOptions{})
+			if err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			l.Info("object was deleted")
+		}
+	}
+
+	if len(pvcs) > 0 {
+		for _, pvc := range pvcs {
+			l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "PersistentVolumeClaim", "objName", *pvc.Name)
+			l.V(2).Info("delete object", "obj", pvc)
+			err := m.clientset.CoreV1().PersistentVolumeClaims(*pvc.Namespace).Delete(ctx, *pvc.Name, metav1.DeleteOptions{})
+			if err != nil && !apierrors.IsNotFound(err) {
+				return err
+			}
+			l.Info("object was deleted")
+		}
+	}
+
 	return nil
 }
 
@@ -237,9 +262,15 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	pod, _, err := m.getDevkPodAndService(ctx, devkName, namespace)
+	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to load devk pod")
+		logger.Error(err, "failed to get release")
+		return err
+	}
+
+	pod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
+	if err != nil {
+		logger.Error(err, "failed to get devk pod")
 		return err
 	}
 
@@ -265,21 +296,6 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 		return err
 	}
 	return nil
-}
-
-func (m *manager) getDevkPodAndService(ctx context.Context, devkName string, namespace string) (*corev1.Pod, *corev1.Service, error) {
-	svc, err := m.getSelectorService(ctx, devkName, namespace)
-	if err != nil {
-		return nil, nil, err
-	}
-	pods, err := m.getPodsForService(ctx, svc)
-	if err != nil {
-		return nil, nil, err
-	}
-	sort.Slice(pods, func(i, j int) bool {
-		return pods[i].CreationTimestamp.Before(&pods[j].CreationTimestamp)
-	})
-	return &pods[0], svc, nil
 }
 
 type PortForwardOption interface {
@@ -320,7 +336,13 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	pod, _, err := m.getDevkPodAndService(ctx, devkName, namespace)
+	r, err := m.store.Get(ctx, devkName, namespace)
+	if err != nil {
+		logger.Error(err, "failed to get release")
+		return err
+	}
+
+	pod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
 	if err != nil {
 		logger.Error(err, "failed to get devk pod")
 		return err
@@ -342,6 +364,10 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 		return err
 	}
 	return nil
+}
+
+func (m *manager) getPod(ctx context.Context, name, namespace string) (*corev1.Pod, error) {
+	return m.clientset.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
 }
 
 type SSHOption interface {
@@ -413,51 +439,39 @@ func (o *withSSHRemoteForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
 	return opts
 }
 
-func (m *manager) SSH(ctx context.Context, devkName, namespace string, useServiceIP bool, opts ...SSHOption) error {
+func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...SSHOption) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
-	sshPod, sshService, err := m.getDevkPodAndService(ctx, devkName, namespace)
+	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get Service or Pod")
+		logger.Error(err, "failed to get release")
 		return err
 	}
 
-	var sshIP string
-	var sshPort int
-
-	if !useServiceIP {
-		sshIP = localhost
-		var err error
-		sshPort, err = m.getFreePort()
-		if err != nil {
-			logger.Error(err, "failed to get Free Port for SSH")
-			return err
-		}
-		sshContainerPort, err := m.sshContainerPort(sshPod, sshService)
-		if err != nil {
-			logger.Info("container SSH Port was not found")
-		}
-
-		go func() {
-			opts := client.PortForwardOptions{
-				Addresses: []string{localhost},
-				Ports:     []string{fmt.Sprintf("%d:%d", sshPort, sshContainerPort)},
-			}
-
-			if err := m.portforward.PortForward(ctx, sshPod, opts); err != nil {
-				logger.Error(err, "failed to forward ports")
-				return
-			}
-		}()
-	} else {
-		var err error
-		sshIP, sshPort, err = m.sshServiceIPPort(sshPod, sshService)
-		if err != nil {
-			logger.Error(err, "failed to get suitable ssh ip and port from service")
-			return err
-		}
+	sshPod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
+	if err != nil {
+		logger.Error(err, "failed to get devk pod")
+		return err
 	}
+
+	sshPort, err := m.getFreePort()
+	if err != nil {
+		logger.Error(err, "failed to get Free Port for SSH")
+		return err
+	}
+	sshContainerPort := m.config.SSH.Port
+	go func() {
+		opts := client.PortForwardOptions{
+			Addresses: []string{localhost},
+			Ports:     []string{fmt.Sprintf("%d:%d", sshPort, sshContainerPort)},
+		}
+
+		if err := m.portforward.PortForward(ctx, sshPod, opts); err != nil {
+			logger.Error(err, "failed to forward ports")
+			return
+		}
+	}()
 
 	sshOpts := &ssh.Options{}
 	for _, o := range opts {
@@ -470,7 +484,7 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, useServic
 	}
 
 	if err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
-		if m.isListening(sshIP, sshPort) {
+		if m.isListening(localhost, sshPort) {
 			return true, nil
 		}
 		return false, nil
@@ -479,135 +493,11 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, useServic
 		return err
 	}
 
-	if err := sshOpts.Connect(ctx, m.sshUser(sshService), sshIP, sshPort); err != nil {
+	if err := sshOpts.Connect(ctx, m.config.SSH.User, localhost, sshPort); err != nil {
 		logger.Error(err, "failed to run ssh")
 		return err
 	}
 	return nil
-}
-
-const defaultSSHUser = "root"
-
-func (m *manager) sshUser(pod *corev1.Service) string {
-	annotations := pod.GetAnnotations()
-	if len(annotations) == 0 {
-		return defaultSSHUser
-	}
-	user, ok := annotations[common.DevkSSHUserLabelKey]
-	if !ok {
-		return defaultSSHUser
-	}
-	return user
-}
-
-func (m *manager) sshContainerPort(pod *corev1.Pod, svc *corev1.Service) (int, error) {
-	svcPort, err := m.sshServicePort(svc)
-	if err != nil {
-		return -1, err
-	}
-
-	targetPort := svcPort.TargetPort
-
-	if targetPort.Type == intstr.Int {
-		return int(targetPort.IntValue()), nil
-	}
-
-	containerPortNum := 22
-	portName := targetPort.String()
-	for _, pp := range pod.Spec.Containers[0].Ports {
-		if pp.Name == portName {
-			containerPortNum = int(pp.ContainerPort)
-		}
-	}
-	return containerPortNum, nil
-}
-
-func (m *manager) sshServiceIPPort(sshPod *corev1.Pod, sshService *corev1.Service) (string, int, error) {
-	selector := labels.Set(sshService.Spec.Selector).AsSelector()
-	if !selector.Matches(labels.Set(sshPod.GetLabels())) {
-		return "", -1, errors.New("pod doesn't match service selector")
-	}
-
-	svcPort, err := m.sshServicePort(sshService)
-	if err != nil {
-		return "", -1, err
-	}
-
-	switch sshService.Spec.Type {
-	case corev1.ServiceTypeNodePort:
-		return sshPod.Status.HostIP, int(svcPort.NodePort), nil
-	case corev1.ServiceTypeClusterIP:
-		return sshService.Spec.ClusterIP, int(svcPort.Port), nil
-	case corev1.ServiceTypeLoadBalancer:
-		// TODO: support
-		return "", -1, errors.New("not supported")
-	case corev1.ServiceTypeExternalName:
-		// TODO: support
-		return "", -1, errors.New("not supported")
-	}
-	return "", -1, errors.New("unknown service type")
-}
-
-func (m *manager) sshServicePort(svc *corev1.Service) (*corev1.ServicePort, error) {
-	if len(svc.Spec.Ports) == 1 {
-		return &svc.Spec.Ports[0], nil
-	}
-	for i := range svc.Spec.Ports {
-		port := svc.Spec.Ports[i]
-		if port.Name != common.SSHServicePortName {
-			continue
-		}
-		return &port, nil
-	}
-	return nil, errors.New("ssh service port was not found")
-}
-
-func (m *manager) getSelectorService(ctx context.Context, devkName, namespace string) (*corev1.Service, error) {
-	selector := labels.Set{
-		common.DevkNameLabelKey: devkName,
-	}.AsSelector().String()
-	svcList, err := m.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: selector,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if len(svcList.Items) == 0 {
-		return nil, errors.New("selector service was not found")
-	}
-	if len(svcList.Items) == 1 {
-		return &svcList.Items[0], nil
-	}
-
-	selector = labels.Set{
-		common.DevkNameLabelKey: devkName,
-	}.AsSelector().String()
-	svcList, err = m.clientset.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: selector,
-	})
-	if len(svcList.Items) == 0 {
-		return nil, errors.New("selector service was not found")
-	}
-	if len(svcList.Items) > 1 {
-		return nil, errors.New("too many services")
-	}
-	return &svcList.Items[0], nil
-}
-
-func (m *manager) getPodsForService(ctx context.Context, svc *corev1.Service) ([]corev1.Pod, error) {
-	labelSelector := labels.Set(svc.Spec.Selector).AsSelector()
-	podList, err := m.clientset.CoreV1().Pods(svc.GetNamespace()).List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector.String(),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(podList.Items) == 0 {
-		return nil, errors.New("pod selectord by service was not found")
-	}
-
-	return podList.Items, nil
 }
 
 func (_ *manager) isListening(addr string, port int) bool {
@@ -648,14 +538,8 @@ func (m *manager) Start(ctx context.Context, devkName, namespace string, mutator
 		logger.Error(err, "failed to get release")
 		return err
 	}
-	manifests, err := manifest.NewManifests(r.Objects)
-	if err != nil {
-		logger.Error(err, "failed to get manifests")
-		return err
-	}
-
-	mutateds := manifests.MustMutate(mutators...).ToObjects()
-	if err := m.apply(ctx, mutateds...); err != nil {
+	mutated := r.Manifests.MustMutate(mutators...)
+	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
 		logger.Error(err, "failed to start devk")
 		return err
 	}
@@ -671,23 +555,34 @@ func (m *manager) Stop(ctx context.Context, devkName, namespace string) error {
 		logger.Error(err, "failed to get release")
 		return err
 	}
-	manifests, err := manifest.NewManifests(r.Objects)
-	if err != nil {
-		logger.Error(err, "failed to get manifests")
+	pod := r.Manifests.Pod
+	cms := r.Manifests.ConfigMaps
+	// Delete only Pod object
+	if err := m.deleteObjects(ctx, pod, cms, nil); err != nil {
+		logger.Error(err, "failed to stop pod")
 		return err
 	}
-	toDelete := manifests.Filter(notStopPolicyRetainSelector).ToObjects()
-	if err := m.delete(ctx, toDelete...); err != nil {
-		logger.Error(err, "failed to delete devk object")
+	if err := m.waitForPodTerminated(ctx, *pod.Name, *pod.Namespace, 1*time.Minute); err != nil {
+		logger.Error(err, "failed to wait devk pod terminated")
 		return err
-	}
-	for _, obj := range toDelete {
-		if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
-			logger.Error(err, "failed to wait devk object terminated")
-			return err
-		}
 	}
 	return nil
+}
+
+func (m *manager) waitForPodTerminated(ctx context.Context, podName, namespace string, timeout time.Duration) error {
+	return wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, timeout, true, func(context.Context) (bool, error) {
+		fresh, err := m.clientset.CoreV1().Pods(namespace).Get(ctx, podName, metav1.GetOptions{})
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return false, err
+			}
+			return true, nil
+		}
+		if fresh.GetDeletionTimestamp().IsZero() {
+			return false, errors.New("not terminating")
+		}
+		return false, nil
+	})
 }
 
 func (m *manager) Update(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error {
@@ -700,35 +595,29 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, mutato
 		return err
 	}
 
-	oldManifests, err := manifest.NewManifests(r.Objects)
-	if err != nil {
-		logger.Error(err, "failed to get manifests")
+	oldManifests := r.Manifests
+	if err := m.deleteObjects(ctx, oldManifests.Pod, oldManifests.ConfigMaps, nil); err != nil {
+		logger.Error(err, "failed to delete old devk pod")
 		return err
-	}
-	toRecreate := oldManifests.Filter(notStopPolicyRetainSelector).ToObjects()
-	if err := m.delete(ctx, toRecreate...); err != nil {
-		logger.Error(err, "failed to delete devk object")
-		return err
-	}
-	for _, obj := range toRecreate {
-		if err := kubeutil.WaitForTerminated(ctx, 3*time.Minute, m.unstructured, obj); err != nil {
-			logger.Error(err, "failed to wait devk object terminated")
-			return err
-		}
 	}
 
-	newManifests, err := m.loader.Load(r.TemplateName, r.Name, r.Namespace)
-	if err != nil {
-		logger.Error(err, "failed to load template")
+	if err := m.waitForPodTerminated(ctx, *oldManifests.Pod.Name, *oldManifests.Pod.Namespace, 60*time.Second); err != nil {
+		logger.Error(err, "failed to wait for old devk pod terminated")
 		return err
 	}
-	r.Objects = newManifests.ToObjects()
+
+	time.Sleep(1 * time.Second)
+
+	newManifests := manifest.Generate(devkName, namespace, m.config.Pod, m.config.ConfigMaps, m.config.PVCs)
+	mutated := newManifests.MustMutate(mutators...)
+	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
+		logger.Error(err, "failed to apply devk object")
+		return err
+	}
+
+	r.Manifests = newManifests
 	if err := m.store.Update(ctx, devkName, namespace, r); err != nil {
 		logger.Error(err, "failed to update release")
-		return err
-	}
-	if err := m.apply(ctx, newManifests.MustMutate(mutators...).ToObjects()...); err != nil {
-		logger.Error(err, "failed to apply devk object")
 		return err
 	}
 	return nil
@@ -807,50 +696,48 @@ func (m *manager) Events(ctx context.Context, devkName, namespace string, watch 
 	var eventList corev1.EventList
 	eventCh := make(chan *corev1.Event, 1)
 	errCh := make(chan error, 1)
-	for _, obj := range r.Objects {
-		fieldSelector := fields.AndSelectors(
-			fields.OneTermEqualSelector("involvedObject.kind", obj.GetKind()),
-			fields.OneTermEqualSelector("involvedObject.name", obj.GetName()),
-			fields.OneTermEqualSelector("metadata.namespace", namespace),
-		).String()
-		opts := metav1.ListOptions{
-			FieldSelector: fieldSelector,
-			Limit:         100,
+	fieldSelector := fields.AndSelectors(
+		fields.OneTermEqualSelector("involvedObject.kind", "Pod"),
+		fields.OneTermEqualSelector("involvedObject.name", *r.Manifests.Pod.Name),
+		fields.OneTermEqualSelector("metadata.namespace", *r.Manifests.Pod.Namespace),
+	).String()
+	opts := metav1.ListOptions{
+		FieldSelector: fieldSelector,
+		Limit:         100,
+	}
+	el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
+	if err != nil {
+		logger.Error(err, "failed to get event list")
+		return err
+	}
+	eventList.Items = append(eventList.Items, el.Items...)
+
+	if watch {
+		wOpts := metav1.ListOptions{
+			FieldSelector:   fieldSelector,
+			ResourceVersion: el.ListMeta.ResourceVersion,
 		}
-		el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
+		wi, err := m.clientset.CoreV1().Events(namespace).Watch(ctx, wOpts)
 		if err != nil {
-			logger.Error(err, "failed to get event list")
+			logger.Error(err, "failed to get watch interface")
 			return err
 		}
-		eventList.Items = append(eventList.Items, el.Items...)
-
-		if watch {
-			wOpts := metav1.ListOptions{
-				FieldSelector:   fieldSelector,
-				ResourceVersion: el.ListMeta.ResourceVersion,
-			}
-			wi, err := m.clientset.CoreV1().Events(namespace).Watch(ctx, wOpts)
-			if err != nil {
-				logger.Error(err, "failed to get watch interface")
-				return err
-			}
-			go func() {
-				for {
-					select {
-					case e := <-wi.ResultChan():
-						switch e.Type {
-						case pkgwatch.Added, pkgwatch.Deleted, pkgwatch.Modified:
-							event, _ := e.Object.(*corev1.Event)
-							eventCh <- event
-						case pkgwatch.Error:
-							errCh <- fmt.Errorf("failed to get watch object: %v", e.Object)
-						}
-					case <-ctx.Done():
-						return
+		go func() {
+			for {
+				select {
+				case e := <-wi.ResultChan():
+					switch e.Type {
+					case pkgwatch.Added, pkgwatch.Deleted, pkgwatch.Modified:
+						event, _ := e.Object.(*corev1.Event)
+						eventCh <- event
+					case pkgwatch.Error:
+						errCh <- fmt.Errorf("failed to get watch object: %v", e.Object)
 					}
+				case <-ctx.Done():
+					return
 				}
-			}()
-		}
+			}
+		}()
 	}
 
 	sort.Sort(sortableEvents(eventList))

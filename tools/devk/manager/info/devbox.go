@@ -47,10 +47,6 @@ func (a *devkInfoAccessor) GetNamespace() string {
 	return a.release.Namespace
 }
 
-func (a *devkInfoAccessor) GetTemplateName() string {
-	return a.release.TemplateName
-}
-
 func (a *devkInfoAccessor) Protected() bool {
 	return a.release.Protect
 }

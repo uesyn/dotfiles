@@ -4,7 +4,9 @@ import (
 	"errors"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 )
 
 func NewGPULimitRequest(num int) Mutator {
@@ -15,35 +17,28 @@ type gpuLimitRequest struct {
 	num int
 }
 
-func (m *gpuLimitRequest) Mutate(obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+func (m *gpuLimitRequest) Mutate(pod *applyconfigurationscorev1.PodApplyConfiguration) error {
 	if m.num < 1 {
-		return obj, nil
+		return nil
 	}
 
-	var containerFields []string
-	switch obj.GetKind() {
-	case "Pod":
-		containerFields = []string{"spec", "containers"}
-	case "Deployment", "StatefulSet":
-		containerFields = []string{"spec", "template", "spec", "containers"}
-	default:
-		return obj, nil
+	if pod == nil || pod.Spec == nil || len(pod.Spec.Containers) == 0 {
+		return errors.New("container field not found")
 	}
 
-	containers, _, err := unstructured.NestedSlice(obj.Object, containerFields...)
-	if err != nil {
-		return nil, err
+	resources := pod.Spec.Containers[0].Resources
+	if resources == nil {
+		resources = applyconfigurationscorev1.ResourceRequirements()
 	}
-	if len(containers) == 0 {
-		return nil, errors.New("no container")
+	limits := corev1.ResourceList{
+		"nvidia.com/gpu": resource.MustParse(fmt.Sprint(m.num)),
 	}
-	container := containers[0].(map[string]interface{})
-	if err := unstructured.SetNestedField(container, fmt.Sprintf("%d", m.num), "resources", "limits", "nvidia.com/gpu"); err != nil {
-		return nil, err
+	if resources.Limits != nil {
+		for key, value := range *resources.Limits {
+			limits[key] = value
+		}
 	}
-	containers[0] = container
-	if err := unstructured.SetNestedSlice(obj.Object, containers, containerFields...); err != nil {
-		return nil, err
-	}
-	return obj, nil
+	resources.WithLimits(limits)
+	pod.Spec.Containers[0].WithResources(resources)
+	return nil
 }

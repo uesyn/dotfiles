@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 
+	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"sigs.k8s.io/yaml"
 )
 
@@ -27,18 +28,28 @@ func Load(file string) (*Config, error) {
 }
 
 type Config struct {
-	Template Template `json:"template,omitempty"`
-	SSH      *SSH     `json:"ssh,omitempty"`
-	Exec     *Exec    `json:"exec,omitempty"`
-	Envs     []Env    `json:"envs,omitempty"`
+	SSH        *SSH                                                                `json:"ssh,omitempty"`
+	Exec       *Exec                                                               `json:"exec,omitempty"`
+	Envs       []Env                                                               `json:"envs,omitempty"`
+	Pod        *applyconfigurationscorev1.PodSpecApplyConfiguration                `json:"podSpec,omitempty"`
+	PVCs       []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration `json:"pvcs,omitempty"`
+	ConfigMaps []applyconfigurationscorev1.ConfigMapApplyConfiguration             `json:"cms,omitempty"`
 }
 
 func (c *Config) complete() error {
 	if c.SSH == nil {
-		c.SSH = &SSH{
-			Command: []string{"sh"},
-		}
+		c.SSH = &SSH{}
 	}
+	if len(c.SSH.Command) == 0 {
+		c.SSH.Command = []string{"sh"}
+	}
+	if len(c.SSH.User) == 0 {
+		c.SSH.User = "devbox"
+	}
+	if c.SSH.Port <= 0 {
+		c.SSH.Port = 22
+	}
+
 	if c.Exec == nil {
 		c.Exec = &Exec{
 			Command: []string{"sh"},
@@ -48,8 +59,13 @@ func (c *Config) complete() error {
 }
 
 var noNameFieldError = errors.New("no name field")
+var noPodFieldError = errors.New("no pod field")
 
 func (c *Config) validate() error {
+	if c.Pod == nil {
+		return noPodFieldError
+	}
+
 	for _, env := range c.Envs {
 		if len(env.Name) == 0 {
 			return noNameFieldError
@@ -58,11 +74,9 @@ func (c *Config) validate() error {
 	return nil
 }
 
-type Template struct {
-	LoadRestrictionsNone bool `json:"loadRestrictionsNone,omitempty"`
-}
-
 type SSH struct {
+	User    string   `json:"user,omitempty"`
+	Port    int      `json:"port,omitempty"`
 	Command []string `json:"command,omitempty"`
 }
 
