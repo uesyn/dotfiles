@@ -76,11 +76,11 @@ func Generate(devkName, namespace string, podSpec *applyconfigurationscorev1.Pod
 	for i := range pod.Spec.Volumes {
 		volume := pod.Spec.Volumes[i]
 		if volume.PersistentVolumeClaim != nil {
-			vName := volumeName(podName, *volume.PersistentVolumeClaim.ClaimName)
+			vName := volumeName(*volume.PersistentVolumeClaim.ClaimName, devkName)
 			volume.PersistentVolumeClaim.WithClaimName(vName)
 		}
 		if volume.ConfigMap != nil {
-			vName := volumeName(podName, *volume.ConfigMap.Name)
+			vName := volumeName(*volume.ConfigMap.Name, devkName)
 			volume.ConfigMap.WithName(vName)
 		}
 		pod.Spec.Volumes[i] = volume
@@ -89,7 +89,7 @@ func Generate(devkName, namespace string, podSpec *applyconfigurationscorev1.Pod
 	var cms []applyconfigurationscorev1.ConfigMapApplyConfiguration
 	for _, cmTemplate := range cmTemplates {
 		cm := util.DeepCopy(cmTemplate)
-		cm.WithName(cmName(podName, *cm.Name))
+		cm.WithName(cmName(*cm.Name, devkName))
 		cm.WithNamespace(namespace)
 		cm.WithLabels(commonLabels)
 		cms = append(cms, cm)
@@ -98,7 +98,7 @@ func Generate(devkName, namespace string, podSpec *applyconfigurationscorev1.Pod
 	var pvcs []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration
 	for _, pvcTemplate := range pvcTemplates {
 		pvc := util.DeepCopy(pvcTemplate)
-		pvc.WithName(volumeName(podName, *pvc.Name))
+		pvc.WithName(volumeName(*pvc.Name, devkName))
 		pvc.WithNamespace(namespace)
 		pvc.WithLabels(commonLabels)
 		pvcs = append(pvcs, pvc)
@@ -115,10 +115,10 @@ func podName(devkName string) string {
 	return fmt.Sprintf("%s%s", namePrefix, devkName)
 }
 
-func volumeName(podName, pvcName string) string {
-	return fmt.Sprintf("%s-%s", podName, pvcName)
+func volumeName(pvcName, devkName string) string {
+	return fmt.Sprintf("%s-%s", pvcName, devkName)
 }
 
-func cmName(podName, pvcName string) string {
-	return fmt.Sprintf("%s-%s", podName, pvcName)
+func cmName(cmName, devkName string) string {
+	return fmt.Sprintf("%s-%s", cmName, devkName)
 }
