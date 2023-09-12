@@ -3,7 +3,10 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"io"
+	"net/http"
 	"os"
+	"github.com/sirupsen/logrus"
 
 	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"sigs.k8s.io/yaml"
@@ -12,7 +15,16 @@ import (
 func Load(file string) (*Config, error) {
 	contents, err := os.ReadFile(file)
 	if err != nil {
-		return nil, err
+		if !os.IsNotExist(err) {
+			return nil, err
+		}
+		// Download from my dotfiles config
+		logrus.Info("config file not found, download from https://raw.githubusercontent.com/uesyn/dotfiles/main/devk/config.yaml")
+		resp, err := http.Get("https://raw.githubusercontent.com/uesyn/dotfiles/main/devk/config.yaml")
+		if err != nil {
+			return nil, err
+		}
+		contents, err = io.ReadAll(resp.Body)
 	}
 	c := Config{}
 	if err := yaml.Unmarshal(contents, &c); err != nil {
