@@ -19,6 +19,8 @@ envs:
   hostEnv: GITLAB_ENTERPRISE_TOKEN
 - name: GH_ENTERPRISE_TOKEN
   hostEnv: GH_ENTERPRISE_TOKEN
+- name: OPENAI_API_KEY
+  hostEnv: OPENAI_API_KEY
 podSpec:
   automountServiceAccountToken: false
   securityContext:
