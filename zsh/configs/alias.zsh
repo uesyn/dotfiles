@@ -74,7 +74,7 @@ function z() {
   fi
 }
 
-function t() {
+function tm() {
   if [[ -x "$(command -v tmux)" ]]; then
     tmux new-session -ADs main
     return

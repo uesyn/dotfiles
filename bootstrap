@@ -139,7 +139,7 @@ setup_tea() {
   info "Installing tea..."
 
   tea_path="${OPT_BIN}/tea"
-  tea_version="0.39.6"
+  tea_version="1.0.0-alpha.4"
 
   tea_key="tea_${tea_version}"
   download_if_linux_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+aarch64.tar.xz
@@ -300,7 +300,7 @@ make_tea_command_with_bin_name() {
     tea_args="${tea_args} +${d}"
   done
 
-  cmd="exec tea ${tea_args} ${cmd_name} \"\$@\""
+  cmd="exec tea ${tea_args} -- ${cmd_name} \"\$@\""
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
@@ -405,11 +405,27 @@ EOF
 
 setup_kubectl() {
   info "Installing kubectl..."
-  kubectl_version=1.28.2
+  version=1.28.2
+  kubectl_1_28_version=1.28.2
   kubectl_1_27_version=1.27.4
   kubectl_1_26_version=1.26.5
   kubectl_1_25_version=1.25.10
-  make_tea_command "kubectl" "--silent" "kubernetes.io/kubectl=${kubectl_version}"
+  key="kubectl_${version}"
+
+  download_if_linux_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/arm64/kubectl
+  download_if_linux_amd64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/amd64/kubectl
+  download_if_darwin_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/darwin/arm64/kubectl
+  download_if_darwin_amd64 ${key} https://dl.k8s.io/release/v${version}/bin/darwin/amd64/kubectl
+
+  cache_file=$(get_cache ${key})
+  cp ${cache_file} ${OPT_BIN}/kubectl
+  chmod +x ${OPT_BIN}/kubectl
+
+  completion_dir=${HOME}/.cache/completion
+  mkdir -p ${completion_dir}
+  ${OPT_BIN}/kubectl completion zsh > ${completion_dir}/kubectl
+
+  make_tea_command_with_bin_name "kubectl" "kubectl1.28" "--silent" "kubernetes.io/kubectl=${kubectl_1_28_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
   make_tea_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
@@ -563,31 +579,32 @@ make_local_configs
 setup_tea &
 setup_aqua &
 setup_rtx &
-setup_rust_analyzer &
 wait
-setup_zsh
-setup_neovim
-setup_jq
-setup_yq
-setup_gh
-setup_tmux
-setup_zellij
-setup_node
-setup_deno
-setup_python
-setup_ruby
-setup_aws
-setup_go
-setup_rustup_init
-setup_kubectl
-setup_kustomize
-setup_helm
-setup_minikube
-setup_kind
-setup_kubectx
-setup_fzf
-setup_ripgrep
-setup_golangci_lint
-setup_vault
-setup_mc
+setup_rust_analyzer &
+setup_zsh &
+setup_neovim &
+setup_jq &
+setup_yq &
+setup_gh &
+setup_tmux &
+setup_zellij &
+setup_node &
+setup_deno &
+setup_python &
+setup_ruby &
+setup_aws &
+setup_go &
+setup_rustup_init &
+setup_kubectl &
+setup_kustomize &
+setup_helm &
+setup_minikube &
+setup_kind &
+setup_kubectx &
+setup_fzf &
+setup_ripgrep &
+setup_golangci_lint &
+setup_vault &
+setup_mc &
+wait
 show_infos
