@@ -383,8 +383,17 @@ setup_node() {
 
 setup_deno() {
   info "Installing deno..."
-  deno_version=1.37.0
-  make_tea_command "deno" "--silent" "deno.land=${deno_version}"
+  version=1.37.0
+  key="deno_${version}"
+  make_tea_command "deno" "--silent" "deno.land=${version}"
+
+  download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
+  download_if_linux_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip
+  download_if_darwin_arm64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-apple-darwin.zip
+  download_if_darwin_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-apple-darwin.zip
+
+  cache_file=$(get_cache ${key})
+  unzip -p ${cache_file} > ${OPT_BIN}/deno
 }
 
 setup_go() {
@@ -522,7 +531,7 @@ setup_ripgrep() {
 
 setup_golangci_lint() {
   info "Installing golangci-lint..."
-  version=v1.54.1
+  version=v1.54.2
   make_tea_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
 }
 
@@ -579,6 +588,7 @@ make_local_configs
 setup_tea &
 setup_aqua &
 setup_rtx &
+setup_deno &
 wait
 setup_rust_analyzer &
 setup_zsh &
@@ -589,7 +599,6 @@ setup_gh &
 setup_tmux &
 setup_zellij &
 setup_node &
-setup_deno &
 setup_python &
 setup_ruby &
 setup_aws &
