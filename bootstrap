@@ -589,11 +589,11 @@ setup_tea &
 setup_aqua &
 setup_rtx &
 setup_deno &
+setup_jq &
 wait
 setup_rust_analyzer &
 setup_zsh &
 setup_neovim &
-setup_jq &
 setup_yq &
 setup_gh &
 setup_tmux &
