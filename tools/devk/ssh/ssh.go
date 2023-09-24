@@ -56,6 +56,7 @@ func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, erro
 	args = append(
 		args,
 		"-t",
+		"-q",
 		"-p", strconv.Itoa(port),
 		"-o", "StrictHostKeyChecking=no",
 		"-o", "UserKnownHostsFile=/dev/null",
@@ -63,7 +64,7 @@ func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, erro
 	if len(o.IdentityFile) > 0 {
 		args = append(args, "-i", o.IdentityFile)
 	}
-	const localhost = "localhost"
+	const localhost = "127.0.0.1"
 	for _, port := range o.LocalForwardedPorts {
 		fp, err := o.parseForwardedPort(port)
 		if err != nil {

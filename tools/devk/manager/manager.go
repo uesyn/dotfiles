@@ -513,7 +513,7 @@ func (_ *manager) isListening(addr string, port int) bool {
 func (_ *manager) getFreePort() (int, error) {
 	const invalidPort = -1
 
-	a, err := net.ResolveTCPAddr("tcp", "localhost:0")
+	a, err := net.ResolveTCPAddr("tcp", fmt.Sprintf("%s:0", localhost))
 	if err != nil {
 		return invalidPort, err
 	}
