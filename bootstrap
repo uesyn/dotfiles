@@ -137,38 +137,32 @@ TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
 
 setup_tea() {
   info "Installing tea..."
+  version="1.0.0-alpha.4"
+  key="tea_${version}"
+  download_if_linux_arm64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+aarch64.tar.xz
+  download_if_linux_amd64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+x86-64.tar.xz
+  download_if_darwin_arm64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+darwin+aarch64.tar.xz
+  download_if_darwin_amd64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+darwin+x86-64.tar.xz
 
-  tea_path="${OPT_BIN}/tea"
-  tea_version="1.0.0-alpha.4"
-
-  tea_key="tea_${tea_version}"
-  download_if_linux_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+aarch64.tar.xz
-  download_if_linux_amd64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+linux+x86-64.tar.xz
-  download_if_darwin_arm64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+aarch64.tar.xz
-  download_if_darwin_amd64 ${tea_key} https://github.com/teaxyz/cli/releases/download/v${tea_version}/tea-${tea_version}+darwin+x86-64.tar.xz
-
-  cache_file=$(get_cache "${tea_key}")
+  cache_file=$(get_cache "${key}")
 
   tar xJf ${cache_file} -C ${OPT_BIN}
-  if [ $? -ne 0 ]; then
-   echo "failed to execute...."
-   exit 1
-  fi
-  chmod u+x ${tea_path}
-  [ ! -d ${HOME}/.tea ] && ${tea_path} --sync
+  tea_bin="${OPT_BIN}/tea"
+  chmod u+x ${tea_bin}
+  [ ! -d ${HOME}/.tea ] && ${tea_bin} --sync
 }
 
 install_aqua() {
-  aqua_version=2.9.0
+  version=2.9.0
   info "Installing aqua..."
 
-  aqua_key="aqua_${aqua_version}"
-  download_if_linux_arm64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_arm64.tar.gz
-  download_if_linux_amd64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_linux_amd64.tar.gz
-  download_if_darwin_arm64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_arm64.tar.gz
-  download_if_darwin_amd64 ${aqua_key} https://github.com/aquaproj/aqua/releases/download/v${aqua_version}/aqua_darwin_amd64.tar.gz
+  key="aqua_${version}"
+  download_if_linux_arm64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_linux_arm64.tar.gz
+  download_if_linux_amd64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_linux_amd64.tar.gz
+  download_if_darwin_arm64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_darwin_arm64.tar.gz
+  download_if_darwin_amd64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_darwin_amd64.tar.gz
 
-  cache_file=$(get_cache "${aqua_key}")
+  cache_file=$(get_cache "${key}")
   aqua_bin=${OPT_BIN}/aqua
   tar xzf ${cache_file} -O aqua > ${aqua_bin}
   chmod +x ${aqua_bin}
@@ -186,15 +180,15 @@ install_neovim() {
   neovim_dir=${OPT_DIR}/nvim
   neovim_bin_dir=${neovim_dir}/bin
   export PATH=${neovim_bin_dir}:$PATH
-  neovim_version=v0.9.2
+  version=v0.9.2
 
-  neovim_key="neovim_${neovim_version}"
-  download_if_linux_arm64 ${neovim_key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${neovim_version}/nvim-linux-arm64.tar.gz
-  download_if_linux_amd64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-linux64.tar.gz
-  download_if_darwin_arm64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
-  download_if_darwin_amd64 ${neovim_key} https://github.com/neovim/neovim/releases/download/${neovim_version}/nvim-macos.tar.gz
+  key="neovim_${version}"
+  download_if_linux_arm64 ${key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${version}/nvim-linux-arm64.tar.gz
+  download_if_linux_amd64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-linux64.tar.gz
+  download_if_darwin_arm64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-macos.tar.gz
+  download_if_darwin_amd64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-macos.tar.gz
 
-  cache_file=$(get_cache ${neovim_key})
+  cache_file=$(get_cache ${key})
 
   rm -rf ${neovim_dir}
   mkdir -p ${neovim_dir}
@@ -385,7 +379,6 @@ setup_deno() {
   info "Installing deno..."
   version=1.37.0
   key="deno_${version}"
-  make_tea_command "deno" "--silent" "deno.land=${version}"
 
   download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
   download_if_linux_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip
@@ -442,14 +435,14 @@ setup_kubectl() {
 
 setup_kind() {
   info "Installing kind..."
-  kind_version=0.20.0
-  make_tea_command "kind" "" "kind.sigs.k8s.io=${kind_version}"
+  version=0.20.0
+  make_tea_command "kind" "" "kind.sigs.k8s.io=${version}"
 }
 
 setup_minikube() {
   info "Installing minikube..."
-  minikube_version=1.31.2
-  make_tea_command "minikube" "" "kubernetes.io/minikube=${minikube_version}"
+  version=1.31.2
+  make_tea_command "minikube" "" "kubernetes.io/minikube=${version}"
 }
 
 setup_kustomize() {
@@ -543,8 +536,8 @@ setup_vault() {
 
 setup_python() {
   info "Installing python..."
-  python_version=3.11.4
-  make_tea_command "python" "--silent" "python.org=${python_version}"
+  version=3.11.4
+  make_tea_command "python" "--silent" "python.org=${version}"
 }
 
 setup_ruby() {
