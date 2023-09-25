@@ -2,6 +2,22 @@
 
 set -eu
 
+info() {
+  printf '%s\n' "> $*"
+}
+
+warn() {
+  printf '%s\n' "[W] $*"
+}
+
+error() {
+  printf '%s\n' "[E] $*" >&2
+}
+if [[ -z "${HOME}" ]]; then
+  error "Must set HOME env"
+  exit 1
+fi
+
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
 export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
@@ -10,22 +26,6 @@ mkdir -p ${BOOTSTRAP_CACHE_DIR}
 export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
 
-# fork from https://starship.rs/install.sh
-info() {
-  printf '%s\n' "> $*"
-}
-
-# fork from https://starship.rs/install.sh
-warn() {
-  printf '%s\n' "! $*"
-}
-
-# fork from https://starship.rs/install.sh
-error() {
-  printf '%s\n' "x $*" >&2
-}
-
-# fork from https://starship.rs/install.sh
 detect_target() {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
   arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
