@@ -13,7 +13,7 @@ warn() {
 error() {
   printf '%s\n' "[E] $*" >&2
 }
-if [[ -z "${HOME}" ]]; then
+if [ -z "${HOME}" ]; then
   error "Must set HOME env"
   exit 1
 fi
