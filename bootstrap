@@ -137,7 +137,7 @@ TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
 
 setup_tea() {
   info "Installing tea..."
-  version="1.0.0-alpha.4"
+  version="0.39.6"
   key="tea_${version}"
   download_if_linux_arm64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+aarch64.tar.xz
   download_if_linux_amd64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+x86-64.tar.xz
