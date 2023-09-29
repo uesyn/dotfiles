@@ -377,7 +377,7 @@ setup_node() {
 
 setup_deno() {
   info "Installing deno..."
-  version=1.37.0
+  version=1.37.1
   key="deno_${version}"
 
   download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
