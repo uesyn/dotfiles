@@ -160,15 +160,12 @@ return {
               },
             },
             denols = {
+              enable = true,
               lint = true,
               unstable = true,
               suggest = {
                 imports = {
-                  hosts = {
-                    ["https://deno.land"] = true,
-                    ["https://cdn.nest.land"] = true,
-                    ["https://crux.land"] = true
-                  }
+                  autoDiscovery = true,
                 }
               },
             },
@@ -213,6 +210,7 @@ return {
             goto continue
           end
           opts.root_dir = deno_root_dir
+          opts.cmd = { 'deno', 'lsp', '--unstable' }
         end
         require("lspconfig")[server_name].setup(opts)
         ::continue::
