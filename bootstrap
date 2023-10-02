@@ -312,12 +312,6 @@ make_pkgx_command() {
   make_pkgx_command_with_bin_name "${cmd_name}" "${cmd_name}" "${pkgx_args}" "${@}"
 }
 
-setup_zsh() {
-  info "Installing zsh..."
-  version=5.9.0
-  make_pkgx_command "zsh" "--silent" "zsh.sourceforge.io=${version}"
-}
-
 setup_neovim() {
   info "Installing neovim and plugins..."
   install_neovim
@@ -366,29 +360,6 @@ setup_zellij() {
   make_pkgx_command "zellij" "" "crates.io/zellij=${version}"
 }
 
-setup_node() {
-  info "Installing node..."
-  node_version=v20.0.0
-  npm_version=9.6.6
-  make_pkgx_command "node" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
-  make_pkgx_command "npx" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
-  make_pkgx_command "npm" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
-}
-
-setup_deno() {
-  info "Installing deno..."
-  version=1.37.1
-  key="deno_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
-  download_if_linux_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip
-  download_if_darwin_arm64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-apple-darwin.zip
-  download_if_darwin_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-apple-darwin.zip
-
-  cache_file=$(get_cache ${key})
-  unzip -p ${cache_file} > ${OPT_BIN}/deno
-}
-
 setup_go() {
   info "Installing go..."
   go_version=1.20.8
@@ -403,6 +374,20 @@ setup_go() {
 pkgx --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
 EOF
   chmod +x ${gopls_path}
+}
+
+setup_deno() {
+  info "Installing deno..."
+  version=1.37.1
+  key="deno_${version}"
+
+  download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
+  download_if_linux_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip
+  download_if_darwin_arm64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-apple-darwin.zip
+  download_if_darwin_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-apple-darwin.zip
+
+  cache_file=$(get_cache ${key})
+  unzip -p ${cache_file} > ${OPT_BIN}/deno
 }
 
 setup_kubectl() {
@@ -534,34 +519,9 @@ setup_vault() {
   make_pkgx_command "vault" "--silent" "vaultproject.io=${version}"
 }
 
-setup_python() {
-  info "Installing python..."
-  version=3.11.4
-  make_pkgx_command "python" "--silent" "python.org=${version}"
-}
-
-setup_ruby() {
-  info "Installing ruby..."
-  ruby_version=3.2.2
-  gem_version=3.4.9
-  make_pkgx_command "ruby" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
-  make_pkgx_command "gem" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
-}
-
 setup_aws() {
   info "Installing aws..."
   make_pkgx_command "aws" "--silent" "aws.amazon.com/cli"
-}
-
-setup_rustup_init() {
-  info "Installing rustup-init..."
-  rustup_init_path=${OPT_BIN}/rustup-init
-  cat <<EOF > ${rustup_init_path}
-#!/usr/bin/env sh
-
-pkgx rustup-init --no-modify-path --default-toolchain nightly --profile default "\$@"
-EOF
-  chmod +x ${rustup_init_path}
 }
 
 setup_mc() {
@@ -585,18 +545,13 @@ setup_deno &
 setup_jq &
 wait
 setup_rust_analyzer &
-setup_zsh &
 setup_neovim &
 setup_yq &
 setup_gh &
 setup_tmux &
-setup_zellij &
-setup_node &
-setup_python &
-setup_ruby &
-setup_aws &
 setup_go &
-setup_rustup_init &
+setup_zellij &
+setup_aws &
 setup_kubectl &
 setup_kustomize &
 setup_helm &
