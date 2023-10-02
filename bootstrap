@@ -133,23 +133,23 @@ make_links(){
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
-TEA_PREFIX=${TEA_PREFIX:-${HOME}/.tea}
+TEA_PREFIX=${TEA_PREFIX:-${HOME}/.pkgx}
 
-setup_tea() {
-  info "Installing tea..."
-  version="0.39.6"
-  key="tea_${version}"
-  download_if_linux_arm64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+aarch64.tar.xz
-  download_if_linux_amd64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+linux+x86-64.tar.xz
-  download_if_darwin_arm64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+darwin+aarch64.tar.xz
-  download_if_darwin_amd64 ${key} https://github.com/teaxyz/cli/releases/download/v${version}/tea-${version}+darwin+x86-64.tar.xz
+setup_pkgx() {
+  info "Installing pkgx..."
+  version="1.0.0"
+  key="pkgx_${version}"
+  download_if_linux_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+aarch64.tar.xz
+  download_if_linux_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+x86-64.tar.xz
+  download_if_darwin_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+darwin+aarch64.tar.xz
+  download_if_darwin_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+darwin+x86-64.tar.xz
 
   cache_file=$(get_cache "${key}")
 
   tar xJf ${cache_file} -C ${OPT_BIN}
-  tea_bin="${OPT_BIN}/tea"
-  chmod u+x ${tea_bin}
-  [ ! -d ${HOME}/.tea ] && ${tea_bin} --sync
+  pkgx_bin="${OPT_BIN}/pkgx"
+  chmod u+x ${pkgx_bin}
+  [ ! -d ${HOME}/.pkgx ] && ${pkgx_bin} --sync
 }
 
 install_aqua() {
@@ -282,19 +282,19 @@ setup_rust_analyzer() {
   chmod +x ${bin}
 }
 
-make_tea_command_with_bin_name() {
+make_pkgx_command_with_bin_name() {
   cmd_name=$1
   bin_name=$2
-  tea_args=$3
+  pkgx_args=$3
   shift 3
   depends=$@
 
   depend_args=
   for d in ${depends}; do
-    tea_args="${tea_args} +${d}"
+    pkgx_args="${pkgx_args} +${d}"
   done
 
-  cmd="exec tea ${tea_args} -- ${cmd_name} \"\$@\""
+  cmd="exec pkgx ${pkgx_args} -- ${cmd_name} \"\$@\""
   bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env sh
@@ -304,24 +304,24 @@ EOF
   chmod +x ${bin_path}
 }
 
-make_tea_command() {
+make_pkgx_command() {
   cmd_name=$1
-  tea_args=$2
+  pkgx_args=$2
   shift 2
   depends=$@
-  make_tea_command_with_bin_name "${cmd_name}" "${cmd_name}" "${tea_args}" "${@}"
+  make_pkgx_command_with_bin_name "${cmd_name}" "${cmd_name}" "${pkgx_args}" "${@}"
 }
 
 setup_zsh() {
   info "Installing zsh..."
   version=5.9.0
-  make_tea_command "zsh" "--silent" "zsh.sourceforge.io=${version}"
+  make_pkgx_command "zsh" "--silent" "zsh.sourceforge.io=${version}"
 }
 
 setup_neovim() {
   info "Installing neovim and plugins..."
   install_neovim
-  # make_tea_command "nvim" "" "neovim.io=0.9.2"
+  # make_pkgx_command "nvim" "" "neovim.io=0.9.2"
   nvim --headless "+Lazy! restore" +qa
   git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
   nvim --headless "+Lazy! restore" +qa
@@ -345,34 +345,34 @@ setup_jq() {
 setup_yq() {
   info "Installing yq..."
   version=v4.34.1
-  make_tea_command "yq" "--silent" "github.com/mikefarah/yq=${version}"
+  make_pkgx_command "yq" "--silent" "github.com/mikefarah/yq=${version}"
 }
 
 setup_gh() {
   info "Installing gh ..."
   version=v2.34.0
-  make_tea_command "gh" "--silent" "cli.github.com=${version}"
+  make_pkgx_command "gh" "--silent" "cli.github.com=${version}"
 }
 
 setup_tmux() {
   info "Installing tmux..."
   version=3.3a
-  make_tea_command "tmux" "" "github.com/tmux/tmux=${version}"
+  make_pkgx_command "tmux" "" "github.com/tmux/tmux=${version}"
 }
 
 setup_zellij() {
   info "Installing zellij..."
   version=v0.38.2
-  make_tea_command "zellij" "" "crates.io/zellij=${version}"
+  make_pkgx_command "zellij" "" "crates.io/zellij=${version}"
 }
 
 setup_node() {
   info "Installing node..."
   node_version=v20.0.0
   npm_version=9.6.6
-  make_tea_command "node" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
-  make_tea_command "npx" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
-  make_tea_command "npm" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
+  make_pkgx_command "node" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
+  make_pkgx_command "npx" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
+  make_pkgx_command "npm" "--silent" "nodejs.org=${node_version}" "npmjs.com=${npm_version}"
 }
 
 setup_deno() {
@@ -394,13 +394,13 @@ setup_go() {
   go_version=1.20.8
   gopls_version=v0.13.2
   go_1_21_version="1.21.1"
-  make_tea_command "go" "--silent" "go.dev=${go_version}"
-  make_tea_command_with_bin_name "go" "go1.21" "--silent" "go.dev=${go_1_21_version}"
+  make_pkgx_command "go" "--silent" "go.dev=${go_version}"
+  make_pkgx_command_with_bin_name "go" "go1.21" "--silent" "go.dev=${go_1_21_version}"
   gopls_path=${OPT_BIN}/gopls
   cat <<EOF > ${gopls_path}
 #!/usr/bin/env sh
 
-tea --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
+pkgx --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
 EOF
   chmod +x ${gopls_path}
 }
@@ -427,34 +427,34 @@ setup_kubectl() {
   mkdir -p ${completion_dir}
   ${OPT_BIN}/kubectl completion zsh > ${completion_dir}/kubectl
 
-  make_tea_command_with_bin_name "kubectl" "kubectl1.28" "--silent" "kubernetes.io/kubectl=${kubectl_1_28_version}"
-  make_tea_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
-  make_tea_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
-  make_tea_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
+  make_pkgx_command_with_bin_name "kubectl" "kubectl1.28" "--silent" "kubernetes.io/kubectl=${kubectl_1_28_version}"
+  make_pkgx_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
+  make_pkgx_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
+  make_pkgx_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
 }
 
 setup_kind() {
   info "Installing kind..."
   version=0.20.0
-  make_tea_command "kind" "" "kind.sigs.k8s.io=${version}"
+  make_pkgx_command "kind" "" "kind.sigs.k8s.io=${version}"
 }
 
 setup_minikube() {
   info "Installing minikube..."
   version=1.31.2
-  make_tea_command "minikube" "" "kubernetes.io/minikube=${version}"
+  make_pkgx_command "minikube" "" "kubernetes.io/minikube=${version}"
 }
 
 setup_kustomize() {
   info "Installing kustomize..."
   version=v5.1.1
-  make_tea_command "kustomize" "--silent" "kubernetes.io/kustomize=${version}"
+  make_pkgx_command "kustomize" "--silent" "kubernetes.io/kustomize=${version}"
 }
 
 setup_helm() {
   info "Installing helm..."
   version=v3.12.3
-  make_tea_command "helm" "--silent" "helm.sh=${version}"
+  make_pkgx_command "helm" "--silent" "helm.sh=${version}"
 }
 
 setup_kubectx() {
@@ -525,32 +525,32 @@ setup_ripgrep() {
 setup_golangci_lint() {
   info "Installing golangci-lint..."
   version=v1.54.2
-  make_tea_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
+  make_pkgx_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
 }
 
 setup_vault() {
   info "Installing vault..."
   version=v1.14.1
-  make_tea_command "vault" "--silent" "vaultproject.io=${version}"
+  make_pkgx_command "vault" "--silent" "vaultproject.io=${version}"
 }
 
 setup_python() {
   info "Installing python..."
   version=3.11.4
-  make_tea_command "python" "--silent" "python.org=${version}"
+  make_pkgx_command "python" "--silent" "python.org=${version}"
 }
 
 setup_ruby() {
   info "Installing ruby..."
   ruby_version=3.2.2
   gem_version=3.4.9
-  make_tea_command "ruby" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
-  make_tea_command "gem" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
+  make_pkgx_command "ruby" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
+  make_pkgx_command "gem" "--silent" "ruby-lang.org=${ruby_version}" "rubygems.org=${gem_version}"
 }
 
 setup_aws() {
   info "Installing aws..."
-  make_tea_command "aws" "--silent" "aws.amazon.com/cli"
+  make_pkgx_command "aws" "--silent" "aws.amazon.com/cli"
 }
 
 setup_rustup_init() {
@@ -559,7 +559,7 @@ setup_rustup_init() {
   cat <<EOF > ${rustup_init_path}
 #!/usr/bin/env sh
 
-tea rustup-init --no-modify-path --default-toolchain nightly --profile default "\$@"
+pkgx rustup-init --no-modify-path --default-toolchain nightly --profile default "\$@"
 EOF
   chmod +x ${rustup_init_path}
 }
@@ -578,7 +578,7 @@ EOF
 ### main ###
 make_links
 make_local_configs
-setup_tea &
+setup_pkgx &
 setup_aqua &
 setup_rtx &
 setup_deno &
