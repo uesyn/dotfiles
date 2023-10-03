@@ -266,22 +266,6 @@ setup_rtx() {
   tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
 }
 
-setup_rust_analyzer() {
-  info "Installing rust-analyzer..."
-  version=2023-08-07
-  key=rust-analyzer_${version}
-
-  download_if_linux_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-unknown-linux-gnu.gz
-  download_if_linux_amd64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-x86_64-unknown-linux-gnu.gz
-  download_if_darwin_arm64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-aarch64-apple-darwin.gz
-  download_if_darwin_amd64 ${key} https://github.com/rust-lang/rust-analyzer/releases/download/${version}/rust-analyzer-x86_64-apple-darwin.gz
-
-  cache_file=$(get_cache ${key})
-  bin=${OPT_BIN}/rust-analyzer
-  gunzip -k -c ${cache_file} > ${bin}
-  chmod +x ${bin}
-}
-
 make_pkgx_command_with_bin_name() {
   cmd_name=$1
   bin_name=$2
@@ -360,36 +344,6 @@ setup_zellij() {
   make_pkgx_command "zellij" "" "crates.io/zellij=${version}"
 }
 
-setup_go() {
-  info "Installing go..."
-  go_version=1.20.8
-  gopls_version=v0.13.2
-  go_1_21_version="1.21.1"
-  make_pkgx_command "go" "--silent" "go.dev=${go_version}"
-  make_pkgx_command_with_bin_name "go" "go1.21" "--silent" "go.dev=${go_1_21_version}"
-  gopls_path=${OPT_BIN}/gopls
-  cat <<EOF > ${gopls_path}
-#!/usr/bin/env sh
-
-pkgx --silent +go.dev=${go_version} go run golang.org/x/tools/gopls@${gopls_version} "\$@"
-EOF
-  chmod +x ${gopls_path}
-}
-
-setup_deno() {
-  info "Installing deno..."
-  version=1.37.1
-  key="deno_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/LukeChannings/deno-arm64/releases/download/v${version}/deno-linux-arm64.zip
-  download_if_linux_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-unknown-linux-gnu.zip
-  download_if_darwin_arm64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-aarch64-apple-darwin.zip
-  download_if_darwin_amd64 ${key} https://github.com/denoland/deno/releases/download/v${version}/deno-x86_64-apple-darwin.zip
-
-  cache_file=$(get_cache ${key})
-  unzip -p ${cache_file} > ${OPT_BIN}/deno
-}
-
 setup_kubectl() {
   info "Installing kubectl..."
   version=1.28.2
@@ -422,12 +376,6 @@ setup_kind() {
   info "Installing kind..."
   version=0.20.0
   make_pkgx_command "kind" "" "kind.sigs.k8s.io=${version}"
-}
-
-setup_minikube() {
-  info "Installing minikube..."
-  version=1.31.2
-  make_pkgx_command "minikube" "" "kubernetes.io/minikube=${version}"
 }
 
 setup_kustomize() {
@@ -507,18 +455,6 @@ setup_ripgrep() {
   tar xzf ${cache_file} -C ${OPT_BIN}
 }
 
-setup_golangci_lint() {
-  info "Installing golangci-lint..."
-  version=v1.54.2
-  make_pkgx_command "golangci-lint" "--silent" "golangci-lint.run=${version}"
-}
-
-setup_vault() {
-  info "Installing vault..."
-  version=v1.14.1
-  make_pkgx_command "vault" "--silent" "vaultproject.io=${version}"
-}
-
 setup_aws() {
   info "Installing aws..."
   make_pkgx_command "aws" "--silent" "aws.amazon.com/cli"
@@ -541,27 +477,21 @@ make_local_configs
 setup_pkgx &
 setup_aqua &
 setup_rtx &
-setup_deno &
 setup_jq &
-wait
-setup_rust_analyzer &
+setup_fzf &
+setup_ripgrep &
 setup_neovim &
+wait
 setup_yq &
 setup_gh &
 setup_tmux &
-setup_go &
 setup_zellij &
 setup_aws &
 setup_kubectl &
 setup_kustomize &
 setup_helm &
-setup_minikube &
 setup_kind &
 setup_kubectx &
-setup_fzf &
-setup_ripgrep &
-setup_golangci_lint &
-setup_vault &
 setup_mc &
 wait
 show_infos
