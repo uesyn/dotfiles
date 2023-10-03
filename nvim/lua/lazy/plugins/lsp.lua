@@ -174,7 +174,7 @@ return {
         }
       end
 
-      local direct_managed_servers = { "gopls", "rust_analyzer", "denols" }
+      local direct_managed_servers = { "rust_analyzer", "denols" }
       local node_root_dir = require('lspconfig').util.root_pattern("package.json")
       local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
         "import_map.json")
@@ -210,7 +210,6 @@ return {
             goto continue
           end
           opts.root_dir = deno_root_dir
-          opts.cmd = { 'deno', 'lsp', '--unstable' }
         end
         require("lspconfig")[server_name].setup(opts)
         ::continue::
