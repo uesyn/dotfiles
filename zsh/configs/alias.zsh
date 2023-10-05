@@ -94,7 +94,7 @@ function pip() {
 }
 
 function setup-python() {
-  env +python@3.11
+  env +python@3.12
 }
 
 function setup-go() {
