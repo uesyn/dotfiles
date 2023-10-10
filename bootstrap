@@ -180,7 +180,7 @@ install_neovim() {
   neovim_dir=${OPT_DIR}/nvim
   neovim_bin_dir=${neovim_dir}/bin
   export PATH=${neovim_bin_dir}:$PATH
-  version=v0.9.2
+  version=v0.9.4
 
   key="neovim_${version}"
   download_if_linux_arm64 ${key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${version}/nvim-linux-arm64.tar.gz
@@ -299,7 +299,7 @@ make_pkgx_command() {
 setup_neovim() {
   info "Installing neovim and plugins..."
   install_neovim
-  # make_pkgx_command "nvim" "" "neovim.io=0.9.2"
+  # make_pkgx_command "nvim" "" "neovim.io=0.9.4"
   nvim --headless "+Lazy! restore" +qa
   git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
   nvim --headless "+Lazy! restore" +qa
