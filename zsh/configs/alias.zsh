@@ -66,21 +66,6 @@ case $OSTYPE in
     ;;
 esac
 
-function z() {
-  if [[ -x "$(command -v zellij)" ]]; then
-    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
-    zellij attach -c
-    return
-  fi
-}
-
-function tm() {
-  if [[ -x "$(command -v tmux)" ]]; then
-    tmux new-session -ADs main
-    return
-  fi
-}
-
 # nvim
 [[ -x "$(command -v nvim)" ]] && alias vim="nvim"
 
@@ -126,5 +111,22 @@ function devenv() {
     setup-rust
     setup-ruby
     setup-python
+  fi
+}
+
+function z() {
+  devenv
+  if [[ -x "$(command -v zellij)" ]]; then
+    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
+    zellij attach -c
+    return
+  fi
+}
+
+function tm() {
+  devenv
+  if [[ -x "$(command -v tmux)" ]]; then
+    tmux new-session -ADs main
+    return
   fi
 }
