@@ -117,8 +117,14 @@ function setup-deno() {
   env +deno.land@1.37.1
 }
 
-function setup-devenv() {
+function devenv() {
+  local mode=$1
   setup-go
   setup-node
   setup-deno
+  if [[ $mode =~ (full|f) ]]; then
+    setup-rust
+    setup-ruby
+    setup-python
+  fi
 }
