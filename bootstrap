@@ -137,7 +137,7 @@ TEA_PREFIX=${TEA_PREFIX:-${HOME}/.pkgx}
 
 setup_pkgx() {
   info "Installing pkgx..."
-  version="1.0.0"
+  version="1.0.1"
   key="pkgx_${version}"
   download_if_linux_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+aarch64.tar.xz
   download_if_linux_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+x86-64.tar.xz
