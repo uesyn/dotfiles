@@ -78,44 +78,16 @@ function pip() {
   python -m pip "$@"
 }
 
-function setup-python() {
-  env +python@3.12
-}
-
-function setup-go() {
-  env +go@1.20
-}
-
-function setup-node() {
-  env +node@20
-}
-
-function setup-rust() {
-  env +rust +rustup +cargo
-}
-
-function setup-ruby() {
-  env +ruby
-}
-
-function setup-deno() {
-  env +deno.land@1.37.1
-}
-
 function devenv() {
   local mode=$1
-  setup-go
-  setup-node
-  setup-deno
+  env +go@1.20 +node@20 +deno.land@1.37.1
   if [[ $mode =~ (full|f) ]]; then
-    setup-rust
-    setup-ruby
-    setup-python
+    env +ruby +rust +rustup +cargo +python@3.12
   fi
 }
 
 function z() {
-  devenv
+  devenv $1
   if [[ -x "$(command -v zellij)" ]]; then
     [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
     zellij attach -c
@@ -124,7 +96,7 @@ function z() {
 }
 
 function tm() {
-  devenv
+  devenv $1
   if [[ -x "$(command -v tmux)" ]]; then
     tmux new-session -ADs main
     return
