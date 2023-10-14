@@ -80,9 +80,9 @@ function pip() {
 
 function devenv() {
   local mode=$1
-  env +go@1.20 +node@20 +deno.land@1.37.1
+  env +go@1.20 +node@20 +deno.land@1.37.1 +rustup-init
   if [[ $mode =~ (full|f) ]]; then
-    env +ruby +rust +rustup +cargo +python@3.12
+    env +ruby +python@3.12
   fi
 }
 
@@ -101,4 +101,8 @@ function tm() {
     tmux new-session -ADs main
     return
   fi
+}
+
+function rustup-init() {
+  command rustup-init --no-modify-path "$@"
 }
