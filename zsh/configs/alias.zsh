@@ -96,20 +96,24 @@ function devenv() {
 }
 
 function z() {
-  devenv $1
-  if [[ -x "$(command -v zellij)" ]]; then
-    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
-    zellij attach -c
-    return
-  fi
+  (
+    devenv $1
+    if [[ -x "$(command -v zellij)" ]]; then
+      [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
+      zellij attach -c
+      return
+    fi
+  )
 }
 
 function tm() {
-  devenv $1
-  if [[ -x "$(command -v tmux)" ]]; then
-    tmux new-session -ADs main
-    return
-  fi
+  (
+    devenv $1
+    if [[ -x "$(command -v tmux)" ]]; then
+      tmux new-session -ADs main
+      return
+    fi
+  )
 }
 
 function rustup-init() {
