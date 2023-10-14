@@ -344,11 +344,6 @@ setup_zellij() {
   make_pkgx_command "zellij" "" "crates.io/zellij=${version}"
 }
 
-setup_docker() {
-  info "Installing docker cli..."
-  make_pkgx_command "docker" "--silent" "docker"
-}
-
 setup_kubectl() {
   info "Installing kubectl..."
   version=1.28.2
@@ -498,6 +493,5 @@ setup_helm &
 setup_kind &
 setup_kubectx &
 setup_mc &
-setup_docker &
 wait
 show_infos

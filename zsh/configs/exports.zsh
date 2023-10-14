@@ -94,8 +94,3 @@ path=(${HOME}/.local/bin $path)
 if [[ -x "$(command -v rtx)" ]]; then
   eval "$(rtx activate zsh)"
 fi
-
-# lima
-if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
-  export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
-fi

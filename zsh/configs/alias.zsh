@@ -81,6 +81,10 @@ function pip() {
 function devenv() {
   local mode=$1
   env +go@1.20 +node@20 +deno.land@1.37.1 +rustup-init
+  if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
+    env +docker
+    export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
+  fi
   if [[ $mode =~ (full|f) ]]; then
     env +ruby +python@3.12
   fi
