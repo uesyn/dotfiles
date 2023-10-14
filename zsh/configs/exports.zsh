@@ -87,10 +87,15 @@ export RUSTUP_HOME=${OPT_DIR}/rust/rustup
 export CARGO_HOME=${OPT_DIR}/rust/cargo
 path=($path ${CARGO_HOME}/bin)
 
-# tea
+# pkgx
 path=(${HOME}/.local/bin $path)
 
 # rtx
 if [[ -x "$(command -v rtx)" ]]; then
   eval "$(rtx activate zsh)"
+fi
+
+# lima
+if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
+  export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
 fi
