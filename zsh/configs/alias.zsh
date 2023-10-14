@@ -79,14 +79,19 @@ function pip() {
 }
 
 function devenv() {
+  NODE_VERSION=${NODE_VERSION:-20}
+  GO_VERSION=${GO_VERSION:-1.20}
+  DENO_VERSION=${DENO_VERSION:-1.37}
+  PYTHON_VERSION=${PYTHON_VERSION:-3.12}
+
   local mode=$1
-  env +go@1.20 +node@20 +deno.land@1.37.1 +rustup-init
+  env +go@${GO_VERSION} +node@${NODE_VERSION} +deno.land@${DENO_VERSION} +rustup-init
   if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
     env +docker
     export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
   fi
   if [[ $mode =~ (full|f) ]]; then
-    env +ruby +python@3.12
+    env +ruby +python@${PYTHON_VERSION}
   fi
 }
 
