@@ -18,11 +18,11 @@ type SSHOptions struct {
 	lForwards    []string
 	rForwards    []string
 	identityFile string
+	command      []string
+	envs         map[string]string
+	namespace    string
 
-	sshCommand []string
-	sshEnvs    map[string]string
-	namespace  string
-	manager    manager.Manager
+	manager manager.Manager
 }
 
 func (o *SSHOptions) AddFlags(fs *pflag.FlagSet) {
@@ -49,16 +49,16 @@ func (o *SSHOptions) Complete(f cmdutil.Factory) error {
 	if err != nil {
 		return err
 	}
-	o.sshCommand = conf.SSH.Command
-	if len(o.sshCommand) == 0 {
-		o.sshCommand = []string{"sh"}
+	o.command = conf.SSH.Command
+	if len(o.command) == 0 {
+		o.command = []string{"sh"}
 	}
 
 	envs := make(map[string]string)
 	for _, env := range conf.Envs {
 		envs[env.Name] = env.Value
 	}
-	o.sshEnvs = envs
+	o.envs = envs
 	return nil
 }
 
@@ -73,7 +73,7 @@ func (o *SSHOptions) Validate() error {
 		}
 	}
 
-	if len(o.sshCommand) == 0 {
+	if len(o.command) == 0 {
 		return errors.New("must set ssh command")
 	}
 
@@ -88,11 +88,11 @@ func (o *SSHOptions) Run(ctx context.Context) error {
 	if len(o.identityFile) > 0 {
 		opts = append(opts, manager.WithSSHIdentityFile(o.identityFile))
 	}
-	if len(o.sshEnvs) > 0 {
-		opts = append(opts, manager.WithSSHEnvs(o.sshEnvs))
+	if len(o.envs) > 0 {
+		opts = append(opts, manager.WithSSHEnvs(o.envs))
 	}
-	if len(o.sshCommand) > 0 {
-		opts = append(opts, manager.WithSSHCommand(o.sshCommand))
+	if len(o.command) > 0 {
+		opts = append(opts, manager.WithSSHCommand(o.command))
 	}
 	if len(o.lForwards) > 0 {
 		for _, arg := range o.lForwards {
