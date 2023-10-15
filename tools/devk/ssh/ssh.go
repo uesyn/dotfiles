@@ -6,20 +6,14 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 )
 
 type Options struct {
-	IdentityFile         string
-	Envs                 map[string]string
-	Command              []string
-	LocalForwardedPorts  []string
-	RemoteForwardedPorts []string
-}
-
-type ForwardedPort struct {
-	From int
-	To   int
+	IdentityFile string
+	Envs         map[string]string
+	Command      []string
+	LForwards    []string
+	RForwards    []string
 }
 
 func (o *Options) Complete() error {
@@ -29,18 +23,11 @@ func (o *Options) Complete() error {
 			return fmt.Errorf("failed to load identity file: %w", err)
 		}
 	}
-
-	for _, p := range o.LocalForwardedPorts {
-		_, err := o.parseForwardedPort(p)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
 func (o *Options) Connect(ctx context.Context, user, ip string, port int) error {
-	args, err := o.buildSSHCommandArgs(user, ip, port)
+	args, err := o.args(user, ip, port)
 	if err != nil {
 		return err
 	}
@@ -48,10 +35,11 @@ func (o *Options) Connect(ctx context.Context, user, ip string, port int) error 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Env = os.Environ()
 	return cmd.Run()
 }
 
-func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, error) {
+func (o *Options) args(user, host string, port int) ([]string, error) {
 	var args []string
 	args = append(
 		args,
@@ -64,24 +52,13 @@ func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, erro
 	if len(o.IdentityFile) > 0 {
 		args = append(args, "-i", o.IdentityFile)
 	}
-	const localhost = "127.0.0.1"
-	for _, port := range o.LocalForwardedPorts {
-		fp, err := o.parseForwardedPort(port)
-		if err != nil {
-			return nil, err
-		}
-		opt := fmt.Sprintf("%d:%s:%d", fp.From, localhost, fp.To)
-		args = append(args, "-L", opt)
+	for _, pf := range o.LForwards {
+		args = append(args, "-L", pf)
 	}
-	for _, port := range o.RemoteForwardedPorts {
-		fp, err := o.parseForwardedPort(port)
-		if err != nil {
-			return nil, err
-		}
-		opt := fmt.Sprintf("%d:%s:%d", fp.From, localhost, fp.To)
-		args = append(args, "-R", opt)
+	for _, pf := range o.RForwards {
+		args = append(args, "-R", pf)
 	}
-	args = append(args, fmt.Sprintf("%s@%s", user, ip))
+	args = append(args, fmt.Sprintf("%s@%s", user, host))
 	args = append(args, "--")
 	args = append(args, "env")
 	for k, v := range o.Envs {
@@ -89,24 +66,4 @@ func (o *Options) buildSSHCommandArgs(user, ip string, port int) ([]string, erro
 	}
 	args = append(args, o.Command...)
 	return args, nil
-}
-
-func (o *Options) parseForwardedPort(port string) (*ForwardedPort, error) {
-	pp := strings.SplitN(port, ":", 2)
-	lpStr, rpStr := pp[0], pp[0]
-	if len(pp) > 1 {
-		rpStr = pp[1]
-	}
-	l, err := strconv.Atoi(lpStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse port: %w", err)
-	}
-	r, err := strconv.Atoi(rpStr)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse port: %w", err)
-	}
-	return &ForwardedPort{
-		To:   r,
-		From: l,
-	}, nil
 }

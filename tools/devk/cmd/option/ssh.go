@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
@@ -13,8 +15,8 @@ import (
 
 type SSHOptions struct {
 	name         string
-	lPorts       []string
-	rPorts       []string
+	lForwards    []string
+	rForwards    []string
 	identityFile string
 
 	sshCommand []string
@@ -25,8 +27,8 @@ type SSHOptions struct {
 
 func (o *SSHOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
-	fs.StringArrayVarP(&o.lPorts, "local", "L", nil, "Local port forwarding ports. e.g., 8080:80, 8080")
-	fs.StringArrayVarP(&o.rPorts, "remote", "R", nil, "Remote port forwarding ports. e.g., 8080:80, 8080")
+	fs.StringArrayVarP(&o.lForwards, "local", "L", nil, "Local port forwarding ports. e.g., 8080:80, 8080")
+	fs.StringArrayVarP(&o.rForwards, "remote", "R", nil, "Remote port forwarding ports. e.g., 8080:80, 8080")
 	fs.StringVarP(&o.identityFile, "identity-file", "i", "", "Identity file for SSH authentication")
 }
 
@@ -92,11 +94,47 @@ func (o *SSHOptions) Run(ctx context.Context) error {
 	if len(o.sshCommand) > 0 {
 		opts = append(opts, manager.WithSSHCommand(o.sshCommand))
 	}
-	if len(o.lPorts) > 0 {
-		opts = append(opts, manager.WithSSHLocalForwardedPorts(o.lPorts))
+	if len(o.lForwards) > 0 {
+		for _, arg := range o.lForwards {
+			v, err := o.parseForwardFlag(arg)
+			if err != nil {
+				return err
+			}
+			opts = append(opts, manager.WithSSHLForward(v))
+		}
 	}
-	if len(o.rPorts) > 0 {
-		opts = append(opts, manager.WithSSHRemoteForwardedPorts(o.rPorts))
+	if len(o.rForwards) > 0 {
+		for _, arg := range o.rForwards {
+			v, err := o.parseForwardFlag(arg)
+			if err != nil {
+				return err
+			}
+			opts = append(opts, manager.WithSSHRForward(v))
+		}
 	}
 	return o.manager.SSH(ctx, o.name, o.namespace, opts...)
+}
+
+func (o *SSHOptions) parseForwardFlag(arg string) (string, error) {
+	pp := strings.SplitN(arg, ":", 2)
+	switch len(pp) {
+	case 1:
+		port, err := strconv.Atoi(pp[0])
+		if err != nil {
+			return "", fmt.Errorf("invalid port %q", pp[0])
+		}
+		return fmt.Sprintf("%d:localhost:%d", port, port), nil
+	case 2:
+		local, err := strconv.Atoi(pp[0])
+		if err != nil {
+			return "", fmt.Errorf("invalid port %q", pp[0])
+		}
+		remote, err := strconv.Atoi(pp[1])
+		if err != nil {
+			return "", fmt.Errorf("invalid port %q", pp[1])
+		}
+		return fmt.Sprintf("%d:localhost:%d", local, remote), nil
+	default:
+		return "", fmt.Errorf("invalid arg %q", arg)
+	}
 }

@@ -414,33 +414,38 @@ type withSSHEnvs struct {
 }
 
 func (o *withSSHEnvs) apply(opts *ssh.Options) *ssh.Options {
-	opts.Envs = o.envs
+	if opts.Envs == nil {
+		opts.Envs = make(map[string]string)
+	}
+	for k, v := range o.envs {
+		opts.Envs[k] = v
+	}
 	return opts
 }
 
-type withSSHLocalForwardedPorts struct {
-	ports []string
+type withSSHLForward struct {
+	lforward string
 }
 
-func WithSSHLocalForwardedPorts(ports []string) SSHOption {
-	return &withSSHLocalForwardedPorts{ports: ports}
+func WithSSHLForward(lforward string) SSHOption {
+	return &withSSHLForward{lforward: lforward}
 }
 
-func (o *withSSHLocalForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
-	opts.LocalForwardedPorts = o.ports
+func (o *withSSHLForward) apply(opts *ssh.Options) *ssh.Options {
+	opts.LForwards = append(opts.LForwards, o.lforward)
 	return opts
 }
 
-type withSSHRemoteForwardedPorts struct {
-	ports []string
+type withSSHRForward struct {
+	rforward string
 }
 
-func WithSSHRemoteForwardedPorts(ports []string) SSHOption {
-	return &withSSHRemoteForwardedPorts{ports: ports}
+func WithSSHRForward(rforward string) SSHOption {
+	return &withSSHRForward{rforward: rforward}
 }
 
-func (o *withSSHRemoteForwardedPorts) apply(opts *ssh.Options) *ssh.Options {
-	opts.RemoteForwardedPorts = o.ports
+func (o *withSSHRForward) apply(opts *ssh.Options) *ssh.Options {
+	opts.RForwards = append(opts.RForwards, o.rforward)
 	return opts
 }
 
