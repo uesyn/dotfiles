@@ -198,7 +198,7 @@ func (m *manager) deleteObjects(ctx context.Context, pod *applyconfigurationscor
 		l.V(2).Info("delete object", "obj", pod)
 		opts := metav1.DeleteOptions{}
 		if force {
-			opts.GracePeriodSeconds = ptr.To[int64](1)
+			opts.GracePeriodSeconds = ptr.To[int64](0)
 		}
 		err := m.clientset.CoreV1().Pods(*pod.Namespace).Delete(ctx, *pod.Name, opts)
 		if err != nil && !apierrors.IsNotFound(err) {
