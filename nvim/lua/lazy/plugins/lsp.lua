@@ -174,7 +174,7 @@ return {
         }
       end
 
-      local direct_managed_servers = { "rust_analyzer", "denols" }
+      local direct_managed_servers = { "denols" }
       local node_root_dir = require('lspconfig').util.root_pattern("package.json")
       local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
         "import_map.json")
@@ -201,11 +201,7 @@ return {
 
       for _, server_name in ipairs(direct_managed_servers) do
         local opts = default_opts()
-        if server_name == "rust_analyzer" then
-          if vim.fn.executable("rust-analyzer") == 0 or vim.fn.executable("cargo") == 0 then
-            goto continue
-          end
-        elseif server_name == "denols" then
+        if server_name == "denols" then
           if vim.fn.executable("deno") == 0 then
             goto continue
           end

@@ -117,5 +117,5 @@ function tm() {
 }
 
 function rustup-init() {
-  command rustup-init --no-modify-path -c rust-analyzer "$@"
+  command rustup-init --no-modify-path "$@"
 }
