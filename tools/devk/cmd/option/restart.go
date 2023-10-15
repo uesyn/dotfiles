@@ -14,10 +14,11 @@ import (
 
 type RestartOptions struct {
 	name        string
+	namespace   string
+	force       bool
 	selectNodes bool
 	gpuNum      int
 
-	namespace string
 	clientset kubernetes.Interface
 	manager   manager.Manager
 }
@@ -25,6 +26,7 @@ type RestartOptions struct {
 func (o *RestartOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
 	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
+	fs.BoolVar(&o.force, "force", false, "If true, immediately remove resources from API and bypass graceful deletion")
 	fs.IntVar(&o.gpuNum, "gpu", 0, "Amount of GPU")
 }
 
@@ -67,7 +69,7 @@ func (o *RestartOptions) Validate() error {
 func (o *RestartOptions) Run(ctx context.Context) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.name, "namespace", o.namespace)
 
-	if err := o.manager.Stop(ctx, o.name, o.namespace); err != nil {
+	if err := o.manager.Stop(ctx, o.name, o.namespace, o.force); err != nil {
 		return err
 	}
 

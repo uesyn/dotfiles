@@ -33,6 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/utils/ptr"
 )
 
 const (
@@ -41,13 +42,13 @@ const (
 
 type Manager interface {
 	Run(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
-	Delete(ctx context.Context, devkName, namespace string) error
-	Update(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
+	Delete(ctx context.Context, devkName, namespace string, force bool) error
+	Update(ctx context.Context, devkName, namespace string, force bool, mutators ...mutator.Mutator) error
 	Exec(ctx context.Context, devkName, namespace string, opts ...ExecOption) error
 	PortForward(ctx context.Context, devkName, namespace string, opts ...PortForwardOption) error
 	SSH(ctx context.Context, devkName, namespace string, opts ...SSHOption) error
 	Start(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
-	Stop(ctx context.Context, devkName, namespace string) error
+	Stop(ctx context.Context, devkName, namespace string, force bool) error
 	List(ctx context.Context, namespace string) ([]info.DevkInfoAccessor, error)
 	Protect(ctx context.Context, devkName, namespace string) error
 	Unprotect(ctx context.Context, devkName, namespace string) error
@@ -96,7 +97,7 @@ func (m *manager) Run(ctx context.Context, devkName, namespace string, mutators 
 	}
 
 	failureHandler := func() {
-		if err := m.deleteObjects(ctx, manifests.Pod, manifests.ConfigMaps, manifests.PVCs); err != nil {
+		if err := m.deleteObjects(ctx, manifests.Pod, manifests.ConfigMaps, manifests.PVCs, true); err != nil {
 			logger.Error(err, "failed to clean up devk objects")
 			return
 		}
@@ -160,7 +161,7 @@ func (m *manager) applyObjects(ctx context.Context, pod *applyconfigurationscore
 
 var protectedError = errors.New("protected")
 
-func (m *manager) Delete(ctx context.Context, devkName, namespace string) error {
+func (m *manager) Delete(ctx context.Context, devkName, namespace string, force bool) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
@@ -178,7 +179,7 @@ func (m *manager) Delete(ctx context.Context, devkName, namespace string) error 
 		return protectedError
 	}
 
-	if err := m.deleteObjects(ctx, r.Manifests.Pod, r.Manifests.ConfigMaps, r.Manifests.PVCs); err != nil {
+	if err := m.deleteObjects(ctx, r.Manifests.Pod, r.Manifests.ConfigMaps, r.Manifests.PVCs, force); err != nil {
 		logger.Error(err, "failed to delete devk")
 		return err
 	}
@@ -190,11 +191,15 @@ func (m *manager) Delete(ctx context.Context, devkName, namespace string) error 
 	return nil
 }
 
-func (m *manager) deleteObjects(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, cms []applyconfigurationscorev1.ConfigMapApplyConfiguration, pvcs []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration) error {
+func (m *manager) deleteObjects(ctx context.Context, pod *applyconfigurationscorev1.PodApplyConfiguration, cms []applyconfigurationscorev1.ConfigMapApplyConfiguration, pvcs []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration, force bool) error {
 	if pod != nil {
 		l := logr.FromContextOrDiscard(ctx).WithValues("objKind", "Pod", "objName", *pod.Name)
 		l.V(2).Info("delete object", "obj", pod)
-		err := m.clientset.CoreV1().Pods(*pod.Namespace).Delete(ctx, *pod.Name, metav1.DeleteOptions{})
+		opts := metav1.DeleteOptions{}
+		if force {
+			opts.GracePeriodSeconds = ptr.To[int64](1)
+		}
+		err := m.clientset.CoreV1().Pods(*pod.Namespace).Delete(ctx, *pod.Name, opts)
 		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
@@ -546,7 +551,7 @@ func (m *manager) Start(ctx context.Context, devkName, namespace string, mutator
 	return nil
 }
 
-func (m *manager) Stop(ctx context.Context, devkName, namespace string) error {
+func (m *manager) Stop(ctx context.Context, devkName, namespace string, force bool) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
@@ -558,7 +563,7 @@ func (m *manager) Stop(ctx context.Context, devkName, namespace string) error {
 	pod := r.Manifests.Pod
 	cms := r.Manifests.ConfigMaps
 	// Delete only Pod object
-	if err := m.deleteObjects(ctx, pod, cms, nil); err != nil {
+	if err := m.deleteObjects(ctx, pod, cms, nil, force); err != nil {
 		logger.Error(err, "failed to stop pod")
 		return err
 	}
@@ -585,7 +590,7 @@ func (m *manager) waitForPodTerminated(ctx context.Context, podName, namespace s
 	})
 }
 
-func (m *manager) Update(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error {
+func (m *manager) Update(ctx context.Context, devkName, namespace string, force bool, mutators ...mutator.Mutator) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)
 
@@ -596,7 +601,7 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, mutato
 	}
 
 	oldManifests := r.Manifests
-	if err := m.deleteObjects(ctx, oldManifests.Pod, oldManifests.ConfigMaps, nil); err != nil {
+	if err := m.deleteObjects(ctx, oldManifests.Pod, oldManifests.ConfigMaps, nil, force); err != nil {
 		logger.Error(err, "failed to delete old devk pod")
 		return err
 	}

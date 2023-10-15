@@ -11,15 +11,17 @@ import (
 )
 
 type StopOptions struct {
-	name string
-
+	name      string
 	namespace string
+	force     bool
+
 	clientset kubernetes.Interface
 	manager   manager.Manager
 }
 
 func (o *StopOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
+	fs.BoolVar(&o.force, "force", false, "If true, immediately remove resources from API and bypass graceful deletion")
 }
 
 func (o *StopOptions) Complete(f cmdutil.Factory) error {
@@ -59,5 +61,5 @@ func (o *StopOptions) Validate() error {
 }
 
 func (o *StopOptions) Run(ctx context.Context) error {
-	return o.manager.Stop(ctx, o.name, o.namespace)
+	return o.manager.Stop(ctx, o.name, o.namespace, o.force)
 }

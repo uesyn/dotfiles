@@ -14,10 +14,11 @@ import (
 
 type UpdateOptions struct {
 	name        string
+	namespace   string
+	force       bool
 	selectNodes bool
 	gpuNum      int
 
-	namespace string
 	clientset kubernetes.Interface
 	manager   manager.Manager
 }
@@ -25,6 +26,7 @@ type UpdateOptions struct {
 func (o *UpdateOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
 	fs.BoolVarP(&o.selectNodes, "select-nodes", "s", false, "Select node to run on with fuzzy finder")
+	fs.BoolVar(&o.force, "force", false, "If true, immediately remove resources from API and bypass graceful deletion")
 	fs.IntVar(&o.gpuNum, "gpu", 0, "Amount of GPU")
 }
 
@@ -75,5 +77,5 @@ func (o *UpdateOptions) Run(ctx context.Context) error {
 	if o.gpuNum > 0 {
 		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
-	return o.manager.Update(ctx, o.name, o.namespace, ms...)
+	return o.manager.Update(ctx, o.name, o.namespace, o.force, ms...)
 }

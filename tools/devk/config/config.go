@@ -3,10 +3,10 @@ package config
 import (
 	"encoding/json"
 	"errors"
+	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
 	"os"
-	"github.com/sirupsen/logrus"
 
 	applyconfigurationscorev1 "k8s.io/client-go/applyconfigurations/core/v1"
 	"sigs.k8s.io/yaml"
