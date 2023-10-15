@@ -8,9 +8,11 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/lima-vm/sshocker/pkg/mount"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
 	"github.com/uesyn/dotfiles/tools/devk/manager"
+	"github.com/uesyn/dotfiles/tools/devk/util"
 )
 
 type SSHOptions struct {
@@ -21,14 +23,15 @@ type SSHOptions struct {
 	command      []string
 	envs         map[string]string
 	namespace    string
-
-	manager manager.Manager
+	mounts       []string
+	manager      manager.Manager
 }
 
 func (o *SSHOptions) AddFlags(fs *pflag.FlagSet) {
 	fs.StringVarP(&o.name, "name", "n", "default", "Devk name")
 	fs.StringArrayVarP(&o.lForwards, "local", "L", nil, "Local port forwarding ports. e.g., 8080:80, 8080")
 	fs.StringArrayVarP(&o.rForwards, "remote", "R", nil, "Remote port forwarding ports. e.g., 8080:80, 8080")
+	fs.StringArrayVarP(&o.mounts, "volume", "v", nil, "Bind mount a volume")
 	fs.StringVarP(&o.identityFile, "identity-file", "i", "", "Identity file for SSH authentication")
 }
 
@@ -50,9 +53,6 @@ func (o *SSHOptions) Complete(f cmdutil.Factory) error {
 		return err
 	}
 	o.command = conf.SSH.Command
-	if len(o.command) == 0 {
-		o.command = []string{"sh"}
-	}
 
 	envs := make(map[string]string)
 	for _, env := range conf.Envs {
@@ -73,12 +73,14 @@ func (o *SSHOptions) Validate() error {
 		}
 	}
 
-	if len(o.command) == 0 {
-		return errors.New("must set ssh command")
-	}
-
 	if o.manager == nil {
 		return errors.New("must set manager")
+	}
+
+	for _, m := range o.mounts {
+		if _, err := o.parseVFlag(m); err != nil {
+			return fmt.Errorf("failed to parse --volume flag: %v", err)
+		}
 	}
 	return nil
 }
@@ -112,6 +114,15 @@ func (o *SSHOptions) Run(ctx context.Context) error {
 			opts = append(opts, manager.WithSSHRForward(v))
 		}
 	}
+	if len(o.mounts) > 0 {
+		for _, arg := range o.mounts {
+			v, err := o.parseVFlag(arg)
+			if err != nil {
+				return err
+			}
+			opts = append(opts, manager.WithSSHVolumeMount(v))
+		}
+	}
 	return o.manager.SSH(ctx, o.name, o.namespace, opts...)
 }
 
@@ -137,4 +148,28 @@ func (o *SSHOptions) parseForwardFlag(arg string) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid arg %q", arg)
 	}
+}
+
+func (o *SSHOptions) parseVFlag(s string) (mount.Mount, error) {
+	m := mount.Mount{
+		Type: mount.MountTypeReverseSSHFS,
+	}
+	pp := strings.Split(s, ":")
+	switch len(pp) {
+	case 2:
+		m.Source = pp[0]
+		m.Destination = pp[1]
+	case 3:
+		m.Source = pp[0]
+		m.Destination = pp[1]
+		if pp[2] == "ro" {
+			m.Readonly = true
+		} else {
+			return m, fmt.Errorf("invalid mount option %q", pp[2])
+		}
+	default:
+		return m, fmt.Errorf("failed to parse %q", s)
+	}
+	m.Source = util.ExpandPath(m.Source)
+	return m, nil
 }

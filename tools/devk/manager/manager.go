@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+	"github.com/lima-vm/sshocker/pkg/mount"
 	"github.com/moby/term"
 	"github.com/uesyn/dotfiles/tools/devk/common"
 	"github.com/uesyn/dotfiles/tools/devk/config"
@@ -376,7 +377,7 @@ func (m *manager) getPod(ctx context.Context, name, namespace string) (*corev1.P
 }
 
 type SSHOption interface {
-	apply(opts *ssh.Options) *ssh.Options
+	apply(opts *ssh.Config) *ssh.Config
 }
 
 func WithSSHIdentityFile(file string) SSHOption {
@@ -387,7 +388,7 @@ type withSSHIdentityFile struct {
 	file string
 }
 
-func (o *withSSHIdentityFile) apply(opts *ssh.Options) *ssh.Options {
+func (o *withSSHIdentityFile) apply(opts *ssh.Config) *ssh.Config {
 	opts.IdentityFile = o.file
 	return opts
 }
@@ -400,7 +401,7 @@ type withSSHCommand struct {
 	command []string
 }
 
-func (o *withSSHCommand) apply(opts *ssh.Options) *ssh.Options {
+func (o *withSSHCommand) apply(opts *ssh.Config) *ssh.Config {
 	opts.Command = o.command
 	return opts
 }
@@ -413,7 +414,7 @@ type withSSHEnvs struct {
 	envs map[string]string
 }
 
-func (o *withSSHEnvs) apply(opts *ssh.Options) *ssh.Options {
+func (o *withSSHEnvs) apply(opts *ssh.Config) *ssh.Config {
 	if opts.Envs == nil {
 		opts.Envs = make(map[string]string)
 	}
@@ -431,7 +432,7 @@ func WithSSHLForward(lforward string) SSHOption {
 	return &withSSHLForward{lforward: lforward}
 }
 
-func (o *withSSHLForward) apply(opts *ssh.Options) *ssh.Options {
+func (o *withSSHLForward) apply(opts *ssh.Config) *ssh.Config {
 	opts.LForwards = append(opts.LForwards, o.lforward)
 	return opts
 }
@@ -444,8 +445,21 @@ func WithSSHRForward(rforward string) SSHOption {
 	return &withSSHRForward{rforward: rforward}
 }
 
-func (o *withSSHRForward) apply(opts *ssh.Options) *ssh.Options {
+func (o *withSSHRForward) apply(opts *ssh.Config) *ssh.Config {
 	opts.RForwards = append(opts.RForwards, o.rforward)
+	return opts
+}
+
+type withSSHVolumeMount struct {
+	mount mount.Mount
+}
+
+func WithSSHVolumeMount(m mount.Mount) SSHOption {
+	return &withSSHVolumeMount{mount: m}
+}
+
+func (o *withSSHVolumeMount) apply(opts *ssh.Config) *ssh.Config {
+	opts.Mounts = append(opts.Mounts, o.mount)
 	return opts
 }
 
@@ -483,7 +497,7 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...S
 		}
 	}()
 
-	sshOpts := &ssh.Options{}
+	sshOpts := &ssh.Config{}
 	for _, o := range opts {
 		sshOpts = o.apply(sshOpts)
 	}
