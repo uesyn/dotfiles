@@ -27,8 +27,8 @@ function M.setup()
   vim.opt.laststatus = 3
   vim.opt.showtabline = 2
   vim.opt.breakindent = true
-  vim.opt.binary = true
-  vim.opt.eol = false
+  --  vim.opt.binary = true
+  --  vim.opt.eol = false
 
   vim.g.netrw_fastbrowse = 0
 
