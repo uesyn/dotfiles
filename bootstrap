@@ -491,8 +491,8 @@ setup_node() {
   node_version=20
   npm_version=10.2.0
   make_pkgx_command "node" "--silent" "node@${node_version}"
-  make_pkgx_command "npm" "--silent" "npmjs@${npm_version}"
-  make_pkgx_command "npx" "--silent" "npmjs@${npm_version}"
+  make_pkgx_command "npm" "--silent" "npmjs.com@${npm_version}"
+  make_pkgx_command "npx" "--silent" "npmjs.com@${npm_version}"
 }
 
 setup_python() {

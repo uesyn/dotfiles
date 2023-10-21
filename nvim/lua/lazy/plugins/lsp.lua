@@ -174,7 +174,6 @@ return {
         }
       end
 
-      local direct_managed_servers = { "denols" }
       local node_root_dir = require('lspconfig').util.root_pattern("package.json")
       local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
         "import_map.json")
@@ -188,28 +187,12 @@ return {
             opts.root_dir = node_root_dir
           elseif server_name == "eslint" then
             opts.root_dir = node_root_dir
-          end
-
-          for _, s in ipairs(direct_managed_servers) do
-            if s == server_name then
-              return
-            end
+          elseif server_name == "denols" then
+            opts.root_dir = deno_root_dir
           end
           require("lspconfig")[server_name].setup(opts)
         end
       })
-
-      for _, server_name in ipairs(direct_managed_servers) do
-        local opts = default_opts()
-        if server_name == "denols" then
-          if vim.fn.executable("deno") == 0 then
-            goto continue
-          end
-          opts.root_dir = deno_root_dir
-        end
-        require("lspconfig")[server_name].setup(opts)
-        ::continue::
-      end
     end
   }
 }
