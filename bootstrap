@@ -350,7 +350,6 @@ setup_kubectl() {
   kubectl_1_28_version=1.28.2
   kubectl_1_27_version=1.27.4
   kubectl_1_26_version=1.26.5
-  kubectl_1_25_version=1.25.10
   key="kubectl_${version}"
 
   download_if_linux_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/arm64/kubectl
@@ -369,7 +368,6 @@ setup_kubectl() {
   make_pkgx_command_with_bin_name "kubectl" "kubectl1.28" "--silent" "kubernetes.io/kubectl=${kubectl_1_28_version}"
   make_pkgx_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
   make_pkgx_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
-  make_pkgx_command_with_bin_name "kubectl" "kubectl1.25" "--silent" "kubernetes.io/kubectl=${kubectl_1_25_version}"
 }
 
 setup_kind() {
@@ -471,6 +469,51 @@ EOF
   chmod +x ${mc_path}
 }
 
+setup_go() {
+  info "Installing go..."
+  version=1.20
+  make_pkgx_command "go" "--silent" "go@${version}"
+}
+
+setup_rustup_init() {
+  info "Installing rustup-init ..."
+  make_pkgx_command "rustup-init" "--silent" "rustup-init"
+}
+
+setup_deno() {
+  info "Installing deno..."
+  version=1.37.2
+  make_pkgx_command "deno" "--silent" "deno.land@${version}"
+}
+
+setup_node() {
+  info "Installing node..."
+  node_version=20
+  npm_version=10.2.0
+  make_pkgx_command "node" "--silent" "node@${node_version}"
+  make_pkgx_command "npm" "--silent" "npmjs@${npm_version}"
+  make_pkgx_command "npx" "--silent" "npmjs@${npm_version}"
+}
+
+setup_python() {
+  info "Installing python..."
+  version=3.12
+  make_pkgx_command "idle" "--silent" "python@${version}"
+  make_pkgx_command "idle3" "--silent" "python@${version}"
+  make_pkgx_command "python" "--silent" "python@${version}"
+  make_pkgx_command "python3" "--silent" "python@${version}"
+  make_pkgx_command "pydoc3" "--silent" "python@${version}"
+}
+
+setup_ruby() {
+  info "Installing ruby..."
+  version=3.2.2
+  ruby_commands="erb irb racc rake rbs rdbg rdoc ri ruby typeprof"
+  for cmd in ${ruby_commands}; do
+    make_pkgx_command "${cmd}" "--silent" "ruby@${version}"
+  done
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -493,5 +536,11 @@ setup_helm &
 setup_kind &
 setup_kubectx &
 setup_mc &
+setup_go &
+setup_rustup_init &
+setup_deno &
+setup_node &
+setup_python &
+setup_ruby &
 wait
 show_infos

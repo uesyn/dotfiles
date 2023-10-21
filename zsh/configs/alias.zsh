@@ -79,25 +79,15 @@ function pip() {
 }
 
 function devenv() {
-  NODE_VERSION=${NODE_VERSION:-20}
-  GO_VERSION=${GO_VERSION:-1.20}
-  DENO_VERSION=${DENO_VERSION:-1.37}
-  PYTHON_VERSION=${PYTHON_VERSION:-3.12}
-
-  local mode=$1
-  env +go@${GO_VERSION} +node@${NODE_VERSION} +deno.land@${DENO_VERSION} +rustup-init
   if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
     env +docker
     export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
-  fi
-  if [[ $mode =~ (full|f) ]]; then
-    env +ruby +python@${PYTHON_VERSION}
   fi
 }
 
 function z() {
   (
-    devenv $1
+    devenv
     if [[ -x "$(command -v zellij)" ]]; then
       [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
       zellij attach -c
@@ -108,7 +98,7 @@ function z() {
 
 function tm() {
   (
-    devenv $1
+    devenv
     if [[ -x "$(command -v tmux)" ]]; then
       tmux new-session -ADs main
       return
