@@ -62,9 +62,6 @@ export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
 # neovim
 path=(${OPT_DIR}/nvim/bin $path)
 
-# zsh
-path=(${OPT_DIR}/zsh/bin $path)
-
 # nvim
 if [[ -x $(command -v nvim) ]]; then
   export EDITOR="nvim"
