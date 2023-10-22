@@ -134,8 +134,6 @@ make_links(){
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
 
-TEA_PREFIX=${TEA_PREFIX:-${HOME}/.pkgx}
-
 setup_pkgx() {
   info "Installing pkgx..."
   version="1.0.2"
