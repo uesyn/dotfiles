@@ -292,8 +292,7 @@ EOF
 
 setup_neovim() {
   info "Installing neovim and plugins..."
-  # install_neovim
-  make_pkgx_command2 "nvim" "+neovim.io=0.9.4"
+  install_neovim
   nvim --headless "+Lazy! restore" +qa
   git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
   nvim --headless "+Lazy! restore" +qa
@@ -510,11 +509,11 @@ setup_rtx &
 setup_jq &
 setup_fzf &
 setup_ripgrep &
-setup_neovim &
 wait
 if [ -d ${SYMLINKS_DIR} ]; then
   rm -rf ${SYMLINKS_DIR}
 fi
+setup_neovim &
 setup_yq &
 setup_gh &
 setup_tmux &
