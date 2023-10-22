@@ -25,6 +25,7 @@ mkdir -p ${OPT_BIN}
 mkdir -p ${BOOTSTRAP_CACHE_DIR}
 export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
+SYMLINKS_DIR=${OPT_DIR}/.symlinks
 
 detect_target() {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -266,34 +267,27 @@ setup_rtx() {
   tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
 }
 
-make_pkgx_command_with_bin_name() {
+make_pkgx_command2() {
   cmd_name=$1
-  bin_name=$2
-  pkgx_args=$3
-  shift 3
-  depends=$@
+  pkgx_opts=$2
+  bin_path=${OPT_BIN}/${cmd_name}
 
-  depend_args=
-  for d in ${depends}; do
-    pkgx_args="${pkgx_args} +${d}"
-  done
-
-  cmd="exec pkgx ${pkgx_args} -- ${cmd_name} \"\$@\""
-  bin_path=${OPT_BIN}/${bin_name}
   cat <<EOF > ${bin_path}
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
-${cmd}
+if [[ ! -d ${SYMLINKS_DIR} ]]; then
+  mkdir -p ${SYMLINKS_DIR}
+fi
+
+if [[ ! -e "${SYMLINKS_DIR}/${cmd_name}" ]]; then
+  command pkgx --internal.use ${pkgx_opts} > ${SYMLINKS_DIR}/${cmd_name}
+  echo 'exec ${cmd_name} "\$@"' >> ${SYMLINKS_DIR}/${cmd_name}
+  chmod +x ${SYMLINKS_DIR}/${cmd_name}
+fi
+
+exec ${SYMLINKS_DIR}/${cmd_name} "\$@"
 EOF
   chmod +x ${bin_path}
-}
-
-make_pkgx_command() {
-  cmd_name=$1
-  pkgx_args=$2
-  shift 2
-  depends=$@
-  make_pkgx_command_with_bin_name "${cmd_name}" "${cmd_name}" "${pkgx_args}" "${@}"
 }
 
 setup_neovim() {
@@ -323,33 +317,30 @@ setup_jq() {
 setup_yq() {
   info "Installing yq..."
   version=v4.34.1
-  make_pkgx_command "yq" "--silent" "github.com/mikefarah/yq=${version}"
+  make_pkgx_command2 "yq" "+github.com/mikefarah/yq=${version}"
 }
 
 setup_gh() {
   info "Installing gh ..."
   version=v2.34.0
-  make_pkgx_command "gh" "--silent" "cli.github.com=${version}"
+  make_pkgx_command2 "gh" "+cli.github.com=${version}"
 }
 
 setup_tmux() {
   info "Installing tmux..."
   version=3.3a
-  make_pkgx_command "tmux" "" "github.com/tmux/tmux=${version}"
+  make_pkgx_command2 "tmux" "+github.com/tmux/tmux=${version}"
 }
 
 setup_zellij() {
   info "Installing zellij..."
   version=v0.38.2
-  make_pkgx_command "zellij" "" "crates.io/zellij=${version}"
+  make_pkgx_command2 "zellij" "+crates.io/zellij=${version}"
 }
 
 setup_kubectl() {
   info "Installing kubectl..."
   version=1.28.2
-  kubectl_1_28_version=1.28.2
-  kubectl_1_27_version=1.27.4
-  kubectl_1_26_version=1.26.5
   key="kubectl_${version}"
 
   download_if_linux_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/arm64/kubectl
@@ -364,28 +355,24 @@ setup_kubectl() {
   completion_dir=${HOME}/.cache/completion
   mkdir -p ${completion_dir}
   ${OPT_BIN}/kubectl completion zsh > ${completion_dir}/kubectl
-
-  make_pkgx_command_with_bin_name "kubectl" "kubectl1.28" "--silent" "kubernetes.io/kubectl=${kubectl_1_28_version}"
-  make_pkgx_command_with_bin_name "kubectl" "kubectl1.27" "--silent" "kubernetes.io/kubectl=${kubectl_1_27_version}"
-  make_pkgx_command_with_bin_name "kubectl" "kubectl1.26" "--silent" "kubernetes.io/kubectl=${kubectl_1_26_version}"
 }
 
 setup_kind() {
   info "Installing kind..."
   version=0.20.0
-  make_pkgx_command "kind" "" "kind.sigs.k8s.io=${version}"
+  make_pkgx_command2 "kind" "+kind.sigs.k8s.io=${version}"
 }
 
 setup_kustomize() {
   info "Installing kustomize..."
   version=v5.1.1
-  make_pkgx_command "kustomize" "--silent" "kubernetes.io/kustomize=${version}"
+  make_pkgx_command2 "kustomize" "+kubernetes.io/kustomize=${version}"
 }
 
 setup_helm() {
   info "Installing helm..."
   version=v3.12.3
-  make_pkgx_command "helm" "--silent" "helm.sh=${version}"
+  make_pkgx_command2 "helm" "+helm.sh=${version}"
 }
 
 setup_kubectx() {
@@ -455,7 +442,7 @@ setup_ripgrep() {
 
 setup_aws() {
   info "Installing aws..."
-  make_pkgx_command "aws" "--silent" "aws.amazon.com/cli"
+  make_pkgx_command2 "aws" "+aws.amazon.com/cli"
 }
 
 setup_mc() {
@@ -472,37 +459,37 @@ EOF
 setup_go() {
   info "Installing go..."
   version=1.20
-  make_pkgx_command "go" "--silent" "go@${version}"
+  make_pkgx_command2 "go" "+go@${version}"
 }
 
 setup_rustup_init() {
   info "Installing rustup-init ..."
-  make_pkgx_command "rustup-init" "--silent" "rustup-init"
+  make_pkgx_command2 "rustup-init" "+rustup-init"
 }
 
 setup_deno() {
   info "Installing deno..."
   version=1.37.2
-  make_pkgx_command "deno" "--silent" "deno.land@${version}"
+  make_pkgx_command2 "deno" "+deno.land@${version}"
 }
 
 setup_node() {
   info "Installing node..."
   node_version=20
   npm_version=10.2.0
-  make_pkgx_command "node" "--silent" "node@${node_version}"
-  make_pkgx_command "npm" "--silent" "npmjs.com@${npm_version}"
-  make_pkgx_command "npx" "--silent" "npmjs.com@${npm_version}"
+  make_pkgx_command2 "node" "+node@${node_version}"
+  make_pkgx_command2 "npm" "+npmjs.com@${npm_version}"
+  make_pkgx_command2 "npx" "+npmjs.com@${npm_version}"
 }
 
 setup_python() {
   info "Installing python..."
   version=3.12
-  make_pkgx_command "idle" "--silent" "python@${version}"
-  make_pkgx_command "idle3" "--silent" "python@${version}"
-  make_pkgx_command "python" "--silent" "python@${version}"
-  make_pkgx_command "python3" "--silent" "python@${version}"
-  make_pkgx_command "pydoc3" "--silent" "python@${version}"
+  make_pkgx_command2 "idle" "+python@${version}"
+  make_pkgx_command2 "idle3" "+python@${version}"
+  make_pkgx_command2 "python" "+python@${version}"
+  make_pkgx_command2 "python3" "+python@${version}"
+  make_pkgx_command2 "pydoc3" "+python@${version}"
 }
 
 setup_ruby() {
@@ -510,7 +497,7 @@ setup_ruby() {
   version=3.2.2
   ruby_commands="erb irb racc rake rbs rdbg rdoc ri ruby typeprof"
   for cmd in ${ruby_commands}; do
-    make_pkgx_command "${cmd}" "--silent" "ruby@${version}"
+    make_pkgx_command2 "${cmd}" "+ruby@${version}"
   done
 }
 
@@ -525,6 +512,9 @@ setup_fzf &
 setup_ripgrep &
 setup_neovim &
 wait
+if [ -d ${SYMLINKS_DIR} ]; then
+  rm -rf ${SYMLINKS_DIR}
+fi
 setup_yq &
 setup_gh &
 setup_tmux &
