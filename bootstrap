@@ -222,24 +222,15 @@ EOF
 }
 
 show_infos() {
-  local file="${HOME}/.cache/.bootstrapped"
-  [ -f "${file}" ] && return;
-  touch ${file}
   case "$(uname -r)" in
     *WSL2)
-      cat <<- EOF
-==================== INFO ======================
-* Create /etc/wsl.conf with below contents:
+      sudo tee /etc/wsl.conf <<EOF >/dev/null
 [boot]
 systemd=true
+EOF
 
-[interop]
-appendWindowsPath=true
-
-[network]
-generateResolvConf = false
-
-* Create /mnt/c/Users/[USERNAME]/.wslconfig with below contents:
+      winuser="$(powershell.exe '$env:UserName' | tr -d '\r\n')"
+      sudo tee /mnt/c/Users/${winuser}/.wslconfig <<EOF >/dev/null
 [wsl]
 autoMemoryReclaim=dropcache
 sparseVhd=true
@@ -247,10 +238,10 @@ autoProxy=true
 networkingMode=mirrored
 dnsTunneling=true
 firewall=true
+EOF
 
-* Create /etc/resolv.conf with below contents:
-nameserver 8.8.8.8
-
+    cat <<EOF
+================================================
 * Install Icons
 (ref: https://learn.microsoft.com/ja-jp/windows/terminal/tutorials/custom-prompt-setup#use-terminal-icons-to-add-missing-folder-or-file-icons)
 $ Install-Module -Name Terminal-Icons -Repository PSGallery
