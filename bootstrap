@@ -320,7 +320,7 @@ setup_yq() {
 
 setup_gh() {
   info "Installing gh ..."
-  version=v2.34.0
+  version=v2.37.0
   make_pkgx_command2 "gh" "+cli.github.com=${version}"
 }
 
@@ -338,18 +338,8 @@ setup_zellij() {
 
 setup_kubectl() {
   info "Installing kubectl..."
-  version=1.28.2
-  key="kubectl_${version}"
-
-  download_if_linux_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/arm64/kubectl
-  download_if_linux_amd64 ${key} https://dl.k8s.io/release/v${version}/bin/linux/amd64/kubectl
-  download_if_darwin_arm64 ${key} https://dl.k8s.io/release/v${version}/bin/darwin/arm64/kubectl
-  download_if_darwin_amd64 ${key} https://dl.k8s.io/release/v${version}/bin/darwin/amd64/kubectl
-
-  cache_file=$(get_cache ${key})
-  cp ${cache_file} ${OPT_BIN}/kubectl
-  chmod +x ${OPT_BIN}/kubectl
-
+  version=1.28.3
+  make_pkgx_command2 "kubectl" "+kubernetes.io/kubectl=${version}"
   completion_dir=${HOME}/.cache/completion
   mkdir -p ${completion_dir}
   ${OPT_BIN}/kubectl completion zsh > ${completion_dir}/kubectl
