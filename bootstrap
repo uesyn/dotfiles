@@ -239,6 +239,7 @@ networkingMode=mirrored
 dnsTunneling=true
 firewall=true
 EOF
+    ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
 
     cat <<EOF
 ================================================
