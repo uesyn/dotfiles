@@ -239,6 +239,15 @@ appendWindowsPath=true
 [network]
 generateResolvConf = false
 
+* Create /mnt/c/Users/[USERNAME]/.wslconfig with below contents:
+[wsl]
+autoMemoryReclaim=dropcache
+sparseVhd=true
+autoProxy=true
+networkingMode=mirrored
+dnsTunneling=true
+firewall=true
+
 * Create /etc/resolv.conf with below contents:
 nameserver 8.8.8.8
 
