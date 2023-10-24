@@ -231,7 +231,7 @@ EOF
 
       winuser="$(powershell.exe '$env:UserName' | tr -d '\r\n')"
       sudo tee /mnt/c/Users/${winuser}/.wslconfig <<EOF >/dev/null
-[wsl]
+[wsl2]
 autoMemoryReclaim=dropcache
 sparseVhd=true
 autoProxy=true
