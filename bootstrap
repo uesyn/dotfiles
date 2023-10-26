@@ -525,7 +525,7 @@ setup_deno &
 setup_node &
 setup_python &
 setup_ruby &
-if [[ $(uname) == "Darwin" ]]; then
+if [ $(uname) == "Darwin" ]; then
   setup_docker &
 fi
 wait
