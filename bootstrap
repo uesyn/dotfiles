@@ -489,6 +489,13 @@ setup_ruby() {
   done
 }
 
+setup_docker() {
+  if [[ $(uname) == "Darwin" ]]; then
+    info "Installing docker..."
+    make_pkgx_command2 "docker" "+docker"
+  fi
+}
+
 ### main ###
 make_links
 make_local_configs
@@ -520,5 +527,6 @@ setup_deno &
 setup_node &
 setup_python &
 setup_ruby &
+setup_docker &
 wait
 show_infos
