@@ -136,7 +136,7 @@ make_links(){
 
 setup_pkgx() {
   info "Installing pkgx..."
-  version="1.0.2"
+  version="1.1.0"
   key="pkgx_${version}"
   download_if_linux_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+aarch64.tar.xz
   download_if_linux_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+x86-64.tar.xz
@@ -525,7 +525,7 @@ setup_deno &
 setup_node &
 setup_python &
 setup_ruby &
-if [ $(uname) == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
   setup_docker &
 fi
 wait
