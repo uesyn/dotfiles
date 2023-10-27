@@ -108,3 +108,19 @@ function tm() {
 function rustup-init() {
   command rustup-init --no-modify-path "$@"
 }
+
+if [[ -x "$(command -v pkgx)" ]]; then
+  env () {
+    unset -f env
+    unset -f dev
+    source <(pkgx --shellcode)
+    env "$@"
+  }
+
+  dev () {
+    unset -f dev
+    unset -f env
+    source <(pkgx --shellcode)
+    dev "$@"
+  }
+fi
