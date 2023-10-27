@@ -3,12 +3,6 @@ registries:
 - type: standard
   ref: v4.52.1 # renovate: depName=aquaproj/aqua-registry
 packages:
-- name: stern/stern@v1.24.0
-- name: open-policy-agent/conftest@v0.44.1
-- name: open-policy-agent/opa@v0.48.0
-- name: kubernetes-sigs/kubebuilder@v3.12.0
 - name: awslabs/amazon-ecr-credential-helper@v0.6.0
-- name: x-motemen/ghq@v1.4.1
-- name: Aloxaf/silicon@v0.4.3
 - name: kubernetes-sigs/krew@v0.4.3
 - name: argoproj/argo-workflows@v3.4.6

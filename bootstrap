@@ -392,6 +392,36 @@ setup_kubectx() {
   )
 }
 
+setup_stern() {
+  info "Installing stern..."
+  version=1.26.0
+  make_pkgx_command2 "stern" "+github.com/stern/stern=${version}"
+}
+
+setup_kubebuilder() {
+  info "Installing kubebuilder..."
+  version=3.12.0
+  make_pkgx_command2 "kubebuilder" "+kubebuilder.io=${version}"
+}
+
+setup_conftest() {
+  info "Installing conftest..."
+  version=0.46.0
+  make_pkgx_command2 "conftest" "+conftest.dev=${version}"
+}
+
+setup_opa() {
+  info "Installing opa..."
+  version=0.58.0
+  make_pkgx_command2 "opa" "+openpolicyagent.org=${version}"
+}
+
+setup_ghq() {
+  info "Installing ghq..."
+  version=1.4.2
+  make_pkgx_command2 "ghq" "+github.com/x-motemen/ghq=${version}"
+}
+
 setup_fzf() {
   info "Installing fzf..."
   version=0.42.0
@@ -431,6 +461,11 @@ setup_ripgrep() {
 setup_aws() {
   info "Installing aws..."
   make_pkgx_command2 "aws" "+aws.amazon.com/cli"
+}
+
+setup_silicon() {
+  info "Installing silicon..."
+  make_pkgx_command2 "silicon" "+crates.io/silicon"
 }
 
 setup_mc() {
@@ -518,6 +553,11 @@ setup_kustomize &
 setup_helm &
 setup_kind &
 setup_kubectx &
+setup_stern &
+setup_kubebuilder &
+setup_conftest &
+setup_opa &
+setup_ghq &
 setup_mc &
 setup_go &
 setup_rustup_init &
@@ -525,6 +565,7 @@ setup_deno &
 setup_node &
 setup_python &
 setup_ruby &
+setup_silicon &
 if [ "$(uname)" = "Darwin" ]; then
   setup_docker &
 fi
