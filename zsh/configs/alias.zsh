@@ -80,7 +80,6 @@ function pip() {
 
 function devenv() {
   if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
-    env +docker
     export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
   fi
 }
