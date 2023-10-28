@@ -25,7 +25,7 @@ mkdir -p ${OPT_BIN}
 mkdir -p ${BOOTSTRAP_CACHE_DIR}
 export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
-SYMLINKS_DIR=${OPT_DIR}/.symlinks
+ENVS_DIR=${OPT_DIR}/.envs
 
 detect_target() {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -250,17 +250,17 @@ make_pkgx_command2() {
   cat <<EOF > ${bin_path}
 #!/usr/bin/env bash
 
-if [[ ! -d ${SYMLINKS_DIR} ]]; then
-  mkdir -p ${SYMLINKS_DIR}
+if [[ ! -d ${ENVS_DIR} ]]; then
+  mkdir -p ${ENVS_DIR}
 fi
 
-if [[ ! -e "${SYMLINKS_DIR}/${cmd_name}" ]]; then
-  command pkgx --internal.use ${pkgx_opts} > ${SYMLINKS_DIR}/${cmd_name}
-  echo 'exec ${cmd_name} "\$@"' >> ${SYMLINKS_DIR}/${cmd_name}
-  chmod +x ${SYMLINKS_DIR}/${cmd_name}
+if [[ ! -e "${ENVS_DIR}/${cmd_name}" ]]; then
+  command pkgx --internal.use ${pkgx_opts} > ${ENVS_DIR}/${cmd_name}.tmp
+  mv ${ENVS_DIR}/${cmd_name}.tmp ${ENVS_DIR}/${cmd_name}
 fi
+source ${ENVS_DIR}/${cmd_name}
 
-exec ${SYMLINKS_DIR}/${cmd_name} "\$@"
+exec ${cmd_name} "\$@"
 EOF
   chmod +x ${bin_path}
 }
@@ -517,8 +517,8 @@ setup_jq &
 setup_fzf &
 setup_ripgrep &
 wait
-if [ -d ${SYMLINKS_DIR} ]; then
-  rm -rf ${SYMLINKS_DIR}
+if [ -d ${ENVS_DIR} ]; then
+  rm -rf ${ENVS_DIR}
 fi
 setup_neovim &
 setup_yq &
