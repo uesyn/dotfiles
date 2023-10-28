@@ -384,6 +384,11 @@ setup_kubebuilder() {
   make_pkgx_command2 "kubebuilder" "+kubebuilder.io=${version}"
 }
 
+setup_kubectl_krew() {
+  info "Installing kubectl-krew..."
+  make_pkgx_command2 "kubectl-krew" "+krew.sigs.k8s.io"
+}
+
 setup_conftest() {
   info "Installing conftest..."
   version=0.46.0
@@ -537,6 +542,7 @@ setup_kind &
 setup_kubectx &
 setup_stern &
 setup_kubebuilder &
+setup_kubectl_krew &
 setup_conftest &
 setup_opa &
 setup_ghq &
