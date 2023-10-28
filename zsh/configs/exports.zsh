@@ -43,12 +43,6 @@ path=(${OPT_BIN} $path)
 # coreutils
 path=(${OPT_DIR}/coreutils/bin $path)
 
-# aqua
-export AQUA_DISABLE_POLICY=true
-export AQUA_REQUIRE_CHECKSUM=false
-export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
-path=(${XDG_DATA_HOME}/aquaproj-aqua/bin $path)
-
 # go
 export GO111MODULE=on
 export GOPATH=${HOME}

@@ -13,10 +13,6 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-# aqua
-export AQUA_GLOBAL_CONFIG=${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
-export PATH=${XDG_DATA_HOME}/aquaproj-aqua/bin:${PATH}
-
 ## opt
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
@@ -117,7 +113,7 @@ function d() {
       linux-arm64)
         bin_name=devk_linux_arm64
         ;;
-      *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+      *) warn "Unsupported platform for devk: $(detect_target)"; return 0 ;;
     esac
     curl -sSfL "https://github.com/uesyn/dotfiles/releases/download/devk%2Fnightly/${bin_name}.gz" | gunzip - > ${devk}
     chmod +x ${devk}

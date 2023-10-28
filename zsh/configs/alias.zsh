@@ -39,7 +39,7 @@ function d() {
       linux-arm64)
         bin_name=devk_linux_arm64
         ;;
-      *) warn "Unsupported platform for aqua: $(detect_target)"; return 0 ;;
+      *) warn "Unsupported platform for devk: $(detect_target)"; return 0 ;;
     esac
     curl -sSfL "https://github.com/uesyn/dotfiles/releases/download/devk%2Fnightly/${bin_name}.gz" | gunzip - > ${devk}
     chmod +x ${devk}
