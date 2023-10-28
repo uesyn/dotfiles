@@ -20,12 +20,13 @@ fi
 
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
+export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
 export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
 mkdir -p ${OPT_BIN}
 mkdir -p ${BOOTSTRAP_CACHE_DIR}
-export PATH="${OPT_BIN}:${PATH}"
+export PATH="${OPT_BIN}:${OPT_PKGX_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
-ENVS_DIR=${OPT_DIR}/.envs
+ENVS_DIR=${OPT_DIR}/pkgx/envs
 
 detect_target() {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -245,8 +246,9 @@ setup_rtx() {
 make_pkgx_command2() {
   cmd_name=$1
   pkgx_opts=$2
-  bin_path=${OPT_BIN}/${cmd_name}
+  bin_path=${OPT_PKGX_BIN}/${cmd_name}
 
+  mkdir -p ${OPT_PKGX_BIN}
   cat <<EOF > ${bin_path}
 #!/usr/bin/env bash
 
@@ -318,7 +320,7 @@ setup_kubectl() {
   make_pkgx_command2 "kubectl" "+kubernetes.io/kubectl=${version}"
   completion_dir=${HOME}/.cache/completion
   mkdir -p ${completion_dir}
-  ${OPT_BIN}/kubectl completion zsh > ${completion_dir}/kubectl
+  kubectl completion zsh > ${completion_dir}/kubectl
 }
 
 setup_kind() {
@@ -519,6 +521,9 @@ setup_ripgrep &
 wait
 if [ -d ${ENVS_DIR} ]; then
   rm -rf ${ENVS_DIR}
+fi
+if [ -d ${OPT_PKGX_BIN} ]; then
+  rm -rf ${OPT_PKGX_BIN}
 fi
 setup_neovim &
 setup_yq &

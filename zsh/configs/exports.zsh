@@ -38,7 +38,8 @@ export HOMEBREW_NO_AUTO_UPDATE=1
 # opt
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-path=(${OPT_BIN} $path)
+export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
+path=(${OPT_BIN} ${OPT_PKGX_BIN} $path)
 
 # coreutils
 path=(${OPT_DIR}/coreutils/bin $path)
