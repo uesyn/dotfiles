@@ -124,7 +124,6 @@ make_links(){
   make_link ${SCRIPT_DIR}/zsh ${XDG_CONFIG_HOME}/zsh
   make_link ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
   make_link ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
-  make_link ${SCRIPT_DIR}/aqua/aqua.yaml ${XDG_CONFIG_HOME}/aquaproj-aqua/aqua.yaml
   make_link ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
   make_link ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
   make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
@@ -149,29 +148,6 @@ setup_pkgx() {
   pkgx_bin="${OPT_BIN}/pkgx"
   chmod u+x ${pkgx_bin}
   [ ! -d ${HOME}/.pkgx ] && ${pkgx_bin} --sync
-}
-
-install_aqua() {
-  version=2.12.0
-  info "Installing aqua..."
-
-  key="aqua_${version}"
-  download_if_linux_arm64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_linux_arm64.tar.gz
-  download_if_linux_amd64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_linux_amd64.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_darwin_arm64.tar.gz
-  download_if_darwin_amd64 ${key} https://github.com/aquaproj/aqua/releases/download/v${version}/aqua_darwin_amd64.tar.gz
-
-  cache_file=$(get_cache "${key}")
-  aqua_bin=${OPT_BIN}/aqua
-  tar xzf ${cache_file} -O aqua > ${aqua_bin}
-  chmod +x ${aqua_bin}
-}
-
-setup_aqua() {
-  install_aqua
-  export AQUA_GLOBAL_CONFIG=${HOME}/.config/aquaproj-aqua/aqua.yaml
-  export PATH=${HOME}/.local/share/aquaproj-aqua/bin:${PATH}
-  aqua install -a --tags precede
 }
 
 install_neovim() {
@@ -536,7 +512,6 @@ setup_docker_commands() {
 make_links
 make_local_configs
 setup_pkgx &
-setup_aqua &
 setup_rtx &
 setup_jq &
 setup_fzf &
