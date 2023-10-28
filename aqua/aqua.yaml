@@ -3,6 +3,4 @@ registries:
 - type: standard
   ref: v4.52.1 # renovate: depName=aquaproj/aqua-registry
 packages:
-- name: awslabs/amazon-ecr-credential-helper@v0.6.0
 - name: kubernetes-sigs/krew@v0.4.3
-- name: argoproj/argo-workflows@v3.4.6

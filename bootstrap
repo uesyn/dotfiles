@@ -524,9 +524,12 @@ setup_ruby() {
   done
 }
 
-setup_docker() {
+setup_docker_commands() {
   info "Installing docker..."
-  make_pkgx_command2 "docker" "+docker"
+  if [ "$(uname)" = "Darwin" ]; then
+    make_pkgx_command2 "docker" "+docker"
+  fi
+  make_pkgx_command2 "docker-credential-ecr-login" "+github.com/awslabs/amazon-ecr-credential-helper"
 }
 
 ### main ###
@@ -566,8 +569,6 @@ setup_node &
 setup_python &
 setup_ruby &
 setup_silicon &
-if [ "$(uname)" = "Darwin" ]; then
-  setup_docker &
-fi
+setup_docker_commands &
 wait
 show_infos
