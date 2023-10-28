@@ -16,7 +16,8 @@ export XDG_CACHE_HOME="$HOME/.cache"
 ## opt
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-export PATH=${OPT_BIN}:${PATH}
+export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
+export PATH=${OPT_BIN}:${OPT_PKGX_BIN}:${PATH}
 
 ## local zsh
 export PATH=${OPT_DIR}/zsh/bin:${PATH}

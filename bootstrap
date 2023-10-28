@@ -20,7 +20,8 @@ fi
 
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
+export OPT_PKGX_DIR=${OPT_DIR}/pkgx
+export OPT_PKGX_BIN=${OPT_PKGX_DIR}/bin
 export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
 mkdir -p ${OPT_BIN}
 mkdir -p ${BOOTSTRAP_CACHE_DIR}
@@ -520,11 +521,8 @@ setup_jq &
 setup_fzf &
 setup_ripgrep &
 wait
-if [ -d ${ENVS_DIR} ]; then
-  rm -rf ${ENVS_DIR}
-fi
-if [ -d ${OPT_PKGX_BIN} ]; then
-  rm -rf ${OPT_PKGX_BIN}
+if [ -d ${OPT_PKGX_DIR} ]; then
+  rm -rf ${OPT_PKGX_DIR}
 fi
 setup_neovim &
 setup_yq &
