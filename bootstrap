@@ -269,6 +269,7 @@ EOF
 
 setup_neovim() {
   info "Installing neovim and plugins..."
+  make_pkgx_command2 "nvim" "+neovim.io"
   install_neovim
   nvim --headless "+Lazy! restore" +qa
   git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
