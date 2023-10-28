@@ -78,31 +78,12 @@ function pip() {
   python -m pip "$@"
 }
 
-function devenv() {
-  if [[ -x "$(command -v limactl)" ]] && [[ $(uname) == "Darwin" ]]; then
-    export DOCKER_HOST=$(limactl list docker --format 'unix://{{.Dir}}/sock/docker.sock')
-  fi
-}
-
 function z() {
-  (
-    devenv
-    if [[ -x "$(command -v zellij)" ]]; then
-      [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
-      zellij attach -c
-      return
-    fi
-  )
+  zellij attach -c
 }
 
 function tm() {
-  (
-    devenv
-    if [[ -x "$(command -v tmux)" ]]; then
-      tmux new-session -ADs main
-      return
-    fi
-  )
+  tmux new-session -ADs main
 }
 
 function rustup-init() {
