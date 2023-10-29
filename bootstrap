@@ -258,7 +258,7 @@ if [[ ! -d ${ENVS_DIR} ]]; then
 fi
 
 if [[ ! -e "${ENVS_DIR}/${cmd_name}" ]]; then
-  command pkgx --internal.use ${pkgx_opts} > ${ENVS_DIR}/${cmd_name}.tmp
+  command pkgx --internal.use ${pkgx_opts} 2>/dev/null > ${ENVS_DIR}/${cmd_name}.tmp
   mv ${ENVS_DIR}/${cmd_name}.tmp ${ENVS_DIR}/${cmd_name}
 fi
 source ${ENVS_DIR}/${cmd_name}
