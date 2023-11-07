@@ -312,7 +312,7 @@ setup_tmux() {
 
 setup_zellij() {
   info "Installing zellij..."
-  version=v0.38.2
+  version=v0.39.0
   make_pkgx_command2 "zellij" "+crates.io/zellij=${version}"
 }
 
