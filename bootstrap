@@ -185,9 +185,6 @@ export GITHUB_TOKEN=${GITHUB_TOKEN:-}
 export GITLAB_ENTERPRISE_HOST=${GITLAB_ENTERPRISE_HOST:-}
 export GITLAB_ENTERPRISE_TOKEN=${GITLAB_ENTERPRISE_TOKEN:-}
 export GITLAB_TOKEN=${GITLAB_TOKEN:-}
-if [[ -n "$MY_GITHUB_TOKEN" ]]; then
-  export GITHUB_TOKEN=$MY_GITHUB_TOKEN
-fi
 EOF
   fi
 
@@ -232,7 +229,7 @@ EOF
 
 setup_rtx() {
   info "Installing rtx..."
-  version=v2023.9.0
+  version=v2023.11.1
   key="rtx_${version}"
 
   download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
@@ -253,11 +250,8 @@ make_pkgx_command2() {
   cat <<EOF > ${bin_path}
 #!/usr/bin/env bash
 
-if [[ ! -d ${ENVS_DIR} ]]; then
-  mkdir -p ${ENVS_DIR}
-fi
-
 if [[ ! -e "${ENVS_DIR}/${cmd_name}" ]] || [[ ! -s "${ENVS_DIR}/${cmd_name}" ]]; then
+  mkdir -p ${ENVS_DIR}
   command pkgx --internal.use ${pkgx_opts} 2>/dev/null > ${ENVS_DIR}/${cmd_name}.tmp
   mv ${ENVS_DIR}/${cmd_name}.tmp ${ENVS_DIR}/${cmd_name}
 fi
