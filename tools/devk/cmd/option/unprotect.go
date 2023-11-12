@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
 	"github.com/uesyn/dotfiles/tools/devk/manager"
@@ -47,5 +48,10 @@ func (o *UnprotectOptions) Validate() error {
 }
 
 func (o *UnprotectOptions) Run(ctx context.Context) error {
-	return o.manager.Unprotect(ctx, o.name, o.namespace)
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.name, "namespace", o.namespace)
+	if err := o.manager.Unprotect(ctx, o.name, o.namespace); err != nil {
+		logger.Error(err, "failed to unprotect")
+		return err
+	}
+	return nil
 }

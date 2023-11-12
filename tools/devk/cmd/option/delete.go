@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/go-logr/logr"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
@@ -53,10 +54,17 @@ func (o *DeleteOptions) Validate() error {
 }
 
 func (o *DeleteOptions) Run(ctx context.Context) error {
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.name, "namespace", o.namespace)
+
 	if !o.yes && !deleteConfirmationPrompt(o.name) {
 		return nil
 	}
-	return o.manager.Delete(ctx, o.name, o.namespace, o.force)
+	if err := o.manager.Delete(ctx, o.name, o.namespace, o.force); err != nil {
+		logger.Error(err, "failed to delete devk objects")
+		return err
+	}
+	logger.Info("devk objects were deleted")
+	return nil
 }
 
 func deleteConfirmationPrompt(devkName string) bool {

@@ -79,5 +79,9 @@ func (o *StartOptions) Run(ctx context.Context) error {
 	if o.gpuNum > 0 {
 		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
-	return o.manager.Start(ctx, o.name, o.namespace, ms...)
+	if err := o.manager.Start(ctx, o.name, o.namespace, ms...); err != nil {
+		logger.Error(err, "failed to start")
+		return err
+	}
+	return nil
 }

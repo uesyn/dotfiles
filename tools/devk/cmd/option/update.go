@@ -77,5 +77,9 @@ func (o *UpdateOptions) Run(ctx context.Context) error {
 	if o.gpuNum > 0 {
 		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
-	return o.manager.Update(ctx, o.name, o.namespace, o.force, ms...)
+	if err := o.manager.Update(ctx, o.name, o.namespace, o.force, ms...); err != nil {
+		logger.Error(err, "failed to update")
+		return err
+	}
+	return nil
 }

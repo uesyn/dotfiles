@@ -85,5 +85,9 @@ func (o *RestartOptions) Run(ctx context.Context) error {
 	if o.gpuNum > 0 {
 		ms = append(ms, mutator.NewGPULimitRequest(o.gpuNum))
 	}
-	return o.manager.Start(ctx, o.name, o.namespace, ms...)
+	if err := o.manager.Start(ctx, o.name, o.namespace, ms...); err != nil {
+		logger.Error(err, "failed to restart")
+		return err
+	}
+	return nil
 }

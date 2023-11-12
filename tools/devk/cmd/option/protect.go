@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
 	"github.com/uesyn/dotfiles/tools/devk/manager"
@@ -47,5 +48,10 @@ func (o *ProtectOptions) Validate() error {
 }
 
 func (o *ProtectOptions) Run(ctx context.Context) error {
-	return o.manager.Protect(ctx, o.name, o.namespace)
+	logger := logr.FromContextOrDiscard(ctx).WithValues("namespace", o.namespace)
+	if err := o.manager.Protect(ctx, o.name, o.namespace); err != nil {
+		logger.Error(err, "failed to protect")
+		return err
+	}
+	return nil
 }

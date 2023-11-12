@@ -102,5 +102,9 @@ func (o *ExecOptions) Run(ctx context.Context) error {
 	if len(o.execEnvs) > 0 {
 		opts = append(opts, manager.WithExecEnvs(o.execEnvs))
 	}
-	return o.manager.Exec(ctx, o.name, o.namespace, opts...)
+	if err := o.manager.Exec(ctx, o.name, o.namespace, opts...); err != nil {
+		logger.Error(err, "failed to exec")
+		return err
+	}
+	return nil
 }

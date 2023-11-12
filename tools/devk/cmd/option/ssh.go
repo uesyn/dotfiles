@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/lima-vm/sshocker/pkg/mount"
 	"github.com/spf13/pflag"
 	cmdutil "github.com/uesyn/dotfiles/tools/devk/cmd/util"
@@ -123,7 +124,12 @@ func (o *SSHOptions) Run(ctx context.Context) error {
 			opts = append(opts, manager.WithSSHVolumeMount(v))
 		}
 	}
-	return o.manager.SSH(ctx, o.name, o.namespace, opts...)
+	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", o.name, "namespace", o.namespace)
+	if err := o.manager.SSH(ctx, o.name, o.namespace, opts...); err != nil {
+		logger.Error(err, "failed to ssh")
+		return err
+	}
+	return nil
 }
 
 func (o *SSHOptions) parseForwardFlag(arg string) (string, error) {

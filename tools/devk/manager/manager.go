@@ -93,8 +93,7 @@ func (m *manager) Run(ctx context.Context, devkName, namespace string, mutators 
 	}
 
 	if err := m.store.Create(ctx, devkName, namespace, r); err != nil {
-		logger.Error(err, "failed to create devk release")
-		return err
+		return fmt.Errorf("failed to create devk release: %w", err)
 	}
 
 	failureHandler := func() {
@@ -111,8 +110,7 @@ func (m *manager) Run(ctx context.Context, devkName, namespace string, mutators 
 	mutated := manifests.MustMutate(mutators...)
 	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
 		failureHandler()
-		logger.Error(err, "failed to apply devk object")
-		return err
+		return fmt.Errorf("failed to apply devk object: %w", err)
 	}
 	return nil
 }
@@ -156,7 +154,6 @@ func (m *manager) applyObjects(ctx context.Context, pod *applyconfigurationscore
 			l.Info("object was applied")
 		}
 	}
-
 	return nil
 }
 
@@ -172,23 +169,18 @@ func (m *manager) Delete(ctx context.Context, devkName, namespace string, force 
 		return nil
 	}
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 	if r.Protect {
-		logger.Error(protectedError, "failed to delete devk")
-		return protectedError
+		return fmt.Errorf("failed to delete devk: %w", protectedError)
 	}
 
 	if err := m.deleteObjects(ctx, r.Manifests.Pod, r.Manifests.ConfigMaps, r.Manifests.PVCs, force); err != nil {
-		logger.Error(err, "failed to delete devk")
-		return err
+		return fmt.Errorf("failed to delete devk: %w", err)
 	}
 	if err := m.store.Delete(ctx, devkName, namespace); err != nil {
-		logger.Error(err, "failed to clean up devk release")
-		return err
+		return fmt.Errorf("failed to clean up devk release: %w", err)
 	}
-	logger.Info("devk was deleted")
 	return nil
 }
 
@@ -270,14 +262,12 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 
 	pod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
 	if err != nil {
-		logger.Error(err, "failed to get devk pod")
-		return err
+		return fmt.Errorf("failed to get devk pod: %w", err)
 	}
 
 	stdin, stdout, stderr := term.StdStreams()
@@ -293,13 +283,11 @@ func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...
 	}
 
 	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, pod, kubeutil.ConditionReady); err != nil {
-		logger.Error(err, "failed to wait for devk to be deleted")
-		return err
+		return fmt.Errorf("failed to wait for devk to be deleted: %w", err)
 	}
 
 	if err := m.exec.Exec(ctx, pod, *execOpts); err != nil {
-		logger.Error(err, "failed to exec")
-		return err
+		return fmt.Errorf("failed to exec: %w", err)
 	}
 	return nil
 }
@@ -344,14 +332,12 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 
 	pod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
 	if err != nil {
-		logger.Error(err, "failed to get devk pod")
-		return err
+		return fmt.Errorf("failed to get devk pod: %w", err)
 	}
 
 	pfOpts := &client.PortForwardOptions{}
@@ -360,14 +346,12 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 	}
 
 	if err := kubeutil.WaitForCondition(ctx, 3*time.Minute, m.unstructured, pod, kubeutil.ConditionReady); err != nil {
-		logger.Error(err, "failed to wait for devk to become ready")
-		return err
+		return fmt.Errorf("failed to wait for devk to become ready: %w", err)
 	}
 
 	logger.Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
 	if err := m.portforward.PortForward(ctx, pod, *pfOpts); err != nil {
-		logger.Error(err, "failed to forward ports")
-		return err
+		return fmt.Errorf("failed to forward ports: %w", err)
 	}
 	return nil
 }
@@ -469,31 +453,36 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...S
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 
 	sshPod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
 	if err != nil {
-		logger.Error(err, "failed to get devk pod")
-		return err
+		return fmt.Errorf("failed to get devk pod: %w", err)
 	}
 
 	sshPort, err := m.getFreePort()
 	if err != nil {
-		logger.Error(err, "failed to get Free Port for SSH")
-		return err
+		return fmt.Errorf("failed to get Free Port for SSH: %w", err)
 	}
 	sshContainerPort := m.config.SSH.Port
 	go func() {
-		opts := client.PortForwardOptions{
-			Addresses: []string{localhost},
-			Ports:     []string{fmt.Sprintf("%d:%d", sshPort, sshContainerPort)},
-		}
+		failedCount := 0
+		for {
+			opts := client.PortForwardOptions{
+				Addresses: []string{localhost},
+				Ports:     []string{fmt.Sprintf("%d:%d", sshPort, sshContainerPort)},
+			}
 
-		if err := m.portforward.PortForward(ctx, sshPod, opts); err != nil {
-			logger.Error(err, "failed to forward ports")
-			return
+			err := m.portforward.PortForward(ctx, sshPod, opts)
+			if err != nil {
+				failedCount++
+			}
+			if failedCount > 5 {
+				logger.Error(err, "failed to forward ports 5 times")
+				return
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
@@ -503,8 +492,7 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...S
 	}
 
 	if err := sshOpts.Complete(); err != nil {
-		logger.Error(err, "failed to complete ssh options")
-		return err
+		return fmt.Errorf("failed to complete ssh options: %w", err)
 	}
 
 	if err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
@@ -513,13 +501,11 @@ func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...S
 		}
 		return false, nil
 	}); err != nil {
-		logger.Error(err, "failed to wait for the ssh server to be listened")
-		return err
+		return fmt.Errorf("failed to wait for the ssh server to be listened: %w", err)
 	}
 
 	if err := sshOpts.Connect(ctx, m.config.SSH.User, localhost, sshPort); err != nil {
-		logger.Error(err, "failed to run ssh")
-		return err
+		return fmt.Errorf("failed to run ssh: %w", err)
 	}
 	return nil
 }
@@ -559,13 +545,11 @@ func (m *manager) Start(ctx context.Context, devkName, namespace string, mutator
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 	mutated := r.Manifests.MustMutate(mutators...)
 	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
-		logger.Error(err, "failed to start devk")
-		return err
+		return fmt.Errorf("failed to start devk: %w", err)
 	}
 	return nil
 }
@@ -576,19 +560,16 @@ func (m *manager) Stop(ctx context.Context, devkName, namespace string, force bo
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 	pod := r.Manifests.Pod
 	cms := r.Manifests.ConfigMaps
 	// Delete only Pod object
 	if err := m.deleteObjects(ctx, pod, cms, nil, force); err != nil {
-		logger.Error(err, "failed to stop pod")
-		return err
+		return fmt.Errorf("failed to stop pod: %w", err)
 	}
 	if err := m.waitForPodTerminated(ctx, *pod.Name, *pod.Namespace, 1*time.Minute); err != nil {
-		logger.Error(err, "failed to wait devk pod terminated")
-		return err
+		return fmt.Errorf("failed to wait devk pod terminated: %w", err)
 	}
 	return nil
 }
@@ -615,19 +596,16 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, force 
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 
 	oldManifests := r.Manifests
 	if err := m.deleteObjects(ctx, oldManifests.Pod, oldManifests.ConfigMaps, nil, force); err != nil {
-		logger.Error(err, "failed to delete old devk pod")
-		return err
+		return fmt.Errorf("failed to delete old devk pod: %w", err)
 	}
 
 	if err := m.waitForPodTerminated(ctx, *oldManifests.Pod.Name, *oldManifests.Pod.Namespace, 60*time.Second); err != nil {
-		logger.Error(err, "failed to wait for old devk pod terminated")
-		return err
+		return fmt.Errorf("failed to wait for old devk pod terminated: %w", err)
 	}
 
 	time.Sleep(1 * time.Second)
@@ -635,14 +613,12 @@ func (m *manager) Update(ctx context.Context, devkName, namespace string, force 
 	newManifests := manifest.Generate(devkName, namespace, m.config.Pod, m.config.ConfigMaps, m.config.PVCs)
 	mutated := newManifests.MustMutate(mutators...)
 	if err := m.applyObjects(ctx, mutated.Pod, mutated.ConfigMaps, mutated.PVCs); err != nil {
-		logger.Error(err, "failed to apply devk object")
-		return err
+		return fmt.Errorf("failed to apply devk object: %w", err)
 	}
 
 	r.Manifests = newManifests
 	if err := m.store.Update(ctx, devkName, namespace, r); err != nil {
-		logger.Error(err, "failed to update release")
-		return err
+		return fmt.Errorf("failed to update release: %w", err)
 	}
 	return nil
 }
@@ -653,13 +629,11 @@ func (m *manager) Protect(ctx context.Context, devkName, namespace string) error
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 	r.Protect = true
 	if err := m.store.Update(ctx, devkName, namespace, r); err != nil {
-		logger.Error(err, "failed to update release")
-		return err
+		return fmt.Errorf("failed to update release: %w", err)
 	}
 	return nil
 }
@@ -670,13 +644,11 @@ func (m *manager) Unprotect(ctx context.Context, devkName, namespace string) err
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 	r.Protect = false
 	if err := m.store.Update(ctx, devkName, namespace, r); err != nil {
-		logger.Error(err, "failed to update release")
-		return err
+		return fmt.Errorf("failed to update release: %w", err)
 	}
 	return nil
 }
@@ -687,16 +659,14 @@ func (m *manager) List(ctx context.Context, namespace string) ([]info.DevkInfoAc
 
 	releases, err := m.store.List(ctx, namespace)
 	if err != nil {
-		logger.Error(err, "failed to update release")
-		return nil, err
+		return nil, fmt.Errorf("failed to update release: %w", err)
 	}
 
 	factory := informers.NewSharedInformerFactoryWithOptions(m.clientset, 0, informers.WithNamespace(namespace))
 	informer := factory.Core().V1().Pods()
 	go informer.Informer().Run(ctx.Done())
 	if !cache.WaitForCacheSync(ctx.Done(), informer.Informer().HasSynced) {
-		logger.Error(err, "failed to cache sync for informer")
-		return nil, err
+		return nil, fmt.Errorf("failed to cache sync for informer: %w", err)
 	}
 
 	var infos []info.DevkInfoAccessor
@@ -713,8 +683,7 @@ func (m *manager) Events(ctx context.Context, devkName, namespace string, watch 
 
 	r, err := m.store.Get(ctx, devkName, namespace)
 	if err != nil {
-		logger.Error(err, "failed to get release")
-		return err
+		return fmt.Errorf("failed to get release: %w", err)
 	}
 
 	var eventList corev1.EventList
@@ -731,8 +700,7 @@ func (m *manager) Events(ctx context.Context, devkName, namespace string, watch 
 	}
 	el, err := m.clientset.CoreV1().Events(namespace).List(ctx, opts)
 	if err != nil {
-		logger.Error(err, "failed to get event list")
-		return err
+		return fmt.Errorf("failed to get event list: %w", err)
 	}
 	eventList.Items = append(eventList.Items, el.Items...)
 
@@ -743,8 +711,7 @@ func (m *manager) Events(ctx context.Context, devkName, namespace string, watch 
 		}
 		wi, err := m.clientset.CoreV1().Events(namespace).Watch(ctx, wOpts)
 		if err != nil {
-			logger.Error(err, "failed to get watch interface")
-			return err
+			return fmt.Errorf("failed to get watch interface: %w", err)
 		}
 		go func() {
 			for {
@@ -773,12 +740,10 @@ func (m *manager) Events(ctx context.Context, devkName, namespace string, watch 
 			select {
 			case event := <-eventCh:
 				if err := handler(event); err != nil {
-					logger.Error(err, "failed to handle event")
-					return err
+					return fmt.Errorf("failed to handle event: %w", err)
 				}
 			case err := <-errCh:
-				logger.Error(err, "failed to watch event")
-				return err
+				return fmt.Errorf("failed to watch event: %w", err)
 			case <-ctx.Done():
 				return nil
 			}
