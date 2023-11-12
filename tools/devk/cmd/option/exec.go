@@ -95,7 +95,7 @@ func (o *ExecOptions) Run(ctx context.Context) error {
 				}
 				if err := o.manager.PortForward(ctx, o.name, o.namespace, opts...); err != nil {
 					failedCount++
-					if failedCount > 10000 * factor {
+					if failedCount > 1000*factor {
 						logger.Error(err, fmt.Sprintf("failed to forward ports %d times", failedCount))
 						factor++
 					}
