@@ -3,6 +3,8 @@ package option
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/spf13/pflag"
@@ -84,12 +86,21 @@ func (o *ExecOptions) Run(ctx context.Context) error {
 	// Port forward
 	if len(o.ports) > 0 && len(o.addresses) > 0 {
 		go func() {
-			opts := []manager.PortForwardOption{
-				manager.WithPortForwardAddresses(o.addresses),
-				manager.WithPortForwardPorts(o.ports),
-			}
-			if err := o.manager.PortForward(ctx, o.name, o.namespace, opts...); err != nil {
-				logger.Error(err, "failed to forward ports")
+			failedCount := 0
+			factor := 1
+			for {
+				opts := []manager.PortForwardOption{
+					manager.WithPortForwardAddresses(o.addresses),
+					manager.WithPortForwardPorts(o.ports),
+				}
+				if err := o.manager.PortForward(ctx, o.name, o.namespace, opts...); err != nil {
+					failedCount++
+					if failedCount > 10000 * factor {
+						logger.Error(err, fmt.Sprintf("failed to forward ports %d times", failedCount))
+						factor++
+					}
+				}
+				time.Sleep(100 * time.Millisecond)
 			}
 		}()
 	}

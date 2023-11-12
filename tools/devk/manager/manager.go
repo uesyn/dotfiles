@@ -349,7 +349,7 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 		return fmt.Errorf("failed to wait for devk to become ready: %w", err)
 	}
 
-	logger.Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
+	logger.V(1).Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
 	if err := m.portforward.PortForward(ctx, pod, *pfOpts); err != nil {
 		return fmt.Errorf("failed to forward ports: %w", err)
 	}
