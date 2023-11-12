@@ -350,10 +350,25 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 	}
 
 	logger.V(1).Info("enable port forward", "ports", pfOpts.Ports, "addresses", pfOpts.Addresses)
-	if err := m.portforward.PortForward(ctx, pod, *pfOpts); err != nil {
-		return fmt.Errorf("failed to forward ports: %w", err)
+	failedCount := 0
+	factor := 1
+	for {
+		err := m.portforward.PortForward(ctx, pod, *pfOpts)
+		if err == nil {
+			return nil
+		}
+		select {
+		case <-ctx.Done():
+			return err
+		default:
+			failedCount++
+			if failedCount > 1000*factor {
+				logger.Error(err, fmt.Sprintf("failed to forward ports %d times", failedCount))
+				factor++
+			}
+			time.Sleep(1 * time.Second)
+		}
 	}
-	return nil
 }
 
 func (m *manager) getPod(ctx context.Context, name, namespace string) (*corev1.Pod, error) {
