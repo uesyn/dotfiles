@@ -452,6 +452,11 @@ setup_mc() {
   make_pkgx_command2 "mc" "+min.io/mc"
 }
 
+setup_vault() {
+  info "Installing vault"
+  make_pkgx_command2 "vault" "+vault"
+}
+
 setup_go() {
   info "Installing go..."
   version=1.20.11
@@ -535,6 +540,7 @@ setup_conftest &
 setup_opa &
 setup_ghq &
 setup_mc &
+setup_vault &
 setup_go &
 setup_rustup_init &
 setup_deno &
