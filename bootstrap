@@ -374,7 +374,7 @@ setup_stern() {
 
 setup_kubebuilder() {
   info "Installing kubebuilder..."
-  version=3.12.0
+  version=3.13.0
   make_pkgx_command2 "kubebuilder" "+kubebuilder.io=${version}"
 }
 
