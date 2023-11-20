@@ -40,7 +40,6 @@ func Load(file string) (*Config, error) {
 }
 
 type Config struct {
-	SSH        *SSH                                                                `json:"ssh,omitempty"`
 	Exec       *Exec                                                               `json:"exec,omitempty"`
 	Envs       []Env                                                               `json:"envs,omitempty"`
 	Pod        *applyconfigurationscorev1.PodSpecApplyConfiguration                `json:"podSpec,omitempty"`
@@ -49,19 +48,6 @@ type Config struct {
 }
 
 func (c *Config) complete() error {
-	if c.SSH == nil {
-		c.SSH = &SSH{}
-	}
-	if len(c.SSH.Command) == 0 {
-		c.SSH.Command = []string{"sh"}
-	}
-	if len(c.SSH.User) == 0 {
-		c.SSH.User = "devbox"
-	}
-	if c.SSH.Port <= 0 {
-		c.SSH.Port = 22
-	}
-
 	if c.Exec == nil {
 		c.Exec = &Exec{
 			Command: []string{"sh"},
@@ -84,12 +70,6 @@ func (c *Config) validate() error {
 		}
 	}
 	return nil
-}
-
-type SSH struct {
-	User    string   `json:"user,omitempty"`
-	Port    int      `json:"port,omitempty"`
-	Command []string `json:"command,omitempty"`
 }
 
 type Exec struct {

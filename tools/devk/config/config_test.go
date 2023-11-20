@@ -18,7 +18,6 @@ func TestLoad(t *testing.T) {
 		os.Setenv("BAR", "bar")
 		wantConfig := &Config{
 			Exec: &Exec{Command: []string{"foo"}},
-			SSH:  &SSH{Command: []string{"baz"}, User: "foo", Port: 2222},
 			Envs: []Env{
 				{
 					Name:  "FOO",

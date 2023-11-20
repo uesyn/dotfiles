@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/lima-vm/sshocker/pkg/mount"
 	"github.com/moby/term"
 	"github.com/uesyn/dotfiles/tools/devk/common"
 	"github.com/uesyn/dotfiles/tools/devk/config"
@@ -21,7 +20,6 @@ import (
 	"github.com/uesyn/dotfiles/tools/devk/manifest"
 	"github.com/uesyn/dotfiles/tools/devk/mutator"
 	"github.com/uesyn/dotfiles/tools/devk/release"
-	"github.com/uesyn/dotfiles/tools/devk/ssh"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -47,7 +45,6 @@ type Manager interface {
 	Update(ctx context.Context, devkName, namespace string, force bool, mutators ...mutator.Mutator) error
 	Exec(ctx context.Context, devkName, namespace string, opts ...ExecOption) error
 	PortForward(ctx context.Context, devkName, namespace string, opts ...PortForwardOption) error
-	SSH(ctx context.Context, devkName, namespace string, opts ...SSHOption) error
 	Start(ctx context.Context, devkName, namespace string, mutators ...mutator.Mutator) error
 	Stop(ctx context.Context, devkName, namespace string, force bool) error
 	List(ctx context.Context, namespace string) ([]info.DevkInfoAccessor, error)
@@ -373,156 +370,6 @@ func (m *manager) PortForward(ctx context.Context, devkName, namespace string, o
 
 func (m *manager) getPod(ctx context.Context, name, namespace string) (*corev1.Pod, error) {
 	return m.clientset.CoreV1().Pods(namespace).Get(ctx, name, metav1.GetOptions{})
-}
-
-type SSHOption interface {
-	apply(opts *ssh.Config) *ssh.Config
-}
-
-func WithSSHIdentityFile(file string) SSHOption {
-	return &withSSHIdentityFile{file: file}
-}
-
-type withSSHIdentityFile struct {
-	file string
-}
-
-func (o *withSSHIdentityFile) apply(opts *ssh.Config) *ssh.Config {
-	opts.IdentityFile = o.file
-	return opts
-}
-
-func WithSSHCommand(command []string) SSHOption {
-	return &withSSHCommand{command: command}
-}
-
-type withSSHCommand struct {
-	command []string
-}
-
-func (o *withSSHCommand) apply(opts *ssh.Config) *ssh.Config {
-	opts.Command = o.command
-	return opts
-}
-
-func WithSSHEnvs(envs map[string]string) SSHOption {
-	return &withSSHEnvs{envs: envs}
-}
-
-type withSSHEnvs struct {
-	envs map[string]string
-}
-
-func (o *withSSHEnvs) apply(opts *ssh.Config) *ssh.Config {
-	if opts.Envs == nil {
-		opts.Envs = make(map[string]string)
-	}
-	for k, v := range o.envs {
-		opts.Envs[k] = v
-	}
-	return opts
-}
-
-type withSSHLForward struct {
-	lforward string
-}
-
-func WithSSHLForward(lforward string) SSHOption {
-	return &withSSHLForward{lforward: lforward}
-}
-
-func (o *withSSHLForward) apply(opts *ssh.Config) *ssh.Config {
-	opts.LForwards = append(opts.LForwards, o.lforward)
-	return opts
-}
-
-type withSSHRForward struct {
-	rforward string
-}
-
-func WithSSHRForward(rforward string) SSHOption {
-	return &withSSHRForward{rforward: rforward}
-}
-
-func (o *withSSHRForward) apply(opts *ssh.Config) *ssh.Config {
-	opts.RForwards = append(opts.RForwards, o.rforward)
-	return opts
-}
-
-type withSSHVolumeMount struct {
-	mount mount.Mount
-}
-
-func WithSSHVolumeMount(m mount.Mount) SSHOption {
-	return &withSSHVolumeMount{mount: m}
-}
-
-func (o *withSSHVolumeMount) apply(opts *ssh.Config) *ssh.Config {
-	opts.Mounts = append(opts.Mounts, o.mount)
-	return opts
-}
-
-func (m *manager) SSH(ctx context.Context, devkName, namespace string, opts ...SSHOption) error {
-	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
-	ctx = logr.NewContext(ctx, logger)
-
-	r, err := m.store.Get(ctx, devkName, namespace)
-	if err != nil {
-		return fmt.Errorf("failed to get release: %w", err)
-	}
-
-	sshPod, err := m.getPod(ctx, *r.Manifests.Pod.Name, *r.Manifests.Pod.Namespace)
-	if err != nil {
-		return fmt.Errorf("failed to get devk pod: %w", err)
-	}
-
-	sshPort, err := m.getFreePort()
-	if err != nil {
-		return fmt.Errorf("failed to get Free Port for SSH: %w", err)
-	}
-	sshContainerPort := m.config.SSH.Port
-	go func() {
-		failedCount := 0
-		for {
-			opts := client.PortForwardOptions{
-				Addresses: []string{localhost},
-				Ports:     []string{fmt.Sprintf("%d:%d", sshPort, sshContainerPort)},
-			}
-
-			err := m.portforward.PortForward(ctx, sshPod, opts)
-			if err != nil {
-				failedCount++
-			}
-			if failedCount > 5 {
-				logger.Error(err, "failed to forward ports 5 times")
-				return
-			}
-			time.Sleep(100 * time.Millisecond)
-		}
-	}()
-
-	sshOpts := &ssh.Config{}
-	for _, o := range opts {
-		sshOpts = o.apply(sshOpts)
-	}
-
-	if err := sshOpts.Complete(); err != nil {
-		return fmt.Errorf("failed to complete ssh options: %w", err)
-	}
-
-	if err := wait.PollUntilContextTimeout(ctx, 100*time.Millisecond, 30*time.Second, true, func(context.Context) (bool, error) {
-		if m.isListening(localhost, sshPort) {
-			return true, nil
-		}
-		return false, nil
-	}); err != nil {
-		return fmt.Errorf("failed to wait for the ssh server to be listened: %w", err)
-	}
-
-	if err := sshOpts.Connect(ctx, m.config.SSH.User, localhost, sshPort); err != nil {
-		return fmt.Errorf("failed to run ssh: %w", err)
-	}
-	return nil
 }
 
 func (_ *manager) isListening(addr string, port int) bool {
