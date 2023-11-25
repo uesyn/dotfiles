@@ -470,7 +470,7 @@ setup_rustup_init() {
 
 setup_deno() {
   info "Installing deno..."
-  version=1.38.2
+  version=1.38.3
   make_pkgx_command2 "deno" "+deno.land=${version}"
 }
 
