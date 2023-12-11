@@ -51,6 +51,9 @@ export GOBIN=${OPT_BIN}
 # not to use GOROOT in github codespace
 unset GOROOT
 
+# Deno
+export DENO_UNSTABLE_SLOPPY_IMPORTS=yes
+
 # fzf
 export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
 
