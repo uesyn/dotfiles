@@ -312,7 +312,7 @@ setup_zellij() {
 
 setup_kubectl() {
   info "Installing kubectl..."
-  version=1.28.3
+  version=1.28.4
   make_pkgx_command2 "kubectl" "+kubernetes.io/kubectl=${version}"
   completion_dir=${HOME}/.cache/completion
   mkdir -p ${completion_dir}
