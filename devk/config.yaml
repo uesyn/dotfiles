@@ -62,9 +62,6 @@ podSpec:
       readOnly: true
     securityContext:
       privileged: true
-    ports:
-    - name: ssh
-      containerPort: 22
   volumes:
   - name: data
     persistentVolumeClaim:
