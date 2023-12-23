@@ -444,7 +444,7 @@ setup_aws() {
 
 setup_gcloud() {
   info "Installing gcloud..."
-  gcloud_commands="anthoscli bq docker-creditnail-gcloud gcloud gsutil"
+  gcloud_commands="anthoscli bq docker-credential-gcloud gcloud gsutil"
   for cmd in ${gcloud_commands}; do
     make_pkgx_command2 "${cmd}" "+gcloud"
   done
