@@ -73,11 +73,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
     apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
-RUN export DEBIAN_FRONTEND=noninteractive && \
-    apt update && \
-    apt install -y --no-install-recommends \
-    openssh-server && \
-    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     sed -i '/ja_JP.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen
