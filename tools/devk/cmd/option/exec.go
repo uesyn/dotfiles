@@ -51,7 +51,7 @@ func (o *ExecOptions) Complete(f cmdutil.Factory) error {
 		return err
 	}
 	envs := make(map[string]string)
-	for _, env := range conf.Envs {
+	for _, env := range conf.Exec.Envs {
 		envs[env.Name] = env.Value
 	}
 	o.execEnvs = envs

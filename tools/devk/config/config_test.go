@@ -17,15 +17,17 @@ func TestLoad(t *testing.T) {
 		}
 		os.Setenv("BAR", "bar")
 		wantConfig := &Config{
-			Exec: &Exec{Command: []string{"foo"}},
-			Envs: []Env{
-				{
-					Name:  "FOO",
-					Value: "foo",
-				},
-				{
-					Name:  "BAR",
-					Value: "bar",
+			Exec: &Exec{
+				Command: []string{"foo"},
+				Envs: []Env{
+					{
+						Name:  "FOO",
+						Value: "foo",
+					},
+					{
+						Name:  "BAR",
+						Value: "bar",
+					},
 				},
 			},
 			Pod: applyconfigurationscorev1.PodSpec().WithSubdomain("foo"),

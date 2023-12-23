@@ -1,16 +1,11 @@
 exec:
   command:
   - foo
-ssh:
-  user: foo
-  port: 2222
-  command:
-  - baz
-envs:
-- name: FOO
-  raw: foo
-- name: BAR
-  hostEnv: BAR
+  envs:
+  - name: FOO
+    raw: foo
+  - name: BAR
+    hostEnv: BAR
 podSpec:
   subdomain: foo
 pvcs:

@@ -29,7 +29,6 @@ func Load(file string) (*Config, error) {
 
 type Config struct {
 	Exec       *Exec                                                               `json:"exec,omitempty"`
-	Envs       []Env                                                               `json:"envs,omitempty"`
 	Pod        *applyconfigurationscorev1.PodSpecApplyConfiguration                `json:"podSpec,omitempty"`
 	PVCs       []applyconfigurationscorev1.PersistentVolumeClaimApplyConfiguration `json:"pvcs,omitempty"`
 	ConfigMaps []applyconfigurationscorev1.ConfigMapApplyConfiguration             `json:"cms,omitempty"`
@@ -46,22 +45,35 @@ func (c *Config) complete() error {
 
 var noNameFieldError = errors.New("no name field")
 var noPodFieldError = errors.New("no pod field")
+var noExecFieldError = errors.New("no exec field")
 
 func (c *Config) validate() error {
 	if c.Pod == nil {
 		return noPodFieldError
 	}
 
-	for _, env := range c.Envs {
-		if len(env.Name) == 0 {
-			return noNameFieldError
-		}
+	if c.Exec == nil {
+		return noExecFieldError
 	}
+	if err := c.Exec.validate(); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 type Exec struct {
 	Command []string `json:"command,omitempty"`
+	Envs    []Env    `json:"envs,omitempty"`
+}
+
+func (e *Exec) validate() error {
+	for _, env := range e.Envs {
+		if len(env.Name) == 0 {
+			return noNameFieldError
+		}
+	}
+	return nil
 }
 
 type Env struct {
