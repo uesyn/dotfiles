@@ -17,6 +17,7 @@ type ExecOptions struct {
 
 	execCommand []string
 	execEnvs    map[string]string
+	execUser    string
 	namespace   string
 	manager     manager.Manager
 }
@@ -56,6 +57,7 @@ func (o *ExecOptions) Complete(f cmdutil.Factory) error {
 	}
 	o.execEnvs = envs
 	o.execCommand = conf.Exec.Command
+	o.execUser = conf.Exec.User
 	return nil
 }
 
@@ -101,6 +103,9 @@ func (o *ExecOptions) Run(ctx context.Context) error {
 	}
 	if len(o.execEnvs) > 0 {
 		opts = append(opts, manager.WithExecEnvs(o.execEnvs))
+	}
+	if len(o.execUser) > 0 {
+		opts = append(opts, manager.WithExecUser(o.execUser))
 	}
 	if err := o.manager.Exec(ctx, o.name, o.namespace, opts...); err != nil {
 		logger.Error(err, "failed to exec")

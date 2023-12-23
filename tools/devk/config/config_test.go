@@ -18,6 +18,7 @@ func TestLoad(t *testing.T) {
 		os.Setenv("BAR", "bar")
 		wantConfig := &Config{
 			Exec: &Exec{
+				User: "foo",
 				Command: []string{"foo"},
 				Envs: []Env{
 					{

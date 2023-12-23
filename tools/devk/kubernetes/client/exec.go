@@ -34,6 +34,7 @@ type ExecOptions struct {
 	Container string
 	Command   []string
 	Envs      map[string]string
+	User      string
 }
 
 var notInTerminalError = errors.New("not in terminal")
@@ -51,6 +52,9 @@ func (c *ExecClient) Exec(ctx context.Context, pod *corev1.Pod, opts ExecOptions
 	command := []string{"env"}
 	for k, v := range opts.Envs {
 		command = append(command, k+"="+v)
+	}
+	if len(opts.User) > 0 {
+		command = append(command, "gosu", opts.User)
 	}
 	command = append(command, opts.Command...)
 

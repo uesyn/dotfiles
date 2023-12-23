@@ -1,7 +1,6 @@
 exec:
+  user: devbox
   command:
-  - gosu
-  - devbox
   - zsh
   envs:
   - name: PROMPT_ICON

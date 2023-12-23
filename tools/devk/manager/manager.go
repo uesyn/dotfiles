@@ -253,6 +253,19 @@ func (o *withExecEnvs) apply(opts *client.ExecOptions) *client.ExecOptions {
 	return opts
 }
 
+type withExecUser struct {
+	user string
+}
+
+func WithExecUser(user string) ExecOption {
+	return &withExecUser{user: user}
+}
+
+func (o *withExecUser) apply(opts *client.ExecOptions) *client.ExecOptions {
+	opts.User = o.user
+	return opts
+}
+
 func (m *manager) Exec(ctx context.Context, devkName, namespace string, opts ...ExecOption) error {
 	logger := logr.FromContextOrDiscard(ctx).WithValues("devkName", devkName, "namespace", namespace)
 	ctx = logr.NewContext(ctx, logger)

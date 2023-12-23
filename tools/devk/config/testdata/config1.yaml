@@ -1,4 +1,5 @@
 exec:
+  user: foo
   command:
   - foo
   envs:

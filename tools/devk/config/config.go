@@ -63,6 +63,7 @@ func (c *Config) validate() error {
 }
 
 type Exec struct {
+	User    string   `json:"user,omitempty"`
 	Command []string `json:"command,omitempty"`
 	Envs    []Env    `json:"envs,omitempty"`
 }
