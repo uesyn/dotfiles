@@ -130,7 +130,7 @@ make_links(){
   make_link ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
   make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
   make_link ${SCRIPT_DIR}/devk ${XDG_CONFIG_HOME}/devk
-  make_link ${SCRIPT_DIR}/rtx ${XDG_CONFIG_HOME}/rtx
+  make_link ${SCRIPT_DIR}/mise ${XDG_CONFIG_HOME}/mise
   make_link ${SCRIPT_DIR}/tmux ${XDG_CONFIG_HOME}/tmux
   for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${HOME}/opt/bin/${file##*/}; done
 }
@@ -227,18 +227,20 @@ EOF
   esac
 }
 
-setup_rtx() {
-  info "Installing rtx..."
-  version=v2023.11.1
-  key="rtx_${version}"
+setup_mise() {
+  info "Installing mise..."
+  version=v2024.1.16
+  key="mise_${version}"
 
-  download_if_linux_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-arm64.tar.gz
-  download_if_linux_amd64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-linux-x64.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-macos-arm64.tar.gz
-  download_if_darwin_amd64 ${key} https://github.com/jdxcode/rtx/releases/download/${version}/rtx-${version}-macos-x64.tar.gz
+
+  download_if_linux_arm64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-linux-arm64-musl
+  download_if_linux_amd64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-linux-x64-musl
+  download_if_darwin_arm64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-macos-arm64
+  download_if_darwin_amd64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-macos-x64
 
   cache_file=$(get_cache ${key})
-  tar xzf ${cache_file} -C ${OPT_BIN} rtx/bin/rtx --strip-components=2
+  cp ${cache_file} ${OPT_BIN}/mise
+  chmod +x ${OPT_BIN}/mise
 }
 
 make_pkgx_command2() {
@@ -522,7 +524,7 @@ setup_docker_commands() {
 make_links
 make_local_configs
 setup_pkgx &
-setup_rtx &
+setup_mise &
 setup_jq &
 setup_fzf &
 setup_ripgrep &
