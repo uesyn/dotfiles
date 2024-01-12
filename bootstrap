@@ -472,31 +472,6 @@ setup_rustup_init() {
   make_pkgx_command2 "rustup-init" "+rustup-init"
 }
 
-setup_deno() {
-  info "Installing deno..."
-  version=1.39.0
-  make_pkgx_command2 "deno" "+deno.land=${version}"
-}
-
-setup_python() {
-  info "Installing python..."
-  version=3.12
-  make_pkgx_command2 "idle" "+python@${version}"
-  make_pkgx_command2 "idle3" "+python@${version}"
-  make_pkgx_command2 "python" "+python@${version}"
-  make_pkgx_command2 "python3" "+python@${version}"
-  make_pkgx_command2 "pydoc3" "+python@${version}"
-}
-
-setup_ruby() {
-  info "Installing ruby..."
-  version=3.2.2
-  ruby_commands="erb irb racc rake rbs rdbg rdoc ri ruby typeprof"
-  for cmd in ${ruby_commands}; do
-    make_pkgx_command2 "${cmd}" "+ruby@${version}"
-  done
-}
-
 setup_docker_commands() {
   info "Installing docker..."
   if [ "$(uname)" = "Darwin" ]; then
@@ -538,9 +513,6 @@ setup_ghq &
 setup_mc &
 setup_vault &
 setup_rustup_init &
-setup_deno &
-setup_python &
-setup_ruby &
 setup_silicon &
 setup_docker_commands &
 wait
