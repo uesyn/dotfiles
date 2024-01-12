@@ -478,15 +478,6 @@ setup_deno() {
   make_pkgx_command2 "deno" "+deno.land=${version}"
 }
 
-setup_node() {
-  info "Installing node..."
-  node_version=20
-  npm_version=10.2.0
-  make_pkgx_command2 "node" "+node@${node_version}"
-  make_pkgx_command2 "npm" "+npmjs.com@${npm_version}"
-  make_pkgx_command2 "npx" "+npmjs.com@${npm_version}"
-}
-
 setup_python() {
   info "Installing python..."
   version=3.12
@@ -548,7 +539,6 @@ setup_mc &
 setup_vault &
 setup_rustup_init &
 setup_deno &
-setup_node &
 setup_python &
 setup_ruby &
 setup_silicon &
