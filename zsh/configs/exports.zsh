@@ -85,7 +85,7 @@ path=($path ${CARGO_HOME}/bin)
 # pkgx
 path=(${HOME}/.local/bin $path)
 
-# rtx
-if [[ -x "$(command -v rtx)" ]]; then
-  eval "$(rtx activate zsh)"
+# mise
+if [[ -x "$(command -v mise)" ]]; then
+  eval "$(mise activate zsh)"
 fi
