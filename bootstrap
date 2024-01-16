@@ -229,7 +229,7 @@ EOF
 
 setup_mise() {
   info "Installing mise..."
-  version=v2024.1.16
+  version=v2024.1.21
   key="mise_${version}"
 
 
