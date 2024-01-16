@@ -47,8 +47,9 @@ fi
 export PATH=${PATH}:${HOME}/.krew/bin
 
 # load local bashrc
-touch ${HOME}/.bashrc.local
-source ${HOME}/.bashrc.local
+if [[ ! -z ${HOME}/.bashrc.local ]]; then
+  source ${HOME}/.bashrc.local
+fi
 
 # raise OPT_BIN path priority
 PATH=${OPT_BIN}:$PATH
