@@ -199,6 +199,12 @@ EOF
 show_infos() {
   case "$(uname -r)" in
     *WSL2)
+      if [ -f ${HOME}/.bootstrapped ]; then
+        return
+      fi
+      sudo tee /etc/sudoers.d/$(whoami) << EOF >/dev/null
+$(whoami) ALL=(ALL) NOPASSWD:ALL
+EOF
       sudo tee /etc/wsl.conf <<EOF >/dev/null
 [boot]
 systemd=true
@@ -215,6 +221,8 @@ dnsTunneling=true
 firewall=true
 EOF
     ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
+    sudo apt update && sudo apt install -y git curl bash zsh build-essential
+    touch ${HOME}/.bootstrapped
 
     cat <<EOF
 ================================================
