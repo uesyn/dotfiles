@@ -221,7 +221,7 @@ dnsTunneling=true
 firewall=true
 EOF
     ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
-    sudo apt update && sudo apt install -y git curl bash zsh build-essential
+    sudo apt update && sudo apt install -y git curl bash zsh build-essential pkg-config
     touch ${HOME}/.bootstrapped
 
     cat <<EOF
