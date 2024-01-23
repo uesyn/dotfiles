@@ -451,5 +451,5 @@ setup_rustup_init &
 setup_silicon &
 setup_docker_commands &
 wait
-mise install
+mise install -y
 show_infos
