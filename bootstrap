@@ -320,62 +320,6 @@ setup_zellij() {
   make_pkgx_command2 "zellij" "+crates.io/zellij=${version}"
 }
 
-setup_kubectl() {
-  info "Installing kubectl..."
-  version=1.28.4
-  make_pkgx_command2 "kubectl" "+kubernetes.io/kubectl=${version}"
-  completion_dir=${HOME}/.cache/completion
-  mkdir -p ${completion_dir}
-  kubectl completion zsh > ${completion_dir}/kubectl
-}
-
-setup_kind() {
-  info "Installing kind..."
-  version=0.20.0
-  make_pkgx_command2 "kind" "+kind.sigs.k8s.io=${version}"
-}
-
-setup_kustomize() {
-  info "Installing kustomize..."
-  version=v5.1.1
-  make_pkgx_command2 "kustomize" "+kubernetes.io/kustomize=${version}"
-}
-
-setup_helm() {
-  info "Installing helm..."
-  version=v3.12.3
-  make_pkgx_command2 "helm" "+helm.sh=${version}"
-}
-
-setup_kubectx() {
-  info "Installing kubectx and kubens..."
-  version=v0.9.5
-  kubectx_key="kubectx_${version}"
-  kubens_key="kubens_${version}"
-
-  download_if_linux_arm64 ${kubectx_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubectx_${version}_linux_arm64.tar.gz
-  download_if_linux_amd64 ${kubectx_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubectx_${version}_linux_x86_64.tar.gz
-  download_if_darwin_arm64 ${kubectx_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubectx_${version}_darwin_arm64.tar.gz
-  download_if_darwin_amd64 ${kubectx_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubectx_${version}_darwin_x86_64.tar.gz
-  kubectx_cache_file=$(get_cache ${kubectx_key})
-  (
-    cd ${OPT_BIN}
-    tar xzf ${kubectx_cache_file} kubectx
-    chmod +x kubectx
-  )
-
-  download_if_linux_arm64 ${kubens_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubens_${version}_linux_arm64.tar.gz
-  download_if_linux_amd64 ${kubens_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubens_${version}_linux_x86_64.tar.gz
-  download_if_darwin_arm64 ${kubens_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubens_${version}_darwin_arm64.tar.gz
-  download_if_darwin_amd64 ${kubens_key} https://github.com/ahmetb/kubectx/releases/download/${version}/kubens_${version}_darwin_x86_64.tar.gz
-  kubens_cache_file=$(get_cache ${kubens_key})
-  (
-    cd ${OPT_BIN}
-    tar xzf ${kubens_cache_file} kubens
-    chmod +x kubens
-  )
-}
-
 setup_stern() {
   info "Installing stern..."
   version=1.26.0
@@ -504,11 +448,6 @@ setup_tmux &
 setup_zellij &
 setup_aws &
 setup_gcloud &
-setup_kubectl &
-setup_kustomize &
-setup_helm &
-setup_kind &
-setup_kubectx &
 setup_stern &
 setup_kubebuilder &
 setup_kubectl_krew &
@@ -521,4 +460,5 @@ setup_rustup_init &
 setup_silicon &
 setup_docker_commands &
 wait
+mise install
 show_infos
