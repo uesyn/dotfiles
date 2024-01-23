@@ -396,14 +396,6 @@ setup_aws() {
   make_pkgx_command2 "aws" "+aws.amazon.com/cli"
 }
 
-setup_gcloud() {
-  info "Installing gcloud..."
-  gcloud_commands="anthoscli bq docker-credential-gcloud gcloud gsutil"
-  for cmd in ${gcloud_commands}; do
-    make_pkgx_command2 "${cmd}" "+gcloud"
-  done
-}
-
 setup_silicon() {
   info "Installing silicon..."
   make_pkgx_command2 "silicon" "+crates.io/silicon"
@@ -447,7 +439,6 @@ setup_gh &
 setup_tmux &
 setup_zellij &
 setup_aws &
-setup_gcloud &
 setup_stern &
 setup_kubebuilder &
 setup_kubectl_krew &
