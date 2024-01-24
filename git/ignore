@@ -6,3 +6,4 @@ aqua.yml
 .vim-lsp-settings
 venv
 .venv
+.mise.toml
