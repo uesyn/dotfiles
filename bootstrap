@@ -13,6 +13,15 @@ warn() {
 error() {
   printf '%s\n' "[E] $*" >&2
 }
+
+is_wsl2() {
+  case "$(uname -r)" in
+    *WSL2)
+      return 0
+  esac
+  return 1
+}
+
 if [ -z "${HOME}" ]; then
   error "Must set HOME env"
   exit 1
@@ -196,22 +205,23 @@ EOF
   fi
 }
 
-show_infos() {
-  case "$(uname -r)" in
-    *WSL2)
-      if [ -f ${HOME}/.bootstrapped ]; then
-        return
-      fi
-      sudo tee /etc/sudoers.d/$(whoami) << EOF >/dev/null
+setup_for_wsl2() {
+  if ! is_wsl2; then
+    return
+  fi
+  if [ -f ${HOME}/.bootstrapped ]; then
+    return
+  fi
+  sudo tee /etc/sudoers.d/$(whoami) << EOF >/dev/null
 $(whoami) ALL=(ALL) NOPASSWD:ALL
 EOF
-      sudo tee /etc/wsl.conf <<EOF >/dev/null
+  sudo tee /etc/wsl.conf <<EOF >/dev/null
 [boot]
 systemd=true
 EOF
 
-      winuser="$(powershell.exe '$env:UserName' | tr -d '\r\n')"
-      sudo tee /mnt/c/Users/${winuser}/.wslconfig <<EOF >/dev/null
+  winuser="$(powershell.exe '$env:UserName' | tr -d '\r\n')"
+  sudo tee /mnt/c/Users/${winuser}/.wslconfig <<EOF >/dev/null
 [experimental]
 autoMemoryReclaim=dropcache
 sparseVhd=true
@@ -220,22 +230,20 @@ networkingMode=mirrored
 dnsTunneling=true
 firewall=true
 EOF
-    ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
-    sudo apt update && sudo apt install -y git curl bash zsh build-essential pkg-config
-    wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-    sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-    rm libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-    touch ${HOME}/.bootstrapped
+  ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
+  sudo apt update && sudo apt install -y git curl bash zsh build-essential pkg-config
+  wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+  sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+  rm libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
+  touch ${HOME}/.bootstrapped
 
-    cat <<EOF
+  cat <<EOF
 ================================================
 * Install Icons
 (ref: https://learn.microsoft.com/ja-jp/windows/terminal/tutorials/custom-prompt-setup#use-terminal-icons-to-add-missing-folder-or-file-icons)
 $ Install-Module -Name Terminal-Icons -Repository PSGallery
 ================================================
 EOF
-    ;;
-  esac
 }
 
 setup_mise() {
@@ -455,4 +463,4 @@ setup_silicon &
 setup_docker_commands &
 wait
 mise install -y
-show_infos
+setup_for_wsl2
