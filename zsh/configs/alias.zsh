@@ -74,10 +74,6 @@ function venv() {
   python -m venv .venv
 }
 
-function pip() {
-  python -m pip "$@"
-}
-
 function z() {
   zellij attach -c
 }

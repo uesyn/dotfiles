@@ -7,3 +7,6 @@ helm = "3.14.0"
 kind = "0.20.0"
 kubectx = "0.9.5"
 kubectl = "1.29.1"
+
+[settings]
+python_compile = true
