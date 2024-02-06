@@ -1,12 +1,5 @@
 return {
   {
-    "gabrielpoca/replacer.nvim",
-    event = { "VimEnter" },
-    config = function()
-      vim.keymap.set('n', '<leader>h', ':lua require("replacer").run()<cr>', { silent = true })
-    end
-  },
-  {
     "kylechui/nvim-surround",
     version = "*",
     event = "VeryLazy",

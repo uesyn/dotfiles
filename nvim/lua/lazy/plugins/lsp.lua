@@ -62,6 +62,7 @@ return {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-nvim-lsp',
+      'zbirenbaum/copilot-cmp',
       'hrsh7th/cmp-vsnip',
       'hrsh7th/vim-vsnip',
       'williamboman/mason.nvim',
@@ -107,14 +108,14 @@ return {
         mapping = cmp.mapping.preset.insert({
           ['<C-b>'] = cmp.mapping.scroll_docs(-4),
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
-          -- ['<C-Space>'] = cmp.mapping.complete(),
+          ['<C-x><C-o>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.abort(),
           ['<CR>'] = cmp.mapping.confirm({ select = false }),
           ['<Tab>'] = cmp.mapping.confirm({ select = true }),
         }),
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },
-          { name = 'buffer' },
+          { name = "copilot", group_index = 2 },
         }),
         experimental = {
           ghost_text = true,
@@ -194,5 +195,27 @@ return {
         end
       })
     end
-  }
+  },
+
+  {
+    "zbirenbaum/copilot.lua",
+    cmd = "Copilot",
+    event = "InsertEnter",
+    config = function()
+      require("copilot").setup({
+        suggestion = { enabled = false },
+        panel = { enabled = false },
+      })
+    end,
+  },
+
+  {
+    dependencies = {
+      'zbirenbaum/copilot.lua',
+    },
+    "zbirenbaum/copilot-cmp",
+    config = function ()
+      require("copilot_cmp").setup()
+    end
+  },
 }
