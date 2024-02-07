@@ -198,24 +198,10 @@ return {
   },
 
   {
-    "zbirenbaum/copilot.lua",
-    cmd = "Copilot",
-    event = "InsertEnter",
-    config = function()
-      require("copilot").setup({
-        suggestion = { enabled = false },
-        panel = { enabled = false },
-      })
-    end,
-  },
-
-  {
-    dependencies = {
-      'zbirenbaum/copilot.lua',
-    },
-    "zbirenbaum/copilot-cmp",
+    "github/copilot.vim",
     config = function ()
-      require("copilot_cmp").setup()
+      vim.g.copilot_no_tab_map = true
+      vim.api.nvim_set_keymap("i", "<C-i>", 'copilot#Accept("<CR>")', { silent = true, expr = true })
     end
   },
 }
