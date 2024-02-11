@@ -4,7 +4,7 @@ go = "1.21.6"
 deno = "1.40.4"
 kustomize = "5.3.0"
 helm = "3.14.0"
-kind = "0.20.0"
+kind = "0.21.0"
 kubectx = "0.9.5"
 kubectl = "1.29.1"
 
