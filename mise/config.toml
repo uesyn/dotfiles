@@ -1,7 +1,7 @@
 [tools]
 node = "20.11.0"
 go = "1.21.6"
-deno = "1.40.2"
+deno = "1.40.4"
 kustomize = "5.3.0"
 helm = "3.14.0"
 kind = "0.20.0"
