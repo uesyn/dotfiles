@@ -1,0 +1,6 @@
+{
+  "bash-language-server": "5.1.2",
+  "gopls": "v0.14.2",
+  "lua-language-server": "3.7.4",
+  "typescript-language-server": "4.3.3"
+}
