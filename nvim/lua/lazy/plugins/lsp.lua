@@ -57,7 +57,7 @@ return {
 
   {
     'neovim/nvim-lspconfig',
-    event = { "BufReadPre", "BufNewFile" },
+    event = { "VimEnter" },
     dependencies = {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
