@@ -3,6 +3,6 @@
   "deno": "v1.40.5",
   "gopls": "v0.14.2",
   "lua-language-server": "3.7.4",
-  "rust-analyzer": "2024-02-12",
+  "rust-analyzer": "2024-02-19",
   "typescript-language-server": "4.3.3"
 }
