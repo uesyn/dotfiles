@@ -212,7 +212,7 @@ return {
       keymap("i", "<C-j>", "<Plug>(copilot-next)")
       keymap("i", "<C-k>", "<Plug>(copilot-previous)")
       keymap("i", "<C-o>", "<Plug>(copilot-dismiss)")
-      -- keymap("i", "<C-l>", "<Plug>(copilot-suggest)")
+      keymap("i", "<C-f>", "<Plug>(copilot-suggest)")
     end,
   },
 }
