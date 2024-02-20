@@ -62,7 +62,6 @@ return {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-nvim-lsp',
-      'zbirenbaum/copilot-cmp',
       'hrsh7th/cmp-vsnip',
       'hrsh7th/vim-vsnip',
       'williamboman/mason.nvim',
@@ -95,14 +94,6 @@ return {
       })
 
       local cmp = require("cmp")
-
-      -- copilot setting
-      local has_words_before = function()
-        if vim.api.nvim_buf_get_option(0, "buftype") == "prompt" then return false end
-        local line, col = unpack(vim.api.nvim_win_get_cursor(0))
-        return col ~= 0 and vim.api.nvim_buf_get_text(0, line - 1, 0, line - 1, col, {})[1]:match("^%s*$") == nil
-      end
-
       cmp.setup({
         snippet = {
           expand = function(args)
@@ -119,18 +110,10 @@ return {
           ['<C-x><C-o>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.abort(),
           ['<CR>'] = cmp.mapping.confirm({ select = false }),
-          -- ['<Tab>'] = cmp.mapping.confirm({ select = true }),
-          ["<Tab>"] = vim.schedule_wrap(function(fallback) -- copilot setting
-            if cmp.visible() and has_words_before() then
-              cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
-            else
-              fallback()
-            end
-          end),
+          ['<Tab>'] = cmp.mapping.confirm({ select = true }),
         }),
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },
-          { name = "copilot", group_index = 2 },
         }),
         experimental = {
           ghost_text = true,
@@ -213,19 +196,21 @@ return {
   },
 
   {
-    "zbirenbaum/copilot.lua",
+    "github/copilot.vim",
     config = function()
-      require("copilot").setup({
-        suggestion = { enabled = false },
-        panel = { enabled = false },
-      })
+      vim.g.copilot_no_tab_map = true
+      local keymap = vim.keymap.set
+      -- https://github.com/orgs/community/discussions/29817#discussioncomment-4217615
+      keymap(
+        "i",
+        "<C-g>",
+        'copilot#Accept("<CR>")',
+        { silent = true, expr = true, script = true, replace_keycodes = false }
+      )
+      keymap("i", "<C-j>", "<Plug>(copilot-next)")
+      keymap("i", "<C-k>", "<Plug>(copilot-previous)")
+      keymap("i", "<C-o>", "<Plug>(copilot-dismiss)")
+      keymap("i", "<C-l>", "<Plug>(copilot-suggest)")
     end,
-  },
-
-  {
-    "zbirenbaum/copilot-cmp",
-    config = function()
-      require("copilot_cmp").setup()
-    end
   },
 }
