@@ -1,8 +1,8 @@
 {
   "bash-language-server": "5.1.2",
-  "deno": "v1.41.0",
-  "gopls": "v0.14.2",
+  "deno": "v1.41.1",
+  "gopls": "v0.15.1",
   "lua-language-server": "3.7.4",
-  "rust-analyzer": "2024-02-19",
+  "rust-analyzer": "2024-02-26",
   "typescript-language-server": "4.3.3"
 }
