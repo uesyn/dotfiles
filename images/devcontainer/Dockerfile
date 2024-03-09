@@ -50,7 +50,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
         openssh-client \
         procps \
         psmisc \
-        sshfs \
         sudo \
         time \
         tzdata \
@@ -76,8 +75,6 @@ RUN export DEBIAN_FRONTEND=noninteractive && \
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
     sed -i '/ja_JP.UTF-8/s/^# //g' /etc/locale.gen && \
     locale-gen
-RUN update-alternatives --set iptables /usr/sbin/iptables-legacy && \
-    update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
 RUN groupadd devbox -g 1000 && \
     useradd devbox -s /usr/bin/zsh -g 1000 -G docker
 COPY sudoers.d/devbox /etc/sudoers.d/devbox
