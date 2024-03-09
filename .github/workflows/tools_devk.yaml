@@ -15,8 +15,8 @@ jobs:
         goos: [ 'darwin', 'linux' ]
         goarch: [ 'arm64', 'amd64' ]
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: 'tools/devk/go.mod'
           cache-dependency-path: 'tools/devk/go.sum'
