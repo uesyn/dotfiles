@@ -311,6 +311,17 @@ setup_jq() {
   chmod +x ${OPT_BIN}/jq
 }
 
+setup_rustup_init() {
+  info "Installing rustup-init..."
+  version=1.27.0
+  key="rustup-init_${version}"
+
+  download ${key} https://raw.githubusercontent.com/rust-lang/rustup/${version}/rustup-init.sh
+  cache_file=$(get_cache ${key})
+  cp ${cache_file} ${OPT_BIN}/rustup-init
+  chmod +x ${OPT_BIN}/rustup-init
+}
+
 setup_yq() {
   info "Installing yq..."
   version=v4.34.1
@@ -426,11 +437,6 @@ setup_vault() {
   make_pkgx_command2 "vault" "+vault"
 }
 
-setup_rustup_init() {
-  info "Installing rustup-init ..."
-  make_pkgx_command2 "rustup-init" "+rustup-init"
-}
-
 setup_docker_commands() {
   info "Installing docker..."
   make_pkgx_command2 "docker-credential-ecr-login" "+github.com/awslabs/amazon-ecr-credential-helper"
@@ -444,6 +450,7 @@ setup_mise &
 setup_jq &
 setup_fzf &
 setup_ripgrep &
+setup_rustup_init &
 wait
 if [ -d ${OPT_PKGX_DIR} ]; then
   rm -rf ${OPT_PKGX_DIR}
@@ -462,7 +469,6 @@ setup_opa &
 setup_ghq &
 setup_mc &
 setup_vault &
-setup_rustup_init &
 setup_silicon &
 setup_docker_commands &
 wait
