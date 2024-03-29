@@ -330,7 +330,7 @@ setup_yq() {
 
 setup_gh() {
   info "Installing gh ..."
-  version=v2.37.0
+  version=v2.46.0
   make_pkgx_command2 "gh" "+cli.github.com=${version}"
 }
 
