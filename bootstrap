@@ -296,6 +296,20 @@ setup_neovim() {
   nvim --headless "+Lazy! restore" +qa
 }
 
+setup_zellij() {
+  info "Installing zellij..."
+  version=v0.39.2
+  key="zellij_${version}"
+
+  download_if_linux_amd64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-x86_64-unknown-linux-musl.tar.gz
+  download_if_linux_arm64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-aarch64-unknown-linux-musl.tar.gz
+  download_if_darwin_amd64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-x86_64-apple-darwin.tar.gz
+  download_if_darwin_arm64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-aarch64-apple-darwin.tar.gz
+
+  cache_file=$(get_cache ${key})
+  tar xzf ${cache_file} -C ${OPT_BIN}
+}
+
 setup_jq() {
   info "Installing jq..."
   version=1.7
@@ -340,41 +354,6 @@ setup_tmux() {
   make_pkgx_command2 "tmux" "+github.com/tmux/tmux=${version}"
 }
 
-setup_zellij() {
-  info "Installing zellij..."
-  version=v0.39.2
-  make_pkgx_command2 "zellij" "+crates.io/zellij=${version}"
-}
-
-setup_stern() {
-  info "Installing stern..."
-  version=1.26.0
-  make_pkgx_command2 "stern" "+github.com/stern/stern=${version}"
-}
-
-setup_kubebuilder() {
-  info "Installing kubebuilder..."
-  version=3.13.0
-  make_pkgx_command2 "kubebuilder" "+kubebuilder.io=${version}"
-}
-
-setup_kubectl_krew() {
-  info "Installing kubectl-krew..."
-  make_pkgx_command2 "kubectl-krew" "+krew.sigs.k8s.io"
-}
-
-setup_conftest() {
-  info "Installing conftest..."
-  version=0.46.0
-  make_pkgx_command2 "conftest" "+conftest.dev=${version}"
-}
-
-setup_opa() {
-  info "Installing opa..."
-  version=0.58.0
-  make_pkgx_command2 "opa" "+openpolicyagent.org=${version}"
-}
-
 setup_ghq() {
   info "Installing ghq..."
   version=1.4.2
@@ -417,31 +396,6 @@ setup_ripgrep() {
   tar xzf ${cache_file} -C ${OPT_BIN}
 }
 
-setup_aws() {
-  info "Installing aws..."
-  make_pkgx_command2 "aws" "+aws.amazon.com/cli"
-}
-
-setup_silicon() {
-  info "Installing silicon..."
-  make_pkgx_command2 "silicon" "+crates.io/silicon"
-}
-
-setup_mc() {
-  info "Installing mc"
-  make_pkgx_command2 "mc" "+min.io/mc"
-}
-
-setup_vault() {
-  info "Installing vault"
-  make_pkgx_command2 "vault" "+vault"
-}
-
-setup_docker_commands() {
-  info "Installing docker..."
-  make_pkgx_command2 "docker-credential-ecr-login" "+github.com/awslabs/amazon-ecr-credential-helper"
-}
-
 ### main ###
 make_links
 make_local_configs
@@ -451,6 +405,7 @@ setup_jq &
 setup_fzf &
 setup_ripgrep &
 setup_rustup_init &
+setup_zellij &
 wait
 if [ -d ${OPT_PKGX_DIR} ]; then
   rm -rf ${OPT_PKGX_DIR}
@@ -459,18 +414,7 @@ setup_neovim &
 setup_yq &
 setup_gh &
 setup_tmux &
-setup_zellij &
-setup_aws &
-setup_stern &
-setup_kubebuilder &
-setup_kubectl_krew &
-setup_conftest &
-setup_opa &
 setup_ghq &
-setup_mc &
-setup_vault &
-setup_silicon &
-setup_docker_commands &
 wait
 mise install -y
 setup_for_wsl2
