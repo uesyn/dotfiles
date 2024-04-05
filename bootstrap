@@ -351,10 +351,9 @@ setup_gh() {
   cache_file=$(get_cache ${key})
   case "$(detect_target)" in
     linux-*)
-      cd ${OPT_BIN}
       file=$(tar tzf ${cache_file} | grep bin/gh)
-      tar xzf ${cache_file} "$file" --overwrite --strip-components=2
-      cd -
+      tar xzf ${cache_file} "$file" -O > ${OPT_BIN}/gh
+      chmod +x ${OPT_BIN}/gh
       ;;
     darwin-*)
       unzip -p ${cache_file} > ${OPT_BIN}/gh
