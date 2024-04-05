@@ -325,6 +325,43 @@ setup_jq() {
   chmod +x ${OPT_BIN}/jq
 }
 
+setup_ghq() {
+  info "Installing ghq..."
+  version=v1.6.0
+  key="ghq_${version}"
+
+  download_if_linux_arm64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_linux_arm64.zip
+  download_if_linux_amd64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_linux_amd64.zip
+  download_if_darwin_arm64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_darwin_arm64.zip
+  download_if_darwin_amd64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_darwin_amd64.zip
+
+  cache_file=$(get_cache ${key})
+  unzip -o -j ${cache_file} '*/ghq' -d ${OPT_BIN}
+}
+
+setup_gh() {
+  info "Installing gh ..."
+  version=2.46.0
+  key="gh_${version}"
+  download_if_linux_arm64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_arm64.tar.gz
+  download_if_linux_amd64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_amd64.tar.gz
+  download_if_darwin_arm64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_macOS_amd64.zip
+  download_if_darwin_amd64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_macOS_arm64.zip
+
+  cache_file=$(get_cache ${key})
+  case "$(detect_target)" in
+    linux-*)
+      cd ${OPT_BIN}
+      file=$(tar tzf ${cache_file} | grep bin/gh)
+      tar xzf ${cache_file} "$file" --overwrite --strip-components=2
+      cd -
+      ;;
+    darwin-*)
+      unzip -p ${cache_file} > ${OPT_BIN}/gh
+      ;;
+  esac
+}
+
 setup_rustup_init() {
   info "Installing rustup-init..."
   version=1.27.0
@@ -342,22 +379,10 @@ setup_yq() {
   make_pkgx_command2 "yq" "+github.com/mikefarah/yq=${version}"
 }
 
-setup_gh() {
-  info "Installing gh ..."
-  version=v2.46.0
-  make_pkgx_command2 "gh" "+cli.github.com=${version}"
-}
-
 setup_tmux() {
   info "Installing tmux..."
   version=3.4
   make_pkgx_command2 "tmux" "+github.com/tmux/tmux=${version}"
-}
-
-setup_ghq() {
-  info "Installing ghq..."
-  version=1.4.2
-  make_pkgx_command2 "ghq" "+github.com/x-motemen/ghq=${version}"
 }
 
 setup_fzf() {
@@ -406,6 +431,7 @@ setup_fzf &
 setup_ripgrep &
 setup_rustup_init &
 setup_zellij &
+setup_ghq &
 wait
 if [ -d ${OPT_PKGX_DIR} ]; then
   rm -rf ${OPT_PKGX_DIR}
@@ -414,7 +440,6 @@ setup_neovim &
 setup_yq &
 setup_gh &
 setup_tmux &
-setup_ghq &
 wait
 mise install -y
 setup_for_wsl2
