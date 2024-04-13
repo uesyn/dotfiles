@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-powershell.exe /c start "$1"
