@@ -14,51 +14,35 @@ path=(
 export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
-export LANG=C.UTF-8
+export LANG=en_US.UTF-8
 export COMPLETION_DIR="$HOME/.cache/completion"
+
+if [[ -f ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh ]]; then
+  source ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
+fi
+
+export TERMINFO_DIRS="/usr/share/terminfo:${HOME}/.nix-profile/share/terminfo"
 
 # Homebrew
 [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
 [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
 [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]] && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
-if [[ -x "$(command -v brew)" ]]; then
-  export HOMEBREW_PREFIX=$(brew --prefix)
-  path=(
-    ${HOMEBREW_PREFIX}/opt/coreutils/libexec/gnubin(N-/)
-    ${HOMEBREW_PREFIX}/opt/gnu-sed/libexec/gnubin(N-/)
-    ${HOMEBREW_PREFIX}/opt/grep/libexec/gnubin(N-/)
-    ${HOMEBREW_PREFIX}/opt/gnu-tar/libexec/gnubin(N-/)
-    ${HOMEBREW_PREFIX}/opt/findutils/libexec/gnubin(N-/)
-    ${HOMEBREW_PREFIX}/opt/diffutils/bin(N-/)
-    $path
-  )
-fi
 export HOMEBREW_NO_AUTO_UPDATE=1
 
 # opt
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
-path=(${OPT_BIN} ${OPT_PKGX_BIN} $path)
+path=(${OPT_BIN} $path)
 
-# coreutils
-path=(${OPT_DIR}/coreutils/bin $path)
+# nix
+path=(${HOME}/.nix-profile/bin $path)
 
 # go
-export GO111MODULE=on
 export GOPATH=${HOME}
 export GOBIN=${OPT_BIN}
-# not to use GOROOT in github codespace
-unset GOROOT
-
-# Deno
-export DENO_UNSTABLE_SLOPPY_IMPORTS=yes
 
 # fzf
 export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
-
-# neovim
-path=(${OPT_DIR}/nvim/bin $path)
 
 # nvim
 if [[ -x $(command -v nvim) ]]; then
@@ -81,9 +65,6 @@ export VIRTUAL_ENV_DISABLE_PROMPT=y
 export RUSTUP_HOME=${OPT_DIR}/rust/rustup
 export CARGO_HOME=${OPT_DIR}/rust/cargo
 path=($path ${CARGO_HOME}/bin)
-
-# pkgx
-path=(${HOME}/.local/bin $path)
 
 # mise
 if [[ -x "$(command -v mise)" ]]; then

@@ -2,18 +2,6 @@
 
 set -eu
 
-info() {
-  printf '%s\n' "> $*"
-}
-
-warn() {
-  printf '%s\n' "[W] $*"
-}
-
-error() {
-  printf '%s\n' "[E] $*" >&2
-}
-
 is_wsl2() {
   case "$(uname -r)" in
     *WSL2)
@@ -23,167 +11,15 @@ is_wsl2() {
 }
 
 if [ -z "${HOME}" ]; then
-  error "Must set HOME env"
+  echo "Must set HOME env"
   exit 1
 fi
 
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-export OPT_PKGX_DIR=${OPT_DIR}/pkgx
-export OPT_PKGX_BIN=${OPT_PKGX_DIR}/bin
-export BOOTSTRAP_CACHE_DIR=${HOME}/.cache/bootstrap
 mkdir -p ${OPT_BIN}
-mkdir -p ${BOOTSTRAP_CACHE_DIR}
-export PATH="${OPT_BIN}:${OPT_PKGX_BIN}:${PATH}"
+export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
-ENVS_DIR=${OPT_DIR}/pkgx/envs
-
-detect_target() {
-  platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
-  arch="$(uname -m | tr '[:upper:]' '[:lower:]')"
-
-  case "${platform}" in
-    linux) platform="linux" ;;
-    darwin) platform="darwin" ;;
-  esac
-
-  case "${arch}" in
-    x86_64) arch="amd64" ;;
-    aarch64) arch="arm64" ;;
-    armv*) arch="arm" ;;
-  esac
-
-  printf '%s' "$platform-$arch"
-}
-
-calc_hash() {
-  if [ -x "$(command -v sha256sum)" ]; then
-    printf "$1" | sha256sum | cut -c-64
-    return
-  elif [ -x "$(command -v shasum)" ]; then
-    printf "$1" | shasum -a 256 | cut -c-64
-    return
-  fi
-  return 1
-}
-
-download() {
-  hash_key="$1"
-  url="$2"
-  file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${hash_key})"
-  tmpfile="$file.tmp"
-
-  [ -f ${file} ] && return
-
-  info "Downloading ${url}..."
-  if [ -x "$(command -v curl)" ]; then
-    cmd="curl --fail --silent --location --output $tmpfile $url"
-  elif [ -x "$(command -v wget)" ]; then
-    cmd="wget --quiet --output-document=$tmpfile $url"
-  else
-    error "No HTTP download program (curl, wget, fetch) found, exiting..."
-    return 1
-  fi
-
-  $cmd && mv $tmpfile $file && return 0
-  return $?
-}
-
-download_if_darwin_arm64() {
-  [ "$(detect_target)" != "darwin-arm64" ] && return
-  download "$1" "$2"
-  return $?
-}
-
-download_if_darwin_amd64() {
-  [ "$(detect_target)" != "darwin-amd64" ] && return
-  download "$1" "$2"
-  return $?
-}
-
-download_if_linux_arm64() {
-  [ "$(detect_target)" != "linux-arm64" ] && return
-  download "$1" "$2"
-  return $?
-}
-
-download_if_linux_amd64() {
-  [ "$(detect_target)" != "linux-amd64" ] && return
-  download "$1" "$2"
-  return $?
-}
-
-get_cache() {
-  key=$1
-  cache_file="${BOOTSTRAP_CACHE_DIR}/$(calc_hash ${key})"
-  [ -f ${cache_file} ] && printf ${cache_file}
-}
-
-make_link() {
-  from=$1
-  to=$2
-  mkdir -p $(dirname ${to})
-  [ -L ${to} ] && rm ${to}
-  ln -sfn ${from} ${to}
-}
-
-make_links(){
-  XDG_CONFIG_HOME=${HOME}/.config
-  make_link ${SCRIPT_DIR}/bashrc ${HOME}/.bashrc
-  make_link ${SCRIPT_DIR}/bash_profile ${HOME}/.bash_profile
-  make_link ${SCRIPT_DIR}/zshrc ${HOME}/.zshrc
-  make_link ${SCRIPT_DIR}/zsh ${XDG_CONFIG_HOME}/zsh
-  make_link ${SCRIPT_DIR}/nvim ${XDG_CONFIG_HOME}/nvim
-  make_link ${SCRIPT_DIR}/git ${XDG_CONFIG_HOME}/git
-  make_link ${SCRIPT_DIR}/gh/config.yml ${XDG_CONFIG_HOME}/gh/config.yml
-  make_link ${SCRIPT_DIR}/zellij ${XDG_CONFIG_HOME}/zellij
-  make_link ${SCRIPT_DIR}/wezterm.lua ${XDG_CONFIG_HOME}/wezterm/wezterm.lua
-  make_link ${SCRIPT_DIR}/devk ${XDG_CONFIG_HOME}/devk
-  make_link ${SCRIPT_DIR}/mise ${XDG_CONFIG_HOME}/mise
-  make_link ${SCRIPT_DIR}/tmux ${XDG_CONFIG_HOME}/tmux
-  for file in ${SCRIPT_DIR}/bin/*; do make_link ${SCRIPT_DIR}/bin/${file##*/} ${OPT_BIN}/${file##*/}; done
-  if ! is_wsl2; then
-    rm ${OPT_BIN}/open
-  fi
-}
-
-setup_pkgx() {
-  info "Installing pkgx..."
-  version="1.1.3"
-  key="pkgx_${version}"
-  download_if_linux_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+aarch64.tar.xz
-  download_if_linux_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+linux+x86-64.tar.xz
-  download_if_darwin_arm64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+darwin+aarch64.tar.xz
-  download_if_darwin_amd64 ${key} https://github.com/pkgxdev/pkgx/releases/download/v${version}/pkgx-${version}+darwin+x86-64.tar.xz
-
-  cache_file=$(get_cache "${key}")
-
-  tar xJf ${cache_file} -C ${OPT_BIN}
-  pkgx_bin="${OPT_BIN}/pkgx"
-  chmod u+x ${pkgx_bin}
-  [ ! -d ${HOME}/.pkgx ] && ${pkgx_bin} --sync
-}
-
-install_neovim() {
-  info "Installing neovim..."
-  neovim_dir=${OPT_DIR}/nvim
-  neovim_bin_dir=${neovim_dir}/bin
-  export PATH=${neovim_bin_dir}:$PATH
-  version=v0.9.4
-
-  key="neovim_${version}"
-  download_if_linux_arm64 ${key} https://github.com/uesyn/neovim-arm64-builder/releases/download/${version}/nvim-linux-arm64.tar.gz
-  download_if_linux_amd64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-linux64.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-macos.tar.gz
-  download_if_darwin_amd64 ${key} https://github.com/neovim/neovim/releases/download/${version}/nvim-macos.tar.gz
-
-  cache_file=$(get_cache ${key})
-
-  rm -rf ${neovim_dir}
-  mkdir -p ${neovim_dir}
-  tar xzf ${cache_file} --strip-components=1 -C ${neovim_dir}
-  make_link ${neovim_bin_dir}/nvim ${OPT_BIN}/nvim
-}
 
 make_local_configs() {
   zlogin_file=${HOME}/.zlogin
@@ -199,14 +35,78 @@ export GITLAB_ENTERPRISE_TOKEN=${GITLAB_ENTERPRISE_TOKEN:-}
 export GITLAB_TOKEN=${GITLAB_TOKEN:-}
 EOF
   fi
-
-  bashrc_local_file=${HOME}/.bashrc.local
-  if [ ! -f "${bashrc_local_file}" ]; then
-    cat << 'EOF' > ${bashrc_local_file}
-source ${zlogin_file}
-EOF
-  fi
 }
+
+get_architecture() {
+    _ostype="$(uname -s)"
+    _cputype="$(uname -m)"
+
+    if [ "$_ostype" = Linux ]; then
+        if [ "$(uname -o)" = Android ]; then
+            _ostype=Android
+        fi
+        if ldd --version 2>&1 | grep -q 'musl'; then
+            _clibtype="musl"
+        fi
+    fi
+
+    if [ "$_ostype" = Darwin ]; then
+        # Darwin `uname -m` can lie due to Rosetta shenanigans. If you manage to
+        # invoke a native shell binary and then a native uname binary, you can
+        # get the real answer, but that's hard to ensure, so instead we use
+        # `sysctl` (which doesn't lie) to check for the actual architecture.
+        if [ "$_cputype" = i386 ]; then
+            # Handling i386 compatibility mode in older macOS versions (<10.15)
+            # running on x86_64-based Macs.
+            # Starting from 10.15, macOS explicitly bans all i386 binaries from running.
+            # See: <https://support.apple.com/en-us/HT208436>
+
+            # Avoid `sysctl: unknown oid` stderr output and/or non-zero exit code.
+            if sysctl hw.optional.x86_64 2> /dev/null || true | grep -q ': 1'; then
+                _cputype=x86_64
+            fi
+        elif [ "$_cputype" = x86_64 ]; then
+            # Handling x86-64 compatibility mode (a.k.a. Rosetta 2)
+            # in newer macOS versions (>=11) running on arm64-based Macs.
+            # Rosetta 2 is built exclusively for x86-64 and cannot run i386 binaries.
+
+            # Avoid `sysctl: unknown oid` stderr output and/or non-zero exit code.
+            if sysctl hw.optional.arm64 2> /dev/null || true | grep -q ': 1'; then
+                _cputype=arm64
+            fi
+        fi
+    fi
+
+    case "$_ostype" in
+        Linux)
+            _ostype=linux
+            ;;
+
+        Darwin)
+            _ostype=darwin
+            ;;
+        *)
+            echo "unrecognized OS type: $_ostype" >&2
+	    exit 1
+            ;;
+    esac
+
+    case "$_cputype" in
+        aarch64 | arm64)
+            _cputype=aarch64
+            ;;
+        x86_64 | x86-64 | x64 | amd64)
+            _cputype=x86_64
+            ;;
+        *)
+            echo "unknown CPU type: $_cputype" >&2
+	    exit 1
+            ;;
+    esac
+
+    echo "${_cputype}-${_ostype}"
+}
+
 
 setup_for_wsl2() {
   if ! is_wsl2; then
@@ -236,9 +136,6 @@ EOF
   ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
   sudo add-apt-repository ppa:wslutilities/wslu --yes
   sudo apt update && sudo apt install -y git curl bash zsh build-essential pkg-config wslu
-  wget http://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-  sudo dpkg -i libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
-  rm libssl1.1_1.1.1f-1ubuntu2.20_amd64.deb
   touch ${HOME}/.bootstrapped
 
   cat <<EOF
@@ -250,195 +147,23 @@ $ Install-Module -Name Terminal-Icons -Repository PSGallery
 EOF
 }
 
-setup_mise() {
-  info "Installing mise..."
-  version=v2024.3.9
-  key="mise_${version}"
-
-
-  download_if_linux_arm64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-linux-arm64-musl
-  download_if_linux_amd64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-linux-x64-musl
-  download_if_darwin_arm64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-macos-arm64
-  download_if_darwin_amd64 ${key} https://github.com/jdx/mise/releases/download/${version}/mise-${version}-macos-x64
-
-  cache_file=$(get_cache ${key})
-  cp ${cache_file} ${OPT_BIN}/mise
-  chmod +x ${OPT_BIN}/mise
-}
-
-make_pkgx_command2() {
-  cmd_name=$1
-  pkgx_opts=$2
-  bin_path=${OPT_PKGX_BIN}/${cmd_name}
-
-  mkdir -p ${OPT_PKGX_BIN}
-  cat <<EOF > ${bin_path}
-#!/usr/bin/env bash
-
-if [[ ! -e "${ENVS_DIR}/${cmd_name}" ]] || [[ ! -s "${ENVS_DIR}/${cmd_name}" ]]; then
-  mkdir -p ${ENVS_DIR}
-  command pkgx --internal.use ${pkgx_opts} 2>/dev/null > ${ENVS_DIR}/${cmd_name}.tmp
-  mv ${ENVS_DIR}/${cmd_name}.tmp ${ENVS_DIR}/${cmd_name}
-fi
-source ${ENVS_DIR}/${cmd_name}
-
-exec ${cmd_name} "\$@"
-EOF
-  chmod +x ${bin_path}
-}
-
-setup_neovim() {
-  info "Installing neovim and plugins..."
-  make_pkgx_command2 "nvim" "+neovim.io"
-  install_neovim
-  nvim --headless "+Lazy! restore" +qa
-  git checkout -- ${SCRIPT_DIR}/nvim/lazy-lock.json
-  nvim --headless "+Lazy! restore" +qa
-}
-
-setup_zellij() {
-  info "Installing zellij..."
-  version=v0.39.2
-  key="zellij_${version}"
-
-  download_if_linux_amd64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-x86_64-unknown-linux-musl.tar.gz
-  download_if_linux_arm64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-aarch64-unknown-linux-musl.tar.gz
-  download_if_darwin_amd64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-x86_64-apple-darwin.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/zellij-org/zellij/releases/download/${version}/zellij-aarch64-apple-darwin.tar.gz
-
-  cache_file=$(get_cache ${key})
-  tar xzf ${cache_file} -C ${OPT_BIN}
-}
-
-setup_jq() {
-  info "Installing jq..."
-  version=1.7
-  key="jq_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/jqlang/jq/releases/download/jq-${version}/jq-linux-arm64
-  download_if_linux_amd64 ${key} https://github.com/jqlang/jq/releases/download/jq-${version}/jq-linux64
-  download_if_darwin_arm64 ${key} https://github.com/jqlang/jq/releases/download/jq-${version}/jq-macos-arm64
-  download_if_darwin_amd64 ${key} https://github.com/jqlang/jq/releases/download/jq-${version}/jq-macos-amd64
-
-  cache_file=$(get_cache ${key})
-  cp ${cache_file} ${OPT_BIN}/jq
-  chmod +x ${OPT_BIN}/jq
-}
-
-setup_ghq() {
-  info "Installing ghq..."
-  version=v1.6.0
-  key="ghq_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_linux_arm64.zip
-  download_if_linux_amd64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_linux_amd64.zip
-  download_if_darwin_arm64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_darwin_arm64.zip
-  download_if_darwin_amd64 ${key} https://github.com/x-motemen/ghq/releases/download/${version}/ghq_darwin_amd64.zip
-
-  cache_file=$(get_cache ${key})
-  unzip -o -j ${cache_file} '*/ghq' -d ${OPT_BIN}
-}
-
-setup_gh() {
-  info "Installing gh ..."
-  version=2.46.0
-  key="gh_${version}"
-  download_if_linux_arm64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_arm64.tar.gz
-  download_if_linux_amd64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_linux_amd64.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_macOS_amd64.zip
-  download_if_darwin_amd64 ${key} https://github.com/cli/cli/releases/download/v${version}/gh_${version}_macOS_arm64.zip
-
-  cache_file=$(get_cache ${key})
-  case "$(detect_target)" in
-    linux-*)
-      file=$(tar tzf ${cache_file} | grep bin/gh)
-      tar xzf ${cache_file} "$file" -O > ${OPT_BIN}/gh
-      chmod +x ${OPT_BIN}/gh
-      ;;
-    darwin-*)
-      unzip -p ${cache_file} > ${OPT_BIN}/gh
-      ;;
-  esac
-}
-
-setup_rustup_init() {
-  info "Installing rustup-init..."
-  version=1.27.0
-  key="rustup-init_${version}"
-
-  download ${key} https://raw.githubusercontent.com/rust-lang/rustup/${version}/rustup-init.sh
-  cache_file=$(get_cache ${key})
-  cp ${cache_file} ${OPT_BIN}/rustup-init
-  chmod +x ${OPT_BIN}/rustup-init
-}
-
-setup_yq() {
-  info "Installing yq..."
-  version=v4.34.1
-  make_pkgx_command2 "yq" "+github.com/mikefarah/yq=${version}"
-}
-
-setup_tmux() {
-  info "Installing tmux..."
-  version=3.4
-  make_pkgx_command2 "tmux" "+github.com/tmux/tmux=${version}"
-}
-
-setup_fzf() {
-  info "Installing fzf..."
-  version=0.48.1
-  key="fzf_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_arm64.tar.gz
-  download_if_linux_amd64 ${key} https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-linux_amd64.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-darwin_arm64.zip
-  download_if_darwin_amd64 ${key} https://github.com/junegunn/fzf/releases/download/${version}/fzf-${version}-darwin_amd64.zip
-
-  cache_file=$(get_cache ${key})
-  case "$(uname -s | tr '[:upper:]' '[:lower:]')" in
-    linux)
-      tar xzf ${cache_file} -C ${OPT_BIN}
-      ;;
-    darwin)
-      unzip -p ${cache_file} > ${OPT_BIN}/fzf
-      chmod +x ${OPT_BIN}/fzf
-      ;;
-  esac
-}
-
-setup_ripgrep() {
-  info "Installing ripgrep..."
-  version=13.0.0-10
-  key="ripgrep_${version}"
-
-  download_if_linux_arm64 ${key} https://github.com/microsoft/ripgrep-prebuilt/releases/download/v${version}/ripgrep-v${version}-aarch64-unknown-linux-musl.tar.gz
-  download_if_linux_amd64 ${key}  https://github.com/microsoft/ripgrep-prebuilt/releases/download/v${version}/ripgrep-v${version}-x86_64-unknown-linux-musl.tar.gz
-  download_if_darwin_arm64 ${key} https://github.com/microsoft/ripgrep-prebuilt/releases/download/v${version}/ripgrep-v${version}-aarch64-apple-darwin.tar.gz 
-  download_if_darwin_amd64 ${key} https://github.com/microsoft/ripgrep-prebuilt/releases/download/v${version}/ripgrep-v${version}-x86_64-apple-darwin.tar.gz
-
-  cache_file=$(get_cache ${key})
-  tar xzf ${cache_file} -C ${OPT_BIN}
-}
-
 ### main ###
-make_links
+mkdir -p ${HOME}/.config
+ln -sfn ${SCRIPT_DIR} ${HOME}/.config/home-manager
+ln -sfn ${SCRIPT_DIR}/nvim ${HOME}/.config/nvim-update
 make_local_configs
-setup_pkgx &
-setup_mise &
-setup_jq &
-setup_fzf &
-setup_ripgrep &
-setup_rustup_init &
-setup_zellij &
-setup_ghq &
-wait
-if [ -d ${OPT_PKGX_DIR} ]; then
-  rm -rf ${OPT_PKGX_DIR}
-fi
-setup_neovim &
-setup_yq &
-setup_gh &
-setup_tmux &
-wait
-mise install -y
 setup_for_wsl2
+cat << EOF > ${SCRIPT_DIR}/system.nix
+{
+  username = "${USER}";
+  home = "${HOME}";
+  system = "$(get_architecture)";
+}
+EOF
+if [ -x "$(command -v home-manager)" ]; then
+  home-manager switch
+else
+  if [ -x "$(command -v nix)" ]; then
+    nix run home-manager/release-23.11 -- switch
+  fi
+fi

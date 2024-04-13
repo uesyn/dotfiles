@@ -46,17 +46,9 @@ function M.setup()
   vim.opt.rtp:prepend(lazypath)
   local plugins = {
     {
-      dependencies = {
-        'zapling/mason-lock.nvim',
-      },
       "folke/lazy.nvim",
       lazy = false,
       version = lazyversion,
-      init = function()
-        require("mason-lock").setup({
-          lockfile_path = vim.fn.stdpath("config") .. "/mason-lock.json" -- (default)
-        })
-      end,
     },
     {
       import = "lazy.plugins"

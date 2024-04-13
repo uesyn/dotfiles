@@ -3,6 +3,12 @@ if [[ -z ${OLD_PATH} ]]; then
 fi
 PATH=${OLD_PATH}
 
+
+[[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
+[[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
+[[ -f /home/linuxbrew/.linuxbrew/bin/brew ]] && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+export HOMEBREW_NO_AUTO_UPDATE=1
+
 ### global
 if [[ $OSTYPE =~ linux.* ]]; then
 	export LANG=en_US.UTF-8
@@ -16,17 +22,9 @@ export XDG_CACHE_HOME="$HOME/.cache"
 ## opt
 export OPT_DIR=${OPT_DIR:-${HOME}/opt}
 export OPT_BIN=${OPT_DIR}/bin
-export OPT_PKGX_BIN=${OPT_DIR}/pkgx/bin
-export PATH=${OPT_BIN}:${OPT_PKGX_BIN}:${PATH}
-
-## local zsh
-export PATH=${OPT_DIR}/zsh/bin:${PATH}
-
-## neovim
-export PATH=${OPT_DIR}/nvim/bin:${PATH}
+export PATH=${OPT_BIN}:${PATH}
 
 # go
-export GO111MODULE=on
 export GOPATH=${HOME}
 export GOBIN=${OPT_BIN}
 
@@ -35,13 +33,6 @@ alias k='kubectl'
 alias ks='kubectl -n kube-system'
 alias kx='kubectx'
 alias kn='kubens'
-if [[ -x "$(command -v kubectl)" ]]; then
-  kubectl() {
-    unset -f kubectl
-    source <(kubectl completion bash)
-    kubectl $@
-  }
-fi
 
 # krew
 export PATH=${PATH}:${HOME}/.krew/bin
@@ -54,16 +45,16 @@ fi
 # raise OPT_BIN path priority
 PATH=${OPT_BIN}:$PATH
 
-function z() {
-  if [[ -x "$(command -v zellij)" ]]; then
-    [[ -n ${ZELLIJ_SESSION_NAME} ]] && return
-    zellij attach -c
-    return
-  fi
-}
-
 # nvim
 [[ -x "$(command -v nvim)" ]] && alias vim="nvim"
+
+# nix
+if [[ -f ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh ]]; then
+  source ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
+fi
+
+export TERMINFO_DIRS="/usr/share/terminfo:${HOME}/.nix-profile/share/terminfo"
+export PATH="${HOME}/.nix-profile/bin:${PATH}"
 
 detect_target() {
   platform="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -91,7 +82,7 @@ function z() {
   fi
 }
 
-function t() {
+function tm() {
   if [[ -x "$(command -v tmux)" ]]; then
     tmux new-session -ADs main
     return
@@ -122,12 +113,3 @@ function d() {
   fi
   devk "$@"
 }
-
-#docs.pkgx.sh/shellcode
-if [[ -x "$(command -v pkgx)" ]]; then
-  env () {
-    unset -f env
-    source <(pkgx --shellcode)
-    env "$@"
-  }
-fi

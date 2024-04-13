@@ -2,30 +2,6 @@ local lsp = vim.api.nvim_create_augroup("LSP", { clear = true })
 
 return {
   {
-    'lvimuser/lsp-inlayhints.nvim',
-    event = { "BufReadPre", "BufNewFile" },
-    config = function()
-      local inlayhints = require("lsp-inlayhints")
-      inlayhints.setup({ enabled_at_startup = false })
-      vim.api.nvim_create_autocmd("LspAttach", {
-        group = lsp,
-        callback = function(args)
-          if not (args.data and args.data.client_id) then
-            return
-          end
-
-          local bufnr = args.buf
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if client.server_capabilities.inlayHintProvider then
-            inlayhints.on_attach(client, bufnr, true)
-            vim.keymap.set('n', '<space>lH', inlayhints.toggle, { noremap = true, silent = true, buffer = bufnr })
-          end
-        end,
-      })
-    end
-  },
-
-  {
     'SmiteshP/nvim-navic',
     config = function()
       vim.api.nvim_create_autocmd("LspAttach", {
@@ -46,26 +22,23 @@ return {
   },
 
   {
-    'j-hui/fidget.nvim',
-    branch = "legacy",
-    event = "LspAttach",
+    'mrded/nvim-lsp-notify',
+    requires = { 'nvim-notify' },
     config = function()
-      require("fidget").setup({ window = { blend = 0 } })
-      vim.cmd([[highlight! FidgetTask ctermfg=0 guifg=0]])
+      require('lsp-notify').setup({
+        notify = require('notify'),
+      })
     end
   },
 
   {
     'neovim/nvim-lspconfig',
-    event = { "VimEnter" },
     dependencies = {
       'hrsh7th/cmp-buffer',
       'hrsh7th/nvim-cmp',
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-vsnip',
       'hrsh7th/vim-vsnip',
-      'williamboman/mason.nvim',
-      'williamboman/mason-lspconfig.nvim',
     },
     config = function()
       -- vim.lsp.set_log_level("debug") -- for debug
@@ -120,78 +93,67 @@ return {
         }
       })
 
+      local lspconfig = require('lspconfig')
+      local handlers = {
+        ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
+        ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
+      }
+      local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-      local default_opts = function()
-        return {
-          handlers = {
-            ["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, { border = 'rounded' }),
-            ["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, { border = 'rounded' }),
+      lspconfig.gopls.setup {
+        handlers = handlers,
+        capabilities = capabilities,
+        settings = {
+          gopls = {
+            hints = {
+              assignVariableTypes = true,
+              compositeLiteralFields = true,
+              compositeLiteralTypes = true,
+              constantValues = true,
+              functionTypeParameters = true,
+              parameterNames = true,
+              rangeVariableTypes = true,
+            },
           },
-          -- local capabilities = vim.lsp.protocol.make_client_capabilities()
-          capabilities = require('cmp_nvim_lsp').default_capabilities(),
-          settings = {
-            ["rust-analyzer"] = {
-              cargo = { allFeatures = true },
-              checkOnSave = { allFeatures = true },
-              diagnostics = {
-                enable = true,
-                disabled = { "unresolved-proc-macro" },
-                enableExperimental = true,
-              },
+        },
+      }
+      lspconfig.tsserver.setup {
+        handlers = handlers,
+        capabilities = capabilities,
+        root_dir = require('lspconfig').util.root_pattern("package.json"),
+      }
+      lspconfig.denols.setup {
+        handlers = handlers,
+        capabilities = capabilities,
+        root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
+          "import_map.json"),
+        settings = {
+          denols = {
+            enable = true,
+            lint = true,
+            unstable = true,
+            suggest = {
+              imports = {
+                autoDiscovery = true,
+              }
             },
-            Lua = {
-              runtime = { version = 'LuaJIT' },
-              diagnostics = { globals = { 'vim' } },
-              telemetry = { enable = false },
-              hint = { enable = true },
-              completion = { enable = true, showWord = "Disable" },
-              workspace = { library = { os.getenv("VIMRUNTIME") } },
-            },
-            gopls = {
-              hints = {
-                assignVariableTypes = true,
-                compositeLiteralFields = true,
-                compositeLiteralTypes = true,
-                constantValues = true,
-                functionTypeParameters = true,
-                parameterNames = true,
-                rangeVariableTypes = true,
-              },
-            },
-            denols = {
+          },
+        },
+      }
+      lspconfig.rust_analyzer.setup {
+        -- Server-specific settings. See `:help lspconfig-setup`
+        settings = {
+          ["rust-analyzer"] = {
+            cargo = { allFeatures = true },
+            checkOnSave = { allFeatures = true },
+            diagnostics = {
               enable = true,
-              lint = true,
-              unstable = true,
-              suggest = {
-                imports = {
-                  autoDiscovery = true,
-                }
-              },
+              disabled = { "unresolved-proc-macro" },
+              enableExperimental = true,
             },
           },
-          single_file_support = false,
-        }
-      end
-
-      local node_root_dir = require('lspconfig').util.root_pattern("package.json")
-      local deno_root_dir = require('lspconfig').util.root_pattern("deno.json", "deno.jsonc", "deps.ts",
-        "import_map.json")
-
-      require("mason").setup({ ui = { border = "rounded" } })
-      require("mason-lspconfig").setup()
-      require("mason-lspconfig").setup_handlers({
-        function(server_name)
-          local opts = default_opts()
-          if server_name == "tsserver" then
-            opts.root_dir = node_root_dir
-          elseif server_name == "eslint" then
-            opts.root_dir = node_root_dir
-          elseif server_name == "denols" then
-            opts.root_dir = deno_root_dir
-          end
-          require("lspconfig")[server_name].setup(opts)
-        end
-      })
+        },
+      }
     end
   },
 

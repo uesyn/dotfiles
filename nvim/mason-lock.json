@@ -1,6 +1,0 @@
-{
-  "bash-language-server": "5.1.2",
-  "gopls": "v0.15.2",
-  "rust-analyzer": "2024-03-18",
-  "typescript-language-server": "4.3.3"
-}

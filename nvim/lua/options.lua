@@ -1,8 +1,6 @@
 local M = {}
 
 function M.setup()
-  vim.opt.encoding = 'UTF-8'
-  vim.scriptencoding = 'utf-8'
   vim.opt.backspace= {"indent", "eol", "start"}
   vim.opt.display = {"lastline", "msgsep"}
   vim.opt.hidden = true

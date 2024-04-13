@@ -53,15 +53,12 @@ case $OSTYPE in
     alias ls='\ls --color'
     ;;
   darwin*)
-    if [[ -d "${OPT_DIR}/coreutils/bin" ]]; then
-      alias ll='\ls --color -l'
-      alias ls='\ls --color'
-    elif [[ -x "$(command -v gls)" ]]; then
+    if [[ -x "$(command -v gls)" ]]; then
       alias ll='\gls --color -l'
       alias ls='\gls --color'
-    fi
-    if [[ -x "$(command -v gmake)" ]]; then
-      alias make="gmake"
+    else
+      alias ll='\ls --color -l'
+      alias ls='\ls --color'
     fi
     ;;
 esac
@@ -81,23 +78,3 @@ function z() {
 function tm() {
   tmux new-session -ADs main
 }
-
-function rustup-init() {
-  command rustup-init --no-modify-path "$@"
-}
-
-if [[ -x "$(command -v pkgx)" ]]; then
-  env () {
-    unset -f env
-    unset -f dev
-    source <(pkgx --shellcode)
-    env "$@"
-  }
-
-  dev () {
-    unset -f dev
-    unset -f env
-    source <(pkgx --shellcode)
-    dev "$@"
-  }
-fi
