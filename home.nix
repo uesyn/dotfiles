@@ -9,7 +9,15 @@ in
   nixpkgs.overlays = overlays;
 
   imports = [
-    ./home/neovim
+    ./home-manager/commands
+    ./home-manager/bash
+    ./home-manager/zsh
+    ./home-manager/gh
+    ./home-manager/git
+    ./home-manager/mise
+    ./home-manager/neovim
+    ./home-manager/tmux
+    ./home-manager/zellij
   ];
   # Home Manager needs a bit of information about you and the paths it should
   # manage.
@@ -40,14 +48,11 @@ in
     fzf
     gcc
     ghq
-    git
-    github-cli
     gnugrep
     gnumake
     gnused
     gnutar
     go
-    gopls
     htop
     jq
     kind
@@ -55,9 +60,7 @@ in
     kubectx
     kubernetes-helm
     kustomize
-    mise
     nodejs_20
-    nodePackages.typescript-language-server
     openssh
     openssl
     procps
@@ -65,18 +68,17 @@ in
     ripgrep
     rustup
     stern
-    tmux
     tree
     wget
     xz
-    yq
-    zellij
+    yq-go
     zsh
   ] ++ lib.optionals isLinux [
     # GNU/Linux packages
     iproute2
   ] ++ lib.optionals isDarwin [
     # macOS packages
+    colima
     darwin.iproute2mac
   ];
 
@@ -87,42 +89,11 @@ in
     # # the Nix store. Activating the configuration will then make '~/.screenrc' a
     # # symlink to the Nix store copy.
     # ".screenrc".source = dotfiles/screenrc;
-    ".bashrc".source = bash/bashrc;
-    ".bash_profile".source = bash/bash_profile;
-    ".zshrc".source = zsh/zshrc;
-    ".config/zsh" = {
-      source = zsh/zsh;
-      recursive = true;
-    };
-    ".config/mise" = {
-      source = ./mise;
-      recursive = true;
-    };
     ".config/devk" = {
       source = ./devk;
       recursive = true;
     };
-    ".config/tmux" = {
-      source = ./tmux;
-      recursive = true;
-    };
-    ".config/git" = {
-      source = ./git;
-      recursive = true;
-    };
-    ".config/zellij" = {
-      source = ./zellij;
-      recursive = true;
-    };
-    ".config/gh" = {
-      source = ./gh;
-      recursive = true;
-    };
     ".config/wezterm/wezterm.lua".source = ./wezterm.lua;
-    "opt/bin/clip".source = ./bin/clip;
-    "opt/bin/git-allow".source = ./bin/git-allow;
-    "opt/bin/git-credential-env".source = ./bin/git-credential-env;
-    "opt/bin/git-fixup".source = ./bin/git-fixup;
 
     # # You can also set the file content immediately.
     # ".gradle/gradle.properties".text = ''
@@ -147,7 +118,9 @@ in
   #  /etc/profiles/per-user/uesyn/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
-    # EDITOR = "emacs";
+    EDITOR = "nvim";
+    KUBE_EDITOR = "nvim";
+    GIT_EDITOR = "nvim";
   };
 
   # Let Home Manager install and manage itself.

@@ -15,27 +15,11 @@ if [ -z "${HOME}" ]; then
   exit 1
 fi
 
-export OPT_DIR=${OPT_DIR:-${HOME}/opt}
-export OPT_BIN=${OPT_DIR}/bin
-mkdir -p ${OPT_BIN}
+export OPT_DIR="${OPT_DIR:-${HOME}/opt}"
+export OPT_BIN="${OPT_DIR}"/bin
+mkdir -p "${OPT_BIN}"
 export PATH="${OPT_BIN}:${PATH}"
 SCRIPT_DIR="$(cd $(dirname $0); pwd)"
-
-make_local_configs() {
-  zlogin_file=${HOME}/.zlogin
-  if [ ! -f "${zlogin_file}" ]; then
-    cat << 'EOF' > ${zlogin_file}
-export PROMPT_KUBE_TRIM_PREFIX=""
-export PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
-export GH_ENTERPRISE_HOST=${GH_ENTERPRISE_HOST:-}
-export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}
-export GITHUB_TOKEN=${GITHUB_TOKEN:-}
-export GITLAB_ENTERPRISE_HOST=${GITLAB_ENTERPRISE_HOST:-}
-export GITLAB_ENTERPRISE_TOKEN=${GITLAB_ENTERPRISE_TOKEN:-}
-export GITLAB_TOKEN=${GITLAB_TOKEN:-}
-EOF
-  fi
-}
 
 get_architecture() {
     _ostype="$(uname -s)"
@@ -134,8 +118,8 @@ dnsTunneling=true
 firewall=true
 EOF
   ln -sfn /mnt/c/Users/${winuser}/Desktop ${HOME}/Desktop
-  sudo add-apt-repository ppa:wslutilities/wslu --yes
-  sudo apt update && sudo apt install -y git curl bash zsh build-essential pkg-config wslu
+  sudo apt update
+  sudo apt install -y git curl bash
   touch ${HOME}/.bootstrapped
 
   cat <<EOF
@@ -150,10 +134,23 @@ EOF
 ### main ###
 mkdir -p ${HOME}/.config
 ln -sfn ${SCRIPT_DIR} ${HOME}/.config/home-manager
-ln -sfn ${SCRIPT_DIR}/nvim ${HOME}/.config/nvim-update
-make_local_configs
+
+zshenv_local_file=${HOME}/.zshenv.local
+if [ ! -f "${zshenv_local_file}" ]; then
+    cat << 'EOF' > "${zshenv_local_file}"
+export PROMPT_KUBE_TRIM_PREFIX=""
+export PROMPT_KUBE_IMPORT_CONTEXT_PATTERN=${PROMPT_KUBE_IMPORT_CONTEXT_PATTERN:-}
+export GH_ENTERPRISE_HOST=${GH_ENTERPRISE_HOST:-}
+export GH_ENTERPRISE_TOKEN=${GH_ENTERPRISE_TOKEN:-}
+export GITHUB_TOKEN=${GITHUB_TOKEN:-}
+export GITLAB_ENTERPRISE_HOST=${GITLAB_ENTERPRISE_HOST:-}
+export GITLAB_ENTERPRISE_TOKEN=${GITLAB_ENTERPRISE_TOKEN:-}
+export GITLAB_TOKEN=${GITLAB_TOKEN:-}
+EOF
+fi
+
 setup_for_wsl2
-cat << EOF > ${SCRIPT_DIR}/system.nix
+cat << EOF > "${SCRIPT_DIR}"/system.nix
 {
   username = "${USER}";
   home = "${HOME}";
@@ -161,9 +158,9 @@ cat << EOF > ${SCRIPT_DIR}/system.nix
 }
 EOF
 if [ -x "$(command -v home-manager)" ]; then
-  home-manager switch
+  home-manager switch --cores 10 -b .backup
 else
   if [ -x "$(command -v nix)" ]; then
-    nix run home-manager/release-23.11 -- switch
+    nix run home-manager/release-23.11 -- switch --cores 10 -b .backup
   fi
 fi
