@@ -37,7 +37,6 @@
       credential.helper = [
         "cache --timeout=86400"
         "oauth"
-        "env"
       ];
 
       url = {

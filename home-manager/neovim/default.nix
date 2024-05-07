@@ -4,6 +4,7 @@
     ./options.nix
     ./keymaps.nix
     ./autocmds.nix
+    ./ftplugin.nix
     ./plugins
   ];
 

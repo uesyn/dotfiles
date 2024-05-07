@@ -9,22 +9,23 @@
     };
 
     opts = {
-      wildmode = "full";
+      ambiwidth = "single";
+      breakindent = true;
+      emoji = true;
+      fileformats = ["unix" "dos" "mac"];
+      foldcolumn = "0";
       inccommand = "split";
+      laststatus = 3;
       maxmempattern = 20000;
-      updatetime = 100;
       number = true;
       relativenumber = true;
       showcmd = false;
       showmode = false;
-      emoji = true;
-      ambiwidth = "single";
-      fileformats = ["unix" "dos" "mac"];
-      foldcolumn = "0";
-      signcolumn = "yes";
-      laststatus = 3;
       showtabline = 2;
-      breakindent = true;
+      signcolumn = "yes";
+      synmaxcol = 320;
+      updatetime = 100;
+      wildmode = "full";
     };
   };
 }
