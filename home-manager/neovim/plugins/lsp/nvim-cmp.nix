@@ -3,8 +3,8 @@
     extraPlugins = with pkgs.vimPlugins; [
       nvim-cmp
       cmp-nvim-lsp
-      vim-vsnip
-      cmp-vsnip
+      nvim-snippy
+      cmp-snippy
     ];
 
     extraConfigLua = ''
@@ -12,7 +12,7 @@
       cmp.setup({
         snippet = {
           expand = function(args)
-            vim.fn["vsnip#anonymous"](args.body)
+            require('snippy').expand_snippet(args.body)
           end,
         },
         window = {
@@ -29,6 +29,7 @@
         }),
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },
+          { name = 'snippy' },
         }),
         experimental = {
           ghost_text = true,
