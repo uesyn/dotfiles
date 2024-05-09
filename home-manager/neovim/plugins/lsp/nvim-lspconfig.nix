@@ -30,8 +30,10 @@
 
               local bufnr = args.buf
               local client = vim.lsp.get_client_by_id(args.data.client_id)
-              if client.supports_method("textDocument/inlayHint") or client.server_capabilities.inlayHintProvider then
-                vim.lsp.inlay_hint.enable(true)
+              if vim.fn.has('nvim-0.10') == 1 then
+                if client.supports_method("textDocument/inlayHint") or client.server_capabilities.inlayHintProvider then
+                  vim.lsp.inlay_hint.enable(true)
+                end
               end
 
               vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
