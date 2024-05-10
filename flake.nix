@@ -35,44 +35,13 @@
         pkgs = nixpkgs.legacyPackages.${system};
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
-        reActivationScript = pkgs.writeShellScript "build.sh" ''
-          git config -f $HOME/.gitconfig.local credential.https://github.example.com.oauthClientId 0120e057bd645470c1ed
-          git config -f $HOME/.gitconfig.local credential.https://github.example.com.oauthClientSecret 18867509d956965542b521a529a79bb883344c90
-          git config -f $HOME/.gitconfig.local credential.https://github.example.com.oauthRedirectURL http://localhost/
-        '';
-        defaultBuild = pkgs.writeShellScript "buiild.sh" ''
-          if [ -x "$(command -v nixos-rebuild)" ]; then
-            sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
-          else
-            nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
-          fi
-        '';
-        nixOSRebuild = pkgs.writeShellScript "buiild.sh" ''
+        nixOSRebuild = pkgs.writeShellScriptBin "update-env" ''
           sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
         '';
-        hmRebuild = pkgs.writeShellScript "build.sh" ''
+        hmRebuild = pkgs.writeShellScriptBin "update-env" ''
           nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
         '';
       in {
-        apps = {
-          reactivate = {
-            type = "app";
-            program = "${reActivationScript}";
-          };
-          os = {
-            type = "app";
-            program = "${nixOSRebuild}";
-          };
-          hm = {
-            type = "app";
-            program = "${hmRebuild}";
-          };
-          default = {
-            type = "app";
-            program = "${defaultBuild}";
-          };
-        };
-
         # For standalone home-manager
         packages.homeConfigurations."${currentUsername}" = home-manager.lib.homeManagerConfiguration {
           inherit pkgs;
@@ -84,6 +53,9 @@
             {
               home.username = currentUsername;
               home.homeDirectory = currentHomeDirectory;
+              home.packages = [
+                hmRebuild
+              ];
               nixpkgs.overlays = [
                 (final: prev: {
                   neovim = inputs.mynixvim.packages.${system}.default;
@@ -153,6 +125,12 @@
                   substituters = ["https://nix-community.cachix.org"];
                   trusted-public-keys = ["nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="];
                 };
+              }
+
+              {
+                environment.systemPackages = [
+                  nixOSRebuild
+                ];
               }
 
               home-manager.nixosModules.home-manager
