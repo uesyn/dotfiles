@@ -1,5 +1,0 @@
-{
-  imports = [
-    ./nvim-markdown.nix
-  ];
-}

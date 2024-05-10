@@ -7,18 +7,11 @@
     flake-utils = {
       url = "github:numtide/flake-utils";
     };
-    neovim-nightly-overlay = {
-      url = "github:nix-community/neovim-nightly-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixvim = {
-      url = "github:nix-community/nixvim";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    mynixvim.url = "github:uesyn/mynixvim";
     nix-ld = {
       url = "github:Mic92/nix-ld";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,7 +28,6 @@
     flake-utils,
     nix-ld,
     nixos-wsl,
-    neovim-nightly-overlay,
     ...
   } @ inputs:
     flake-utils.lib.eachDefaultSystem (
@@ -92,15 +84,17 @@
             {
               home.username = currentUsername;
               home.homeDirectory = currentHomeDirectory;
-              nixpkgs.overlays = [neovim-nightly-overlay.overlay];
+              nixpkgs.overlays = [
+                (final: prev: {
+                  neovim = inputs.mynixvim.packages.${system}.default;
+                })
+              ];
             }
           ];
 
           # Optionally use extraSpecialArgs
           # to pass through arguments to home.nix
-          extraSpecialArgs = {
-            inherit inputs;
-          };
+          extraSpecialArgs = {};
         };
 
         # For nixos running on wsl2
@@ -167,10 +161,12 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.nixos = import ./home.nix;
-                home-manager.extraSpecialArgs = {
-                  inherit inputs;
-                };
-                nixpkgs.overlays = [neovim-nightly-overlay.overlay];
+                home-manager.extraSpecialArgs = {};
+                nixpkgs.overlays = [
+                  (final: prev: {
+                    neovim = inputs.mynixvim.packages.${system}.default;
+                  })
+                ];
               }
             ];
           };

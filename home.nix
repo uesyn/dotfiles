@@ -14,7 +14,6 @@ in {
     ./home-manager/gh
     ./home-manager/git
     ./home-manager/mise
-    ./home-manager/neovim
     ./home-manager/tmux
     ./home-manager/zellij
   ];
@@ -86,6 +85,7 @@ in {
       xz
       yq-go
       zsh
+      neovim
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
