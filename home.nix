@@ -52,7 +52,6 @@ in {
       dig
       docker-buildx
       docker-client
-      docker-credential-helpers
       file
       findutils
       fzf
