@@ -370,11 +370,11 @@
         "nixvim": "nixvim"
       },
       "locked": {
-        "lastModified": 1715518961,
-        "narHash": "sha256-T4RiqyOCq8ZxhvvttR2n8qiLbvJlx6sztS+FU7w4hII=",
+        "lastModified": 1715521505,
+        "narHash": "sha256-1zfYQ2BchEzD1X08Y5PfcwtaFZNMDoklHd0VzwYBJKU=",
         "owner": "uesyn",
         "repo": "mynixvim",
-        "rev": "f93265f5d1689203446da3381e01d3cc73626fd2",
+        "rev": "2344c449d413a56df85eec76be8a190c281d1df0",
         "type": "github"
       },
       "original": {
