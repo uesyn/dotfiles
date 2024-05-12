@@ -20,7 +20,6 @@ in {
 
   nix.settings = {
     experimental-features = ["nix-command" "flakes" "repl-flake"];
-    substituters = ["https://nix-community.cachix.org"];
   };
 
   home.activation = {
