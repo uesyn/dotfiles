@@ -18,10 +18,6 @@ in {
     ./home-manager/zellij
   ];
 
-  nix.settings = {
-    experimental-features = ["nix-command" "flakes" "repl-flake"];
-  };
-
   home.activation = {
     gitconfigLocal = lib.hm.dag.entryAfter ["writeBoundary"] ''
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientId 0120e057bd645470c1ed
