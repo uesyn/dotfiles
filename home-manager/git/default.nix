@@ -2,9 +2,18 @@
   inputs,
   pkgs,
   ...
-}: {
-  home.packages = with pkgs; [
-    git-credential-oauth
+}: let
+  git-credential-oauth-wrapper = pkgs.writeShellScriptBin "git-credential-oauth-wrapper" ''
+    if [ -n $REMOTE ]; then
+      exec ${pkgs.git-credential-oauth}/bin/git-credential-oauth -device "$@"
+    else
+      exec ${pkgs.git-credential-oauth}/bin/git-credential-oauth "$@"
+    fi
+  '';
+in {
+  home.packages = [
+    pkgs.git-credential-oauth
+    git-credential-oauth-wrapper
   ];
 
   programs.git = {
@@ -36,7 +45,7 @@
 
       credential.helper = [
         "cache --timeout=86400"
-        "oauth"
+        "oauth-wrapper"
       ];
 
       url = {
