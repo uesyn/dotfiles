@@ -45,6 +45,7 @@ in {
   home.packages = with pkgs;
     [
       cargo-edit
+      cargo-expand
       coreutils-full
       curl
       deno
@@ -69,6 +70,7 @@ in {
       kubectx
       kubernetes-helm
       kustomize
+      neovim
       nodejs_20
       openssh
       openssl
@@ -84,7 +86,6 @@ in {
       xz
       yq-go
       zsh
-      neovim
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
