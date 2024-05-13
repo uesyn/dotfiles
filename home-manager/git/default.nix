@@ -4,7 +4,7 @@
   ...
 }: let
   git-credential-oauth-wrapper = pkgs.writeShellScriptBin "git-credential-oauth-wrapper" ''
-    if [ -n $REMOTE ]; then
+    if [ -n "$REMOTE" ]; then
       exec ${pkgs.git-credential-oauth}/bin/git-credential-oauth -device "$@"
     else
       exec ${pkgs.git-credential-oauth}/bin/git-credential-oauth "$@"
