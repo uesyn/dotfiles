@@ -27,7 +27,6 @@
       source ${./git-prompt.zsh}
       source ${./prompt.zsh}
       source ${./hooks.zsh}
-      source ${./completion.zsh}
 
       autoload -Uz ${./functions}/*
     '';
