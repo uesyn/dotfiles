@@ -4,22 +4,11 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-    };
-    home-manager = {
-      url = "github:nix-community/home-manager";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    flake-utils.url = "github:numtide/flake-utils";
+    home-manager.url = "github:nix-community/home-manager";
     mynixvim.url = "github:uesyn/mynixvim";
-    nix-ld = {
-      url = "github:Mic92/nix-ld";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nixos-wsl = {
-      url = "github:nix-community/NixOS-WSL";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    nix-ld.url = "github:Mic92/nix-ld";
+    nixos-wsl.url = "github:nix-community/NixOS-WSL";
   };
 
   outputs = {
