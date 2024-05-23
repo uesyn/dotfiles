@@ -95,6 +95,7 @@ in {
       # macOS packages
       colima
       darwin.iproute2mac
+      docker-credential-helpers
     ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
