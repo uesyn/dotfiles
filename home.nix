@@ -24,10 +24,6 @@ in {
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientSecret 18867509d956965542b521a529a79bb883344c90
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthRedirectURL http://localhost/
     '';
-    setupRust = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      run ${pkgs.rustup}/bin/rustup install nightly --profile minimal --no-self-update
-      run ${pkgs.rustup}/bin/rustup component add rust-analyzer rust-src
-    '';
   };
 
   # This value determines the Home Manager release that your configuration is
