@@ -30,6 +30,9 @@
         hmRebuild = pkgs.writeShellScriptBin "update-env" ''
           nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
         '';
+        overlays = [
+          inputs.myneovim.overlays.default
+        ];
       in {
         # For standalone home-manager
         packages.homeConfigurations."${currentUsername}" = home-manager.lib.homeManagerConfiguration {
@@ -45,9 +48,7 @@
               home.packages = [
                 hmRebuild
               ];
-              nixpkgs.overlays = [
-                inputs.myneovim.overlays.default
-              ];
+              nixpkgs.overlays = overlays;
             }
           ];
 
@@ -127,9 +128,7 @@
                 home-manager.useUserPackages = true;
                 home-manager.users.nixos = import ./home.nix;
                 home-manager.extraSpecialArgs = {};
-                nixpkgs.overlays = [
-                  inputs.myneovim.overlays.default
-                ];
+                nixpkgs.overlays = overlays;
               }
             ];
           };
