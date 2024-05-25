@@ -6,7 +6,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager";
-    mynixvim.url = "github:uesyn/mynixvim";
+    myneovim.url = "github:uesyn/neovim";
     nix-ld.url = "github:Mic92/nix-ld";
     nixos-wsl.url = "github:nix-community/NixOS-WSL";
   };
@@ -46,9 +46,7 @@
                 hmRebuild
               ];
               nixpkgs.overlays = [
-                (final: prev: {
-                  neovim = inputs.mynixvim.packages.${system}.default;
-                })
+                inputs.myneovim.overlays.default
               ];
             }
           ];
@@ -130,9 +128,7 @@
                 home-manager.users.nixos = import ./home.nix;
                 home-manager.extraSpecialArgs = {};
                 nixpkgs.overlays = [
-                  (final: prev: {
-                    neovim = inputs.mynixvim.packages.${system}.default;
-                  })
+                  inputs.myneovim.overlays.default
                 ];
               }
             ];
