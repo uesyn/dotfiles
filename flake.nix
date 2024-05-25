@@ -4,6 +4,7 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-pinned.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager";
     myneovim.url = "github:uesyn/neovim";
@@ -54,7 +55,9 @@
 
           # Optionally use extraSpecialArgs
           # to pass through arguments to home.nix
-          extraSpecialArgs = {};
+          extraSpecialArgs = {
+            inherit inputs;
+          };
         };
 
         # For nixos running on wsl2
@@ -127,7 +130,9 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.nixos = import ./home.nix;
-                home-manager.extraSpecialArgs = {};
+                home-manager.extraSpecialArgs = {
+                  inherit inputs;
+                };
                 nixpkgs.overlays = overlays;
               }
             ];

@@ -2,9 +2,12 @@
   inputs,
   pkgs,
   ...
-}: {
+}: let
+  pkgs-pinned = inputs.nixpkgs-pinned.legacyPackages.${pkgs.system};
+in {
   programs.tmux = {
     enable = true;
+    package = pkgs-pinned.tmux;
     prefix = "C-s";
 
     escapeTime = 0;
@@ -43,10 +46,10 @@
       set -g focus-events on
       set -g renumber-windows on
       set -g status-interval 1
-      set -g status-position top
 
       setw -g automatic-rename on
 
+      set -g status-position top
       set -g status-left-length 150
       set -g status-right-length 150
 
