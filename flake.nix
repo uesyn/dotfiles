@@ -34,6 +34,9 @@
         overlays = [
           inputs.myneovim.overlays.default
         ];
+        hmExtraSpecialArgs = {
+          inherit inputs;
+        };
       in {
         # For standalone home-manager
         packages.homeConfigurations."${currentUsername}" = home-manager.lib.homeManagerConfiguration {
@@ -55,9 +58,7 @@
 
           # Optionally use extraSpecialArgs
           # to pass through arguments to home.nix
-          extraSpecialArgs = {
-            inherit inputs;
-          };
+          extraSpecialArgs = hmExtraSpecialArgs;
         };
 
         # For nixos running on wsl2
@@ -130,9 +131,7 @@
                 home-manager.useGlobalPkgs = true;
                 home-manager.useUserPackages = true;
                 home-manager.users.nixos = import ./home.nix;
-                home-manager.extraSpecialArgs = {
-                  inherit inputs;
-                };
+                home-manager.extraSpecialArgs = hmExtraSpecialArgs;
                 nixpkgs.overlays = overlays;
               }
             ];
