@@ -23,12 +23,12 @@
       zmodload zsh/complete
       zmodload zsh/zle
 
+      source ${./p10k.zsh}
+      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
 
       source ${./exports.zsh}
       source ${./bindkeys.zsh}
       source ${./options.zsh}
-      source ${./git-prompt.zsh}
-      source ${./prompt.zsh}
       source ${./hooks.zsh}
 
       # Load plugins
