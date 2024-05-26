@@ -9,7 +9,7 @@ in {
     enable = true;
     package = pkgs-pinned.tmux;
     plugins = [
-      { 
+      {
         plugin = pkgs-pinned.tmuxPlugins.dracula;
         extraConfig = ''
           set -g @dracula-plugins "cpu-usage gpu-usage ram-usage"
