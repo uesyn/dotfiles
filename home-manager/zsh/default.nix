@@ -1,7 +1,4 @@
 {inputs, pkgs, ...}: {
-  home.packages = [
-    pkgs.zsh-history-search-multi-word
-  ];
   programs.zsh = {
     enable = true;
     shellAliases = {
