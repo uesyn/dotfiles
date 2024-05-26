@@ -1,4 +1,7 @@
-{inputs, ...}: {
+{inputs, pkgs, ...}: {
+  home.packages = [
+    pkgs.zsh-history-search-multi-word
+  ];
   programs.zsh = {
     enable = true;
     shellAliases = {
@@ -20,13 +23,16 @@
       zmodload zsh/complete
       zmodload zsh/zle
 
+
       source ${./exports.zsh}
-      source ${./widgets.zsh}
       source ${./bindkeys.zsh}
       source ${./options.zsh}
       source ${./git-prompt.zsh}
       source ${./prompt.zsh}
       source ${./hooks.zsh}
+
+      # Load plugins
+      source ${pkgs.zsh-history-search-multi-word}/share/zsh/zsh-history-search-multi-word/history-search-multi-word.plugin.zsh
 
       autoload -Uz ${./functions}/*
     '';
