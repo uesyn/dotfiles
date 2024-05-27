@@ -39,26 +39,24 @@
         };
       in {
         # For standalone home-manager
-        packages.homeConfigurations."${currentUsername}" = home-manager.lib.homeManagerConfiguration {
-          inherit pkgs;
+        packages.homeConfigurations = {
+          "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
+            inherit pkgs;
 
-          # Specify your home configuration modules here, for example,
-          # the path to your home.nix.
-          modules = [
-            ./home.nix
-            {
-              home.username = currentUsername;
-              home.homeDirectory = currentHomeDirectory;
-              home.packages = [
-                hmRebuild
-              ];
-              nixpkgs.overlays = overlays;
-            }
-          ];
+            modules = [
+              ./home.nix
+              {
+                home.username = currentUsername;
+                home.homeDirectory = currentHomeDirectory;
+                home.packages = [
+                  hmRebuild
+                ];
+                nixpkgs.overlays = overlays;
+              }
+            ];
 
-          # Optionally use extraSpecialArgs
-          # to pass through arguments to home.nix
-          extraSpecialArgs = hmExtraSpecialArgs;
+            extraSpecialArgs = hmExtraSpecialArgs;
+          };
         };
 
         # For nixos running on wsl2
