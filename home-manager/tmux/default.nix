@@ -3,7 +3,9 @@
   pkgs,
   ...
 }: let
-  pkgs-pinned = inputs.nixpkgs-pinned.legacyPackages.${pkgs.system};
+  # To update rev, ref https://releases.nixos.org/nixpkgs/nixpkgs-24.11pre631646.e2dd4e18cc1c/git-revision
+  nixpkgs-pinned = builtins.getFlake "nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
+  pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
 in {
   programs.tmux = {
     enable = true;
