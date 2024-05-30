@@ -35,6 +35,7 @@ path=(${OPT_BIN} $path)
 
 # go
 export GOPATH=${HOME}
+export GOBIN=${HOME}/bin
 
 # Rust
 path=(${HOME}/.cargo/bin $path)
