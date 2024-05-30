@@ -27,7 +27,7 @@ export PATH=${OPT_BIN}:${PATH}
 
 # go
 export GOPATH=${HOME}
-export GOBIN=${OPT_BIN}
+export GOBIN=${HOME}/bin
 
 # krew
 export PATH=${PATH}:${HOME}/.krew/bin
