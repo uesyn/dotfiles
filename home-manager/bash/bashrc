@@ -20,17 +20,10 @@ export XDG_CONFIG_HOME="$HOME/.config"
 export XDG_DATA_HOME="$HOME/.local/share"
 export XDG_CACHE_HOME="$HOME/.cache"
 
-## opt
-export OPT_DIR=${OPT_DIR:-${HOME}/opt}
-export OPT_BIN=${OPT_DIR}/bin
-export PATH=${OPT_BIN}:${PATH}
-
 # go
 export GOPATH=${HOME}
 export GOBIN=${HOME}/bin
+export PATH=${GOBIN}:${PATH}
 
 # krew
 export PATH=${PATH}:${HOME}/.krew/bin
-
-# raise OPT_BIN path priority
-PATH=${OPT_BIN}:$PATH
