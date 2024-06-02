@@ -23,3 +23,6 @@ function zshaddhistory() {
     return 1
   fi
 }
+
+zmodload zsh/complete
+zmodload zsh/zle

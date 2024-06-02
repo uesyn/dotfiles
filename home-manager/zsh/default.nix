@@ -21,18 +21,14 @@
       [[ -e "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
     '';
     initExtra = ''
-      zmodload zsh/complete
-      zmodload zsh/zle
-
-      source ${./p10k.zsh}
-      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+      eval $(${pkgs.coreutils}/bin/dircolors -b ${./dircolors})
 
       source ${./exports.zsh}
       source ${./bindkeys.zsh}
       source ${./options.zsh}
       source ${./hooks.zsh}
-
-      # Load plugins
+      source ${./p10k.zsh}
+      source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
       source ${pkgs.zsh-history-search-multi-word}/share/zsh/zsh-history-search-multi-word/history-search-multi-word.plugin.zsh
 
       autoload -Uz ${./functions}/*
