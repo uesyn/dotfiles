@@ -24,14 +24,24 @@
         pkgs = nixpkgs.legacyPackages.${system};
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
+
         nixOSRebuild = pkgs.writeShellScriptBin "update-env" ''
           sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
         '';
         hmRebuild = pkgs.writeShellScriptBin "update-env" ''
           nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
         '';
+
+        # pin nixpkgs for tmux
+        # To update rev, ref https://releases.nixos.org/nixpkgs/nixpkgs-24.11pre631646.e2dd4e18cc1c/git-revision
+        nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
+        pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
         overlays = [
           inputs.myneovim.overlays.default
+          (final: prev: {
+            tmux = pkgs-pinned.tmux;
+            tmuxPlugins = pkgs-pinned.tmuxPlugins;
+          })
         ];
         hmExtraSpecialArgs = {
           inherit inputs;

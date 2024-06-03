@@ -2,13 +2,9 @@
   inputs,
   pkgs,
   ...
-}: let
-  # To update rev, ref https://releases.nixos.org/nixpkgs/nixpkgs-24.11pre631646.e2dd4e18cc1c/git-revision
-  nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
-  pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
-in {
+}: {
   home.packages = [
-    pkgs-pinned.tmux
+    pkgs.tmux
   ];
 
   home.file = {
@@ -19,7 +15,7 @@ in {
       set -g @dracula-refresh-rate 10
       set -g @dracula-show-ssh-session-port true
 
-      run-shell ${pkgs-pinned.tmuxPlugins.dracula}/share/tmux-plugins/dracula/dracula.tmux
+      run-shell ${pkgs.tmuxPlugins.dracula}/share/tmux-plugins/dracula/dracula.tmux
 
       # general configs
       set -g display-time 4000
