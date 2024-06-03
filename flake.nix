@@ -25,11 +25,8 @@
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
 
-        nixOSRebuild = pkgs.writeShellScriptBin "update-env" ''
+        nixOSRebuild = pkgs.writeShellScriptBin "update-os" ''
           sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
-        '';
-        hmRebuild = pkgs.writeShellScriptBin "update-env" ''
-          nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
         '';
 
         # pin nixpkgs for tmux
@@ -57,9 +54,6 @@
               {
                 home.username = currentUsername;
                 home.homeDirectory = currentHomeDirectory;
-                home.packages = [
-                  hmRebuild
-                ];
                 nixpkgs.overlays = overlays;
               }
             ];

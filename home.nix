@@ -7,6 +7,9 @@
 }: let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
+  hmRebuild = pkgs.writeShellScriptBin "update-hm" ''
+    nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
+  '';
 in {
   imports = [
     ./home-manager/commands
@@ -39,60 +42,61 @@ in {
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages = with pkgs;
+  home.packages =
     [
-      cargo-edit
-      cargo-expand
-      coreutils-full
-      curl
-      deno
-      diffutils
-      dig
-      docker-buildx
-      docker-client
-      file
-      findutils
-      fzf
-      gcc
-      ghq
-      gnugrep
-      gnumake
-      gnused
-      gnutar
-      go
-      htop
-      jq
-      kind
-      kubectl
-      kubectx
-      kubernetes-helm
-      kustomize
-      neovim
-      nodejs_20
-      openssh
-      openssl
-      pkg-config
-      procps
-      pstree
-      ripgrep
-      rustup
-      stern
-      tree
-      unzip
-      wget
-      xz
-      yq-go
-      zsh
+      hmRebuild
+      pkgs.cargo-edit
+      pkgs.cargo-expand
+      pkgs.coreutils-full
+      pkgs.curl
+      pkgs.deno
+      pkgs.diffutils
+      pkgs.dig
+      pkgs.docker-buildx
+      pkgs.docker-client
+      pkgs.file
+      pkgs.findutils
+      pkgs.fzf
+      pkgs.gcc
+      pkgs.ghq
+      pkgs.gnugrep
+      pkgs.gnumake
+      pkgs.gnused
+      pkgs.gnutar
+      pkgs.go
+      pkgs.htop
+      pkgs.jq
+      pkgs.kind
+      pkgs.kubectl
+      pkgs.kubectx
+      pkgs.kubernetes-helm
+      pkgs.kustomize
+      pkgs.neovim
+      pkgs.nodejs_20
+      pkgs.openssh
+      pkgs.openssl
+      pkgs.pkg-config
+      pkgs.procps
+      pkgs.pstree
+      pkgs.ripgrep
+      pkgs.rustup
+      pkgs.stern
+      pkgs.tree
+      pkgs.unzip
+      pkgs.wget
+      pkgs.xz
+      pkgs.yq-go
+      pkgs.zsh
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
-      iproute2
+      pkgs.iproute2
     ]
     ++ lib.optionals isDarwin [
       # macOS packages
-      colima
-      darwin.iproute2mac
-      docker-credential-helpers
+      pkgs.colima
+      pkgs.darwin.iproute2mac
+      pkgs.docker-credential-helpers
     ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
