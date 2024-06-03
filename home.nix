@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  inputs,
   ...
 }: let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;

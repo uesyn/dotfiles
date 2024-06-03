@@ -21,14 +21,6 @@
   } @ inputs:
     flake-utils.lib.eachDefaultSystem (
       system: let
-        pkgs = nixpkgs.legacyPackages.${system};
-        currentUsername = builtins.getEnv "USER";
-        currentHomeDirectory = builtins.getEnv "HOME";
-
-        nixOSRebuild = pkgs.writeShellScriptBin "update-os" ''
-          sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
-        '';
-
         # pin nixpkgs for tmux
         # To update rev, ref https://releases.nixos.org/nixpkgs/nixpkgs-24.11pre631646.e2dd4e18cc1c/git-revision
         nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
@@ -40,9 +32,16 @@
             tmuxPlugins = pkgs-pinned.tmuxPlugins;
           })
         ];
-        hmExtraSpecialArgs = {
-          inherit inputs;
+        pkgs = import nixpkgs {
+          inherit system;
+          overlays = overlays;
         };
+        currentUsername = builtins.getEnv "USER";
+        currentHomeDirectory = builtins.getEnv "HOME";
+
+        nixOSRebuild = pkgs.writeShellScriptBin "update-os" ''
+          sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
+        '';
       in {
         # For standalone home-manager
         packages.homeConfigurations = {
@@ -54,11 +53,10 @@
               {
                 home.username = currentUsername;
                 home.homeDirectory = currentHomeDirectory;
-                nixpkgs.overlays = overlays;
               }
             ];
 
-            extraSpecialArgs = hmExtraSpecialArgs;
+            # extraSpecialArgs = {};
           };
         };
 
