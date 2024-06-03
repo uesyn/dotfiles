@@ -7,28 +7,32 @@
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
   hmRebuild = pkgs.writeShellScriptBin "update-hm" ''
-    case "$1" in
-      --help|-h)
-        echo "Usage: update-hm [--local|-l]"
-        exit 0
-        ;;
-      --local|-l)
-        if [[ ! -f "flake.nix" ]]; then
-          echo "flake.nix not found"
+    while [[ $# -gt 0 ]]; do
+      case "$1" in
+        --help|-h)
+          echo "Usage: update-hm [--local|-l]"
+          exit 0
+          ;;
+        --local|-l)
+          if [[ ! -f "flake.nix" ]]; then
+            echo "flake.nix not found"
+            exit 1
+          fi
+          run_local=y
+          ;;
+        *)
+          echo "Unknown option: $1"
           exit 1
-        fi
-        nix run home-manager -- switch --flake . --impure -b backup
-        exit 0
-        ;;
-      "")
-        nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
-        exit 0
-        ;;
-      *)
-        echo "Invalid option: $1"
-        exit 1
-        ;;
-    esac
+          ;;
+      esac
+      shift
+    done
+
+    if [[ -n "$run_local" ]]; then
+      nix run home-manager -- switch --flake . --impure -b backup
+    else
+      nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
+    fi
   '';
 in {
   imports = [
