@@ -40,7 +40,28 @@
         currentHomeDirectory = builtins.getEnv "HOME";
 
         nixOSRebuild = pkgs.writeShellScriptBin "update-os" ''
-          sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
+          case "$1" in
+            --help|-h)
+              echo "Usage: update-os [--local|-l]"
+              exit 0
+              ;;
+            --local|-l)
+              if [[ ! -f "flake.nix" ]]; then
+                echo "flake.nix not found"
+                exit 1
+              fi
+              sudo nixos-rebuild switch --flake .#wsl2
+              exit 0
+              ;;
+            "")
+              sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh --impure
+              exit 0
+              ;;
+            *)
+              echo "Invalid option: $1"
+              exit 1
+              ;;
+          esac
         '';
       in {
         # For standalone home-manager
