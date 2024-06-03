@@ -36,6 +36,7 @@
     dir                     # current directory
     vcs                     # git status
     kubecontext             # current kubernetes context (https://kubernetes.io/)
+    virtualenv              # python virtualenv
     # =========================[ Line #2 ]=========================
     newline                 # \n
     prompt_char             # prompt symbol
