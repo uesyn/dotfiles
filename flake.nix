@@ -145,45 +145,6 @@
           };
         };
 
-        devShells = let
-          shellHookBase = ''
-            export SHELL=${pkgs.lib.getExe pkgs.zsh}
-            exec $SHELL
-          '';
-        in {
-          gcloud = pkgs.mkShell {
-            packages = [
-              pkgs.google-cloud-sdk
-            ];
-            shellHook = shellHookBase;
-          };
-
-          python = pkgs.mkShell {
-            packages = [
-              pkgs.python312Full
-              pkgs.python312Packages.pip
-              pkgs.nodePackages.pyright
-            ];
-            shellHook = shellHookBase;
-          };
-
-          python311 = pkgs.mkShell {
-            packages = [
-              pkgs.python311Full
-              pkgs.python311Packages.pip
-              pkgs.nodePackages.pyright
-            ];
-            shellHook = shellHookBase;
-          };
-
-          go121 = pkgs.mkShell {
-            packages = [
-              pkgs.go_1_21
-            ];
-            shellHook = shellHookBase;
-          };
-        };
-
         formatter = pkgs.alejandra;
       }
     );
