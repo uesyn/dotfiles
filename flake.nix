@@ -34,6 +34,7 @@
         ];
         pkgs = import nixpkgs {
           inherit system;
+          config = {allowUnfree = true;};
           overlays = overlays;
         };
         currentUsername = builtins.getEnv "USER";
