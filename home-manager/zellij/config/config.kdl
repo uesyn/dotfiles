@@ -42,17 +42,11 @@ ui {
 keybinds clear-defaults=true {
     normal {
         bind "Ctrl s" { SwitchToMode "tmux"; }
-        bind "Alt h" "Alt Left" { MoveFocus "Left"; }
-        bind "Alt l" "Alt Right" { MoveFocus "Right"; }
-        bind "Alt j" "Alt Down" { MoveFocus "Down"; }
-        bind "Alt k" "Alt Up" { MoveFocus "Up"; }
-    }
-    resize {
-        bind "Ctrl [" "Esc" "Enter" { SwitchToMode "normal"; }
-        bind "h" { Resize "Left"; }
-        bind "j" { Resize "Down"; }
-        bind "k" { Resize "Up"; }
-        bind "l" { Resize "Right"; }
+        bind "Alt h" { Resize "Left"; }
+        bind "Alt j" { Resize "Down"; }
+        bind "Alt k" { Resize "Up"; }
+        bind "Alt l" { Resize "Right"; }
+        bind "Alt -" { Resize "Decrease"; }
     }
     move {
         bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
@@ -99,7 +93,6 @@ keybinds clear-defaults=true {
         bind "l" { MoveFocus "Right"; SwitchToMode "normal"; }
         bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
         bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
-        bind "r" { SwitchToMode "resize"; }
         bind "m" { SwitchToMode "move"; }
         bind "[" { SwitchToMode "scroll"; }
         bind "x" { CloseTab; SwitchToMode "normal"; }
