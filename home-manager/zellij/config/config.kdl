@@ -58,7 +58,7 @@ keybinds clear-defaults=true {
     }
     "search" {
         bind "Ctrl [" "Enter" "Esc" "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; }
-        bind "[" { EditScrollback; SwitchToMode "normal"; }
+        bind "[" { EditScrollback; ScrollToBottom; SwitchToMode "normal"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "c" { SearchToggleOption "CaseSensitivity"; }
         bind "n" { Search "down"; }
