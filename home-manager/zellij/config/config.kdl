@@ -1,6 +1,6 @@
 on_force_close "quit"
 default_shell "zsh"
-pane_frames false
+pane_frames true
 theme "dracula"
 default_layout "simple"
 default_mode "normal"
@@ -79,11 +79,11 @@ keybinds clear-defaults=true {
         bind "Enter" { SwitchToMode "search"; }
         bind "Ctrl [" "Esc" "Ctrl c" { SwitchToMode "normal"; }
     }
-    RenameTab {
+    renametab {
         bind "Enter" { SwitchToMode "normal"; }
         bind "Esc" "Ctrl [" "Ctrl c" { UndoRenameTab; SwitchToMode "normal"; }
     }
-    RenamePane {
+    renamepane {
         bind "Enter" { SwitchToMode "normal"; }
         bind "Esc" "Ctrl [" "Ctrl c" { UndoRenamePane; SwitchToMode "normal"; }
     }
@@ -104,7 +104,8 @@ keybinds clear-defaults=true {
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
         bind "c" { NewTab; SwitchToMode "normal"; }
-        bind "," { SwitchToMode "RenameTab"; TabNameInput 0; }
+        bind "," { SwitchToMode "renametab"; TabNameInput 0; }
+        bind "<" { SwitchToMode "renamepane"; TabNameInput 0; }
         bind "p" { GoToPreviousTab; SwitchToMode "normal"; }
         bind "n" { GoToNextTab; SwitchToMode "normal"; }
         bind "d" { Detach; }
