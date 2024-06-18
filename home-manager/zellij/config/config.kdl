@@ -143,8 +143,9 @@ keybinds clear-defaults=true {
         bind "%" { NewPane "Right"; SwitchToMode "normal"; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
-        bind "c" { Clear; SwitchToMode "normal"; }
+        bind "c" { NewTab; SwitchToMode "normal"; }
         bind "x" { CloseTab; SwitchToMode "normal"; }
+        bind "C" { Clear; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; TabNameInput 0; }
         bind "<" { SwitchToMode "renamepane"; TabNameInput 0; }
         bind "d" { Detach; }
