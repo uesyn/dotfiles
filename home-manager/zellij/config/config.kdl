@@ -80,25 +80,28 @@ keybinds clear-defaults=true {
         bind "Esc" "Ctrl [" "Ctrl c" { UndoRenamePane; SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
     }
-    pane {
-        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
-        bind "h" { MovePane "Left"; }
-        bind "l" { MovePane "Right"; }
-        bind "k" { MovePane "Up"; }
-        bind "j" { MovePane "Down"; }
-        bind "H" { Resize "Left"; }
-        bind "J" { Resize "Down"; }
-        bind "K" { Resize "Up"; }
-        bind "L" { Resize "Right"; }
+    resize {
+        bind "h" { Resize "Left"; }
+        bind "j" { Resize "Down"; }
+        bind "k" { Resize "Up"; }
+        bind "l" { Resize "Right"; }
 	bind "=" { Resize "Increase"; }
 	bind "+" { Resize "Increase"; }
         bind "-" { Resize "Decrease"; }
-        bind "s" { NextSwapLayout; }
+        bind "p" { SwitchToMode "pane"; }
+    }
+    pane {
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "h" { MoveFocusOrTab "Left"; }
+        bind "l" { MoveFocusOrTab "Right"; }
+        bind "k" { MoveFocus "Up"; }
+        bind "j" { MoveFocus "Down"; }
         bind "n" { NewPane; SwitchToMode "normal"; }
         bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
         bind "%" { NewPane "Right"; SwitchToMode "normal"; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
+        bind "r" { SwitchToMode "resize"; }
     }
     tab {
         bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
@@ -116,6 +119,13 @@ keybinds clear-defaults=true {
         bind "8" { GoToTab 8; SwitchToMode "normal"; }
         bind "9" { GoToTab 9; SwitchToMode "normal"; }
     }
+    move {
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "h" { MovePane "Left"; }
+        bind "l" { MovePane "Right"; }
+        bind "k" { MovePane "Up"; }
+        bind "j" { MovePane "Down"; }
+    }
     tmux {
         bind "Enter" "Esc" "Ctrl [" { SwitchToMode "normal"; }
         bind "h" { MoveFocus "Left"; SwitchToMode "normal"; }
@@ -123,6 +133,8 @@ keybinds clear-defaults=true {
         bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
         bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
         bind "p" { SwitchToMode "pane"; }
+        bind "r" { SwitchToMode "resize"; }
+        bind "t" { SwitchToMode "tab"; }
         bind "m" { SwitchToMode "move"; }
         bind "[" { SwitchToMode "search"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
@@ -132,6 +144,7 @@ keybinds clear-defaults=true {
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
         bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "x" { CloseTab; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; TabNameInput 0; }
         bind "<" { SwitchToMode "renamepane"; TabNameInput 0; }
         bind "d" { Detach; }
