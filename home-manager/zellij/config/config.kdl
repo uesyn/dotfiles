@@ -1,6 +1,6 @@
 on_force_close "quit"
 default_shell "zsh"
-pane_frames true
+pane_frames false
 theme "dracula"
 default_layout "simple"
 default_mode "normal"
@@ -131,6 +131,7 @@ keybinds clear-defaults=true {
         bind "[" { SwitchToMode "search"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
+        bind "F" { TogglePaneFrames; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
         bind "C" { Clear; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; TabNameInput 0; }
