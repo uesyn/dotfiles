@@ -105,6 +105,8 @@ keybinds clear-defaults=true {
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
         bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
         bind "%" { NewPane "Right"; SwitchToMode "normal"; }
+        bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "x" { CloseTab; SwitchToMode "normal"; }
         bind "r" { SwitchToMode "resize"; }
         bind "m" { SwitchToMode "move"; }
     }
@@ -117,22 +119,6 @@ keybinds clear-defaults=true {
         bind "p" { SwitchToMode "pane"; }
         bind "r" { SwitchToMode "resize"; }
     }
-    tab {
-        bind "Ctrl [" "Esc" "Enter" "Ctrl c" "Space" { SwitchToMode "normal"; }
-        bind "h" { GoToPreviousTab; }
-        bind "l" { GoToNextTab; }
-        bind "c" { NewTab; SwitchToMode "normal"; }
-        bind "x" { CloseTab; SwitchToMode "normal"; }
-        bind "1" { GoToTab 1; SwitchToMode "normal"; }
-        bind "2" { GoToTab 2; SwitchToMode "normal"; }
-        bind "3" { GoToTab 3; SwitchToMode "normal"; }
-        bind "4" { GoToTab 4; SwitchToMode "normal"; }
-        bind "5" { GoToTab 5; SwitchToMode "normal"; }
-        bind "6" { GoToTab 6; SwitchToMode "normal"; }
-        bind "7" { GoToTab 7; SwitchToMode "normal"; }
-        bind "8" { GoToTab 8; SwitchToMode "normal"; }
-        bind "9" { GoToTab 9; SwitchToMode "normal"; }
-    }
     tmux {
         bind "Enter" "Esc" "Ctrl [" "Space" { SwitchToMode "normal"; }
         bind "h" { MoveFocus "Left"; SwitchToMode "normal"; }
@@ -141,14 +127,11 @@ keybinds clear-defaults=true {
         bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
         bind "p" { SwitchToMode "pane"; }
         bind "r" { SwitchToMode "resize"; }
-        bind "t" { SwitchToMode "tab"; }
         bind "m" { SwitchToMode "move"; }
         bind "[" { SwitchToMode "search"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
-        bind "c" { NewTab; SwitchToMode "normal"; }
-        bind "x" { CloseTab; SwitchToMode "normal"; }
         bind "C" { Clear; SwitchToMode "normal"; }
         bind "," { SwitchToMode "renametab"; TabNameInput 0; }
         bind "<" { SwitchToMode "renamepane"; TabNameInput 0; }
