@@ -81,6 +81,7 @@ keybinds clear-defaults=true {
         bind "Enter" { SwitchToMode "normal"; }
     }
     resize {
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" "Space" { SwitchToMode "normal"; }
         bind "h" { Resize "Left"; }
         bind "j" { Resize "Down"; }
         bind "k" { Resize "Up"; }
@@ -91,7 +92,7 @@ keybinds clear-defaults=true {
         bind "p" { SwitchToMode "pane"; }
     }
     pane {
-        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" "Space" { SwitchToMode "normal"; }
         bind "h" { MoveFocusOrTab "Left"; }
         bind "l" { MoveFocusOrTab "Right"; }
         bind "k" { MoveFocus "Up"; }
@@ -104,7 +105,7 @@ keybinds clear-defaults=true {
         bind "r" { SwitchToMode "resize"; }
     }
     tab {
-        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" "Space" { SwitchToMode "normal"; }
         bind "h" { GoToPreviousTab; }
         bind "l" { GoToNextTab; }
         bind "c" { NewTab; SwitchToMode "normal"; }
@@ -120,14 +121,14 @@ keybinds clear-defaults=true {
         bind "9" { GoToTab 9; SwitchToMode "normal"; }
     }
     move {
-        bind "Ctrl [" "Esc" "Enter" "Ctrl c" { SwitchToMode "normal"; }
+        bind "Ctrl [" "Esc" "Enter" "Ctrl c" "Space" { SwitchToMode "normal"; }
         bind "h" { MovePane "Left"; }
         bind "l" { MovePane "Right"; }
         bind "k" { MovePane "Up"; }
         bind "j" { MovePane "Down"; }
     }
     tmux {
-        bind "Enter" "Esc" "Ctrl [" { SwitchToMode "normal"; }
+        bind "Enter" "Esc" "Ctrl [" "Space" { SwitchToMode "normal"; }
         bind "h" { MoveFocus "Left"; SwitchToMode "normal"; }
         bind "l" { MoveFocus "Right"; SwitchToMode "normal"; }
         bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
