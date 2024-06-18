@@ -23,14 +23,14 @@
       system: let
         # pin nixpkgs for tmux
         # To update rev, ref https://releases.nixos.org/nixpkgs/nixpkgs-24.11pre631646.e2dd4e18cc1c/git-revision
-        nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
-        pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
+        # nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
+        # pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
         overlays = [
           inputs.myneovim.overlays.default
-          (final: prev: {
-            tmux = pkgs-pinned.tmux;
-            tmuxPlugins = pkgs-pinned.tmuxPlugins;
-          })
+          # (final: prev: {
+          #   tmux = pkgs-pinned.tmux;
+          #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+          # })
         ];
         pkgs = import nixpkgs {
           inherit system;
