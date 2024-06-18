@@ -98,9 +98,9 @@ keybinds clear-defaults=true {
         bind "l" { MoveFocusOrTab "Right"; }
         bind "k" { MoveFocus "Up"; }
         bind "j" { MoveFocus "Down"; }
-        bind "n" { NewPane; SwitchToMode "normal"; }
-        bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
-        bind "%" { NewPane "Right"; SwitchToMode "normal"; }
+        bind "n" { NewPane; }
+        bind "\"" { NewPane "Down"; }
+        bind "%" { NewPane "Right"; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
         bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
