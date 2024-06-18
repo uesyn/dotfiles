@@ -101,12 +101,10 @@ keybinds clear-defaults=true {
         bind "n" { NewPane; }
         bind "\"" { NewPane "Down"; }
         bind "%" { NewPane "Right"; }
+        bind "c" { NewTab; }
+        bind "x" { CloseFocus; }
         bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
-        bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
-        bind "%" { NewPane "Right"; SwitchToMode "normal"; }
-        bind "c" { NewTab; SwitchToMode "normal"; }
-        bind "x" { CloseTab; SwitchToMode "normal"; }
         bind "r" { SwitchToMode "resize"; }
         bind "m" { SwitchToMode "move"; }
     }
