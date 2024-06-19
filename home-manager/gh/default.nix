@@ -1,4 +1,10 @@
-{inputs, ...}: {
+{pkgs, ...}: {
+  home.packages = with pkgs; [
+    gh-copilot
+    gh-dash
+    gh-poi
+    gh-s
+  ];
   programs.gh = {
     enable = true;
     settings = {

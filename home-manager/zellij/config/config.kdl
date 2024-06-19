@@ -45,7 +45,7 @@ keybinds clear-defaults=true {
         bind "Ctrl s" { SwitchToMode "tmux"; }
     }
     "search" {
-        bind "Ctrl [" "Enter" "Esc" "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; }
+        bind "Ctrl [" "Enter" "Esc" "Ctrl c" "i" { ScrollToBottom; SwitchToMode "normal"; }
         bind "[" { EditScrollback; ScrollToBottom; SwitchToMode "normal"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "c" { SearchToggleOption "CaseSensitivity"; }
@@ -61,7 +61,7 @@ keybinds clear-defaults=true {
         bind "G" { ScrollToBottom; }
     }
     "scroll" {
-        bind "Ctrl [" "Enter" "Esc" "Ctrl c" { ScrollToBottom; SwitchToMode "normal"; }
+        bind "Ctrl [" "Enter" "Esc" "Ctrl c" "i" { ScrollToBottom; SwitchToMode "normal"; }
         bind "g" { ScrollToTop; SwitchToMode "search"; }
     }
     entersearch {
@@ -77,7 +77,7 @@ keybinds clear-defaults=true {
         bind "Enter" { SwitchToMode "normal"; }
     }
     tmux {
-        bind "Enter" "Esc" "Ctrl [" "Space" { SwitchToMode "normal"; }
+        bind "Enter" "Esc" "Ctrl [" "Space" "i" { SwitchToMode "normal"; }
 
         bind "h" { MoveFocusOrTab "Left"; }
         bind "l" { MoveFocusOrTab "Right"; }
