@@ -43,6 +43,11 @@ ui {
 keybinds clear-defaults=true {
     normal {
         bind "Ctrl s" { SwitchToMode "tmux"; }
+
+        bind "Alt h" { MoveFocusOrTab "Left"; }
+        bind "Alt l" { MoveFocusOrTab "Right"; }
+        bind "Alt k" { MoveFocus "Up"; }
+        bind "Alt j" { MoveFocus "Down"; }
     }
     "search" {
         bind "Ctrl [" "Enter" "Esc" "Ctrl c" "i" { ScrollToBottom; SwitchToMode "normal"; }
@@ -76,19 +81,21 @@ keybinds clear-defaults=true {
         bind "Esc" "Ctrl [" "Ctrl c" { UndoRenamePane; SwitchToMode "normal"; }
         bind "Enter" { SwitchToMode "normal"; }
     }
+    move {
+        bind "Enter" "Esc" "Ctrl [" "Space" "i" { SwitchToMode "normal"; }
+
+        bind "h" { MovePane "Left"; }
+        bind "l" { MovePane "Right"; }
+        bind "k" { MovePane "Up"; }
+        bind "j" { MovePane "Down"; }
+    }
     tmux {
         bind "Enter" "Esc" "Ctrl [" "Space" "i" { SwitchToMode "normal"; }
 
-        bind "h" { MoveFocusOrTab "Left"; }
-        bind "l" { MoveFocusOrTab "Right"; }
-        bind "k" { MoveFocus "Up"; }
-        bind "j" { MoveFocus "Down"; }
-
-        bind "c" { NewTab; }
-        bind "x" { CloseFocus; }
-        bind "n" { NewPane; }
-        bind "\"" { NewPane "Down"; }
-        bind "%" { NewPane "Right"; }
+        bind "h" { MoveFocusOrTab "Left"; SwitchToMode "normal"; }
+        bind "l" { MoveFocusOrTab "Right"; SwitchToMode "normal"; }
+        bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
+        bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
 
         bind "H" { Resize "Left"; }
         bind "J" { Resize "Down"; }
@@ -98,15 +105,17 @@ keybinds clear-defaults=true {
         bind "+" { Resize "Increase"; }
         bind "-" { Resize "Decrease"; }
 
-        bind "Alt h" { MovePane "Left"; }
-        bind "Alt l" { MovePane "Right"; }
-        bind "Alt k" { MovePane "Up"; }
-        bind "Alt j" { MovePane "Down"; }
+        bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "x" { CloseFocus; SwitchToMode "normal"; }
+        bind "n" { NewPane; SwitchToMode "normal"; }
+        bind "\"" { NewPane "Down"; SwitchToMode "normal"; }
+        bind "%" { NewPane "Right"; SwitchToMode "normal"; }
 
-        bind "e" { TogglePaneEmbedOrFloating; }
-        bind "f" { ToggleFloatingPanes; }
+        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
+        bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
         bind "F" { TogglePaneFrames; SwitchToMode "normal"; }
 
+        bind "m" { SwitchToMode "move"; }
         bind "[" { SwitchToMode "search"; }
         bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
         bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
