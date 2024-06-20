@@ -103,8 +103,8 @@ keybinds clear-defaults=true {
         bind "Alt k" { MovePane "Up"; }
         bind "Alt j" { MovePane "Down"; }
 
-        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
-        bind "f" { ToggleFloatingPanes; SwitchToMode "normal"; }
+        bind "e" { TogglePaneEmbedOrFloating; }
+        bind "f" { ToggleFloatingPanes; }
         bind "F" { TogglePaneFrames; SwitchToMode "normal"; }
 
         bind "[" { SwitchToMode "search"; }
