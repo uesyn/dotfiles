@@ -101,6 +101,7 @@ in {
       pkgs.nodejs_20
       pkgs.openssh
       pkgs.openssl
+      pkgs.openssl.dev
       pkgs.pkg-config
       pkgs.procps
       pkgs.pstree
