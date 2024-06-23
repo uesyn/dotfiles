@@ -39,7 +39,6 @@ in {
     ./home-manager/commands
     ./home-manager/bash
     ./home-manager/zsh
-    ./home-manager/gh
     ./home-manager/git
     ./home-manager/mise
     ./home-manager/tmux
@@ -51,6 +50,9 @@ in {
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientId 0120e057bd645470c1ed
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientSecret 18867509d956965542b521a529a79bb883344c90
       run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthRedirectURL http://localhost/
+      run ${pkgs.lib.getExe pkgs.gh} config set editor nvim
+      run ${pkgs.lib.getExe pkgs.gh} config set prompt disabled
+      run ${pkgs.lib.getExe pkgs.gh} config set git_protocol https
     '';
   };
 
@@ -111,6 +113,11 @@ in {
       pkgs.xz
       pkgs.yq-go
       pkgs.zsh
+      pkgs.gh-copilot
+      pkgs.gh-dash
+      pkgs.gh-poi
+      pkgs.gh-s
+      pkgs.gh
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
