@@ -1,7 +1,6 @@
 tap "homebrew/bundle"
 tap "homebrew/cask"
 tap "homebrew/cask-fonts"
-tap "homebrew/core"
 cask "font-jetbrains-mono"
 cask "wezterm"
 cask "firefox"
