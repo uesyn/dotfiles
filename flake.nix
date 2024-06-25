@@ -39,39 +39,6 @@
         };
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
-
-        nixOSRebuild = pkgs.writeShellScriptBin "update-os" ''
-          target="wsl2"
-          while [[ $# -gt 0 ]]; do
-            case "$1" in
-              --help|-h)
-                echo "Usage: update-os [--local|-l] [target]"
-                exit 0
-                ;;
-              --local|-l)
-                if [[ ! -f "flake.nix" ]]; then
-                  echo "flake.nix not found"
-                  exit 1
-                fi
-                run_local=y
-                ;;
-              --*|-*)
-                echo "Unknown option: $1"
-                exit 1
-                ;;
-              *)
-                target="$1"
-                ;;
-            esac
-            shift
-          done
-
-          if [[ -n "$run_local" ]]; then
-            sudo nixos-rebuild switch --flake .#"$target"
-          else
-            sudo nixos-rebuild switch --flake github:uesyn/dotfiles#"$target" --refresh --impure
-          fi
-        '';
       in {
         # For standalone home-manager
         packages.homeConfigurations = {
@@ -149,9 +116,7 @@
               }
 
               {
-                environment.systemPackages = [
-                  nixOSRebuild
-                ];
+                environment.systemPackages = [];
               }
             ];
           };

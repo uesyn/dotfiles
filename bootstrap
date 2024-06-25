@@ -1,0 +1,45 @@
+#!/usr/bin/env sh
+
+os_target=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --help|-h)
+      echo "Usage: bootstrap [--os-target <target>]"
+      exit 0
+      ;;
+    --os-target|-t)
+      os_target="$2"
+      ;;
+    --*|-*)
+      echo "Unknown option: $1"
+      exit 1
+      ;;
+  esac
+  shift
+done
+
+if [ -z "$(command -v curl)" ]; then
+  echo "curl is not installed"
+  exit 1
+fi
+
+if [ -z "$(command -v git)" ]; then
+  echo "git is not installed"
+  exit 1
+fi
+
+if [ -z "$(command -v nix)" ]; then
+  echo "install nix"
+  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
+fi
+
+if [ -x "$(command -v nixos-rebuild)" ] && [ -n "${os_target}" ]; then
+  sudo nixos-rebuild switch --flake .#"${os_target}" --refresh
+fi
+
+if [ -x "$(command -v home-manager)" ]; then
+  home-manager switch --flake . --impure -b backup --refresh
+else
+  nix --extra-experimental-features "nix-command flakes" run home-manager -- \
+    --extra-experimental-features "nix-command flakes" switch --flake . --impure -b backup --refresh
+fi
