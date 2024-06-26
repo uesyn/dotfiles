@@ -82,6 +82,7 @@ in {
       procps
       pstree
       python3
+      python311Packages.pip
       ripgrep
       rustup
       stern
