@@ -40,66 +40,67 @@ in {
 
   # The home.packages option allows you to install Nix packages into your
   # environment.
-  home.packages =
+  home.packages = with pkgs;
     [
-      pkgs.cargo-edit
-      pkgs.cargo-expand
-      pkgs.coreutils-full
-      pkgs.curl
-      pkgs.deno
-      pkgs.diffutils
-      pkgs.dig
-      pkgs.docker-buildx
-      pkgs.docker-client
-      pkgs.file
-      pkgs.findutils
-      pkgs.fzf
-      pkgs.gcc
-      pkgs.ghq
-      pkgs.gnugrep
-      pkgs.gnumake
-      pkgs.gnused
-      pkgs.gnutar
-      pkgs.go
-      pkgs.htop
-      pkgs.jq
-      pkgs.kind
-      pkgs.kubectl
-      pkgs.kubectx
-      pkgs.kubernetes-helm
-      pkgs.kustomize
-      pkgs.neovim
-      pkgs.nodejs_20
-      pkgs.openssh
-      pkgs.openssl
-      pkgs.openssl.dev
-      pkgs.pkg-config
-      pkgs.procps
-      pkgs.pstree
-      pkgs.ripgrep
-      pkgs.rustup
-      pkgs.stern
-      pkgs.tree
-      pkgs.unzip
-      pkgs.wget
-      pkgs.xz
-      pkgs.yq-go
-      pkgs.zsh
-      pkgs.gh-copilot
-      pkgs.gh-dash
-      pkgs.gh-poi
-      pkgs.gh-s
-      pkgs.gh
+      cargo-edit
+      cargo-expand
+      coreutils-full
+      curl
+      deno
+      diffutils
+      dig
+      docker-buildx
+      docker-client
+      file
+      findutils
+      fzf
+      gcc
+      gh
+      gh-copilot
+      gh-dash
+      gh-poi
+      ghq
+      gh-s
+      gnugrep
+      gnumake
+      gnused
+      gnutar
+      go
+      htop
+      jq
+      kind
+      kubectl
+      kubectx
+      kubernetes-helm
+      kustomize
+      neovim
+      nodejs_20
+      openssh
+      openssl
+      openssl.dev
+      pkg-config
+      procps
+      pstree
+      python3
+      ripgrep
+      rustup
+      stern
+      tree
+      unzip
+      wget
+      xz
+      yq-go
+      zsh
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
-      pkgs.iproute2
+      iproute2
     ]
     ++ lib.optionals isDarwin [
       # macOS packages
-      pkgs.colima
-      pkgs.darwin.iproute2mac
-      pkgs.docker-credential-helpers
+      colima
+      darwin.iproute2mac
+      docker-credential-helpers
     ];
 
   # Home Manager is pretty good at managing dotfiles. The primary way to manage
