@@ -34,12 +34,12 @@ if [ -z "$(command -v nix)" ]; then
 fi
 
 if [ -x "$(command -v nixos-rebuild)" ] && [ -n "${os_target}" ]; then
-  sudo nixos-rebuild switch --flake .#"${os_target}" --refresh
+  sudo nixos-rebuild switch --flake .#"${os_target}"
 fi
 
 if [ -x "$(command -v home-manager)" ]; then
   home-manager switch --flake . --impure -b backup --refresh
 else
   nix --extra-experimental-features "nix-command flakes" run home-manager -- \
-    --extra-experimental-features "nix-command flakes" switch --flake . --impure -b backup --refresh
+    --extra-experimental-features "nix-command flakes" switch --flake . --impure -b backup
 fi
