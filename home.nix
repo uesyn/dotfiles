@@ -15,6 +15,7 @@ in {
     ./home-manager/mise
     ./home-manager/tmux
     ./home-manager/zellij
+    ./home-manager/neovim
   ];
 
   home.activation = {
@@ -73,7 +74,6 @@ in {
       kubectx
       kubernetes-helm
       kustomize
-      neovim
       nodejs_20
       openssh
       openssl

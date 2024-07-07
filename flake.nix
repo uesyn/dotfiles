@@ -26,7 +26,7 @@
         # nixpkgs-pinned = builtins.getFlake "github:NixOS/nixpkgs/e2dd4e18cc1c7314e24154331bae07df76eb582f";
         # pkgs-pinned = nixpkgs-pinned.legacyPackages.${pkgs.system};
         overlays = [
-          inputs.myneovim.overlays.default
+          # inputs.myneovim.overlays.default
           # (final: prev: {
           #   tmux = pkgs-pinned.tmux;
           #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
