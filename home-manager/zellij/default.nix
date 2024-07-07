@@ -99,6 +99,9 @@
               bind "l" { MovePane "Right"; }
               bind "k" { MovePane "Up"; }
               bind "j" { MovePane "Down"; }
+              bind "=" { Resize "Increase"; }
+              bind "+" { Resize "Increase"; }
+              bind "-" { Resize "Decrease"; }
           }
           tmux {
               bind "Enter" "Esc" "Ctrl [" "Space" "i" { SwitchToMode "normal"; }
