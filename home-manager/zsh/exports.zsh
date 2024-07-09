@@ -39,3 +39,8 @@ export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
 
 # krew
 path=(${KREW_ROOT:-$HOME/.krew}/bin $path)
+
+# mise
+if [[ -x "$(command -v mise)" ]]; then
+  eval "$(mise activate zsh)"
+fi
