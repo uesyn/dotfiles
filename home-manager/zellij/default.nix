@@ -62,6 +62,7 @@
           }
           "search" {
               bind "Ctrl [" "Enter" "Esc" "Ctrl c" "i" { ScrollToBottom; SwitchToMode "normal"; }
+              bind "Ctrl s" { SwitchToMode "tmux"; }
               bind "[" { EditScrollback; ScrollToBottom; SwitchToMode "normal"; }
               bind "/" { SwitchToMode "entersearch"; SearchInput 0; }
               bind "c" { SearchToggleOption "CaseSensitivity"; }
