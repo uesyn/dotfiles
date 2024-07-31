@@ -45,7 +45,6 @@ in {
 
       credential.helper = [
         "cache --timeout=86400"
-        "!${pkgs.lib.getExe pkgs.gh} auth git-credential"
         "oauth-wrapper"
       ];
 
