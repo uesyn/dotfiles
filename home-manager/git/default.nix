@@ -12,7 +12,6 @@
   '';
 in {
   home.packages = [
-    pkgs.git-credential-oauth
     git-credential-oauth-wrapper
   ];
 
