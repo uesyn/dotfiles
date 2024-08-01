@@ -43,6 +43,7 @@ in {
       ghq.root = "~/src";
 
       credential.helper = [
+        ""
         "cache --timeout=86400"
         "oauth-wrapper"
       ];
