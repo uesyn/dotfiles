@@ -13,7 +13,17 @@
 in {
   home.packages = [
     git-credential-oauth-wrapper
+    pkgs.gh
+    pkgs.gh-copilot
+    pkgs.gh-dash
+    pkgs.gh-poi
+    pkgs.ghq
+    pkgs.gh-s
   ];
+
+  home.sessionVariables = {
+    GIT_EDITOR = "nvim";
+  };
 
   programs.git = {
     enable = true;

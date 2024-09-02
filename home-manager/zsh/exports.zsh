@@ -27,13 +27,6 @@ fi
 export TERMINFO_DIRS="/usr/share/terminfo:${HOME}/.nix-profile/share/terminfo"
 path=(${HOME}/.nix-profile/bin $path)
 
-# go
-export GOPATH=${HOME}
-export GOBIN=${HOME}/bin
-
-# Rust
-path=(${GOBIN} ${HOME}/.cargo/bin $path)
-
 # fzf
 export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
 

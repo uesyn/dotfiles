@@ -15,6 +15,9 @@ in {
     ./home-manager/mise
     ./home-manager/tmux
     ./home-manager/zellij
+    ./home-manager/node
+    ./home-manager/rust
+    ./home-manager/kubernetes
   ];
 
   home.activation = {
@@ -42,8 +45,6 @@ in {
   # environment.
   home.packages = with pkgs;
     [
-      cargo-edit
-      cargo-expand
       coreutils-full
       curl
       deno
@@ -55,26 +56,14 @@ in {
       findutils
       fzf
       gcc
-      gh
-      gh-copilot
-      gh-dash
-      gh-poi
-      ghq
-      gh-s
       gnugrep
       gnumake
       gnused
       gnutar
-      go
       htop
       jq
-      kind
-      kubectl
-      kubectx
-      kubernetes-helm
-      kustomize
+      mcfly
       neovim
-      nodejs_20
       openssh
       openssl
       openssl.dev
@@ -83,8 +72,6 @@ in {
       pstree
       python3
       ripgrep
-      rustup
-      stern
       tree
       unzip
       wget
@@ -136,8 +123,6 @@ in {
   #
   home.sessionVariables = {
     EDITOR = "nvim";
-    KUBE_EDITOR = "nvim";
-    GIT_EDITOR = "nvim";
   };
 
   # Let Home Manager install and manage itself.
