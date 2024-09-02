@@ -19,7 +19,6 @@
     dotDir = ".config/zsh";
     envExtra = ''
       [[ -e "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
-      export PKG_CONFIG_PATH="$PKG_CONFIG_PATH:${pkgs.openssl.dev}/lib/pkgconfig";
     '';
     initExtra = ''
       eval $(${pkgs.coreutils}/bin/dircolors -b ${./dircolors})
@@ -30,7 +29,6 @@
       source ${./hooks.zsh}
       source ${./p10k.zsh}
       source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-      source ${pkgs.zsh-history-search-multi-word}/share/zsh/zsh-history-search-multi-word/history-search-multi-word.plugin.zsh
 
       autoload -Uz ${./functions}/*
     '';

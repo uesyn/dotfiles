@@ -18,6 +18,7 @@ in {
     ./home-manager/node
     ./home-manager/rust
     ./home-manager/kubernetes
+    ./home-manager/fzf
   ];
 
   home.activation = {

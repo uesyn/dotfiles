@@ -7,23 +7,9 @@ PATH=${OLD_PATH}
 if [[ -f ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh ]]; then
   source ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
 fi
-export TERMINFO_DIRS="/usr/share/terminfo:${HOME}/.nix-profile/share/terminfo"
 export PATH="${HOME}/.nix-profile/bin:${PATH}"
 
 [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
 [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
 [[ -f /home/linuxbrew/.linuxbrew/bin/brew ]] && eval $(/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 export HOMEBREW_NO_AUTO_UPDATE=1
-
-# common
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
-
-# go
-export GOPATH=${HOME}
-export GOBIN=${HOME}/bin
-export PATH=${GOBIN}:${PATH}
-
-# krew
-export PATH=${PATH}:${HOME}/.krew/bin
