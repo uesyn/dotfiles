@@ -122,6 +122,9 @@ in {
   #  /etc/profiles/per-user/uesyn/etc/profile.d/hm-session-vars.sh
   #
   home.sessionVariables = {
+    XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
+    XDG_DATA_HOME = "${config.home.homeDirectory}/.local/share";
+    XDG_CACHE_HOME = "${config.home.homeDirectory}/.cache";
     EDITOR = "nvim";
   };
 

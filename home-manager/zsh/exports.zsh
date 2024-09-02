@@ -10,30 +10,23 @@ path=(
   /bin
 )
 
-# common
-export XDG_CONFIG_HOME="$HOME/.config"
-export XDG_DATA_HOME="$HOME/.local/share"
-export XDG_CACHE_HOME="$HOME/.cache"
+# nix
+nix_paths=(
+  ~/.nix-profile/etc/profile.d/hm-session-vars.sh
+  ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
+  /etc/profiles/per-user/${USER}/etc/profile.d/hm-session-vars.sh
+)
+for p in "${nix_paths[@]}"; do
+  if [[ -f ${p} ]]; then
+    source ${p}
+  fi
+done
+path=(${HOME}/.nix-profile/bin $path)
 
 # Homebrew
 [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
 [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-# nix
-if [[ -f ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh ]]; then
-  source ~/.local/state/nix/profiles/profile/etc/profile.d/hm-session-vars.sh
-fi
-export TERMINFO_DIRS="/usr/share/terminfo:${HOME}/.nix-profile/share/terminfo"
-path=(${HOME}/.nix-profile/bin $path)
-
 # fzf
 export FZF_DEFAULT_OPTS='--height 60% --reverse --border'
-
-# krew
-path=(${KREW_ROOT:-$HOME/.krew}/bin $path)
-
-# mise
-if [[ -x "$(command -v mise)" ]]; then
-  eval "$(mise activate zsh)"
-fi

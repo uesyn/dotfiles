@@ -1,4 +1,4 @@
-{pkgs, ...}: {
+{config, pkgs, ...}: {
   home.packages = [
     pkgs.tmux
   ];
@@ -56,5 +56,9 @@
       bind % split-window -hc "#{pane_current_path}"
       bind '"' split-window -vc "#{pane_current_path}"
     '';
+  };
+
+  home.sessionVariables = {
+    TERMINFO_DIRS = "/usr/share/terminfo:${config.home.homeDirectory}/.nix-profile/share/terminfo";
   };
 }
