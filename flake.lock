@@ -128,11 +128,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1725008846,
-        "narHash": "sha256-/r2ZOvmJRbrsU6YfzrFGMAVnJixREu5hg5hJyrmRrYI=",
+        "lastModified": 1725420788,
+        "narHash": "sha256-vEjx//3yDiKUjZRBDTumbePt3s90dQsb43KYsQlWzl8=",
         "owner": "uesyn",
         "repo": "neovim",
-        "rev": "7affec167a193905865f7638afd8ee006853576e",
+        "rev": "924f3674a51dec0451e0feaaa4cf81e0c3942859",
         "type": "github"
       },
       "original": {
