@@ -77,8 +77,7 @@
                 virtualisation.docker.enable = true;
                 programs.zsh.enable = true;
                 programs.nix-ld = {
-                  enable = true;
-                  package = pkgs.nix-ld-rs;
+                  dev.enable = true;
                   libraries = with pkgs; [
                     zlib
                     zstd
