@@ -48,7 +48,6 @@ in {
     [
       coreutils-full
       curl
-      deno
       diffutils
       dig
       docker-buildx
