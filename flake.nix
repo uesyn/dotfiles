@@ -5,10 +5,22 @@
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    home-manager.url = "github:nix-community/home-manager";
-    myneovim.url = "github:uesyn/neovim";
-    nix-ld.url = "github:Mic92/nix-ld";
-    nixos-wsl.url = "github:nix-community/NixOS-WSL";
+    home-manager = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager";
+    };
+    myneovim = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:uesyn/neovim";
+    };
+    nix-ld = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:Mic92/nix-ld";
+    };
+    nixos-wsl = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/NixOS-WSL";
+    };
   };
 
   outputs = {
