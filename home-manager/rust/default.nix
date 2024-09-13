@@ -5,6 +5,7 @@
 }: {
   home.packages = [
     pkgs.rustup
+    pkgs.cargo-cross
     pkgs.cargo-edit
     pkgs.cargo-expand
   ];
