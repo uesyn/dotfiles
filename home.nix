@@ -13,7 +13,6 @@ in {
     ./home-manager/zsh
     ./home-manager/git
     ./home-manager/mise
-    ./home-manager/tmux
     ./home-manager/zellij
     ./home-manager/node
     ./home-manager/rust
