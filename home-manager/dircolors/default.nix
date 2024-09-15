@@ -8,17 +8,17 @@
     extraConfig = ''
       # Configuration file for dircolors, a utility to help you set the
       # LS_COLORS environment variable used by GNU ls with the --color option.
-      
+
       # Copyright (C) 1996-2024 Free Software Foundation, Inc.
       # Copying and distribution of this file, with or without modification,
       # are permitted provided the copyright notice and this notice are preserved.
-      
+
       #
       # The keywords COLOR, OPTIONS, and EIGHTBIT (honored by the
       # slackware version of dircolors) are recognized but ignored.
-      
+
       # Global config options can be specified before TERM or COLORTERM entries
-      
+
       # ===================================================================
       # Terminal filters
       # ===================================================================
@@ -50,7 +50,7 @@
       TERM tmux*
       TERM vt48;2;98;114;164
       TERM xterm*
-      
+
       # ===================================================================
       # Basic file attributes
       # ===================================================================
@@ -84,10 +84,10 @@
       STICKY_OTHER_WRITABLE 38;2;33;34;44;48;2;80;250;123 # dir that is sticky and other-writable (+t,o+w)
       OTHER_WRITABLE 38;2;189;147;249;48;2;80;250;123 # dir that is other-writable (o+w) and not sticky
       STICKY 38;2;248;248;242;48;2;189;147;249	# dir with the sticky bit set (+t) and not other-writable
-      
+
       # This is for files with execute permission:
       EXEC 01;38;2;80;250;123
-      
+
       # ===================================================================
       # File extension attributes
       # ===================================================================
@@ -97,7 +97,7 @@
       # Suffixes are matched case insensitively, but if you define different
       # init strings for separate cases, those will be honored.
       #
-      
+
       # If you use DOS-style suffixes, you may want to uncomment the following:
       #.cmd 01;38;2;80;250;123 # executables (bright green)
       #.exe 01;38;2;80;250;123
@@ -108,7 +108,7 @@
       # executable bit actually set.
       #.sh  01;38;2;80;250;123
       #.csh 01;38;2;80;250;123
-      
+
       # archives or compressed (bright red)
       .7z  01;38;2;255;85;85
       .ace 01;38;2;255;85;85
@@ -163,7 +163,7 @@
       .zip 01;38;2;255;85;85
       .zoo 01;38;2;255;85;85
       .zst 01;38;2;255;85;85
-      
+
       # image formats
       .avif 01;38;2;255;121;198
       .jpg 01;38;2;255;121;198
@@ -214,11 +214,11 @@
       .yuv 01;38;2;255;121;198
       .cgm 01;38;2;255;121;198
       .emf 01;38;2;255;121;198
-      
+
       # https://wiki.xiph.org/MIME_Types_and_File_Extensions
       .ogv 01;38;2;255;121;198
       .ogx 01;38;2;255;121;198
-      
+
       # audio formats
       .aac 00;38;2;139;233;253
       .au 00;38;2;139;233;253
@@ -232,13 +232,13 @@
       .ogg 00;38;2;139;233;253
       .ra 00;38;2;139;233;253
       .wav 00;38;2;139;233;253
-      
+
       # https://wiki.xiph.org/MIME_Types_and_File_Extensions
       .oga 00;38;2;139;233;253
       .opus 00;38;2;139;233;253
       .spx 00;38;2;139;233;253
       .xspf 00;38;2;139;233;253
-      
+
       # backup files
       *~ 00;38;2;98;114;164
       *# 00;38;2;98;114;164
@@ -260,7 +260,7 @@
       .ucf-dist 00;38;2;98;114;164
       .ucf-new 00;38;2;98;114;164
       .ucf-old 00;38;2;98;114;164
-      
+
       #
       # Subsequent TERM or COLORTERM entries, can be used to add / override
       # config specific to those matching environment variables.
