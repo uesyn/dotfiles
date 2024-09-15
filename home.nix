@@ -62,11 +62,9 @@ in {
       gnutar
       htop
       jq
-      mcfly
       neovim
       openssh
       openssl
-      openssl.dev
       pkg-config
       procps
       pstree
