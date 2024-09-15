@@ -15,6 +15,7 @@ in {
     ./home-manager/mise
     ./home-manager/zellij
     ./home-manager/node
+    ./home-manager/dircolors
     ./home-manager/rust
     ./home-manager/kubernetes
     ./home-manager/fzf

@@ -21,8 +21,6 @@
       [[ -e "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
     '';
     initExtra = ''
-      eval $(${pkgs.coreutils}/bin/dircolors -b ${./dircolors})
-
       source ${./exports.zsh}
       source ${./bindkeys.zsh}
       source ${./options.zsh}
