@@ -123,6 +123,7 @@ in {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";
     XDG_DATA_HOME = "${config.home.homeDirectory}/.local/share";
     XDG_CACHE_HOME = "${config.home.homeDirectory}/.cache";
+    HOMEBREW_NO_AUTO_UPDATE = "1";
     EDITOR = "nvim";
   };
 
