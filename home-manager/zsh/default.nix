@@ -2,13 +2,7 @@
   inputs,
   pkgs,
   ...
-}: let
-  zsh-async = builtins.fetchGit {
-      url = "https://github.com/mafredri/zsh-async.git";
-      ref = "main";
-      rev = "ee1d11b68c38dec24c22b1c51a45e8a815a79756";
-  };
-in {
+}: {
   programs.zsh = {
     enable = true;
     shellAliases = {
@@ -33,7 +27,7 @@ in {
 
       source ${./options.zsh}
       source ${./hooks.zsh}
-      source ${zsh-async}/async.zsh
+      source ${./async.zsh}
       source ${./prompt.zsh}
 
       typeset -Ug path fpath manpath
