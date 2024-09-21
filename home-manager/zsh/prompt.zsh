@@ -69,6 +69,11 @@ _git_info() {
   if [[ "${untracked}" -gt 0 ]]; then
     repo_condition="${repo_condition} ?${untracked}"
   fi
+
+  if [[ "${unmerged}" -gt 0 ]]; then
+    repo_condition="${repo_condition} x{unmerged}"
+  fi
+
   repo_condition=${repo_condition# }
 
   if [[ -n ${repo_condition} ]]; then
