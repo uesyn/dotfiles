@@ -77,10 +77,10 @@ _git_info() {
   repo_condition=${repo_condition# }
 
   if [[ -n ${repo_condition} ]]; then
-    git_prompt="${git_prompt} %F{#ffb86c}%f%K{#ffb86c}%F{#f8f8f2}${repo_condition}%f%k%F{#ffb86c}%f"
+    git_prompt="${git_prompt} %F{#ff5555}%f%K{#ff5555}%F{#f8f8f2}${repo_condition}%f%k%F{#ff5555}%f"
   fi
   
-  print "%F{#ffb86c}%f ${git_prompt}"
+  print "%F{#ff5555}%f ${git_prompt}"
 }
 
 _git_info_done() {
@@ -118,6 +118,10 @@ _git_info_prompt_init() {
 _kubernetes_info() {
   if [[ ! -f ${KUBECONFIG:-${HOME}/.kube/config} ]]; then
     return
+  fi
+
+  if [[ ! -x $(command -v kubectx) ]]; then
+    kubectx -c
   fi
 
   if [[ ! -x $(command -v kubectl) ]]; then
@@ -202,7 +206,7 @@ prompt_init() {
   _kubernetes_prompt_init
   _venv_prompt_init
 
-  PROMPT='%F{#6272a4}╭─%f %F{#ff5555} %f %n 📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
+  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n 📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
   RPROMPT='📁 %~'
 }
 
