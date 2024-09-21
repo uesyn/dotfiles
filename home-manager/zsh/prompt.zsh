@@ -2,8 +2,80 @@ setopt PROMPT_SUBST
 
 _git_info() {
   cd -q $1
-  vcs_info
-  print ${vcs_info_msg_0_}
+  local ab=""
+  local ahead=0
+  local behind=0
+  local staged=0
+  local unstaged=0
+  local unmerged=0
+  local untracked=0
+  local ignored=0
+  local git_prompt=""
+  local repo_condition=""
+
+  if ! command git rev-parse --git-dir >/dev/null 2>&1; then
+    return
+  fi
+  
+  while read -r line; do
+    case "$line" in
+      "# branch.oid "*) oid="${line#\# branch.oid }" ;;
+      "# branch.head "*) head="${line#\# branch.head }" ;;
+      "# branch.upstream "*) upstream="${line#\# branch.upstream }" ;;
+      "# branch.ab "*) ab="${line#\# branch.ab }" ;;
+      1* | 2*)
+        line="${line#* }"
+        xy="${line%% *}"
+        case "$(echo "$xy" | cut -c1)" in
+          M|A|D|R|C) staged=$((staged + 1)) ;;
+        esac
+        case "$(echo "$xy" | cut -c2)" in
+          M|A|D|R|C) unstaged=$((unstaged + 1)) ;;
+        esac
+        ;;
+      "u "*) unmerged=$((unmerged + 1)) ;;
+      "? "*) untracked=$((untracked + 1)) ;;
+      "! "*) ignored=$((ignored + 1)) ;;
+      *) "$line: invalid git status line" ;;
+    esac
+  done < <(git status --porcelain=v2 --branch)
+  
+  if [ -n "$ab" ]; then
+    ahead="${ab% -*}"
+    ahead="${ahead#+}"
+    behind="${ab#+* }"
+    behind="${behind#-}"
+  fi
+  
+  git_prompt="${head}"
+  if [[ -n "${upstream}" ]]; then
+    git_prompt="${git_prompt}..${upstream}"
+    if [[ "${ahead}" -gt 0 ]]; then
+      repo_condition="${repo_condition} ↑${ahead}"
+    fi
+    if [[ "${behind}" -gt 0 ]]; then
+      repo_condition="${repo_condition} ↓${behind}"
+    fi
+  fi
+  
+  if [[ "${staged}" -gt 0 ]]; then
+    repo_condition="${repo_condition} +${staged}"
+  fi
+  
+  if [[ "${unstaged}" -gt 0 ]]; then
+    repo_condition="${repo_condition} !${unstaged}"
+  fi
+  
+  if [[ "${untracked}" -gt 0 ]]; then
+    repo_condition="${repo_condition} ?${untracked}"
+  fi
+  repo_condition=${repo_condition##* }
+
+  if [[ -n ${repo_condition} ]]; then
+    git_prompt="${git_prompt} %F{#ffb86c}%f%K{#ffb86c}%F{#f8f8f2}${repo_condition}%f%k%F{#ffb86c}%f"
+  fi
+  
+  print "%F{#ffb86c}%f ${git_prompt}"
 }
 
 _git_info_done() {
@@ -16,7 +88,11 @@ _git_info_done() {
     _git_info_prompt_init
   fi
 
-  _git_info_prompt="$stdout "
+  if [[ -n $stdout ]]; then
+    _git_info_prompt="$stdout "
+  else
+    _git_info_prompt=""
+  fi
   zle reset-prompt
 }
 
@@ -28,13 +104,6 @@ _git_info_precmd() {
 _git_info_prompt_init() {
   autoload -Uz vcs_info
   typeset -g _git_info_prompt=''
-
-  zstyle ':vcs_info:*' enable git
-  zstyle ':vcs_info:git:*' check-for-changes true
-  zstyle ':vcs_info:git:*' stagedstr "!"
-  zstyle ':vcs_info:git:*' unstagedstr "+"
-  zstyle ':vcs_info:git:*' formats ' %b%c%u'
-  zstyle ':vcs_info:git:*' actionformats ' %b<%a>%c%u'
 
   async_start_worker git_info
   async_register_callback git_info _git_info_done
@@ -65,7 +134,7 @@ _kubernetes_info_done() {
   fi
 
   if [[ -n $stdout ]]; then
-    _kubernetes_prompt="☸  $stdout "
+    _kubernetes_prompt="%F{#8be9fd}⎈ %f$stdout "
   else
     _kubernetes_prompt=""
   fi
@@ -128,8 +197,8 @@ prompt_init() {
   _kubernetes_prompt_init
   _venv_prompt_init
 
-  PROMPT='╭─   %n ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}╰─❯ '
-  RPROMPT='%~'
+  PROMPT='%F{#6272a4}╭─%f %F{#ff5555} %f %n ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
+  RPROMPT='📁 %~'
 }
 
 prompt_init
