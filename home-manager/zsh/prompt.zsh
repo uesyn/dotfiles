@@ -197,7 +197,7 @@ prompt_init() {
   _kubernetes_prompt_init
   _venv_prompt_init
 
-  PROMPT='%F{#6272a4}╭─%f %F{#ff5555} %f %n ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
+  PROMPT='%F{#6272a4}╭─%f %F{#ff5555} %f %n 📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
   RPROMPT='📁 %~'
 }
 
