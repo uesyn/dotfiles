@@ -69,7 +69,7 @@ _git_info() {
   if [[ "${untracked}" -gt 0 ]]; then
     repo_condition="${repo_condition} ?${untracked}"
   fi
-  repo_condition=${repo_condition##* }
+  repo_condition=${repo_condition# }
 
   if [[ -n ${repo_condition} ]]; then
     git_prompt="${git_prompt} %F{#ffb86c}%f%K{#ffb86c}%F{#f8f8f2}${repo_condition}%f%k%F{#ffb86c}%f"
