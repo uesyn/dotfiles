@@ -9,10 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
     };
-    myneovim = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:uesyn/neovim";
-    };
+    myneovim.url = "github:uesyn/neovim";
     nix-ld = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:Mic92/nix-ld";
