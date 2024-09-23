@@ -46,6 +46,13 @@ _git_info() {
     behind="${ab#+* }"
     behind="${behind#-}"
   fi
+
+  if [[ "${head}" == "(detached)" ]]; then
+    tag=$(git tag --points-at HEAD)
+    if [[ -n "${tag}" ]]; then
+      head="${tag}"
+    fi
+  fi
   
   git_prompt="${head}"
   if [[ -n "${upstream}" ]]; then
