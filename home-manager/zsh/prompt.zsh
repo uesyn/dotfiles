@@ -116,12 +116,15 @@ _git_info_prompt_init() {
 }
 
 _kubernetes_info() {
-  if [[ ! -f ${KUBECONFIG:-${HOME}/.kube/config} ]]; then
+  export KUBECONFIG="$1"
+
+  if [[ ! -f "${KUBECONFIG}" ]]; then
     return
   fi
 
   if [[ ! -x $(command -v kubectx) ]]; then
     kubectx -c
+    return
   fi
 
   if [[ ! -x $(command -v kubectl) ]]; then
@@ -152,7 +155,7 @@ _kubernetes_info_done() {
 
 _kubernetes_info_precmd() {
   async_flush_jobs kubernetes_info 
-  async_job kubernetes_info _kubernetes_info
+  async_job kubernetes_info _kubernetes_info "${KUBECONFIG:-${HOME}/.kube/config}"
 }
 
 _kubernetes_prompt_init() {
