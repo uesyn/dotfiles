@@ -56,12 +56,13 @@ _git_info() {
   
   git_prompt="${head}"
   if [[ -n "${upstream}" ]]; then
-    git_prompt="${git_prompt}..${upstream}"
     if [[ "${ahead}" -gt 0 ]]; then
       repo_condition="${repo_condition} ↑${ahead}"
+      git_prompt="${git_prompt}..${upstream}"
     fi
     if [[ "${behind}" -gt 0 ]]; then
       repo_condition="${repo_condition} ↓${behind}"
+      git_prompt="${git_prompt}..${upstream}"
     fi
   fi
   
