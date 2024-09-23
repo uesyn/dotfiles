@@ -164,7 +164,7 @@ _kubernetes_prompt_init() {
 
 _venv_info() {
   VENV=$1
-  print ${VENV##*/}
+  print ${VIRTUAL_ENV/"${HOME}"/'~'}
 }
 
 _venv_info_done() {
