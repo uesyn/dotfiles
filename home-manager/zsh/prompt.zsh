@@ -81,7 +81,7 @@ _git_info() {
   fi
 
   if [[ "${unmerged}" -gt 0 ]]; then
-    repo_condition="${repo_condition} x{unmerged}"
+    repo_condition="${repo_condition} x${unmerged}"
   fi
 
   repo_condition=${repo_condition# }
