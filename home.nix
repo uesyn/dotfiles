@@ -17,6 +17,7 @@ in {
     ./home-manager/node
     ./home-manager/dircolors
     ./home-manager/rust
+    ./home-manager/go
     ./home-manager/kubernetes
     ./home-manager/fzf
   ];

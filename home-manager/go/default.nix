@@ -1,14 +1,14 @@
-{pkgs, ...}: {
+{config, pkgs, ...}: {
   home.packages = [
     pkgs.go
   ];
 
   home.sessionVariables = {
-    GOPATH = "~";
-    GOBIN = "~/bin";
+    GOPATH = "${config.home.homeDirectory}/.cargo/bin";
+    GOBIN = "${config.home.homeDirectory}/bin";
   };
 
   home.sessionPath = [
-    ""
+    "${config.home.homeDirectory}/bin"
   ];
 }
