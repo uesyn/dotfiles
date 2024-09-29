@@ -4,7 +4,7 @@
   ];
 
   home.sessionVariables = {
-    GOPATH = "${config.home.homeDirectory}/.cargo/bin";
+    GOPATH = "${config.home.homeDirectory}";
     GOBIN = "${config.home.homeDirectory}/bin";
   };
 
