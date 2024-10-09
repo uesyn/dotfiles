@@ -66,8 +66,8 @@ in {
       credential.helper = [
         ""
         "cache --timeout=86400"
-        "${pkgs.gh}/bin/gh auth git-credential"
         "${pkgs.git-credential-oauth}/bin/git-credential-oauth"
+        "${pkgs.gh}/bin/gh auth git-credential"
       ];
 
       url = {
