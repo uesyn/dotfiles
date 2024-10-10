@@ -2,10 +2,7 @@
   "entries": {
     "tap": {
       "homebrew/bundle": {
-        "revision": "4bf997035357ba241bc12dc9c3fda62760a16b6d"
-      },
-      "homebrew/cask-fonts": {
-        "revision": "0ed20f35d21ebc3f4f829689b101078718ad5ce1"
+        "revision": "768486e33e4373c9c48455f8ba20c52415c4e493"
       }
     },
     "cask": {
@@ -22,13 +19,13 @@
         }
       },
       "firefox": {
-        "version": "126.0.1",
+        "version": "131.0",
         "options": {
           "full_name": "firefox"
         }
       },
       "alt-tab": {
-        "version": "6.70.1",
+        "version": "6.73.0",
         "options": {
           "full_name": "alt-tab"
         }
@@ -37,13 +34,13 @@
   },
   "system": {
     "macos": {
-      "ventura": {
-        "HOMEBREW_VERSION": "4.3.2",
+      "sonoma": {
+        "HOMEBREW_VERSION": "4.4.0",
         "HOMEBREW_PREFIX": "/opt/homebrew",
         "Homebrew/homebrew-core": "api",
-        "CLT": "14.3.1.0.1.1683849156",
-        "Xcode": "14.3",
-        "macOS": "13.4.1"
+        "CLT": "15.3.0.0.1.1708646388",
+        "Xcode": "15.4",
+        "macOS": "14.6.1"
       }
     }
   }
