@@ -127,21 +127,14 @@ _git_info_prompt_init() {
 
 _kubernetes_info() {
   export KUBECONFIG="$1"
+  local context=""
 
-  if [[ ! -f "${KUBECONFIG}" ]]; then
-    return
+  if [[ -x $(command -v kubectx) ]]; then
+    context="$(kubectx -c 2>/dev/null)"
+  elif [[ -x $(command -v kubectl) ]]; then
+    context="$(kubectl config current-context 2>/dev/null)"
   fi
 
-  if [[ ! -x $(command -v kubectx) ]]; then
-    kubectx -c
-    return
-  fi
-
-  if [[ ! -x $(command -v kubectl) ]]; then
-    return
-  fi
-
-  context="$(kubectl config current-context 2>/dev/null)"
   print ${context}
 }
 
