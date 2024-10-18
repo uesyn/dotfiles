@@ -96,10 +96,15 @@
           move {
               bind "Enter" "Esc" "Ctrl [" "Space" "i" { SwitchToMode "normal"; }
 
+              bind "m" { SwitchToMode "tmux"; }
               bind "h" { MovePane "Left"; }
               bind "l" { MovePane "Right"; }
               bind "k" { MovePane "Up"; }
               bind "j" { MovePane "Down"; }
+              bind "H" { Resize "Left"; }
+              bind "J" { Resize "Down"; }
+              bind "K" { Resize "Up"; }
+              bind "L" { Resize "Right"; }
               bind "=" { Resize "Increase"; }
               bind "+" { Resize "Increase"; }
               bind "-" { Resize "Decrease"; }
@@ -111,14 +116,6 @@
               bind "l" { MoveFocusOrTab "Right"; SwitchToMode "normal"; }
               bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
               bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
-
-              bind "H" { Resize "Left"; }
-              bind "J" { Resize "Down"; }
-              bind "K" { Resize "Up"; }
-              bind "L" { Resize "Right"; }
-              bind "=" { Resize "Increase"; }
-              bind "+" { Resize "Increase"; }
-              bind "-" { Resize "Decrease"; }
 
               bind "c" { NewTab; SwitchToMode "normal"; }
               bind "x" { CloseFocus; SwitchToMode "normal"; }

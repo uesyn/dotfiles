@@ -98,11 +98,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1727622785,
-        "narHash": "sha256-5hud7a1MkPFl1rFPnG0fhuxkLJD3SuNmj5W7f7Md1yU=",
+        "lastModified": 1729221386,
+        "narHash": "sha256-SVX70PRJiWTaH2ZS7tNvYUVjr5Rdt+tQcvY8EqHLw0I=",
         "owner": "uesyn",
         "repo": "neovim",
-        "rev": "36a9f58cbddb94df17c23fcfb87532556da0d40c",
+        "rev": "f453fafa7f8a064fd204e20572646207b1fd92b1",
         "type": "github"
       },
       "original": {
