@@ -114,11 +114,13 @@
                   dig
                   git
                   vim
+                  wsl-open
+                  wslu
                   zsh
                 ];
-                nix.package = pkgs.nixFlakes;
+                nix.package = pkgs.nixVersions.stable;
                 nix.settings = {
-                  experimental-features = ["nix-command" "flakes" "repl-flake"];
+                  experimental-features = ["nix-command" "flakes"];
                   trusted-users = ["root" "nixos"];
                   trusted-substituters = ["https://nix-community.cachix.org" "https://cache.nixos.org"];
                   substituters = ["https://nix-community.cachix.org"];
