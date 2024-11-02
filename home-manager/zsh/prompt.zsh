@@ -38,7 +38,7 @@ _git_info() {
       "! "*) ignored=$((ignored + 1)) ;;
       *) "$line: invalid git status line" ;;
     esac
-  done < <(git status --porcelain=v2 --branch)
+  done < <(git --no-optional-locks status --porcelain=v2 --branch)
   
   if [ -n "$ab" ]; then
     ahead="${ab% -*}"
