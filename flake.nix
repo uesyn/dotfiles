@@ -65,7 +65,10 @@
               }
             ];
 
-            # extraSpecialArgs = {};
+            extraSpecialArgs = {
+              gitUser = "uesyn";
+              gitEmail = "17411645+uesyn@users.noreply.github.com";
+            };
           };
         };
 

@@ -1,6 +1,8 @@
 {
   inputs,
   pkgs,
+  gitUser,
+  gitEmail,
   ...
 }: let
   git-credential-oauth-wrapper = pkgs.writeShellScriptBin "git-credential-oauth-wrapper" ''
@@ -39,8 +41,8 @@ in {
   programs.git = {
     enable = true;
 
-    userName = "uesyn";
-    userEmail = "17411645+uesyn@users.noreply.github.com";
+    userName = gitUser;
+    userEmail = gitEmail;
 
     ignores = [
       ".DS_Store"
