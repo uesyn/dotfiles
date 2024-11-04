@@ -8,18 +8,19 @@
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in {
   imports = [
-    ./home-manager/commands
     ./home-manager/bash
-    ./home-manager/zsh
-    ./home-manager/git
-    ./home-manager/mise
-    ./home-manager/zellij
-    ./home-manager/node
+    ./home-manager/commands
     ./home-manager/dircolors
-    ./home-manager/rust
+    ./home-manager/fzf
+    ./home-manager/git
     ./home-manager/go
     ./home-manager/kubernetes
-    ./home-manager/fzf
+    ./home-manager/mise
+    ./home-manager/neovim
+    ./home-manager/node
+    ./home-manager/rust
+    ./home-manager/zellij
+    ./home-manager/zsh
   ];
 
   home.activation = {
@@ -60,7 +61,6 @@ in {
       gnutar
       htop
       jq
-      neovim
       openssh
       openssl
       pkg-config
