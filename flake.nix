@@ -87,7 +87,6 @@
                   groups.docker = {};
                 };
                 virtualisation.docker.enable = true;
-                programs.zsh.enable = true;
                 programs.nix-ld = {
                   dev.enable = true;
                   libraries = with pkgs; [
