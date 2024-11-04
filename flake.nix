@@ -43,11 +43,17 @@
         };
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
+        extraSpecialArgs = {
+          gitUser = "uesyn";
+          gitEmail = "17411645+uesyn@users.noreply.github.com";
+          gitHosts = [];
+        };
       in {
         # For standalone home-manager
         packages.homeConfigurations = {
           "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
             inherit pkgs;
+            inherit extraSpecialArgs;
 
             modules = [
               ./home.nix
@@ -56,12 +62,6 @@
                 home.homeDirectory = currentHomeDirectory;
               }
             ];
-
-            extraSpecialArgs = {
-              gitUser = "uesyn";
-              gitEmail = "17411645+uesyn@users.noreply.github.com";
-              gitHosts = [];
-            };
           };
         };
 
@@ -69,66 +69,18 @@
         packages.nixosConfigurations = {
           wsl2 = nixpkgs.lib.nixosSystem {
             inherit system;
+
             modules = [
+              home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
               {
-                wsl.enable = true;
-                system.stateVersion = "24.05";
-                users = {
-                  users.nixos = {
-                    isNormalUser = true;
-                    extraGroups = ["wheel" "docker"];
-                    shell = pkgs.zsh;
-                  };
-                  users.uesyn = {
-                    isNormalUser = true;
-                    extraGroups = ["wheel" "docker"];
-                    shell = pkgs.zsh;
-                  };
-                  groups.docker = {};
-                };
-                virtualisation.docker.enable = true;
-                programs.zsh.enable = true;
-                programs.nix-ld = {
-                  dev.enable = true;
-                  libraries = with pkgs; [
-                    zlib
-                    zstd
-                    stdenv.cc.cc
-                    curl
-                    openssl
-                    attr
-                    libssh
-                    bzip2
-                    libxml2
-                    acl
-                    libsodium
-                    util-linux
-                    xz
-                    systemd
-                  ];
-                };
-                environment.systemPackages = with pkgs; [
-                  bash
-                  coreutils
-                  curl
-                  dig
-                  git
-                  vim
-                  wsl-open
-                  wslu
-                  zsh
-                ];
-                nix.package = pkgs.nixVersions.stable;
-                nix.settings = {
-                  experimental-features = ["nix-command" "flakes"];
-                  trusted-users = ["root" "nixos"];
-                  trusted-substituters = ["https://nix-community.cachix.org" "https://cache.nixos.org"];
-                  substituters = ["https://nix-community.cachix.org"];
-                  trusted-public-keys = ["nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="];
-                };
+                home-manager.useGlobalPkgs = true;
+                home-manager.useUserPackages = true;
+                home-manager.users.uesyn = import ./home.nix;
+                home-manager.extraSpecialArgs = extraSpecialArgs;
               }
+              ./wsl2.nix
             ];
           };
         };
