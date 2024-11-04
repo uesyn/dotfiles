@@ -3,6 +3,7 @@
   pkgs,
   gitUser,
   gitEmail,
+  gitHosts,
   ...
 }: let
   git-credential-oauth-wrapper = pkgs.writeShellScriptBin "git-credential-oauth-wrapper" ''
@@ -12,6 +13,16 @@
       exec ${pkgs.git-credential-oauth}/bin/git-credential-oauth "$@"
     fi
   '';
+
+  git-oauth-credential = {
+    git_host,
+  }: {
+    "https://${git_host}" = {
+      oauthClientId = "0120e057bd645470c1ed";
+      oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
+      oauthRedirectURL = "http://localhost/";
+    };
+  };
 in {
   home.packages = [
     git-credential-oauth-wrapper
@@ -65,12 +76,14 @@ in {
     extraConfig = {
       ghq.root = "~/src";
 
-      credential.helper = [
-        ""
-        "cache --timeout=86400"
-        "oauth-wrapper"
-        "${pkgs.gh}/bin/gh auth git-credential"
-      ];
+      credential = {
+        helper = [
+          ""
+          "cache --timeout=86400"
+          "oauth-wrapper"
+          "${pkgs.gh}/bin/gh auth git-credential"
+        ];
+      } // builtins.foldl' (x: y: x // (git-oauth-credential { git_host = y; })) {} gitHosts;
 
       url = {
         "https://github.com/" = {

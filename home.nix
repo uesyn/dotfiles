@@ -23,14 +23,6 @@ in {
     ./home-manager/zsh
   ];
 
-  home.activation = {
-    gitconfigLocal = lib.hm.dag.entryAfter ["writeBoundary"] ''
-      run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientId 0120e057bd645470c1ed
-      run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthClientSecret 18867509d956965542b521a529a79bb883344c90
-      run ${pkgs.lib.getExe pkgs.git} config -f ${config.home.homeDirectory}/.gitconfig.local credential.https://github.example.com.oauthRedirectURL http://localhost/
-    '';
-  };
-
   # This value determines the Home Manager release that your configuration is
   # compatible with. This helps avoid breakage when a new Home Manager release
   # introduces backwards incompatible changes.
