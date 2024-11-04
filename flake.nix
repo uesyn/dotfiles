@@ -56,11 +56,11 @@
             inherit extraSpecialArgs;
 
             modules = [
-              ./home.nix
               {
                 home.username = currentUsername;
                 home.homeDirectory = currentHomeDirectory;
               }
+              ./home.nix
             ];
           };
         };
@@ -74,13 +74,7 @@
               home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
-              {
-                home-manager.useGlobalPkgs = true;
-                home-manager.useUserPackages = true;
-                home-manager.users.uesyn = import ./home.nix;
-                home-manager.extraSpecialArgs = extraSpecialArgs;
-              }
-              ./wsl2.nix
+              (import ./wsl2.nix { extraSpecialArgs = extraSpecialArgs; })
             ];
           };
         };

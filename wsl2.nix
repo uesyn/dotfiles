@@ -1,6 +1,8 @@
 {
-  pkgs,
   extraSpecialArgs,
+}:
+{
+  pkgs,
   ...
 }:
 {
@@ -10,6 +12,12 @@
   nixpkgs.config = {
     allowUnfree = true;
   };
+
+  home-manager.useGlobalPkgs = true;
+  home-manager.useUserPackages = true;
+  home-manager.users.nixos = import ./home.nix;
+  home-manager.users.uesyn = import ./home.nix;
+  home-manager.extraSpecialArgs = extraSpecialArgs;
 
   users = {
     users.nixos = {
