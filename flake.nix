@@ -26,7 +26,7 @@
     nix-ld,
     nixos-wsl,
     ...
-  } @ inputs:
+  }:
     flake-utils.lib.eachDefaultSystem (
       system: let
         # pin nixpkgs for tmux
