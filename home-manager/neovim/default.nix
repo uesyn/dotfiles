@@ -1,24 +1,21 @@
-{
-  pkgs,
-  ...
-}: let
+{pkgs, ...}: let
   plugins = import ./plugins.nix {
     inherit pkgs;
   };
   nvimRtp = pkgs.stdenv.mkDerivation ({
-    name = "nvim-rtp";
-    src = ./nvim;
+      name = "nvim-rtp";
+      src = ./nvim;
 
-    buildPhase = ''
-      mkdir -p $out
-      find . -type d | xargs -I{} mkdir -p $out/{}
-      for file in $(find . -type f); do
-        substituteAll $file $out/$file
-      done
-    '';
-  }
-  // plugins);
-in{
+      buildPhase = ''
+        mkdir -p $out
+        find . -type d | xargs -I{} mkdir -p $out/{}
+        for file in $(find . -type f); do
+          substituteAll $file $out/$file
+        done
+      '';
+    }
+    // plugins);
+in {
   xdg.configFile = {
     "nvim" = {
       source = nvimRtp;
