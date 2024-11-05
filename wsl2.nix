@@ -13,8 +13,8 @@
 
   home-manager.useGlobalPkgs = true;
   home-manager.useUserPackages = true;
-  home-manager.users.nixos = import ./home.nix;
-  home-manager.users.uesyn = import ./home.nix;
+  home-manager.users.nixos = import ./home-manager;
+  home-manager.users.uesyn = import ./home-manager;
   home-manager.extraSpecialArgs = extraSpecialArgs;
 
   users = {

@@ -8,19 +8,20 @@
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in {
   imports = [
-    ./home-manager/bash
-    ./home-manager/commands
-    ./home-manager/dircolors
-    ./home-manager/fzf
-    ./home-manager/git
-    ./home-manager/go
-    ./home-manager/kubernetes
-    ./home-manager/mise
-    ./home-manager/neovim
-    ./home-manager/node
-    ./home-manager/rust
-    ./home-manager/zellij
-    ./home-manager/zsh
+    ./bash
+    ./commands
+    ./dircolors
+    ./fzf
+    ./git
+    ./go
+    ./kubernetes
+    ./mise
+    ./neovim
+    ./node
+    ./rust
+    ./zellij
+    ./zsh
+    ./misc
   ];
 
   # This value determines the Home Manager release that your configuration is
@@ -75,12 +76,6 @@ in {
       darwin.iproute2mac
       docker-credential-helpers
     ];
-
-  # Home Manager is pretty good at managing dotfiles. The primary way to manage
-  # plain files is through 'home.file'.
-  home.file = {
-    ".config/wezterm/wezterm.lua".source = ./wezterm.lua;
-  };
 
   home.sessionVariables = {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";

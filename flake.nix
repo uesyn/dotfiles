@@ -59,7 +59,7 @@
                 home.username = currentUsername;
                 home.homeDirectory = currentHomeDirectory;
               }
-              ./home.nix
+              ./home-manager
             ];
           };
         };
