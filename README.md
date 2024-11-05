@@ -12,6 +12,10 @@ my dotfiles
 # Install nix
 $ curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
 
+# Create config to use flake
+$ mkdir -p ~/.config/nix
+$ echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
+
 # Add nix-community cache
 $ nix run nixpkgs#cachix -- use nix-community
 ```
