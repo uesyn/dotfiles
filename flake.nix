@@ -69,11 +69,15 @@
           wsl2 = nixpkgs.lib.nixosSystem {
             inherit system;
 
+            specialArgs =  {
+              extraSpecialArgs = extraSpecialArgs;
+            };
+
             modules = [
               home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
-              (import ./wsl2.nix { extraSpecialArgs = extraSpecialArgs; })
+              ./wsl2.nix
             ];
           };
         };

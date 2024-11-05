@@ -1,8 +1,6 @@
 {
-  extraSpecialArgs,
-}:
-{
   pkgs,
+  extraSpecialArgs,
   ...
 }:
 {
