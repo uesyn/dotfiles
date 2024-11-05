@@ -30,7 +30,6 @@
     flake-utils.lib.eachDefaultSystem (
       system: let
         overlays = [
-          # inputs.myneovim.overlays.default
           # (final: prev: {
           #   tmux = pkgs-pinned.tmux;
           #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
