@@ -11,17 +11,18 @@ in {
     ./bash
     ./commands
     ./dircolors
+    ./direnv
     ./fzf
     ./git
     ./go
     ./kubernetes
+    ./misc
     ./mise
     ./neovim
     ./node
     ./rust
     ./zellij
     ./zsh
-    ./misc
   ];
 
   # This value determines the Home Manager release that your configuration is
