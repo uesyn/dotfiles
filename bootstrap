@@ -28,12 +28,6 @@ if [ -z "$(command -v git)" ]; then
   exit 1
 fi
 
-if [ -z "$(command -v nix)" ]; then
-  echo "install nix"
-  curl --proto '=https' --tlsv1.2 -sSf -L https://install.determinate.systems/nix | sh -s -- install --no-confirm
-  . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
-fi
-
 if [ -x "$(command -v nixos-rebuild)" ] && [ -n "${os_target}" ]; then
   sudo nixos-rebuild switch --flake .#"${os_target}"
 fi
