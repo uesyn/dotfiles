@@ -82,6 +82,8 @@
           };
         };
 
+        devShells = pkgs.mkShell { packages = [ pkgs.openssl pkgs.pkg-config ]; };
+
         formatter = pkgs.alejandra;
       }
     );
