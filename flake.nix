@@ -82,7 +82,9 @@
           };
         };
 
-        devShells = pkgs.mkShell { packages = [ pkgs.openssl pkgs.pkg-config ]; };
+        devShells.default = pkgs.callPackage ./shell.nix {
+          inherit pkgs;
+        };
 
         formatter = pkgs.alejandra;
       }

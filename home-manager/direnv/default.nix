@@ -2,9 +2,10 @@
   dotfiles = pkgs.stdenv.mkDerivation ({
       name = "dotfiles";
       src = ../..;
+      nativeBuildInputs = with pkgs; [ git ];
       buildPhase = ''
         mkdir -p $out
-        cp flake.* $out/
+        cp shell.nix $out/
       '';
     });
 in {
@@ -15,9 +16,11 @@ in {
       nix-direnv.enable = true;
   };
 
+  # TODO: Add command to prepare envrc
+
   home.file = {
     ".envrc".text = ''
-      use flake ${dotfiles}#devShell
+      use nix ${dotfiles}/shell.nix
     '';
   };
 }
