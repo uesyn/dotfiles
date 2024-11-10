@@ -62,6 +62,9 @@ in {
       ".venv"
       "mise.toml"
       ".mise.toml"
+      ".envrc"
+      ".direnv"
+      ".default.nix"
     ];
 
     includes = [

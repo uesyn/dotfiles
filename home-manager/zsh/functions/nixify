@@ -1,0 +1,18 @@
+if [[ ! -e .default.nix ]]; then
+  cat > .default.nix <<'EOF'
+with import <nixpkgs> {};
+mkShell {
+  nativeBuildInputs = [
+    openssl
+    pkg-config
+  ];
+}
+EOF
+  ${EDITOR:-vim} .default.nix
+fi
+
+if [ ! -e ./.envrc ]; then
+  echo "use nix .default.nix" > .envrc
+  direnv allow
+fi
+
