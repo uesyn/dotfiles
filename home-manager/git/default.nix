@@ -14,9 +14,7 @@
     fi
   '';
 
-  git-oauth-credential = {
-    git_host,
-  }: {
+  git-oauth-credential = {git_host}: {
     "https://${git_host}" = {
       oauthClientId = "0120e057bd645470c1ed";
       oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
@@ -79,14 +77,16 @@ in {
     extraConfig = {
       ghq.root = "~/src";
 
-      credential = {
-        helper = [
-          ""
-          "cache --timeout=86400"
-          "oauth-wrapper"
-          "${pkgs.gh}/bin/gh auth git-credential"
-        ];
-      } // builtins.foldl' (x: y: x // (git-oauth-credential { git_host = y; })) {} gitHosts;
+      credential =
+        {
+          helper = [
+            ""
+            "cache --timeout=86400"
+            "oauth-wrapper"
+            "${pkgs.gh}/bin/gh auth git-credential"
+          ];
+        }
+        // builtins.foldl' (x: y: x // (git-oauth-credential {git_host = y;})) {} gitHosts;
 
       url = {
         "https://github.com/" = {

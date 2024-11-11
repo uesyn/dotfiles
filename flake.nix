@@ -69,7 +69,7 @@
           wsl2 = nixpkgs.lib.nixosSystem {
             inherit system;
 
-            specialArgs =  {
+            specialArgs = {
               extraSpecialArgs = extraSpecialArgs;
             };
 
