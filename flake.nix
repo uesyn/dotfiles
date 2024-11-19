@@ -82,8 +82,25 @@
           };
         };
 
-        devShells.default = pkgs.callPackage ./shell.nix {
-          inherit pkgs;
+        devShells = with pkgs;{
+          rust = mkShell {
+            packages = [
+              openssl
+              pkg-config
+            ];
+          };
+
+          go_1_22 = mkShell {
+            packages = [
+              go_1_22
+            ];
+          };
+
+          python3 = mkShell {
+            packages = [
+              python3
+            ];
+          };
         };
 
         formatter = pkgs.alejandra;

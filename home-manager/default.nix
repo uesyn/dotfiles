@@ -58,7 +58,6 @@ in {
       pkg-config
       procps
       pstree
-      python3
       ripgrep
       tree
       unzip
