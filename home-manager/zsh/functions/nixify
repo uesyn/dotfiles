@@ -1,6 +1,6 @@
 if [ ! -e ./.envrc ]; then
   DOTFILES=${HOME}/src/github.com/uesyn/dotfiles
-  if [ ! -d "${DOTFILES}" ]; then
+  if [ -d "${DOTFILES}" ]; then
     echo "# use nix ${DOTFILES}#rust" > .envrc
     echo "# use nix ${DOTFILES}#go_1_22" >> .envrc
   else
