@@ -7,6 +7,7 @@ if [ ! -e ./.envrc ]; then
     echo "# use flake github:uesyn/dotfiles#rust" > .envrc
     echo "# use flake github:uesyn/dotfiles#go_1_22" >> .envrc
   fi
+  ${EDITOR:-vim} .envrc
   direnv allow
 fi
 
