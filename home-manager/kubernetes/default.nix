@@ -5,6 +5,7 @@
 }: {
   home.packages = with pkgs; [
     kind
+    krew
     kubectl
     kubectx
     kubernetes-helm
