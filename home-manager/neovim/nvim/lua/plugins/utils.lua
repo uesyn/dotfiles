@@ -111,13 +111,10 @@ return {
         use_default_keymaps = false,
         keymaps = {
           ["<CR>"] = "actions.select",
-          ["l"] = "actions.select",
           ["<C-p>"] = "actions.preview",
           ["<C-q>"] = "actions.close",
-          ["q"] = "actions.close",
           ["<C-r>"] = "actions.refresh",
-          ["h"] = "actions.parent",
-          ["<space>"] = "actions.toggle_hidden",
+          ["<S-h>"] = "actions.parent",
         },
         view_options = {
           show_hidden = true,
