@@ -2,6 +2,7 @@ return {
   {
     name = "nvim_lspconfig",
     dir = "@nvim_lspconfig@",
+    lazy = false,
     config = function()
       vim.api.nvim_create_autocmd("LspAttach", {
         group = vim.api.nvim_create_augroup("my_lspconfig", { clear = true }),

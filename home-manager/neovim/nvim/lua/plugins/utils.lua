@@ -30,33 +30,29 @@ return {
     },
     config = function()
       require("neo-tree").setup({
-          ["filesystem"] = { ["filtered_items"] = { ["hide_dotfiles"] = false, ["hide_gitignored"] = false } },
+          ["filesystem"] = {
+	      ["filtered_items"] = {
+	          ["hide_dotfiles"] = false,
+		  ["hide_gitignored"] = false,
+	      },
+	      ["follow_current_file"] = {
+	          enabled = true,
+	      },
+	  },
           ["popup_border_style"] = "solid",
           ["use_default_mappings"] = false,
           ["window"] = {
               ["mappings"] = {
                   ["<C-q>"] = "close_window",
                   ["<cr>"] = "open",
-                  ["<esc>"] = { "revert_preview" },
                   ["?"] = "show_help",
-                  ["D"] = "delete",
-                  ["F"] = { "add", ["config"] = { ["show_path"] = "absolute" } },
-                  ["K"] = { "add_directory", ["config"] = { ["show_path"] = "absolute" } },
-                  ["P"] = { "toggle_preview", ["config"] = { ["use_float"] = true } },
-                  ["R"] = "rename",
                   ["S"] = { "open_split" },
-                  ["c"] = "copy",
                   ["h"] = { "close_node" },
                   ["l"] = { "open" },
-                  ["m"] = { "move", ["config"] = { ["show_path"] = "absolute" } },
-                  ["p"] = "paste_from_clipboard",
                   ["q"] = "close_window",
                   ["r"] = "refresh",
                   ["s"] = { "open_vsplit" },
-                  ["x"] = "cut_to_clipboard",
-                  ["y"] = "copy_to_clipboard",
               },
-              ["position"] = "float",
           },
       })
       vim.keymap.set("n", "<Leader>fo", "<Cmd>Neotree action=focus reveal toggle<CR>", { silent = true })
@@ -106,5 +102,29 @@ return {
       vim.keymap.set("v", "<leader><leader>", function() require('hop').hint_words({ hint_position = require('hop.hint').HintPosition.END }) end)
     end,
     event = "VeryLazy",
+  },
+  {
+    name = "oil_nvim",
+    dir = "@oil_nvim@",
+    config = function()
+      require("oil").setup({
+        use_default_keymaps = false,
+        keymaps = {
+          ["<CR>"] = "actions.select",
+          ["l"] = "actions.select",
+          ["<C-p>"] = "actions.preview",
+          ["<C-q>"] = "actions.close",
+          ["q"] = "actions.close",
+          ["<C-r>"] = "actions.refresh",
+          ["h"] = "actions.parent",
+          ["<space>"] = "actions.toggle_hidden",
+        },
+        view_options = {
+          show_hidden = true,
+        },
+      })
+      vim.keymap.set("n", "<Leader>fe", require("oil").open_float, { desc = "Open parent directory" })
+    end,
+    keys = { "<Leader>fe", mode = "n" },
   },
 }

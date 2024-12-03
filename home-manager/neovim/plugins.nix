@@ -47,6 +47,7 @@
     fidget_nvim = fidget-nvim;
     nvim_navic = nvim-navic;
     hop_nvim = hop-nvim;
+    oil_nvim = oil-nvim;
   };
 in
   unmanaged-plugins // managed-plugins

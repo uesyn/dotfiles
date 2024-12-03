@@ -82,7 +82,7 @@
           };
         };
 
-        devShells = with pkgs;{
+        devShells = with pkgs; {
           rust = mkShell {
             packages = [
               openssl

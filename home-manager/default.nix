@@ -33,7 +33,7 @@ in {
   # want to update the value, then make sure to first check the Home Manager
   # release notes.
   # Please read release note to update this: https://home-manager.dev/manual/unstable/release-notes.xhtml
-  home.stateVersion = "24.05"; # Please read the comment before changing.
+  home.stateVersion = "24.11"; # Please read the comment before changing.
 
   home.packages = with pkgs;
     [
