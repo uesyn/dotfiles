@@ -56,6 +56,17 @@ return {
           },
       })
       vim.keymap.set("n", "<Leader>fo", "<Cmd>Neotree action=focus reveal toggle<CR>", { silent = true })
+      vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("my_neo_tree", { clear = true }),
+          pattern = "neo-tree",
+          callback = function()
+              vim.bo.buflisted = false
+              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<Leader>fe", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<Leader>ff", "<Nop>", { buffer = true })
+          end,
+      })
     end,
     keys = "<Leader>fo",
   },
@@ -121,6 +132,18 @@ return {
         },
       })
       vim.keymap.set("n", "<Leader>fe", require("oil").open_float, { desc = "Open parent directory" })
+      vim.api.nvim_create_autocmd("FileType", {
+          group = vim.api.nvim_create_augroup("my_oil", { clear = true }),
+          pattern = "oil",
+          callback = function()
+              vim.bo.buflisted = false
+              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<Leader>fe", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<Leader>fo", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<Leader>ff", "<Nop>", { buffer = true })
+          end,
+      })
     end,
     keys = { "<Leader>fe", mode = "n" },
   },
