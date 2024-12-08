@@ -22,6 +22,11 @@
     envExtra = ''
       [[ -e "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
     '';
+    profileExtra = ''
+      # Homebrew
+      [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
+      [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
+    '';
     initExtra = ''
       zmodload zsh/complete
       zmodload zsh/zle
@@ -41,10 +46,6 @@
         /sbin
         /bin
       )
-
-      # Homebrew
-      [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
-      [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
 
       bindkey "^[[Z" reverse-menu-complete
       bindkey "ƒ" forward-word

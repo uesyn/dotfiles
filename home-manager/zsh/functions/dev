@@ -1,1 +1,0 @@
-nix develop github:uesyn/dotfiles#${1}
