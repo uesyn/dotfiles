@@ -34,7 +34,6 @@
     copilotchat_nvim = CopilotChat-nvim;
     fzf_lua = fzf-lua;
     gitsigns_nvim = gitsigns-nvim;
-    neo_tree_nvim = neo-tree-nvim;
     nui_nvim = nui-nvim;
     openingh_nvim = openingh-nvim;
     nvim_osc52 = nvim-osc52;
@@ -47,7 +46,7 @@
     fidget_nvim = fidget-nvim;
     nvim_navic = nvim-navic;
     hop_nvim = hop-nvim;
-    oil_nvim = oil-nvim;
+    nvim_tree_lua = nvim-tree-lua;
   };
 in
   unmanaged-plugins // managed-plugins

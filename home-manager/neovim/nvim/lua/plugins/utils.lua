@@ -21,56 +21,6 @@ return {
     keys = { "<Leader>fs", "<Leader>ff", "<Leader>fb" },
   },
   {
-    name = "neo_tree_nvim",
-    dir = "@neo_tree_nvim@",
-    dependencies = {
-      { name = "nvim_web_devicons", dir = "@nvim_web_devicons@" },
-      { name = "plenary_nvim", dir = "@plenary_nvim@" },
-      { name = "nui_nvim", dir = "@nui_nvim@" },
-    },
-    config = function()
-      require("neo-tree").setup({
-          ["filesystem"] = {
-	      ["filtered_items"] = {
-	          ["hide_dotfiles"] = false,
-		  ["hide_gitignored"] = false,
-	      },
-	      ["follow_current_file"] = {
-	          enabled = true,
-	      },
-	  },
-          ["popup_border_style"] = "solid",
-          ["use_default_mappings"] = false,
-          ["window"] = {
-              ["mappings"] = {
-                  ["<C-q>"] = "close_window",
-                  ["<cr>"] = "open",
-                  ["?"] = "show_help",
-                  ["S"] = { "open_split" },
-                  ["h"] = { "close_node" },
-                  ["l"] = { "open" },
-                  ["q"] = "close_window",
-                  ["r"] = "refresh",
-                  ["s"] = { "open_vsplit" },
-              },
-          },
-      })
-      vim.keymap.set("n", "<Leader>fo", "<Cmd>Neotree action=focus reveal toggle<CR>", { silent = true })
-      vim.api.nvim_create_autocmd("FileType", {
-          group = vim.api.nvim_create_augroup("my_neo_tree", { clear = true }),
-          pattern = "neo-tree",
-          callback = function()
-              vim.bo.buflisted = false
-              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<Leader>fe", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<Leader>ff", "<Nop>", { buffer = true })
-          end,
-      })
-    end,
-    keys = "<Leader>fo",
-  },
-  {
     name = "nvim_surround",
     dir = "@nvim_surround@",
     config = function()
@@ -115,36 +65,54 @@ return {
     event = "VeryLazy",
   },
   {
-    name = "oil_nvim",
-    dir = "@oil_nvim@",
+    name = "nvim_tree_lua",
+    dir = "@nvim_tree_lua@",
     config = function()
-      require("oil").setup({
-        use_default_keymaps = false,
-        keymaps = {
-          ["<CR>"] = "actions.select",
-          ["<C-p>"] = "actions.preview",
-          ["<C-q>"] = "actions.close",
-          ["<C-r>"] = "actions.refresh",
-          ["<S-h>"] = "actions.parent",
-        },
-        view_options = {
-          show_hidden = true,
-        },
+      vim.g.loaded_netrw = 1
+      vim.g.loaded_netrwPlugin = 1
+      local function my_on_attach(bufnr)
+        local api = require("nvim-tree.api")
+
+        local function opts(desc)
+          return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+        end
+
+        -- custom mappings
+        vim.keymap.set("n", "h",              api.node.navigate.parent_close,     opts("Close Directory"))
+        vim.keymap.set("n", "<CR>",           api.node.open.edit,                 opts("Open"))
+        vim.keymap.set("n", "l",              api.node.open.edit,                 opts("Open"))
+        vim.keymap.set("n", "<Tab>",          api.node.open.preview,              opts("Open Preview"))
+        vim.keymap.set("n", "a",              api.fs.create,                      opts("Create File Or Directory"))
+        vim.keymap.set("n", "c",              api.fs.copy.node,                   opts("Copy"))
+        vim.keymap.set("n", "D",              api.fs.remove,                      opts("Delete"))
+        vim.keymap.set("n", "?",              api.tree.toggle_help,               opts("Help"))
+        vim.keymap.set("n", "o",              api.node.open.edit,                 opts("Open"))
+        vim.keymap.set("n", "p",              api.fs.paste,                       opts("Paste"))
+        vim.keymap.set("n", "q",              api.tree.close,                     opts("Close"))
+        vim.keymap.set("n", "<S-q>",          api.tree.close,                     opts("Close"))
+        vim.keymap.set("n", "r",              api.fs.rename_sub,                  opts("Rename: Omit Filename"))
+        vim.keymap.set("n", "R",              api.tree.reload,                    opts("Refresh"))
+        vim.keymap.set("n", "x",              api.fs.cut,                         opts("Cut"))
+        vim.keymap.set("n", "y",              api.fs.copy.filename,               opts("Copy Name"))
+        vim.keymap.set("n", "<C-n>", "<Nop>", opts(""))
+        vim.keymap.set("n", "<C-p>", "<Nop>", opts(""))
+      end
+
+      require("nvim-tree").setup({
+        on_attach = my_on_attach,
+        renderer = {
+	  icons = {
+	    glyphs = {
+	      folder = {
+		 arrow_closed = "",
+		 arrow_open = "",
+	      },
+	    },
+	  },
+	},
       })
-      vim.keymap.set("n", "<Leader>fe", require("oil").open_float, { desc = "Open parent directory" })
-      vim.api.nvim_create_autocmd("FileType", {
-          group = vim.api.nvim_create_augroup("my_oil", { clear = true }),
-          pattern = "oil",
-          callback = function()
-              vim.bo.buflisted = false
-              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<Leader>fe", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<Leader>fo", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<Leader>ff", "<Nop>", { buffer = true })
-          end,
-      })
+      vim.keymap.set("n", "<Leader>fo", "<Cmd>NvimTreeToggle<CR>", { silent = true })
     end,
-    keys = { "<Leader>fe", mode = "n" },
+    keys = "<Leader>fo",
   },
 }

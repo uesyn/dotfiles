@@ -28,3 +28,4 @@ vim.opt["signcolumn"] = "yes"
 vim.opt["synmaxcol"] = 320
 vim.opt["updatetime"] = 100
 vim.opt["wildmode"] = "full"
+vim.opt["termguicolors"] = true
