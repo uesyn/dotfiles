@@ -84,7 +84,7 @@ return {
         vim.keymap.set("n", "<Tab>",          api.node.open.preview,              opts("Open Preview"))
         vim.keymap.set("n", "a",              api.fs.create,                      opts("Create File Or Directory"))
         vim.keymap.set("n", "c",              api.fs.copy.node,                   opts("Copy"))
-        vim.keymap.set("n", "D",              api.fs.trash,                       opts("Delete"))
+        vim.keymap.set("n", "D",              api.fs.remove,                      opts("Delete"))
         vim.keymap.set("n", "?",              api.tree.toggle_help,               opts("Help"))
         vim.keymap.set("n", "o",              api.node.open.edit,                 opts("Open"))
         vim.keymap.set("n", "p",              api.fs.paste,                       opts("Paste"))
@@ -103,6 +103,7 @@ return {
         renderer = {
 	  icons = {
             show = {
+              folder_arrow = false,
               bookmarks = false,
             },
 	    glyphs = {
