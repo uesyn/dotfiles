@@ -35,8 +35,9 @@ in {
       bash
       bash-language-server
       fzf
+      glib # gio trash
       gopls
-      jdt-language-server
+      # jdt-language-server
       nil # nix LSP
       nodePackages.typescript-language-server
       pyright

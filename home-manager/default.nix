@@ -47,6 +47,7 @@ in {
       findutils
       fzf
       gcc
+      glib
       gnugrep
       gnumake
       gnused
