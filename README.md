@@ -21,15 +21,10 @@ $ nix run nixpkgs#cachix -- use nix-community
 ```
 
 ```sh
-$ nix run home-manager -- switch --flake github:uesyn/dotfiles --impure -b backup --refresh
-```
-
-for debug
-
-```sh
+$ nix-shell -p git curl home-manager
 $ git clone https://github.com/uesyn/dotfiles.git
 $ cd ./dotfiles
-$ nix run home-manager -- switch --flake . --impure -b backup --refresh
+$ home-manager switch --flake . --impure -b backup --refresh
 ```
 
 ### NixOS on WSL2
@@ -37,15 +32,8 @@ $ nix run home-manager -- switch --flake . --impure -b backup --refresh
 After [Installation of NixOS on WSL2](https://github.com/nix-community/NixOS-WSL), run below commands.
 
 ```sh
-$ nix-shell -p git
-$ sudo nixos-rebuild switch --flake github:uesyn/dotfiles#wsl2 --refresh
-```
-
-for debug
-
-```sh
-$ nix-shell -p git
+$ nix-shell -p git curl
 $ git clone https://github.com/uesyn/dotfiles
-$ cd dotfiles
+$ cd ./dotfiles
 $ sudo nixos-rebuild switch --flake .#wsl2
 ```
