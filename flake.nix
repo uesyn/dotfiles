@@ -82,23 +82,31 @@
           };
         };
 
-        devShells = with pkgs; {
-          rust = mkShell {
+        devShells = {
+          default = pkgs.mkShell {
             packages = [
-              openssl
-              pkg-config
+              pkgs.git
+              pkgs.curl
+              pkgs.home-manager
             ];
           };
 
-          go_1_22 = mkShell {
+          rust = pkgs.mkShell {
             packages = [
-              go_1_22
+              pkgs.openssl
+              pkgs.pkg-config
             ];
           };
 
-          python3 = mkShell {
+          go_1_22 = pkgs.mkShell {
             packages = [
-              python3
+              pkgs.go_1_22
+            ];
+          };
+
+          python3 = pkgs.mkShell {
+            packages = [
+              pkgs.python3
             ];
           };
         };
