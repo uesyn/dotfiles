@@ -89,9 +89,8 @@ return {
         vim.keymap.set("n", "o",              api.node.open.edit,                 opts("Open"))
         vim.keymap.set("n", "p",              api.fs.paste,                       opts("Paste"))
         vim.keymap.set("n", "q",              api.tree.close,                     opts("Close"))
-        vim.keymap.set("n", "<S-q>",          api.tree.close,                     opts("Close"))
-        vim.keymap.set("n", "r",              api.fs.rename_sub,                  opts("Rename: Omit Filename"))
-        vim.keymap.set("n", "R",              api.tree.reload,                    opts("Refresh"))
+        vim.keymap.set("n", "<C-q>",          api.tree.close,                     opts("Close"))
+        vim.keymap.set("n", "r",              api.fs.rename_basename,             opts("Rename: Basename"))
         vim.keymap.set("n", "x",              api.fs.cut,                         opts("Cut"))
         vim.keymap.set("n", "y",              api.fs.copy.filename,               opts("Copy Name"))
         vim.keymap.set("n", "<C-n>", "<Nop>", opts(""))
@@ -100,6 +99,12 @@ return {
 
       require("nvim-tree").setup({
         on_attach = my_on_attach,
+        actions = {
+          open_file = {
+            resize_window = false,
+          },
+        },
+        reload_on_bufenter = true,
         renderer = {
 	  icons = {
             show = {
