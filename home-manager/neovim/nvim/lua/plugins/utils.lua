@@ -112,7 +112,6 @@ return {
 	  icons = {
             show = {
               folder_arrow = false,
-              bookmarks = false,
             },
 	    glyphs = {
 	      folder = {
