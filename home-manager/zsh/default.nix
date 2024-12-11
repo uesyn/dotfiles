@@ -27,10 +27,11 @@
       [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
       [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
     '';
-    initExtra = ''
+    initExtraFirst = ''
       zmodload zsh/complete
       zmodload zsh/zle
-
+    '';
+    initExtra = ''
       source ${./hooks.zsh}
       source ${./async.zsh}
       source ${./prompt.zsh}
