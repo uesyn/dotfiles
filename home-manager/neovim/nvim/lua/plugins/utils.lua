@@ -77,6 +77,19 @@ return {
           return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
         end
 
+        local function has_marked_nodes()
+          local marked_list = api.marks.list()
+	  return next(marked_list) ~= nil
+        end
+
+	local function custom_delete(node)
+	  if has_marked_nodes() then
+	    api.marks.bulk.delete()
+	  else
+	    api.fs.remove(node)
+	  end
+        end
+
         -- custom mappings
         vim.keymap.set("n", "h",              api.node.navigate.parent_close,     opts("Close Directory"))
         vim.keymap.set("n", "<CR>",           api.node.open.edit,                 opts("Open"))
@@ -84,7 +97,7 @@ return {
         vim.keymap.set("n", "<Tab>",          api.node.open.preview,              opts("Open Preview"))
         vim.keymap.set("n", "a",              api.fs.create,                      opts("Create File Or Directory"))
         vim.keymap.set("n", "c",              api.fs.copy.node,                   opts("Copy"))
-        vim.keymap.set("n", "D",              api.marks.bulk.delete,              opts("Delete Marked Nodes"))
+        vim.keymap.set("n", "D",              custom_delete,                      opts("Delete"))
         vim.keymap.set("n", "?",              api.tree.toggle_help,               opts("Help"))
         vim.keymap.set("n", "o",              api.node.open.edit,                 opts("Open"))
         vim.keymap.set("n", "p",              api.fs.paste,                       opts("Paste"))
@@ -92,7 +105,8 @@ return {
         vim.keymap.set("n", "<C-q>",          api.tree.close,                     opts("Close"))
         vim.keymap.set("n", "r",              api.fs.rename_basename,             opts("Rename: Basename"))
         vim.keymap.set("n", "x",              api.fs.cut,                         opts("Cut"))
-        vim.keymap.set("n", "m",              api.marks.toggle,                   opts("Mark"))
+        vim.keymap.set("n", ";",              api.marks.toggle,                   opts("Mark"))
+        vim.keymap.set("n", ":",              api.marks.clear,                    opts("Clera Marks"))
         vim.keymap.set("n", "M",              api.marks.bulk.move,                opts("Move Marked Nodes"))
         vim.keymap.set("n", "y",              api.fs.copy.filename,               opts("Copy Name"))
         vim.keymap.set("n", "Y",              api.fs.copy.absolute_path,          opts("Copy Absolute Path"))
