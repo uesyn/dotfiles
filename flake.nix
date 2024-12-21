@@ -4,7 +4,6 @@
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -20,105 +19,143 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     home-manager,
-    flake-utils,
     nix-ld,
     nixos-wsl,
     ...
   }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        overlays = [
+    {
+      lib = let
+        defaultArgs = {
+          go = {
+            private = [];
+          };
+          git = {
+            user = "uesyn";
+            email = "17411645+uesyn@users.noreply.github.com";
+            hosts = [];
+          };
+        };
+        nixpkgsConfig = {
+          allowUnfree = true;
+        };
+        nixpkgsOverlays = [
           # (final: prev: {
           #   tmux = pkgs-pinned.tmux;
           #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
           # })
         ];
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {allowUnfree = true;};
-          overlays = overlays;
-        };
-        currentUsername = builtins.getEnv "USER";
-        currentHomeDirectory = builtins.getEnv "HOME";
-        extraSpecialArgs = {
-          gitUser = "uesyn";
-          gitEmail = "17411645+uesyn@users.noreply.github.com";
-          gitHosts = [];
-        };
       in {
-        packages = {
-          # For standalone home-manager
-          homeConfigurations = {
-            "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
-              inherit extraSpecialArgs;
+        forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-              modules = [
-                {
-                  home.username = currentUsername;
-                  home.homeDirectory = currentHomeDirectory;
-                }
-                ./home-manager
-              ];
-            };
-          };
-          # For nixos running on wsl2
-          nixosConfigurations = {
-            wsl2 = nixpkgs.lib.nixosSystem {
-              inherit system;
-          
-              specialArgs = {
-                extraSpecialArgs = extraSpecialArgs;
-              };
-          
-              modules = [
-                home-manager.nixosModules.home-manager
-                nix-ld.nixosModules.nix-ld
-                nixos-wsl.nixosModules.default
-                ./hosts/wsl2
-              ];
-            };
-          };
-        };
-
-        devShells = {
-          default = pkgs.mkShell {
-            packages = [
-              pkgs.git
-              pkgs.curl
-              pkgs.home-manager
-            ];
+        pkgsFor = {system}:
+          import nixpkgs {
+            inherit system;
+            config = nixpkgsConfig;
+            overlays = nixpkgsOverlays;
           };
 
-          rust = pkgs.mkShell {
-            packages = [
-              pkgs.openssl
-              pkgs.pkg-config
-            ];
-          };
+        homeConfigurations = {
+          system,
+          user ? builtins.getEnv "USER",
+          homeDirectory ? builtins.getEnv "HOME",
+          args ? defaultArgs,
+        }: {
+          ${user} = home-manager.lib.homeManagerConfiguration {
+            pkgs = self.lib.pkgsFor {inherit system;};
+            extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
 
-          go_1_22 = pkgs.mkShell {
-            packages = [
-              pkgs.go_1_22
-            ];
-          };
-
-          python3 = pkgs.mkShell {
-            packages = [
-              pkgs.python3
+            modules = [
+              {
+                home.username = user;
+                home.homeDirectory = homeDirectory;
+              }
+              ./home-manager/default.nix
             ];
           };
         };
 
-        formatter = pkgs.alejandra;
-      }
-    ) // {
-      # re-export the inputs
-      nixpkgs = nixpkgs;
-      nix-ld = nix-ld;
-      nixos-wsl = nixos-wsl;
-      home-manager = home-manager;
+        # For nixos running on wsl2
+        wslNixosConfigurations = {
+          system,
+          target ? "wsl2",
+          args ? defaultArgs,
+        }: {
+          ${target} = nixpkgs.lib.nixosSystem {
+            inherit system;
+
+            specialArgs = {
+              extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
+            };
+
+            modules = [
+              {
+                wsl.enable = true;
+                nixpkgs.config = nixpkgsConfig;
+                nixpkgs.overlays = nixpkgsOverlays;
+              }
+              home-manager.nixosModules.home-manager
+              nix-ld.nixosModules.nix-ld
+              nixos-wsl.nixosModules.default
+              ./hosts/linux/default.nix
+            ];
+          };
+        };
+      };
+    }
+    // {
+      packages = self.lib.forAllSystems (system: {
+        # For standalone home-manager
+        homeConfigurations = self.lib.homeManagerConfiguration {
+          inherit system;
+        };
+
+        # For nixos running on wsl2
+        nixosConfigurations = self.lib.wslNixosConfigurations {
+          inherit system;
+        };
+      });
+
+      devShells = self.lib.forAllSystems (system: let
+        pkgs = self.lib.pkgsFor {inherit system;};
+      in {
+        default = pkgs.mkShell {
+          packages = [
+            pkgs.git
+            pkgs.curl
+            pkgs.home-manager
+          ];
+        };
+
+        rust = pkgs.mkShell {
+          packages = [
+            pkgs.openssl
+            pkgs.pkg-config
+          ];
+        };
+
+        go_1_22 = pkgs.mkShell {
+          packages = [
+            pkgs.go_1_22
+          ];
+        };
+
+        python3 = pkgs.mkShell {
+          packages = [
+            pkgs.python3
+          ];
+        };
+      });
+
+      templates = {
+        default = {
+          path = ./templates;
+          description = "dotfiles configuration";
+        };
+      };
+
+      formatter = self.lib.forAllSystems (system: (self.lib.pkgsFor {inherit system;}).alejandra);
     };
 }

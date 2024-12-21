@@ -1,9 +1,7 @@
 {
   inputs,
   pkgs,
-  gitUser,
-  gitEmail,
-  gitHosts,
+  git,
   ...
 }: let
   git-credential-oauth-wrapper = pkgs.writeShellScriptBin "git-credential-oauth-wrapper" ''
@@ -50,8 +48,8 @@ in {
   programs.git = {
     enable = true;
 
-    userName = gitUser;
-    userEmail = gitEmail;
+    userName = git.user;
+    userEmail = git.email;
 
     ignores = [
       ".DS_Store"
@@ -86,7 +84,7 @@ in {
             "${pkgs.gh}/bin/gh auth git-credential"
           ];
         }
-        // builtins.foldl' (x: y: x // (git-oauth-credential {git_host = y;})) {} gitHosts;
+        // builtins.foldl' (x: y: x // (git-oauth-credential {git_host = y;})) {} git.hosts;
 
       url = {
         "https://github.com/" = {
