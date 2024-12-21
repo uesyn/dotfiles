@@ -49,7 +49,6 @@
         };
       in {
         packages = {
-          home-manager = home-manager;
           # For standalone home-manager
           homeConfigurations = {
             "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
@@ -115,5 +114,8 @@
 
         formatter = pkgs.alejandra;
       }
-    );
+    ) // {
+      nixpkgs = nixpkgs;
+      home-manager = home-manager;
+    };
 }
