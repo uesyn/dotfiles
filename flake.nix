@@ -30,17 +30,6 @@
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
-        overlays = [
-          # (final: prev: {
-          #   tmux = pkgs-pinned.tmux;
-          #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-          # })
-        ];
-        pkgs = import nixpkgs {
-          inherit system;
-          config = {allowUnfree = true;};
-          overlays = overlays;
-        };
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
         defaultArgs = {
@@ -49,7 +38,22 @@
           gitHosts = [];
         };
       in {
-        lib = {
+        lib =
+          let
+            # TODO: Use Same configuration with home-manager and nixos
+            pkgs = {system}:
+              import nixpkgs {
+                inherit system;
+                config = {allowUnfree = true;};
+                overlays = [
+                  # (final: prev: {
+                  #   tmux = pkgs-pinned.tmux;
+                  #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+                  # })
+                ];
+              };
+          in
+          {
           homeConfigurations = {
             system,
             user,
@@ -58,7 +62,7 @@
           }:
           {
             ${user} = home-manager.lib.homeManagerConfiguration {
-              inherit pkgs;
+              pkgs = pkgs {inherit system;};
               extraSpecialArgs = args;
 
               modules = [
@@ -109,36 +113,36 @@
           };
         };
 
-        devShells = {
-          default = pkgs.mkShell {
-            packages = [
-              pkgs.git
-              pkgs.curl
-              pkgs.home-manager
-            ];
-          };
+        # devShells = {
+        #   default = pkgs.mkShell {
+        #     packages = [
+        #       pkgs.git
+        #       pkgs.curl
+        #       pkgs.home-manager
+        #     ];
+        #   };
 
-          rust = pkgs.mkShell {
-            packages = [
-              pkgs.openssl
-              pkgs.pkg-config
-            ];
-          };
+        #   rust = pkgs.mkShell {
+        #     packages = [
+        #       pkgs.openssl
+        #       pkgs.pkg-config
+        #     ];
+        #   };
 
-          go_1_22 = pkgs.mkShell {
-            packages = [
-              pkgs.go_1_22
-            ];
-          };
+        #   go_1_22 = pkgs.mkShell {
+        #     packages = [
+        #       pkgs.go_1_22
+        #     ];
+        #   };
 
-          python3 = pkgs.mkShell {
-            packages = [
-              pkgs.python3
-            ];
-          };
-        };
+        #   python3 = pkgs.mkShell {
+        #     packages = [
+        #       pkgs.python3
+        #     ];
+        #   };
+        # };
 
-        formatter = pkgs.alejandra;
+        # formatter = pkgs.alejandra;
       }
     ) // {
       # re-export the inputs
