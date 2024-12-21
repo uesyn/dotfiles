@@ -92,7 +92,7 @@
               home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
-              ./hosts/wsl2
+              ./hosts/linux
             ];
           };
         };
