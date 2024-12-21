@@ -116,6 +116,8 @@
       }
     ) // {
       nixpkgs = nixpkgs;
+      nix-ld = nix-ld;
+      nixos-wsl = nixos-wsl;
       home-manager = home-manager;
     };
 }
