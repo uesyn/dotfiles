@@ -48,63 +48,65 @@
           ];
         };
     in
-    flake-utils.lib.eachDefaultSystem (
-      system: {
+      {
         lib = {
           homeConfigurations = {
-            system ? builtins.currentSystem,
-            user ? defaultUser,
-            homeDirectory? defaultHomeDirectory,
-            args ? defaultArgs,
-          }:
-          {
-            ${user} = home-manager.lib.homeManagerConfiguration {
-              pkgs = pkgs {inherit system;};
-              extraSpecialArgs = args;
+              system ? builtins.currentSystem,
+              user ? defaultUser,
+              homeDirectory? defaultHomeDirectory,
+              args ? defaultArgs,
+            }:
+            {
+              ${user} = home-manager.lib.homeManagerConfiguration {
+                pkgs = pkgs {inherit system;};
+                extraSpecialArgs = args;
 
-              modules = [
-                {
-                  home.username = user;
-                  home.homeDirectory = homeDirectory;
-                }
-                ./home-manager
-              ];
+                modules = [
+                  {
+                    home.username = user;
+                    home.homeDirectory = homeDirectory;
+                  }
+                  ./home-manager
+                ];
+              };
             };
-          };
 
           # For nixos running on wsl2
           wslNixosConfigurations = {
             system ? builtins.currentSystem,
             args ? defaultArgs,
           }:
-            nixpkgs.lib.nixosSystem {
-              inherit system;
+            {
+              "wsl2" = nixpkgs.lib.nixosSystem {
+                inherit system;
           
-              specialArgs = {
-                extraSpecialArgs = defaultArgs;
+                specialArgs = {
+                  extraSpecialArgs = args;
+                };
+          
+                modules = [
+                  home-manager.nixosModules.home-manager
+                  nix-ld.nixosModules.nix-ld
+                  nixos-wsl.nixosModules.default
+                  ./hosts/wsl2
+                ];
               };
-          
-              modules = [
-                home-manager.nixosModules.home-manager
-                nix-ld.nixosModules.nix-ld
-                nixos-wsl.nixosModules.default
-                ./hosts/wsl2
-              ];
             };
         };
-
+      }
+    //
+    flake-utils.lib.eachDefaultSystem (
+      system: {
         packages = {
           # For standalone home-manager
-          homeConfigurations = self.lib.${system}.homeManagerConfiguration {
+          homeConfigurations = self.lib.homeManagerConfiguration {
               inherit system;
               user = "${defaultUser}";
               homeDirectory = "${defaultHomeDirectory}";
           };
-          nixosConfigurations = {
-            # For nixos running on wsl2
-            wsl2 = self.lib.${system}.wslNixosConfigurations {
+          # For nixos running on wsl2
+          nixosConfigurations = self.lib.wslNixosConfigurations {
               inherit system;
-            };
           };
         };
 
