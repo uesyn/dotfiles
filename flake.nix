@@ -101,8 +101,6 @@
           # For standalone home-manager
           homeConfigurations = self.lib.homeManagerConfiguration {
               inherit system;
-              user = "${defaultUser}";
-              homeDirectory = "${defaultHomeDirectory}";
           };
           # For nixos running on wsl2
           nixosConfigurations = self.lib.wslNixosConfigurations {
