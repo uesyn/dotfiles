@@ -38,11 +38,12 @@
           gitEmail = "17411645+uesyn@users.noreply.github.com";
           gitHosts = [];
         };
+        pkgConfig = {allowUnfree = true;};
       in {
-        systemPkgs = {system}:
+        systemPackages = {system}:
           import nixpkgs {
             inherit system;
-            config = {allowUnfree = true;};
+            config = pkgConfig;
             overlays = [
               # (final: prev: {
               #   tmux = pkgs-pinned.tmux;
@@ -57,7 +58,7 @@
           args ? defaultArgs,
         }: {
           ${user} = home-manager.lib.homeManagerConfiguration {
-            pkgs = self.lib.systewmPkgs {inherit system;};
+            pkgs = self.lib.systemPackages {inherit system;};
             extraSpecialArgs = args;
 
             modules = [
@@ -84,6 +85,10 @@
             };
 
             modules = [
+              {
+                wsl.enable = true;
+                nixpkgs.config = pkgConfig;
+              }
               home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
@@ -107,7 +112,7 @@
         };
 
         devShells = let
-          pkgs = self.lib.systemPkgs {inherit system;};
+          pkgs = self.lib.systemPackages {inherit system;};
         in {
           default = pkgs.mkShell {
             packages = [
@@ -137,7 +142,7 @@
           };
         };
 
-        formatter = (self.lib.systemPkgs {inherit system;}).alejandra;
+        formatter = (self.lib.systemPackages {inherit system;}).alejandra;
       }
     );
 }
