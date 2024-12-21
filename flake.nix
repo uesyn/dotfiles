@@ -28,73 +28,73 @@
     nixos-wsl,
     ...
   }:
-    let
-      defaultUser = builtins.getEnv "USER";
-      defaultHomeDirectory = builtins.getEnv "HOME";
-      defaultArgs = {
-        gitUser = "uesyn";
-        gitEmail = "17411645+uesyn@users.noreply.github.com";
-        gitHosts = [];
-      };
-      pkgs = {system}:
-        import nixpkgs {
-          inherit system;
-          config = {allowUnfree = true;};
-          overlays = [
-            # (final: prev: {
-            #   tmux = pkgs-pinned.tmux;
-            #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-            # })
-          ];
+    {
+      lib = let
+        defaultUser = builtins.getEnv "USER";
+        defaultHomeDirectory = builtins.getEnv "HOME";
+        defaultArgs = {
+          gitUser = "uesyn";
+          gitEmail = "17411645+uesyn@users.noreply.github.com";
+          gitHosts = [];
         };
-    in
+        pkgs = {system}:
+          import nixpkgs {
+            inherit system;
+            config = {allowUnfree = true;};
+            overlays = [
+              # (final: prev: {
+              #   tmux = pkgs-pinned.tmux;
+              #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+              # })
+            ];
+        };
+      in
       {
-        lib = {
-          homeConfigurations = {
-              system ? builtins.currentSystem,
-              user ? defaultUser,
-              homeDirectory? defaultHomeDirectory,
-              args ? defaultArgs,
-            }:
-            {
-              ${user} = home-manager.lib.homeManagerConfiguration {
-                pkgs = pkgs {inherit system;};
-                extraSpecialArgs = args;
-
-                modules = [
-                  {
-                    home.username = user;
-                    home.homeDirectory = homeDirectory;
-                  }
-                  ./home-manager
-                ];
-              };
-            };
-
-          # For nixos running on wsl2
-          wslNixosConfigurations = {
-            target ? "wsl2",
+        homeConfigurations = {
             system ? builtins.currentSystem,
+            user ? defaultUser,
+            homeDirectory? defaultHomeDirectory,
             args ? defaultArgs,
-          }:
-            {
-              ${target} = nixpkgs.lib.nixosSystem {
-                inherit system;
-          
-                specialArgs = {
-                  extraSpecialArgs = args;
-                };
-          
-                modules = [
-                  home-manager.nixosModules.home-manager
-                  nix-ld.nixosModules.nix-ld
-                  nixos-wsl.nixosModules.default
-                  ./hosts/wsl2
-                ];
-              };
-            };
+        }:
+        {
+          ${user} = home-manager.lib.homeManagerConfiguration {
+            pkgs = pkgs {inherit system;};
+            extraSpecialArgs = args;
+
+            modules = [
+              {
+                home.username = user;
+                home.homeDirectory = homeDirectory;
+              }
+              ./home-manager
+            ];
+          };
         };
-      }
+
+        # For nixos running on wsl2
+        wslNixosConfigurations = {
+          target ? "wsl2",
+          system ? builtins.currentSystem,
+          args ? defaultArgs,
+        }:
+        {
+          ${target} = nixpkgs.lib.nixosSystem {
+            inherit system;
+        
+            specialArgs = {
+              extraSpecialArgs = args;
+            };
+        
+            modules = [
+              home-manager.nixosModules.home-manager
+              nix-ld.nixosModules.nix-ld
+              nixos-wsl.nixosModules.default
+              ./hosts/wsl2
+            ];
+          };
+        };
+      };
+    }
     //
     flake-utils.lib.eachDefaultSystem (
       system: {
@@ -140,11 +140,5 @@
 
         # formatter = pkgs.alejandra;
       }
-    ) // {
-      # re-export the inputs
-      nixpkgs = nixpkgs;
-      nix-ld = nix-ld;
-      nixos-wsl = nixos-wsl;
-      home-manager = home-manager;
-    };
+    );
 }
