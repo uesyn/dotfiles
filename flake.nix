@@ -27,118 +27,118 @@
     nix-ld,
     nixos-wsl,
     ...
-  }:
+  }: {
+    lib = let
+      defaultUser = builtins.getEnv "USER";
+      defaultHomeDirectory = builtins.getEnv "HOME";
+      defaultSystem = builtins.currentSystem;
+      defaultArgs = {
+        gitUser = "uesyn";
+        gitEmail = "17411645+uesyn@users.noreply.github.com";
+        gitHosts = [];
+      };
+    in
     {
-      lib = let
-        defaultUser = builtins.getEnv "USER";
-        defaultHomeDirectory = builtins.getEnv "HOME";
-        defaultArgs = {
-          gitUser = "uesyn";
-          gitEmail = "17411645+uesyn@users.noreply.github.com";
-          gitHosts = [];
-        };
-        pkgs = {system}:
-          import nixpkgs {
-            inherit system;
-            config = {allowUnfree = true;};
-            overlays = [
-              # (final: prev: {
-              #   tmux = pkgs-pinned.tmux;
-              #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-              # })
-            ];
-        };
-      in
-      {
-        homeConfigurations = {
-            system ? builtins.currentSystem,
-            user ? defaultUser,
-            homeDirectory? defaultHomeDirectory,
-            args ? defaultArgs,
-        }:
-        {
-          ${user} = home-manager.lib.homeManagerConfiguration {
-            pkgs = pkgs {inherit system;};
-            extraSpecialArgs = args;
-
-            modules = [
-              {
-                home.username = user;
-                home.homeDirectory = homeDirectory;
-              }
-              ./home-manager
-            ];
-          };
-        };
-
-        # For nixos running on wsl2
-        wslNixosConfigurations = {
-          target ? "wsl2",
-          system ? builtins.currentSystem,
+      pkgs = {system}:
+        import nixpkgs {
+          inherit system;
+          config = {allowUnfree = true;};
+          overlays = [
+            # (final: prev: {
+            #   tmux = pkgs-pinned.tmux;
+            #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+            # })
+          ];
+      };
+      homeConfigurations = {
+          system ? defaultSystem,
+          user ? defaultUser,
+          homeDirectory? defaultHomeDirectory,
           args ? defaultArgs,
-        }:
-        {
-          ${target} = nixpkgs.lib.nixosSystem {
-            inherit system;
-        
-            specialArgs = {
-              extraSpecialArgs = args;
-            };
-        
-            modules = [
-              home-manager.nixosModules.home-manager
-              nix-ld.nixosModules.nix-ld
-              nixos-wsl.nixosModules.default
-              ./hosts/wsl2
-            ];
-          };
+      }:
+      {
+        ${user} = home-manager.lib.homeManagerConfiguration {
+          pkgs = self.lib.pkgs {inherit system;};
+          extraSpecialArgs = args;
+
+          modules = [
+            {
+              home.username = user;
+              home.homeDirectory = homeDirectory;
+            }
+            ./home-manager
+          ];
         };
       };
-    }
-    //
-    flake-utils.lib.eachDefaultSystem (
-      system: {
-        packages = {
-          # For standalone home-manager
-          homeConfigurations = self.lib.homeManagerConfiguration {
-              inherit system;
+
+      # For nixos running on wsl2
+      wslNixosConfigurations = {
+        target ? "wsl2",
+        system ? defaultSystem,
+        args ? defaultArgs,
+      }:
+      {
+        ${target} = nixpkgs.lib.nixosSystem {
+          inherit system;
+      
+          specialArgs = {
+            extraSpecialArgs = args;
           };
-          # For nixos running on wsl2
-          nixosConfigurations = self.lib.wslNixosConfigurations {
-              inherit system;
-          };
+      
+          modules = [
+            home-manager.nixosModules.home-manager
+            nix-ld.nixosModules.nix-ld
+            nixos-wsl.nixosModules.default
+            ./hosts/wsl2
+          ];
         };
+      };
+    };
+  }
+  //
+  flake-utils.lib.eachDefaultSystem (
+    system: {
+      packages = {
+        # For standalone home-manager
+        homeConfigurations = self.lib.homeManagerConfiguration {
+            inherit system;
+        };
+        # For nixos running on wsl2
+        nixosConfigurations = self.lib.wslNixosConfigurations {
+            inherit system;
+        };
+      };
 
-        # devShells = {
-        #   default = pkgs.mkShell {
-        #     packages = [
-        #       pkgs.git
-        #       pkgs.curl
-        #       pkgs.home-manager
-        #     ];
-        #   };
+      # devShells = {
+      #   default = pkgs.mkShell {
+      #     packages = [
+      #       pkgs.git
+      #       pkgs.curl
+      #       pkgs.home-manager
+      #     ];
+      #   };
 
-        #   rust = pkgs.mkShell {
-        #     packages = [
-        #       pkgs.openssl
-        #       pkgs.pkg-config
-        #     ];
-        #   };
+      #   rust = pkgs.mkShell {
+      #     packages = [
+      #       pkgs.openssl
+      #       pkgs.pkg-config
+      #     ];
+      #   };
 
-        #   go_1_22 = pkgs.mkShell {
-        #     packages = [
-        #       pkgs.go_1_22
-        #     ];
-        #   };
+      #   go_1_22 = pkgs.mkShell {
+      #     packages = [
+      #       pkgs.go_1_22
+      #     ];
+      #   };
 
-        #   python3 = pkgs.mkShell {
-        #     packages = [
-        #       pkgs.python3
-        #     ];
-        #   };
-        # };
+      #   python3 = pkgs.mkShell {
+      #     packages = [
+      #       pkgs.python3
+      #     ];
+      #   };
+      # };
 
-        # formatter = pkgs.alejandra;
-      }
-    );
+      # formatter = pkgs.alejandra;
+    }
+  );
 }
