@@ -28,36 +28,33 @@
     nixos-wsl,
     ...
   }:
-    flake-utils.lib.eachDefaultSystem (
-      system: let
-        currentUsername = builtins.getEnv "USER";
-        currentHomeDirectory = builtins.getEnv "HOME";
-        defaultArgs = {
-          gitUser = "uesyn";
-          gitEmail = "17411645+uesyn@users.noreply.github.com";
-          gitHosts = [];
+    let
+      defaultUser = builtins.getEnv "USER";
+      defaultHomeDirectory = builtins.getEnv "HOME";
+      defaultArgs = {
+        gitUser = "uesyn";
+        gitEmail = "17411645+uesyn@users.noreply.github.com";
+        gitHosts = [];
+      };
+      pkgs = {system}:
+        import nixpkgs {
+          inherit system;
+          config = {allowUnfree = true;};
+          overlays = [
+            # (final: prev: {
+            #   tmux = pkgs-pinned.tmux;
+            #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+            # })
+          ];
         };
-      in {
-        lib =
-          let
-            # TODO: Use Same configuration with home-manager and nixos
-            pkgs = {system}:
-              import nixpkgs {
-                inherit system;
-                config = {allowUnfree = true;};
-                overlays = [
-                  # (final: prev: {
-                  #   tmux = pkgs-pinned.tmux;
-                  #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-                  # })
-                ];
-              };
-          in
-          {
+    in
+    flake-utils.lib.eachDefaultSystem (
+      system: {
+        lib = {
           homeConfigurations = {
-            system,
-            user,
-            homeDirectory,
+            system ? builtins.currentSystem,
+            user ? defaultUser,
+            homeDirectory? defaultHomeDirectory,
             args ? defaultArgs,
           }:
           {
@@ -77,7 +74,7 @@
 
           # For nixos running on wsl2
           wslNixosConfigurations = {
-            system,
+            system ? builtins.currentSystem,
             args ? defaultArgs,
           }:
             nixpkgs.lib.nixosSystem {
@@ -97,13 +94,11 @@
         };
 
         packages = {
-          homeConfigurations = {
-            # For standalone home-manager
-            "${currentUsername}" = self.lib.${system}.homeManagerConfiguration {
+          # For standalone home-manager
+          homeConfigurations = self.lib.${system}.homeManagerConfiguration {
               inherit system;
-              user = "${currentUsername}";
-              homeDirectory = "${currentHomeDirectory}";
-            };
+              user = "${defaultUser}";
+              homeDirectory = "${defaultHomeDirectory}";
           };
           nixosConfigurations = {
             # For nixos running on wsl2
