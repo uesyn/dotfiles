@@ -27,118 +27,117 @@
     nix-ld,
     nixos-wsl,
     ...
-  }: {
-    lib = let
-      defaultUser = builtins.getEnv "USER";
-      defaultHomeDirectory = builtins.getEnv "HOME";
-      defaultSystem = builtins.currentSystem;
-      defaultArgs = {
-        gitUser = "uesyn";
-        gitEmail = "17411645+uesyn@users.noreply.github.com";
-        gitHosts = [];
-      };
-    in
+  }:
     {
-      pkgs = {system}:
-        import nixpkgs {
-          inherit system;
-          config = {allowUnfree = true;};
-          overlays = [
-            # (final: prev: {
-            #   tmux = pkgs-pinned.tmux;
-            #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-            # })
-          ];
-      };
-      homeConfigurations = {
+      lib = let
+        defaultUser = builtins.getEnv "USER";
+        defaultHomeDirectory = builtins.getEnv "HOME";
+        defaultSystem = builtins.currentSystem;
+        defaultArgs = {
+          gitUser = "uesyn";
+          gitEmail = "17411645+uesyn@users.noreply.github.com";
+          gitHosts = [];
+        };
+      in {
+        systemPkgs = {system}:
+          import nixpkgs {
+            inherit system;
+            config = {allowUnfree = true;};
+            overlays = [
+              # (final: prev: {
+              #   tmux = pkgs-pinned.tmux;
+              #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+              # })
+            ];
+          };
+        homeConfigurations = {
           system ? defaultSystem,
           user ? defaultUser,
-          homeDirectory? defaultHomeDirectory,
+          homeDirectory ? defaultHomeDirectory,
           args ? defaultArgs,
-      }:
-      {
-        ${user} = home-manager.lib.homeManagerConfiguration {
-          pkgs = self.lib.pkgs {inherit system;};
-          extraSpecialArgs = args;
-
-          modules = [
-            {
-              home.username = user;
-              home.homeDirectory = homeDirectory;
-            }
-            ./home-manager
-          ];
-        };
-      };
-
-      # For nixos running on wsl2
-      wslNixosConfigurations = {
-        target ? "wsl2",
-        system ? defaultSystem,
-        args ? defaultArgs,
-      }:
-      {
-        ${target} = nixpkgs.lib.nixosSystem {
-          inherit system;
-      
-          specialArgs = {
+        }: {
+          ${user} = home-manager.lib.homeManagerConfiguration {
+            pkgs = self.lib.systewmPkgs {inherit system;};
             extraSpecialArgs = args;
+
+            modules = [
+              {
+                home.username = user;
+                home.homeDirectory = homeDirectory;
+              }
+              ./home-manager
+            ];
           };
-      
-          modules = [
-            home-manager.nixosModules.home-manager
-            nix-ld.nixosModules.nix-ld
-            nixos-wsl.nixosModules.default
-            ./hosts/wsl2
-          ];
         };
-      };
-    };
-  }
-  //
-  flake-utils.lib.eachDefaultSystem (
-    system: {
-      packages = {
-        # For standalone home-manager
-        homeConfigurations = self.lib.homeManagerConfiguration {
-            inherit system;
-        };
+
         # For nixos running on wsl2
-        nixosConfigurations = self.lib.wslNixosConfigurations {
+        wslNixosConfigurations = {
+          target ? "wsl2",
+          system ? defaultSystem,
+          args ? defaultArgs,
+        }: {
+          ${target} = nixpkgs.lib.nixosSystem {
             inherit system;
+
+            specialArgs = {
+              extraSpecialArgs = args;
+            };
+
+            modules = [
+              home-manager.nixosModules.home-manager
+              nix-ld.nixosModules.nix-ld
+              nixos-wsl.nixosModules.default
+              ./hosts/wsl2
+            ];
+          };
         };
       };
-
-      # devShells = {
-      #   default = pkgs.mkShell {
-      #     packages = [
-      #       pkgs.git
-      #       pkgs.curl
-      #       pkgs.home-manager
-      #     ];
-      #   };
-
-      #   rust = pkgs.mkShell {
-      #     packages = [
-      #       pkgs.openssl
-      #       pkgs.pkg-config
-      #     ];
-      #   };
-
-      #   go_1_22 = pkgs.mkShell {
-      #     packages = [
-      #       pkgs.go_1_22
-      #     ];
-      #   };
-
-      #   python3 = pkgs.mkShell {
-      #     packages = [
-      #       pkgs.python3
-      #     ];
-      #   };
-      # };
-
-      # formatter = pkgs.alejandra;
     }
-  );
+    // flake-utils.lib.eachDefaultSystem (
+      system: {
+        packages = {
+          # For standalone home-manager
+          homeConfigurations = self.lib.homeManagerConfiguration {
+            inherit system;
+          };
+          # For nixos running on wsl2
+          nixosConfigurations = self.lib.wslNixosConfigurations {
+            inherit system;
+          };
+        };
+
+        devShells = let
+          pkgs = self.lib.systemPkgs {inherit system;};
+        in {
+          default = pkgs.mkShell {
+            packages = [
+              pkgs.git
+              pkgs.curl
+              pkgs.home-manager
+            ];
+          };
+
+          rust = pkgs.mkShell {
+            packages = [
+              pkgs.openssl
+              pkgs.pkg-config
+            ];
+          };
+
+          go_1_22 = pkgs.mkShell {
+            packages = [
+              pkgs.go_1_22
+            ];
+          };
+
+          python3 = pkgs.mkShell {
+            packages = [
+              pkgs.python3
+            ];
+          };
+        };
+
+        formatter = (self.lib.systemPkgs {inherit system;}).alejandra;
+      }
+    );
 }
