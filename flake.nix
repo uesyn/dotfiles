@@ -38,18 +38,21 @@
           gitEmail = "17411645+uesyn@users.noreply.github.com";
           gitHosts = [];
         };
-        pkgConfig = {allowUnfree = true;};
+        pkgsConfig = {
+          allowUnfree = true;
+        };
+        pkgsOverlays = [
+          # (final: prev: {
+          #   tmux = pkgs-pinned.tmux;
+          #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+          # })
+        ];
       in {
         systemPackages = {system}:
           import nixpkgs {
             inherit system;
-            config = pkgConfig;
-            overlays = [
-              # (final: prev: {
-              #   tmux = pkgs-pinned.tmux;
-              #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-              # })
-            ];
+            config = pkgsConfig;
+            overlays = pkgsOverlays;
           };
         homeConfigurations = {
           system ? defaultSystem,
@@ -87,7 +90,8 @@
             modules = [
               {
                 wsl.enable = true;
-                nixpkgs.config = pkgConfig;
+                nixpkgs.config = pkgsConfig;
+                nixpkgs.overlays = pkgsOverlays;
               }
               home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
