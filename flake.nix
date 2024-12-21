@@ -115,6 +115,7 @@
         formatter = pkgs.alejandra;
       }
     ) // {
+      # re-export the inputs
       nixpkgs = nixpkgs;
       nix-ld = nix-ld;
       nixos-wsl = nixos-wsl;
