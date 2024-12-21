@@ -3,16 +3,9 @@
   pkgs,
   ...
 }: {
-  home.packages = [
-    pkgs.go
-  ];
-
-  home.sessionVariables = {
-    GOPATH = "${config.home.homeDirectory}";
-    GOBIN = "${config.home.homeDirectory}/bin";
+  programs.go = {
+    enable = true;
+    goPath = "";
+    goBin = "bin";
   };
-
-  home.sessionPath = [
-    "${config.home.homeDirectory}/bin"
-  ];
 }
