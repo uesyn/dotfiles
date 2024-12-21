@@ -48,37 +48,39 @@
           gitHosts = [];
         };
       in {
-        # For standalone home-manager
-        packages.homeConfigurations = {
-          "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
-            inherit pkgs;
-            inherit extraSpecialArgs;
+        packages = {
+          home-manager = home-manager;
+          # For standalone home-manager
+          homeConfigurations = {
+            "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
+              inherit pkgs;
+              inherit extraSpecialArgs;
 
-            modules = [
-              {
-                home.username = currentUsername;
-                home.homeDirectory = currentHomeDirectory;
-              }
-              ./home-manager
-            ];
-          };
-        };
-
-        # For nixos running on wsl2
-        packages.nixosConfigurations = {
-          wsl2 = nixpkgs.lib.nixosSystem {
-            inherit system;
-
-            specialArgs = {
-              extraSpecialArgs = extraSpecialArgs;
+              modules = [
+                {
+                  home.username = currentUsername;
+                  home.homeDirectory = currentHomeDirectory;
+                }
+                ./home-manager
+              ];
             };
-
-            modules = [
-              home-manager.nixosModules.home-manager
-              nix-ld.nixosModules.nix-ld
-              nixos-wsl.nixosModules.default
-              ./hosts/wsl2
-            ];
+          };
+          # For nixos running on wsl2
+          nixosConfigurations = {
+            wsl2 = nixpkgs.lib.nixosSystem {
+              inherit system;
+          
+              specialArgs = {
+                extraSpecialArgs = extraSpecialArgs;
+              };
+          
+              modules = [
+                home-manager.nixosModules.home-manager
+                nix-ld.nixosModules.nix-ld
+                nixos-wsl.nixosModules.default
+                ./hosts/wsl2
+              ];
+            };
           };
         };
 
