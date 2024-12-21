@@ -73,11 +73,12 @@
 
           # For nixos running on wsl2
           wslNixosConfigurations = {
+            target ? "wsl2",
             system ? builtins.currentSystem,
             args ? defaultArgs,
           }:
             {
-              "wsl2" = nixpkgs.lib.nixosSystem {
+              ${target} = nixpkgs.lib.nixosSystem {
                 inherit system;
           
                 specialArgs = {
