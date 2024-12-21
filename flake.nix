@@ -20,6 +20,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     home-manager,
     flake-utils,
@@ -42,35 +43,44 @@
         };
         currentUsername = builtins.getEnv "USER";
         currentHomeDirectory = builtins.getEnv "HOME";
-        extraSpecialArgs = {
+        defaultArgs = {
           gitUser = "uesyn";
           gitEmail = "17411645+uesyn@users.noreply.github.com";
           gitHosts = [];
         };
       in {
-        packages = {
-          # For standalone home-manager
+        lib = {
           homeConfigurations = {
-            "${currentUsername}" = home-manager.lib.homeManagerConfiguration {
+            system,
+            user,
+            homeDirectory,
+            args ? defaultArgs,
+          }:
+          {
+            ${user} = home-manager.lib.homeManagerConfiguration {
               inherit pkgs;
-              inherit extraSpecialArgs;
+              extraSpecialArgs = args;
 
               modules = [
                 {
-                  home.username = currentUsername;
-                  home.homeDirectory = currentHomeDirectory;
+                  home.username = user;
+                  home.homeDirectory = homeDirectory;
                 }
                 ./home-manager
               ];
             };
           };
+
           # For nixos running on wsl2
-          nixosConfigurations = {
-            wsl2 = nixpkgs.lib.nixosSystem {
+          wslNixosConfigurations = {
+            system,
+            args ? defaultArgs,
+          }:
+            nixpkgs.lib.nixosSystem {
               inherit system;
           
               specialArgs = {
-                extraSpecialArgs = extraSpecialArgs;
+                extraSpecialArgs = defaultArgs;
               };
           
               modules = [
@@ -79,6 +89,22 @@
                 nixos-wsl.nixosModules.default
                 ./hosts/wsl2
               ];
+            };
+        };
+
+        packages = {
+          homeConfigurations = {
+            # For standalone home-manager
+            "${currentUsername}" = self.lib.${system}.homeManagerConfiguration {
+              inherit system;
+              user = "${currentUsername}";
+              homeDirectory = "${currentHomeDirectory}";
+            };
+          };
+          nixosConfigurations = {
+            # For nixos running on wsl2
+            wsl2 = self.lib.${system}.wslNixosConfigurations {
+              inherit system;
             };
           };
         };
