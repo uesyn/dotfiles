@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  additionalPackages,
   ...
 }: let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
@@ -35,50 +36,51 @@ in {
   # Please read release note to update this: https://home-manager.dev/manual/unstable/release-notes.xhtml
   home.stateVersion = "24.11"; # Please read the comment before changing.
 
-  home.packages = with pkgs;
+  home.packages =
     [
-      coreutils-full
-      curl
-      diffutils
-      dig
-      docker-buildx
-      docker-client
-      file
-      findutils
-      fzf
-      gcc
-      glib
-      gnugrep
-      gnumake
-      gnused
-      gnutar
-      htop
-      jq
-      jsonnet
-      openssh
-      openssl
-      pkg-config
-      procps
-      pstree
-      python3
-      ripgrep
-      tree
-      unzip
-      wget
-      xz
-      yq-go
-      zsh
+      pkgs.coreutils-full
+      pkgs.curl
+      pkgs.diffutils
+      pkgs.dig
+      pkgs.docker-buildx
+      pkgs.docker-client
+      pkgs.file
+      pkgs.findutils
+      pkgs.fzf
+      pkgs.gcc
+      pkgs.glib
+      pkgs.gnugrep
+      pkgs.gnumake
+      pkgs.gnused
+      pkgs.gnutar
+      pkgs.htop
+      pkgs.jq
+      pkgs.jsonnet
+      pkgs.openssh
+      pkgs.openssl
+      pkgs.pkg-config
+      pkgs.procps
+      pkgs.pstree
+      pkgs.python3
+      pkgs.ripgrep
+      pkgs.tree
+      pkgs.unzip
+      pkgs.wget
+      pkgs.xz
+      pkgs.yq-go
+      pkgs.zsh
     ]
     ++ lib.optionals isLinux [
       # GNU/Linux packages
-      iproute2
+      pkgs.iproute2
     ]
     ++ lib.optionals isDarwin [
       # macOS packages
-      colima
-      iproute2mac
-      docker-credential-helpers
-    ];
+      pkgs.colima
+      pkgs.iproute2mac
+      pkgs.docker-credential-helpers
+    ]
+    ++ additionalPackages pkgs;
 
   home.sessionVariables = {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";

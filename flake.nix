@@ -40,6 +40,7 @@
     {
       lib = let
         defaultArgs = {
+          additionalPackages = pkgs: [];
           go = {
             private = [];
           };

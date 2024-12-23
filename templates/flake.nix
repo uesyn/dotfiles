@@ -10,6 +10,7 @@
     dotfiles,
   }: let
     args = {
+      additionalPackages = pkgs: [];
       go = {
         private = [];
       };
