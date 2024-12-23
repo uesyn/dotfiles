@@ -54,6 +54,7 @@ in {
       gnutar
       htop
       jq
+      jsonnet
       openssh
       openssl
       pkg-config
