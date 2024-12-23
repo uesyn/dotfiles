@@ -56,7 +56,7 @@
       in {
         forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
 
-        homeConfigurations = {
+        homeManagerConfiguration = {
           system,
           user ? builtins.getEnv "USER",
           homeDirectory ? builtins.getEnv "HOME",
