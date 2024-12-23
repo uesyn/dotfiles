@@ -47,6 +47,9 @@
           git = {
             user = "uesyn";
             email = "17411645+uesyn@users.noreply.github.com";
+          };
+          git-credential-oauth = {
+            device = false;
             hosts = [];
           };
         };
