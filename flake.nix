@@ -25,7 +25,18 @@
     nix-ld,
     nixos-wsl,
     ...
-  }:
+  }: let
+    nixpkgsConfig = {
+      allowUnfree = true;
+    };
+
+    nixpkgsOverlays = [
+      # (final: prev: {
+      #   tmux = pkgs-pinned.tmux;
+      #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
+      # })
+    ];
+  in
     {
       lib = let
         defaultArgs = {
@@ -38,24 +49,8 @@
             hosts = [];
           };
         };
-        nixpkgsConfig = {
-          allowUnfree = true;
-        };
-        nixpkgsOverlays = [
-          # (final: prev: {
-          #   tmux = pkgs-pinned.tmux;
-          #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-          # })
-        ];
       in {
         forAllSystems = nixpkgs.lib.genAttrs nixpkgs.lib.systems.flakeExposed;
-
-        pkgsFor = {system}:
-          import nixpkgs {
-            inherit system;
-            config = nixpkgsConfig;
-            overlays = nixpkgsOverlays;
-          };
 
         homeConfigurations = {
           system,
@@ -64,7 +59,11 @@
           args ? defaultArgs,
         }: {
           ${user} = home-manager.lib.homeManagerConfiguration {
-            pkgs = self.lib.pkgsFor {inherit system;};
+            pkgs = import nixpkgs {
+              inherit system;
+              config = nixpkgsConfig;
+              overlays = nixpkgsOverlays;
+            };
             extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
 
             modules = [
@@ -119,7 +118,11 @@
       });
 
       devShells = self.lib.forAllSystems (system: let
-        pkgs = self.lib.pkgsFor {inherit system;};
+        pkgs = import nixpkgs {
+          inherit system;
+          config = nixpkgsConfig;
+          overlays = nixpkgsOverlays;
+        };
       in {
         default = pkgs.mkShell {
           packages = [
@@ -156,6 +159,13 @@
         };
       };
 
-      formatter = self.lib.forAllSystems (system: (self.lib.pkgsFor {inherit system;}).alejandra);
+      formatter = self.lib.forAllSystems (system: let
+        pkgs = import nixpkgs {
+          inherit system;
+          config = nixpkgsConfig;
+          overlays = nixpkgsOverlays;
+        };
+      in
+        pkgs.alejandra);
     };
 }
