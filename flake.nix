@@ -95,13 +95,12 @@
 
             modules = [
               {
-                wsl.enable = true;
                 nixpkgs.config = nixpkgsConfig;
                 nixpkgs.overlays = additionalOverlays ++ [(nixpkgsUnstableOverlay system)];
               }
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
-              ./hosts/linux/default.nix
+              ./hosts/linux/wsl2.nix
             ];
           };
         };

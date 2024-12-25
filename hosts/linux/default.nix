@@ -1,7 +1,4 @@
-{
-  pkgs,
-  ...
-}: {
+{pkgs, ...}: {
   system.stateVersion = "24.11";
 
   boot.kernel.sysctl = {
