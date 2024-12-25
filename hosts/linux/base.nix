@@ -48,11 +48,21 @@
     bash
     coreutils
     curl
+    diffutils
     dig
+    file
     git
+    gnused
+    gnutar
+    iproute2
+    procps
+    pstree
+    unzip
     vim
+    wget
     wsl-open
     wslu
+    xz
     zsh
   ];
 
