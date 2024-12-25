@@ -82,7 +82,7 @@ in {
             "cache --timeout=86400"
           ];
         }
-        // builtins.foldl' (x: y: x // (git-oauth-credential-config {git_host = y;})) {} git-credential-oauth.hosts;
+        // builtins.foldl' (x: y: x // (git-oauth-credential-config {git_host = y;})) {} git-credential-oauth.ghHosts;
 
       url = {
         "https://github.com/" = {

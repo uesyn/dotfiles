@@ -54,7 +54,7 @@
           };
           git-credential-oauth = {
             device = false;
-            hosts = [];
+            ghHosts = [];
           };
         };
       in {
