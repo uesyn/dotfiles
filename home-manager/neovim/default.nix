@@ -24,6 +24,7 @@ in {
 
   programs.neovim = {
     enable = true;
+    package = pkgs.unstable.neovim-unwrapped;
 
     withPython3 = false;
     withRuby = false;
@@ -35,13 +36,13 @@ in {
       bash
       bash-language-server
       fzf
-      gopls
       # jdt-language-server
       nil # nix LSP
       nodePackages.typescript-language-server
       pyright
       ripgrep
-      rust-analyzer
+      unstable.gopls
+      unstable.rust-analyzer
     ];
 
     extraLuaPackages = ps: [

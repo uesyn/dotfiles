@@ -3,10 +3,11 @@
 
   inputs = {
     # Specify the source of Home Manager and Nixpkgs.
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/release-24.11";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-24.11";
     };
     nix-ld = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -21,6 +22,7 @@
   outputs = {
     self,
     nixpkgs,
+    nixpkgs-unstable,
     home-manager,
     nix-ld,
     nixos-wsl,
@@ -30,12 +32,14 @@
       allowUnfree = true;
     };
 
-    nixpkgsOverlays = [
-      # (final: prev: {
-      #   tmux = pkgs-pinned.tmux;
-      #   tmuxPlugins = pkgs-pinned.tmuxPlugins;
-      # })
-    ];
+    nixpkgsUnstableOverlay = system: (
+      final: prev: {
+        unstable = import nixpkgs-unstable {
+          inherit system;
+          config = nixpkgsConfig;
+        };
+      }
+    );
   in
     {
       lib = let
@@ -60,13 +64,14 @@
           system,
           user ? builtins.getEnv "USER",
           homeDirectory ? builtins.getEnv "HOME",
+          additionalOverlays ? [],
           args ? defaultArgs,
         }: {
           ${user} = home-manager.lib.homeManagerConfiguration {
             pkgs = import nixpkgs {
               inherit system;
               config = nixpkgsConfig;
-              overlays = nixpkgsOverlays;
+              overlays = additionalOverlays ++ [(nixpkgsUnstableOverlay system)];
             };
             extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
 
@@ -83,23 +88,18 @@
         # For nixos running on wsl2
         wslNixosConfigurations = {
           system,
+          additionalOverlays ? [],
           target ? "wsl2",
-          args ? defaultArgs,
         }: {
           ${target} = nixpkgs.lib.nixosSystem {
             inherit system;
-
-            specialArgs = {
-              extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
-            };
 
             modules = [
               {
                 wsl.enable = true;
                 nixpkgs.config = nixpkgsConfig;
-                nixpkgs.overlays = nixpkgsOverlays;
+                nixpkgs.overlays = additionalOverlays ++ [(nixpkgsUnstableOverlay system)];
               }
-              home-manager.nixosModules.home-manager
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
               ./hosts/linux/default.nix
@@ -125,7 +125,7 @@
         pkgs = import nixpkgs {
           inherit system;
           config = nixpkgsConfig;
-          overlays = nixpkgsOverlays;
+          overlays = [(nixpkgsUnstableOverlay system)];
         };
       in {
         default = pkgs.mkShell {
@@ -167,7 +167,6 @@
         pkgs = import nixpkgs {
           inherit system;
           config = nixpkgsConfig;
-          overlays = nixpkgsOverlays;
         };
       in
         pkgs.alejandra);

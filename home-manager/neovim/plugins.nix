@@ -23,7 +23,7 @@
     cellwidths_nvim = cellwidths-nvim;
     winresize_nvim = winresize-nvim;
   };
-  managed-plugins = with pkgs.vimPlugins; {
+  managed-plugins = with pkgs.unstable.vimPlugins; {
     lazy_nvim = lazy-nvim;
     dracula_nvim = dracula-nvim;
     plenary_nvim = plenary-nvim;

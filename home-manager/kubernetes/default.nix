@@ -4,13 +4,13 @@
   ...
 }: {
   home.packages = with pkgs; [
-    kind
     krew
-    kubectl
     kubectx
-    kubernetes-helm
-    kustomize
     stern
+    unstable.kind
+    unstable.kubectl
+    unstable.kubernetes-helm
+    unstable.kustomize
   ];
 
   home.sessionVariables = {

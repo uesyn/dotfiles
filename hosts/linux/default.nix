@@ -1,16 +1,8 @@
 {
   pkgs,
-  extraSpecialArgs,
   ...
 }: {
   system.stateVersion = "24.11";
-
-  home-manager.useGlobalPkgs = true;
-  home-manager.useUserPackages = true;
-  home-manager.users.nixos = import ../../home-manager;
-  home-manager.users.uesyn = import ../../home-manager;
-  home-manager.backupFileExtension = "backup";
-  home-manager.extraSpecialArgs = extraSpecialArgs;
 
   boot.kernel.sysctl = {
     "fs.inotify.max_user_watches" = "1048576";
