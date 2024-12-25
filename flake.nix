@@ -89,9 +89,8 @@
         wslNixosConfigurations = {
           system,
           additionalOverlays ? [],
-          target ? "wsl2",
         }: {
-          ${target} = nixpkgs.lib.nixosSystem {
+          "wsl2" = nixpkgs.lib.nixosSystem {
             inherit system;
 
             modules = [
