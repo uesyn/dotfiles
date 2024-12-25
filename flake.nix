@@ -65,7 +65,7 @@
           user ? builtins.getEnv "USER",
           homeDirectory ? builtins.getEnv "HOME",
           additionalOverlays ? [],
-          args ? defaultArgs,
+          args ? {},
         }: {
           ${user} = home-manager.lib.homeManagerConfiguration {
             pkgs = import nixpkgs {
