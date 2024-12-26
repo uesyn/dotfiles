@@ -32,14 +32,16 @@
       allowUnfree = true;
     };
 
-    nixpkgsUnstableOverlay = system: (
-      final: prev: {
-        unstable = import nixpkgs-unstable {
-          inherit system;
-          config = nixpkgsConfig;
-        };
-      }
-    );
+    nixpkgsUnstableOverlay = final: prev: {
+      unstable = import nixpkgs-unstable {
+        system = "${prev.system}";
+        config = nixpkgsConfig;
+      };
+    };
+
+    defaultOverlays = [
+      nixpkgsUnstableOverlay
+    ];
   in
     {
       lib = let
@@ -71,7 +73,7 @@
             pkgs = import nixpkgs {
               inherit system;
               config = nixpkgsConfig;
-              overlays = additionalOverlays ++ [(nixpkgsUnstableOverlay system)];
+              overlays = additionalOverlays ++ defaultOverlays;
             };
             extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
 
@@ -96,7 +98,7 @@
             modules = [
               {
                 nixpkgs.config = nixpkgsConfig;
-                nixpkgs.overlays = additionalOverlays ++ [(nixpkgsUnstableOverlay system)];
+                nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
               }
               nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
@@ -123,7 +125,7 @@
         pkgs = import nixpkgs {
           inherit system;
           config = nixpkgsConfig;
-          overlays = [(nixpkgsUnstableOverlay system)];
+          overlays = defaultOverlays;
         };
       in {
         default = pkgs.mkShell {
