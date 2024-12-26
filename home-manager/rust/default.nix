@@ -9,6 +9,7 @@
       "clippy"
       "rust-analysis"
       "rustc"
+      "rust-docs"
       "rustfmt"
       "rust-src"
     ])
