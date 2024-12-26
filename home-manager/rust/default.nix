@@ -7,9 +7,10 @@
     (fenix.complete.withComponents [
       "cargo"
       "clippy"
-      "rust-src"
+      "rust-analysis"
       "rustc"
       "rustfmt"
+      "rust-src"
     ])
     unstable.rust-analyzer
     cargo-edit
