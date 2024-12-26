@@ -138,25 +138,6 @@
             pkgs.home-manager
           ];
         };
-
-        rust = pkgs.mkShell {
-          packages = [
-            pkgs.openssl
-            pkgs.pkg-config
-          ];
-        };
-
-        go_1_22 = pkgs.mkShell {
-          packages = [
-            pkgs.go_1_22
-          ];
-        };
-
-        python3 = pkgs.mkShell {
-          packages = [
-            pkgs.python3
-          ];
-        };
       });
 
       templates = {

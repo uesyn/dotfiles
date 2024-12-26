@@ -1,13 +1,28 @@
+if [ ! -e .shell.nix ]; then
+  cat <<'EOF' > .shell.nix
+{
+  pkgs ? import <nixpkgs> {
+    overlays = [
+      (import "${fetchTarball "https://github.com/nix-community/fenix/archive/main.tar.gz"}/overlay.nix")
+    ];
+    config = {
+      allowUnfree = true;
+    };
+  }
+}:
+
+pkgs.mkShell {
+  packages = [
+    pkgs.openssl
+    pkgs.pkg-config
+    (fenix.fromToolchainFile { dir ./. })
+  ];
+}
+EOF
+fi
+
 if [ ! -e ./.envrc ]; then
-  DOTFILES=${HOME}/src/github.com/uesyn/dotfiles
-  if [ -d "${DOTFILES}" ]; then
-    echo "# use flake ${DOTFILES}#rust" > .envrc
-    echo "# use flake ${DOTFILES}#go_1_22" >> .envrc
-  else
-    echo "# use flake github:uesyn/dotfiles#rust" > .envrc
-    echo "# use flake github:uesyn/dotfiles#go_1_22" >> .envrc
-  fi
-  ${EDITOR:-vim} .envrc
+  echo "use nix .shell.nix" > .envrc
   direnv allow
 fi
 

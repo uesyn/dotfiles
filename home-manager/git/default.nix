@@ -52,15 +52,15 @@ in {
     userEmail = git.email;
 
     ignores = [
-      ".DS_Store"
-      ".vim-lsp-settings"
-      "venv"
-      ".venv"
-      "mise.toml"
-      ".mise.toml"
-      ".envrc"
       ".direnv"
-      ".default.nix"
+      ".DS_Store"
+      ".envrc"
+      ".mise.toml"
+      "mise.toml"
+      ".shell.nix"
+      ".venv"
+      "venv"
+      ".vim-lsp-settings"
     ];
 
     includes = [
