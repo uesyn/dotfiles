@@ -17,7 +17,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/NixOS-WSL";
     };
-    fenix.url = "github:nix-community/fenix/monthly";
+    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs = {
@@ -27,7 +27,7 @@
     home-manager,
     nix-ld,
     nixos-wsl,
-    fenix,
+    rust-overlay,
     ...
   }: let
     nixpkgsConfig = {
@@ -43,7 +43,7 @@
 
     defaultOverlays = [
       nixpkgsUnstableOverlay
-      fenix.overlays.default
+      rust-overlay.overlays.default
     ];
   in
     {

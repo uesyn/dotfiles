@@ -4,15 +4,7 @@
   ...
 }: {
   home.packages = with pkgs; [
-    (fenix.complete.withComponents [
-      "cargo"
-      "clippy"
-      "rust-analysis"
-      "rustc"
-      "rust-docs"
-      "rustfmt"
-      "rust-src"
-    ])
+    rust-bin.stable.latest.default
     unstable.rust-analyzer
     cargo-edit
     cargo-expand
