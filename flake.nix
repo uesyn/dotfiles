@@ -17,7 +17,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/NixOS-WSL";
     };
-    rust-overlay.url = "github:oxalica/rust-overlay";
   };
 
   outputs = {
@@ -27,7 +26,6 @@
     home-manager,
     nix-ld,
     nixos-wsl,
-    rust-overlay,
     ...
   }: let
     nixpkgsConfig = {
@@ -43,7 +41,6 @@
 
     defaultOverlays = [
       nixpkgsUnstableOverlay
-      rust-overlay.overlays.default
     ];
   in
     {

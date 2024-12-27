@@ -1,13 +1,7 @@
 if [ ! -e .shell.nix ]; then
   cat <<'EOF' > .shell.nix
-let
-  fenix = "${import (fetchTarball "https://github.com/nix-community/fenix/archive/main.tar.gz") {}}";
-in
 {
   pkgs ? import <nixpkgs> {
-    overlays = [
-      (import "${fenix}/overlay.nix")
-    ];
     config = {
       allowUnfree = true;
     };
@@ -15,17 +9,17 @@ in
 }:
 
 pkgs.mkShell {
-  packages = [
-    pkgs.openssl
-    pkgs.pkg-config
-    (fenix.fromToolchainFile { dir ./. })
+  buildInputs = [
+    # pkgs.openssl
+    # pkgs.pkg-config
   ];
 }
 EOF
 fi
 
 if [ ! -e ./.envrc ]; then
-  echo "use nix .shell.nix" > .envrc
+  echo "nix_direnv_manual_reload" > .envrc
+  echo "use nix ${PWD}/.shell.nix" >> .envrc
   direnv allow
 fi
 

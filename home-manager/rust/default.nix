@@ -4,10 +4,10 @@
   ...
 }: {
   home.packages = with pkgs; [
-    rust-bin.stable.latest.default
-    unstable.rust-analyzer
+    cargo-cross
     cargo-edit
     cargo-expand
+    rustup
   ];
 
   home.sessionPath = [
@@ -19,25 +19,3 @@
     NIX_STORE = "/nix/store";
   };
 }
-
-# {
-#   config,
-#   pkgs,
-#   ...
-# }: {
-#   home.packages = [
-#     pkgs.rustup
-#     pkgs.cargo-cross
-#     pkgs.cargo-edit
-#     pkgs.cargo-expand
-#   ];
-#
-#   home.sessionPath = [
-#     "${config.home.homeDirectory}/.cargo/bin"
-#   ];
-#
-#   home.sessionVariables = {
-#     # https://github.com/cross-rs/cross/issues/260#issuecomment-1140528221
-#     NIX_STORE = "/nix/store";
-#   };
-# }
