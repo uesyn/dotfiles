@@ -18,4 +18,8 @@
     # https://github.com/cross-rs/cross/issues/260#issuecomment-1140528221
     NIX_STORE = "/nix/store";
   };
+
+  programs.zsh.initExtra = ''
+    eval "$(${pkgs.rustup}/bin/rustup completions zsh)"
+  '';
 }
