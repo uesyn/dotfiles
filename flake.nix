@@ -9,10 +9,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager/release-24.11";
     };
-    nix-ld = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:Mic92/nix-ld";
-    };
+    nix-ld.url = "github:Mic92/nix-ld";
     nixos-wsl = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/NixOS-WSL";
