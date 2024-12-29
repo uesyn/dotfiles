@@ -12,11 +12,6 @@
       extraGroups = ["wheel" "docker"];
       shell = pkgs.zsh;
     };
-    users.uesyn = {
-      isNormalUser = true;
-      extraGroups = ["wheel" "docker"];
-      shell = pkgs.zsh;
-    };
     groups.docker = {};
   };
   virtualisation.docker.enable = true;
