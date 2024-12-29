@@ -11,7 +11,7 @@
     };
     nix-ld.url = "github:Mic92/nix-ld";
     nixos-wsl = {
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
       url = "github:nix-community/NixOS-WSL";
     };
   };
