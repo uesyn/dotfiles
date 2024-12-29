@@ -23,25 +23,7 @@
 
   programs = {
     zsh.enable = true;
-    nix-ld = {
-      dev.enable = true;
-      libraries = with pkgs; [
-        zlib
-        zstd
-        stdenv.cc.cc
-        curl
-        openssl
-        attr
-        libssh
-        bzip2
-        libxml2
-        acl
-        libsodium
-        util-linux
-        xz
-        systemd
-      ];
-    };
+    nix-ld.dev.enable = true;
   };
 
   environment.systemPackages = with pkgs; [
