@@ -12,7 +12,7 @@
     additionalOverlays = [];
     hmAdditionalModules = [];
     nixOSAdditionalModules = [];
-    args = {
+    hmArgs = {
       additionalPackages = pkgs: [];
       go = {
         private = [];
@@ -31,7 +31,7 @@
       homeConfigurations = dotfiles.lib.homeManagerConfiguration {
         inherit additionalOverlays;
         additionalModules = hmAdditionalModules;
-        inherit args;
+        args = hmArgs;
         inherit system;
         user = "sample";
         homeDirectory = "/home/sample";
@@ -40,7 +40,6 @@
       nixosConfigurations = dotfiles.lib.wslNixosConfigurations {
         inherit additionalOverlays;
         additionalModules = nixOSAdditionalModules;
-        inherit args;
         inherit system;
       };
     });
