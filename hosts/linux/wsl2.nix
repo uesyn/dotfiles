@@ -1,6 +1,6 @@
 {pkgs, ...}: {
   wsl.enable = true;
   imports = [
-    ./base.nix
+    ./common.nix
   ];
 }
