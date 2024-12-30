@@ -82,12 +82,14 @@
           };
         };
 
-        # For nixos running on wsl2
-        wslNixosConfigurations = {
+        # For nixos running on linux
+        nixosConfigurations = {
           system,
           additionalOverlays ? [],
+          additionalModules ? [],
+          target,
         }: {
-          "wsl2" = nixpkgs.lib.nixosSystem {
+          ${target} = nixpkgs.lib.nixosSystem {
             inherit system;
 
             modules = [
@@ -96,9 +98,23 @@
                 nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
               }
               nixos-wsl.nixosModules.default
-              ./hosts/linux/wsl2.nix
-            ];
+              ./hosts/linux/common.nix
+            ] ++ additionalModules;
           };
+        };
+
+        # For nixos running on wsl2
+        wslNixosConfigurations = {
+          system,
+          additionalOverlays ? [],
+          additionalModules ? [],
+        }: self.lib.nixosConfigurations {
+          inherit system;
+          inherit additionalOverlays;
+          additionalModules = additionalModules ++ [
+              ./hosts/linux/wsl2.nix
+          ];
+          target = "wsl2";
         };
       };
     }

@@ -10,6 +10,8 @@
     dotfiles,
   }: let
     additionalOverlays = [];
+    hmAdditionalModules = [];
+    nixOSAdditionalModules = [];
     args = {
       additionalPackages = pkgs: [];
       go = {
@@ -28,6 +30,7 @@
     packages = dotfiles.lib.forAllSystems (system: {
       homeConfigurations = dotfiles.lib.homeManagerConfiguration {
         inherit additionalOverlays;
+        additionalModules = hmAdditionalModules;
         inherit args;
         inherit system;
         user = "sample";
@@ -36,6 +39,7 @@
 
       nixosConfigurations = dotfiles.lib.wslNixosConfigurations {
         inherit additionalOverlays;
+        additionalModules = nixOSAdditionalModules;
         inherit args;
         inherit system;
       };

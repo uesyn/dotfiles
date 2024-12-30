@@ -1,8 +1,4 @@
 {pkgs, ...}: {
-  imports = [
-    ./common.nix
-  ];
-
   wsl.enable = true;
 
   users = {
