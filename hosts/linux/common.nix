@@ -27,6 +27,7 @@
     unzip
     vim
     wget
+    wpa_supplicant
     wsl-open
     wslu
     xz
