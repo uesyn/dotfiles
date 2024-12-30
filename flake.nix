@@ -92,14 +92,16 @@
           ${target} = nixpkgs.lib.nixosSystem {
             inherit system;
 
-            modules = [
-              {
-                nixpkgs.config = nixpkgsConfig;
-                nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
-              }
-              nixos-wsl.nixosModules.default
-              ./hosts/linux/common.nix
-            ] ++ additionalModules;
+            modules =
+              [
+                {
+                  nixpkgs.config = nixpkgsConfig;
+                  nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
+                }
+                nixos-wsl.nixosModules.default
+                ./hosts/linux/common.nix
+              ]
+              ++ additionalModules;
           };
         };
 
@@ -108,14 +110,17 @@
           system,
           additionalOverlays ? [],
           additionalModules ? [],
-        }: self.lib.nixosConfigurations {
-          inherit system;
-          inherit additionalOverlays;
-          additionalModules = additionalModules ++ [
-              ./hosts/linux/wsl2.nix
-          ];
-          target = "wsl2";
-        };
+        }:
+          self.lib.nixosConfigurations {
+            inherit system;
+            inherit additionalOverlays;
+            additionalModules =
+              additionalModules
+              ++ [
+                ./hosts/linux/wsl2.nix
+              ];
+            target = "wsl2";
+          };
       };
     }
     // {
