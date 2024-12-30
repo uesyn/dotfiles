@@ -8,7 +8,7 @@
 
   programs = {
     zsh.enable = true;
-    nix-ld.dev.enable = true;
+    nix-ld.enable = true;
   };
 
   environment.systemPackages = with pkgs; [

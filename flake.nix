@@ -9,7 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager/release-24.11";
     };
-    nix-ld.url = "github:Mic92/nix-ld";
     nixos-wsl = {
       inputs.nixpkgs.follows = "nixpkgs-unstable";
       url = "github:nix-community/NixOS-WSL";
@@ -21,7 +20,6 @@
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
-    nix-ld,
     nixos-wsl,
     ...
   }: let
@@ -97,7 +95,6 @@
                 nixpkgs.config = nixpkgsConfig;
                 nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
               }
-              nix-ld.nixosModules.nix-ld
               nixos-wsl.nixosModules.default
               ./hosts/linux/wsl2.nix
             ];

@@ -55,24 +55,6 @@
         "type": "github"
       }
     },
-    "nix-ld": {
-      "inputs": {
-        "nixpkgs": "nixpkgs"
-      },
-      "locked": {
-        "lastModified": 1734338723,
-        "narHash": "sha256-BpJs2QnVwdE4Btsx2BcBmdsq86H7QJYv2GmoOkr1ii4=",
-        "owner": "Mic92",
-        "repo": "nix-ld",
-        "rev": "911665df070e3d6c970e5a248fc4a38550bd5689",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Mic92",
-        "repo": "nix-ld",
-        "type": "github"
-      }
-    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -97,16 +79,16 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1735291276,
-        "narHash": "sha256-NYVcA06+blsLG6wpAbSPTCyLvxD/92Hy4vlY9WxFI1M=",
+        "lastModified": 1735092227,
+        "narHash": "sha256-Lvxr3t5FRM9yNuHJCwvVjnxT+/5h3zOt6bzQemifXCI=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "634fd46801442d760e09493a794c4f15db2d0cbb",
+        "rev": "9e6465a6975ea07eb71eed0345954c68c12d3f6c",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "nixos-unstable",
+        "ref": "release-24.11",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -127,28 +109,11 @@
         "type": "github"
       }
     },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1735092227,
-        "narHash": "sha256-Lvxr3t5FRM9yNuHJCwvVjnxT+/5h3zOt6bzQemifXCI=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "9e6465a6975ea07eb71eed0345954c68c12d3f6c",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "release-24.11",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
         "home-manager": "home-manager",
-        "nix-ld": "nix-ld",
         "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs_2",
+        "nixpkgs": "nixpkgs",
         "nixpkgs-unstable": "nixpkgs-unstable"
       }
     },
