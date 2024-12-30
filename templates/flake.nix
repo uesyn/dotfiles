@@ -9,11 +9,10 @@
     self,
     dotfiles,
   }: let
-    additionalOverlays = [];
-    hmAdditionalModules = [];
-    nixOSAdditionalModules = [];
+    overlays = [];
+    hmModules = [];
+    nixOSModules = [];
     hmArgs = {
-      additionalPackages = pkgs: [];
       go = {
         private = [];
       };
@@ -29,18 +28,18 @@
   in {
     packages = dotfiles.lib.forAllSystems (system: {
       homeConfigurations = dotfiles.lib.homeManagerConfiguration {
-        inherit additionalOverlays;
-        additionalModules = hmAdditionalModules;
-        args = hmArgs;
+        inherit overlays;
         inherit system;
+        modules = hmModules;
+        args = hmArgs;
         user = "sample";
         homeDirectory = "/home/sample";
       };
 
       nixosConfigurations = dotfiles.lib.wslNixosConfigurations {
-        inherit additionalOverlays;
-        additionalModules = nixOSAdditionalModules;
+        inherit overlays;
         inherit system;
+        modules = nixOSModules;
       };
     });
 

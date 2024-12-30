@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  additionalPackages,
   ...
 }: let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
@@ -79,8 +78,7 @@ in {
       pkgs.colima
       pkgs.iproute2mac
       pkgs.docker-credential-helpers
-    ]
-    ++ additionalPackages pkgs;
+    ];
 
   home.sessionVariables = {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";

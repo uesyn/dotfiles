@@ -41,7 +41,6 @@
     {
       lib = let
         defaultArgs = {
-          additionalPackages = pkgs: [];
           go = {
             private = [];
           };
@@ -61,32 +60,35 @@
           system,
           user ? builtins.getEnv "USER",
           homeDirectory ? builtins.getEnv "HOME",
-          additionalOverlays ? [],
+          modules ? [],
+          overlays ? [],
           args ? {},
         }: {
           ${user} = home-manager.lib.homeManagerConfiguration {
             pkgs = import nixpkgs {
               inherit system;
               config = nixpkgsConfig;
-              overlays = additionalOverlays ++ defaultOverlays;
+              overlays = overlays ++ defaultOverlays;
             };
             extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs args;
 
-            modules = [
-              {
-                home.username = user;
-                home.homeDirectory = homeDirectory;
-              }
-              ./home-manager/default.nix
-            ];
+            modules =
+              [
+                {
+                  home.username = user;
+                  home.homeDirectory = homeDirectory;
+                }
+                ./home-manager/default.nix
+              ]
+              ++ modules;
           };
         };
 
         # For nixos running on linux
         nixosConfigurations = {
-          system,
-          additionalOverlays ? [],
-          additionalModules ? [],
+          system ? "x86_64-linux",
+          overlays ? [],
+          modules ? [],
           target,
         }: {
           ${target} = nixpkgs.lib.nixosSystem {
@@ -96,26 +98,26 @@
               [
                 {
                   nixpkgs.config = nixpkgsConfig;
-                  nixpkgs.overlays = additionalOverlays ++ defaultOverlays;
+                  nixpkgs.overlays = overlays ++ defaultOverlays;
                 }
                 nixos-wsl.nixosModules.default
                 ./hosts/linux/common.nix
               ]
-              ++ additionalModules;
+              ++ modules;
           };
         };
 
         # For nixos running on wsl2
         wslNixosConfigurations = {
           system,
-          additionalOverlays ? [],
-          additionalModules ? [],
+          overlays ? [],
+          modules ? [],
         }:
           self.lib.nixosConfigurations {
             inherit system;
-            inherit additionalOverlays;
-            additionalModules =
-              additionalModules
+            inherit overlays;
+            modules =
+              modules
               ++ [
                 ./hosts/linux/wsl2.nix
               ];
