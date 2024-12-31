@@ -37,6 +37,7 @@
     "home-manager": {
       "inputs": {
         "nixpkgs": [
+          "nix-configurations-base",
           "nixpkgs"
         ]
       },
@@ -55,11 +56,33 @@
         "type": "github"
       }
     },
+    "nix-configurations-base": {
+      "inputs": {
+        "home-manager": "home-manager",
+        "nixos-wsl": "nixos-wsl",
+        "nixpkgs": "nixpkgs",
+        "nixpkgs-unstable": "nixpkgs-unstable"
+      },
+      "locked": {
+        "lastModified": 1735668101,
+        "narHash": "sha256-3nguWfDB/sDZV1uwjwWuqSxuwd5Svog66YzJ4hrhNk8=",
+        "owner": "uesyn",
+        "repo": "nix-configurations-base",
+        "rev": "96f24d823a2e4c578ffabf6e4d6a719fd4e21c62",
+        "type": "github"
+      },
+      "original": {
+        "owner": "uesyn",
+        "repo": "nix-configurations-base",
+        "type": "github"
+      }
+    },
     "nixos-wsl": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
         "nixpkgs": [
+          "nix-configurations-base",
           "nixpkgs-unstable"
         ]
       },
@@ -111,10 +134,7 @@
     },
     "root": {
       "inputs": {
-        "home-manager": "home-manager",
-        "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs",
-        "nixpkgs-unstable": "nixpkgs-unstable"
+        "nix-configurations-base": "nix-configurations-base"
       }
     },
     "systems": {
