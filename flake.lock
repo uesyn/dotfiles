@@ -64,11 +64,11 @@
         "nixpkgs-unstable": "nixpkgs-unstable"
       },
       "locked": {
-        "lastModified": 1735668101,
-        "narHash": "sha256-3nguWfDB/sDZV1uwjwWuqSxuwd5Svog66YzJ4hrhNk8=",
+        "lastModified": 1735699255,
+        "narHash": "sha256-o3cLCGp8G8coWyCBPf++GVXj0EwAduov/yA/LRE0jQs=",
         "owner": "uesyn",
         "repo": "nix-configurations-base",
-        "rev": "96f24d823a2e4c578ffabf6e4d6a719fd4e21c62",
+        "rev": "f949c232340060d45c7810411b0a418b05933d1b",
         "type": "github"
       },
       "original": {
