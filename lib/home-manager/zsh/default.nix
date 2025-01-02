@@ -58,6 +58,9 @@
       bindkey -M emacs '^P' history-substring-search-up
       bindkey -M emacs '^N' history-substring-search-down
 
+      source ${pkgs.zsh-history-search-multi-word}/share/zsh/zsh-history-search-multi-word/history-search-multi-word.plugin.zsh
+      bindkey "^R" history-search-multi-word
+
       setopt hist_ignore_dups
       setopt hist_ignore_all_dups
       setopt share_history
