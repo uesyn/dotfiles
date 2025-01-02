@@ -54,6 +54,10 @@
       bindkey "∂" kill-word
       bindkey "˙" backward-kill-word
 
+      source ${pkgs.zsh-history-substring-search}/share/zsh-history-substring-search/zsh-history-substring-search.zsh
+      bindkey -M emacs '^P' history-substring-search-up
+      bindkey -M emacs '^N' history-substring-search-down
+
       setopt hist_ignore_dups
       setopt hist_ignore_all_dups
       setopt share_history
