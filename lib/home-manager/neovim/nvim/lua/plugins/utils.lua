@@ -116,6 +116,11 @@ return {
 
       require("nvim-tree").setup({
         on_attach = my_on_attach,
+	view = {
+          float = {
+            enable = true,
+          },
+	},
         actions = {
           open_file = {
             resize_window = false,
@@ -123,6 +128,7 @@ return {
         },
         reload_on_bufenter = true,
         renderer = {
+          full_name = true,
 	  icons = {
             show = {
               folder_arrow = false,
