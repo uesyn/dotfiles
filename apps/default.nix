@@ -9,7 +9,7 @@
   };
 in
   dotfilesLib.forAllSystems (system: let
-    pkgs = dotfilesLib.pkgsForSystem system;
+    pkgs = dotfilesLib.pkgsForSystem {inherit system;};
   in {
     hm = hm pkgs;
     nixos = nixos pkgs;

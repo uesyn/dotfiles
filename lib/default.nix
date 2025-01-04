@@ -15,6 +15,18 @@
     })
   ];
 
+  pkgsForSystem = {
+    system,
+    overlays ? [],
+  }:
+    import nixpkgs {
+      inherit system;
+      config = {
+        allowUnfree = true;
+      };
+      overlays = overlays ++ defaultOverlays;
+    };
+
   hm = {
     system,
     user ? builtins.getEnv "USER",
@@ -38,12 +50,9 @@
     };
   in
     home-manager.lib.homeManagerConfiguration {
-      pkgs = import nixpkgs {
+      pkgs = pkgsForSystem {
         inherit system;
-        config = {
-          allowUnfree = true;
-        };
-        overlays = overlays ++ defaultOverlays;
+        inherit overlays;
       };
       modules =
         [
@@ -94,19 +103,10 @@
     };
 
   forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-
-  pkgsForSystem = system:
-    import nixpkgs {
-      inherit system;
-      config = {
-        allowUnfree = true;
-      };
-      overlays = defaultOverlays;
-    };
 in {
+  inherit pkgsForSystem;
   inherit hm;
   inherit nixos;
   inherit wsl2;
   inherit forAllSystems;
-  inherit pkgsForSystem;
 }
