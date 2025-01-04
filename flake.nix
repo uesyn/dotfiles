@@ -30,6 +30,9 @@
       inherit home-manager;
       inherit nixos-wsl;
     };
+    formatter = import ./formatter {
+      inherit nixpkgs;
+    };
     systemMap = {
       aarch64Darwin = "aarch64-darwin"; # 64-bit ARM macOS
       aarch64Linux = "aarch64-linux"; # 64-bit ARM Linux
@@ -39,6 +42,7 @@
   in {
     inherit lib;
     inherit apps;
+    inherit formatter;
 
     packages = {
       ${systemMap.aarch64Darwin} = {
@@ -70,18 +74,5 @@
         description = "dotfiles configuration";
       };
     };
-
-    formatter =
-      nixpkgs.lib.genAttrs [
-        "aarch64-darwin" # 64-bit ARM macOS
-        "aarch64-linux" # 64-bit ARM Linux
-        "x86_64-darwin" # 64-bit x86 macOS
-        "x86_64-linux" # 64-bit x86 Linux
-      ] (system: let
-        pkgs = import nixpkgs {
-          inherit system;
-        };
-      in
-        pkgs.alejandra);
   };
 }

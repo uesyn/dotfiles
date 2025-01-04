@@ -62,36 +62,37 @@
     system,
     overlays ? [],
     modules ? [],
-  }: nixpkgs.lib.nixosSystem {
-    inherit system;
-    modules =
-      [
-        {
-          nixpkgs.config.allowUnfree = true;
-          nixpkgs.overlays = overlays ++ defaultOverlays;
-        }
-        ./nixos/common.nix
-      ]
-      ++ modules;
-  };
+  }:
+    nixpkgs.lib.nixosSystem {
+      inherit system;
+      modules =
+        [
+          {
+            nixpkgs.config.allowUnfree = true;
+            nixpkgs.overlays = overlays ++ defaultOverlays;
+          }
+          ./nixos/common.nix
+        ]
+        ++ modules;
+    };
 
   # For nixos running on wsl2
   wsl2 = {
     system,
     overlays ? [],
     modules ? [],
-  }: nixos {
-    inherit system;
-    inherit overlays;
-    modules =
-      modules
-      ++ [
-        nixos-wsl.nixosModules.default
-        ./nixos/wsl2.nix
-      ];
-  };
-in
-{
+  }:
+    nixos {
+      inherit system;
+      inherit overlays;
+      modules =
+        modules
+        ++ [
+          nixos-wsl.nixosModules.default
+          ./nixos/wsl2.nix
+        ];
+    };
+in {
   inherit hm;
   inherit nixos;
   inherit wsl2;
