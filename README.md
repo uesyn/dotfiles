@@ -24,7 +24,7 @@ $ nix run nixpkgs#cachix -- use nix-community
 $ nix-shell -p git curl home-manager
 $ git clone https://github.com/uesyn/dotfiles.git
 $ cd ./dotfiles
-$ home-manager switch --flake . --impure -b backup --refresh
+$ nix --extra-experimental-features nix-command --extra-experimental-features flakes run .#hm
 ```
 
 ### NixOS on WSL2
@@ -35,5 +35,5 @@ After [Installation of NixOS on WSL2](https://github.com/nix-community/NixOS-WSL
 $ nix-shell -p git curl
 $ git clone https://github.com/uesyn/dotfiles
 $ cd ./dotfiles
-$ sudo nixos-rebuild switch --flake .#wsl2
+$ nixos-rebuild switch --use-remote-sudo --flake .#wsl2
 ```

@@ -21,6 +21,9 @@
     nixos-wsl,
     ...
   }: let
+    apps = import ./apps {
+      inherit nixpkgs;
+    };
     lib = import ./lib {
       inherit nixpkgs;
       inherit nixpkgs-unstable;
@@ -35,6 +38,7 @@
     };
   in {
     inherit lib;
+    inherit apps;
 
     packages = {
       ${systemMap.aarch64Darwin} = {

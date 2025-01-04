@@ -63,6 +63,7 @@
       };
     };
 
+    apps = dotfiles.apps;
     formatter = dotfiles.formatter;
   };
 }
