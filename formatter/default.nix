@@ -1,2 +1,2 @@
-{dotfilesLib}: 
-  dotfilesLib.forAllSystems (system: (dotfilesLib.pkgsForSystem system).alejandra)
+{dotfilesLib}:
+dotfilesLib.forAllSystems (system: (dotfilesLib.pkgsForSystem system).alejandra)

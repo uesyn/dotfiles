@@ -7,10 +7,7 @@
     # nixpkgs-unstable.follows = "dotfiles/nixpkgs-unstable";
   };
 
-  outputs = {
-    dotfiles,
-    ...
-  }: let
+  outputs = {dotfiles, ...}: let
     packages = import ./packages.nix {
       inherit dotfiles;
     };
