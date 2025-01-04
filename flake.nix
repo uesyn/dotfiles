@@ -15,6 +15,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     nixpkgs-unstable,
     home-manager,
@@ -33,40 +34,15 @@
     formatter = import ./formatter {
       inherit nixpkgs;
     };
-    systemMap = {
-      aarch64Darwin = "aarch64-darwin"; # 64-bit ARM macOS
-      aarch64Linux = "aarch64-linux"; # 64-bit ARM Linux
-      x86_64Darwin = "x86_64-darwin"; # 64-bit x86 macOS
-      x86_64Linux = "x86_64-linux"; # 64-bit x86 Linux
+    packages = import ./packages {
+      inherit nixpkgs;
+      dotfiles = self;
     };
   in {
     inherit lib;
     inherit apps;
     inherit formatter;
-
-    packages = {
-      ${systemMap.aarch64Darwin} = {
-        homeConfigurations = {
-          ${builtins.getEnv "USER"} = lib.hm {
-            system = systemMap.aarch64Darwin;
-          };
-        };
-      };
-
-      ${systemMap.x86_64Linux} = {
-        homeConfigurations = {
-          ${builtins.getEnv "USER"} = lib.hm {
-            system = systemMap.x86_64Linux;
-          };
-        };
-
-        nixosConfigurations = {
-          "wsl2" = lib.wsl2 {
-            system = systemMap.x86_64Linux;
-          };
-        };
-      };
-    };
+    inherit packages;
 
     templates = {
       default = {

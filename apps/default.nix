@@ -1,7 +1,5 @@
 {nixpkgs}: let
-  supportedDarwinSystems = ["x86_64-darwin" "aarch64-darwin"];
-  supportedLinuxSystems = ["x86_64-linux" "aarch64-linux"];
-  supportedSystems = supportedDarwinSystems ++ supportedLinuxSystems;
+  supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
   forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
   hm = pkgs: {
     type = "app";
