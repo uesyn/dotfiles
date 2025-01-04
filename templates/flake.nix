@@ -3,17 +3,16 @@
 
   inputs = {
     dotfiles.url = "github:uesyn/dotfiles";
-    nixpkgs.follows = "dotfiles/nixpkgs";
+    # nixpkgs.follows = "dotfiles/nixpkgs";
+    # nixpkgs-unstable.follows = "dotfiles/nixpkgs-unstable";
   };
 
   outputs = {
     dotfiles,
-    nixpkgs,
     ...
   }: let
     packages = import ./packages.nix {
       inherit dotfiles;
-      inherit nixpkgs;
     };
   in {
     inherit packages;

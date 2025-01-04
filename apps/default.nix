@@ -1,6 +1,4 @@
-{nixpkgs}: let
-  supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-  forAllSystems = nixpkgs.lib.genAttrs supportedSystems;
+{dotfilesLib}: let
   hm = pkgs: {
     type = "app";
     program = "${pkgs.writeShellScriptBin "hm.sh" (builtins.readFile ./hm.sh)}/bin/hm.sh";
@@ -10,8 +8,8 @@
     program = "${pkgs.writeShellScriptBin "nixos.sh" (builtins.readFile ./nixos.sh)}/bin/nixos.sh";
   };
 in
-  forAllSystems (system: let
-    pkgs = nixpkgs.legacyPackages.${system};
+  dotfilesLib.forAllSystems (system: let
+    pkgs = dotfilesLib.pkgsForSystem system;
   in {
     hm = hm pkgs;
     nixos = nixos pkgs;

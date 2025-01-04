@@ -92,8 +92,21 @@
           ./nixos/wsl2.nix
         ];
     };
+
+  forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+
+  pkgsForSystem = system: 
+    import nixpkgs {
+      inherit system;
+      config = {
+        allowUnfree = true;
+      };
+      overlays = defaultOverlays;
+    };
 in {
   inherit hm;
   inherit nixos;
   inherit wsl2;
+  inherit forAllSystems;
+  inherit pkgsForSystem;
 }

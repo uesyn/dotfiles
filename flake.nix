@@ -22,20 +22,19 @@
     nixos-wsl,
     ...
   }: let
-    apps = import ./apps {
-      inherit nixpkgs;
-    };
     lib = import ./lib {
       inherit nixpkgs;
       inherit nixpkgs-unstable;
       inherit home-manager;
       inherit nixos-wsl;
     };
+    apps = import ./apps {
+      dotfilesLib = lib;
+    };
     formatter = import ./formatter {
-      inherit nixpkgs;
+      dotfilesLib = lib;
     };
     packages = import ./packages {
-      inherit nixpkgs;
       dotfiles = self;
     };
   in {
