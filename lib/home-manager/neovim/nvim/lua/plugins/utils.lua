@@ -103,7 +103,7 @@ return {
         vim.keymap.set("n", "p",              api.fs.paste,                       opts("Paste"))
         vim.keymap.set("n", "q",              api.tree.close,                     opts("Close"))
         vim.keymap.set("n", "<C-q>",          api.tree.close,                     opts("Close"))
-        vim.keymap.set("n", "r",              api.fs.rename_basename,             opts("Rename: Basename"))
+        vim.keymap.set("n", "r",              api.fs.rename,                      opts("Rename"))
         vim.keymap.set("n", "x",              api.fs.cut,                         opts("Cut"))
         vim.keymap.set("n", ";",              api.marks.toggle,                   opts("Mark"))
         vim.keymap.set("n", ":",              api.marks.clear,                    opts("Clera Marks"))
