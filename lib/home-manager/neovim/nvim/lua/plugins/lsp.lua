@@ -156,8 +156,6 @@ return {
         end
       },
       { name = "cmp_nvim_lsp", dir = "@cmp_nvim_lsp@" },
-      { name = "nvim_snippy", dir = "@nvim_snippy@" },
-      { name = "cmp_snippy", dir = "@cmp_snippy@" },
     },
     config = function()
       local has_words_before = function()
@@ -170,7 +168,7 @@ return {
       cmp.setup({
         snippet = {
           expand = function(args)
-            require("snippy").expand_snippet(args.body)
+            vim.snippet.expand(args.body)
           end,
         },
         window = {
@@ -193,7 +191,6 @@ return {
         }),
         sources = {
           { name = "nvim_lsp" },
-          { name = "snippy" },
           { name = "copilot" },
         },
         experimental = {

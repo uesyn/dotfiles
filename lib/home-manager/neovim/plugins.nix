@@ -40,8 +40,6 @@
     nvim_surround = nvim-surround;
     nvim_lspconfig = nvim-lspconfig;
     cmp_nvim_lsp = cmp-nvim-lsp;
-    cmp_snippy = cmp-snippy;
-    nvim_snippy = nvim-snippy;
     nvim_cmp = nvim-cmp;
     fidget_nvim = fidget-nvim;
     nvim_navic = nvim-navic;
