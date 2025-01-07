@@ -10,4 +10,8 @@
     goBin = "bin";
     goPrivate = go.private;
   };
+
+  home.sessionPath = [
+    "${config.home.homeDirectory}/bin"
+  ];
 }
