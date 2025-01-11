@@ -1,5 +1,6 @@
 {pkgs, ...}: {
   wsl.enable = true;
+  wsl.useWindowsDriver = true;
 
   users = {
     users.nixos = {
