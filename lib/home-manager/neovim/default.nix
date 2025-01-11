@@ -102,7 +102,7 @@ in {
       })
     '';
 
-    plugins = with pkgs.unstable.vimPlugins ;[
+    plugins = with pkgs.unstable.vimPlugins; [
       lz-n
       nvim-web-devicons
       plenary-nvim
@@ -430,7 +430,7 @@ in {
               vim.keymap.set("v", "<Leader>ct", '<Cmd>CopilotChatTests<CR>')
               vim.keymap.set("n", "<Leader>cc", '<Cmd>CopilotChatCommitStaged<CR>')
               vim.keymap.set("v", "<Leader>cj", '<Cmd>lua require("CopilotChat").ask("Translate to Japanese.", { selection = require("CopilotChat.select").visual })<CR>')
-              
+
               vim.api.nvim_create_autocmd("FileType", {
                 group = vim.api.nvim_create_augroup("my_copilotchat", { clear = true }),
                 pattern = "copilot-chat",
@@ -550,10 +550,10 @@ in {
                   if not (args.data and args.data.client_id) then
                     return
                   end
-                  
+
                   local bufnr = args.buf
                   local client = vim.lsp.get_client_by_id(args.data.client_id)
-                  
+
                   local bufopts = { noremap = true, silent = true, buffer = bufnr }
                   vim.keymap.set("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", bufopts)
                   vim.keymap.set("n", "gD", "<Cmd>lua require('fzf-lua').lsp_declarations()<CR>", bufopts)
@@ -586,7 +586,7 @@ in {
               end
 
               local lspconfig = require("lspconfig")
-              
+
               if vim.fn.executable("gopls") == 1 then
                 lspconfig.gopls.setup({
                   capabilities = make_client_capabilities(),
@@ -605,14 +605,14 @@ in {
                   },
                 })
               end
-              
+
               if vim.fn.executable("typescript-language-server") == 1 then
                 lspconfig.ts_ls.setup({
                   capabilities = make_client_capabilities(),
                   root_dir = require("lspconfig").util.root_pattern("package.json"),
                 })
               end
-              
+
               if vim.fn.executable("deno") == 1 then
                 lspconfig.denols.setup({
                   capabilities = make_client_capabilities(),
@@ -631,7 +631,7 @@ in {
                   },
                 })
               end
-              
+
               if vim.fn.executable("rust-analyzer") == 1 then
                 lspconfig.rust_analyzer.setup({
                   -- Server-specific settings. See `:help lspconfig-setup`
@@ -649,19 +649,19 @@ in {
                   },
                 })
               end
-              
+
               if vim.fn.executable("bash-language-server") == 1 then
                 lspconfig.bashls.setup({
                   capabilities = make_client_capabilities(),
                 })
               end
-              
+
               if vim.fn.executable("pyright") == 1 then
                 lspconfig.pyright.setup({
                   capabilities = make_client_capabilities(),
                 })
               end
-              
+
               -- nix language server
               if vim.fn.executable("nil") == 1 then
                 lspconfig.nil_ls.setup({
