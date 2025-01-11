@@ -11,7 +11,7 @@
     ".config/zellij/config.kdl".text = ''
       on_force_close "quit"
       default_shell "zsh"
-      pane_frames false
+      pane_frames true
       theme "dracula"
       default_layout "simple"
       default_mode "normal"
