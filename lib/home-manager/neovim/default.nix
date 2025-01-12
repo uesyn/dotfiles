@@ -679,6 +679,43 @@ in {
         '';
         optional = true;
       }
+      {
+        plugin = dressing-nvim;
+        type = "lua";
+        config = ''
+          require("lz.n").load {
+            "dressing.nvim",
+          }
+        '';
+        optional = true;
+      }
+      {
+        plugin = nui-nvim;
+        type = "lua";
+        config = ''
+          require("lz.n").load {
+            "nui.nvim",
+          }
+        '';
+        optional = true;
+      }
+      {
+        plugin = avante-nvim;
+        type = "lua";
+        config = ''
+          require("lz.n").load {
+            "avante.nvim",
+            keys = { "<Leader>at", "<Leader>aa" },
+            after = function()
+              require('avante_lib').load()
+              require('avante').setup({
+                provider = "copilot",
+                auto_suggestions_provider = "copilot",
+              })
+            end,
+          }
+        '';
+      }
     ];
 
     extraLuaPackages = ps: [
