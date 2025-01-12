@@ -124,7 +124,7 @@ in {
         config = ''
           require("lz.n").load {
             "barbar.nvim",
-            event = "BufEnter",
+            event = "DeferredUIEnter",
             after = function()
               require("barbar").setup({
                 ["animation"] = false,
@@ -145,7 +145,7 @@ in {
         config = ''
           require("lz.n").load {
             "cellwidths.nvim",
-            event = "BufEnter",
+            event = "DeferredUIEnter",
             after = function()
               require("cellwidths").setup { name = "default" }
             end,
@@ -192,7 +192,7 @@ in {
         config = ''
           require("lz.n").load {
             "nvim-surround",
-            event = "BufEnter",
+            event = "DeferredUIEnter",
             after = function()
               require("nvim-surround").setup({})
             end,
@@ -224,6 +224,7 @@ in {
         config = ''
           require("lz.n").load {
             "nvim-osc52",
+            event = "DeferredUIEnter",
             after = function()
               vim.keymap.set("v", "<leader>y", require("osc52").copy_visual)
               vim.api.nvim_create_autocmd("TextYankPost", {
@@ -374,7 +375,7 @@ in {
         config = ''
           require("lz.n").load {
             "gitsigns.nvim",
-            event = "BufEnter",
+            event = "DeferredUIEnter",
             after = function()
               require("gitsigns").setup()
             end,
@@ -458,6 +459,7 @@ in {
         config = ''
           require("lz.n").load {
             "blink.cmp",
+            event = "DeferredUIEnter",
             after = function()
               require("blink.cmp").setup({
                 keymap = { preset = 'enter' },
@@ -485,6 +487,7 @@ in {
             end,
           }
         '';
+        optional = true;
       }
       {
         plugin = fidget-nvim;
@@ -513,6 +516,7 @@ in {
             end,
           }
         '';
+        optional = true;
       }
       {
         plugin = lualine-nvim;
@@ -700,21 +704,50 @@ in {
         optional = true;
       }
       {
+        plugin = render-markdown-nvim;
+        type = "lua";
+        config = ''
+          require("lz.n").load {
+            "render-markdown.nvim",
+            ft = { "markdown", "Avante" },
+            after = function()
+              require('render-markdown').setup({
+                file_types = { "markdown", "Avante" },
+              })
+            end,
+          }
+        '';
+        optional = true;
+      }
+      {
         plugin = avante-nvim;
         type = "lua";
         config = ''
           require("lz.n").load {
             "avante.nvim",
-            keys = { "<Leader>at", "<Leader>aa" },
+            event = "DeferredUIEnter",
+            enabled = function()
+              local path = vim.fn.expand("~/.config/github-copilot/apps.json")
+              return vim.fn.filereadable(path) == 1
+            end,
             after = function()
               require('avante_lib').load()
               require('avante').setup({
                 provider = "copilot",
                 auto_suggestions_provider = "copilot",
               })
+
+              vim.api.nvim_create_autocmd("FileType", {
+                group = vim.api.nvim_create_augroup("my_avante", { clear = true }),
+                pattern = "Avante*",
+                callback = function()
+                  vim.keymap.set({"n", "i", "v"}, "<C-q>", "<Cmd>AvanteToggle<CR>", { buffer = true })
+                end,
+              })
             end,
           }
         '';
+        optional = true;
       }
     ];
 
