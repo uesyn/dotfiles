@@ -749,6 +749,21 @@ in {
         '';
         optional = true;
       }
+      {
+        plugin = tiny-inline-diagnostic-nvim;
+        type = "lua";
+        config = ''
+          require("lz.n").load {
+            "tiny-inline-diagnostic.nvim",
+            event = "DeferredUIEnter",
+            after = function()
+              require('tiny-inline-diagnostic').setup()
+              vim.diagnostic.config({ virtual_text = false })
+            end,
+          }
+        '';
+        optional = true;
+      }
     ];
 
     extraLuaPackages = ps: [
