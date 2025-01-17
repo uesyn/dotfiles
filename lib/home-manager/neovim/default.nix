@@ -429,7 +429,7 @@ in {
               vim.keymap.set("v", "<Leader>ce", '<Cmd>CopilotChatExplain<CR>')
               vim.keymap.set("v", "<Leader>cr", '<Cmd>CopilotChatReview<CR>')
               vim.keymap.set("v", "<Leader>ct", '<Cmd>CopilotChatTests<CR>')
-              vim.keymap.set("n", "<Leader>cc", '<Cmd>CopilotChatCommitStaged<CR>')
+              vim.keymap.set("n", "<Leader>cc", '<Cmd>CopilotChatCommit<CR>')
               vim.keymap.set("v", "<Leader>cj", '<Cmd>lua require("CopilotChat").ask("Translate to Japanese.", { selection = require("CopilotChat.select").visual })<CR>')
 
               vim.api.nvim_create_autocmd("FileType", {
