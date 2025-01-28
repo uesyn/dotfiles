@@ -71,6 +71,7 @@ in {
     ++ lib.optionals isLinux [
       # GNU/Linux packages
       pkgs.iproute2
+      pkgs.xdg-utils
     ]
     ++ lib.optionals isDarwin [
       # macOS packages
