@@ -468,7 +468,7 @@ in {
                   window = { border = "single" },
                 },
                 completion = {
-                  list = { selection = 'manual' },
+                  list = { selection = { preselect = false, auto_insert = false } },
                   documentation = { window = { border = "single" } },
                   menu = { border = "single" },
                 },
@@ -734,7 +734,6 @@ in {
               require('avante_lib').load()
               require('avante').setup({
                 provider = "copilot",
-                auto_suggestions_provider = "copilot",
               })
 
               vim.api.nvim_create_autocmd("FileType", {
