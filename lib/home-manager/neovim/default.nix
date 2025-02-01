@@ -55,8 +55,6 @@ in {
       vim.g["loaded_ruby_provider"] = 0
       vim.g["mapleader"] = " "
       vim.g["netrw_fastbrowse"] = 0
-      vim.g["vim_markdown_conceal"] = 0
-      vim.g["vim_markdown_no_default_key_mappings"] = 1
 
       -- Set up options
       vim.opt["ambiwidth"] = "single"
@@ -699,22 +697,6 @@ in {
         config = ''
           require("lz.n").load {
             "nui.nvim",
-          }
-        '';
-        optional = true;
-      }
-      {
-        plugin = render-markdown-nvim;
-        type = "lua";
-        config = ''
-          require("lz.n").load {
-            "render-markdown.nvim",
-            ft = { "markdown", "Avante" },
-            after = function()
-              require('render-markdown').setup({
-                file_types = { "markdown", "Avante" },
-              })
-            end,
           }
         '';
         optional = true;
