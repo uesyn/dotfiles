@@ -15,11 +15,11 @@
       theme "dracula"
       default_layout "simple"
       default_mode "normal"
-      mouse_mode true
+      mouse_mode false
       scroll_buffer_size 10000
       copy_on_select true
       scrollback_editor "nvim"
-      mirror_session false
+      mirror_session true
       auto_layout false
 
       plugins {
@@ -54,11 +54,6 @@
       keybinds clear-defaults=true {
           normal {
               bind "Ctrl s" { SwitchToMode "tmux"; }
-
-              bind "Alt h" { MoveFocusOrTab "Left"; }
-              bind "Alt l" { MoveFocusOrTab "Right"; }
-              bind "Alt k" { MoveFocus "Up"; }
-              bind "Alt j" { MoveFocus "Down"; }
           }
           "search" {
               bind "Ctrl [" "Enter" "Esc" "Ctrl c" "i" { ScrollToBottom; SwitchToMode "normal"; }
@@ -116,6 +111,16 @@
               bind "l" { MoveFocusOrTab "Right"; SwitchToMode "normal"; }
               bind "k" { MoveFocus "Up"; SwitchToMode "normal"; }
               bind "j" { MoveFocus "Down"; SwitchToMode "normal"; }
+
+              bind "1" { GoToTab 1; SwitchToMode "normal"; }
+              bind "2" { GoToTab 2; SwitchToMode "normal"; }
+              bind "3" { GoToTab 3; SwitchToMode "normal"; }
+              bind "4" { GoToTab 4; SwitchToMode "normal"; }
+              bind "5" { GoToTab 5; SwitchToMode "normal"; }
+              bind "6" { GoToTab 6; SwitchToMode "normal"; }
+              bind "7" { GoToTab 7; SwitchToMode "normal"; }
+              bind "8" { GoToTab 8; SwitchToMode "normal"; }
+              bind "9" { GoToTab 9; SwitchToMode "normal"; }
 
               bind "c" { NewTab; SwitchToMode "normal"; }
               bind "x" { CloseFocus; SwitchToMode "normal"; }
