@@ -374,76 +374,76 @@ in {
         '';
         optional = true;
       }
-      {
-        plugin = copilot-lua;
-        type = "lua";
-        config = ''
-          require("lz.n").load {
-            "copilot.lua",
-            after = function()
-              require("copilot").setup({
-                suggestion = { enabled = false },
-                panel = { enabled = false },
-              })
-            end,
-          }
-        '';
-      }
-      {
-        plugin = CopilotChat-nvim;
-        type = "lua";
-        config = ''
-          require("lz.n").load {
-            "CopilotChat.nvim",
-            keys = {
-              { "<Leader>cC", mode = "n" },
-              { "<Leader>cd", mode = "v" },
-              { "<Leader>ce", mode = "v" },
-              { "<Leader>cr", mode = "v" },
-              { "<Leader>ct", mode = "v" },
-              { "<Leader>cc", mode = "n" },
-              { "<Leader>cj", mode = "v" },
-            },
-            after = function()
-              require("CopilotChat").setup({
-                prompts = {
-                  Explain = {
-                    prompt = '/COPILOT_EXPLAIN Write an explanation for the active selection as paragraphs of text in Japanese.',
-                  },
-                  Review = {
-                    prompt = '/COPILOT_REVIEW Review the selected code in Japanese.',
-                  },
-                },
-              })
-              vim.keymap.set("n", "<Leader>cC", '<Cmd>lua require("CopilotChat").open()<CR>')
-              vim.keymap.set("v", "<Leader>cd", '<Cmd>CopilotChatDocs<CR>')
-              vim.keymap.set("v", "<Leader>ce", '<Cmd>CopilotChatExplain<CR>')
-              vim.keymap.set("v", "<Leader>cr", '<Cmd>CopilotChatReview<CR>')
-              vim.keymap.set("v", "<Leader>ct", '<Cmd>CopilotChatTests<CR>')
-              vim.keymap.set("n", "<Leader>cc", '<Cmd>CopilotChatCommit<CR>')
-              vim.keymap.set("v", "<Leader>cj", '<Cmd>lua require("CopilotChat").ask("Translate to Japanese.", { selection = require("CopilotChat.select").visual })<CR>')
+      # {
+      #   plugin = copilot-lua;
+      #   type = "lua";
+      #   config = ''
+      #     require("lz.n").load {
+      #       "copilot.lua",
+      #       after = function()
+      #         require("copilot").setup({
+      #           suggestion = { enabled = false },
+      #           panel = { enabled = false },
+      #         })
+      #       end,
+      #     }
+      #   '';
+      # }
+      # {
+      #   plugin = CopilotChat-nvim;
+      #   type = "lua";
+      #   config = ''
+      #     require("lz.n").load {
+      #       "CopilotChat.nvim",
+      #       keys = {
+      #         { "<Leader>cC", mode = "n" },
+      #         { "<Leader>cd", mode = "v" },
+      #         { "<Leader>ce", mode = "v" },
+      #         { "<Leader>cr", mode = "v" },
+      #         { "<Leader>ct", mode = "v" },
+      #         { "<Leader>cc", mode = "n" },
+      #         { "<Leader>cj", mode = "v" },
+      #       },
+      #       after = function()
+      #         require("CopilotChat").setup({
+      #           prompts = {
+      #             Explain = {
+      #               prompt = '/COPILOT_EXPLAIN Write an explanation for the active selection as paragraphs of text in Japanese.',
+      #             },
+      #             Review = {
+      #               prompt = '/COPILOT_REVIEW Review the selected code in Japanese.',
+      #             },
+      #           },
+      #         })
+      #         vim.keymap.set("n", "<Leader>cC", '<Cmd>lua require("CopilotChat").open()<CR>')
+      #         vim.keymap.set("v", "<Leader>cd", '<Cmd>CopilotChatDocs<CR>')
+      #         vim.keymap.set("v", "<Leader>ce", '<Cmd>CopilotChatExplain<CR>')
+      #         vim.keymap.set("v", "<Leader>cr", '<Cmd>CopilotChatReview<CR>')
+      #         vim.keymap.set("v", "<Leader>ct", '<Cmd>CopilotChatTests<CR>')
+      #         vim.keymap.set("n", "<Leader>cc", '<Cmd>CopilotChatCommit<CR>')
+      #         vim.keymap.set("v", "<Leader>cj", '<Cmd>lua require("CopilotChat").ask("Translate to Japanese.", { selection = require("CopilotChat.select").visual })<CR>')
 
-              vim.api.nvim_create_autocmd("FileType", {
-                group = vim.api.nvim_create_augroup("my_copilotchat", { clear = true }),
-                pattern = "copilot-chat",
-                callback = function()
-                  vim.keymap.set("n", "<C-q>", '<Cmd>lua require("CopilotChat").toggle()<CR>', { buffer = true })
-                end,
-              })
-            end,
-          }
-        '';
-        optional = true;
-      }
-      {
-        plugin = blink-cmp-copilot;
-        type = "lua";
-        config = ''
-          require("lz.n").load {
-            "blink-cmp-copilot",
-          }
-        '';
-      }
+      #         vim.api.nvim_create_autocmd("FileType", {
+      #           group = vim.api.nvim_create_augroup("my_copilotchat", { clear = true }),
+      #           pattern = "copilot-chat",
+      #           callback = function()
+      #             vim.keymap.set("n", "<C-q>", '<Cmd>lua require("CopilotChat").toggle()<CR>', { buffer = true })
+      #           end,
+      #         })
+      #       end,
+      #     }
+      #   '';
+      #   optional = true;
+      # }
+      # {
+      #   plugin = blink-cmp-copilot;
+      #   type = "lua";
+      #   config = ''
+      #     require("lz.n").load {
+      #       "blink-cmp-copilot",
+      #     }
+      #   '';
+      # }
       {
         plugin = blink-cmp;
         type = "lua";
@@ -464,15 +464,7 @@ in {
                   menu = { border = "single" },
                 },
                 sources = {
-                  default = { "lsp", "path", "snippets", "buffer", "copilot" },
-                  providers = {
-                    copilot = {
-                      name = "Copilot",
-                      module = "blink-cmp-copilot",
-                      score_offset = 100,
-                      async = true,
-                    },
-                  },
+                  default = { "lsp", "path", "snippets", "buffer" },
                 },
               })
             end,
@@ -694,35 +686,35 @@ in {
         '';
         optional = true;
       }
-      {
-        plugin = avante-nvim;
-        type = "lua";
-        config = ''
-          require("lz.n").load {
-            "avante.nvim",
-            event = "DeferredUIEnter",
-            enabled = function()
-              local path = vim.fn.expand("~/.config/github-copilot/apps.json")
-              return vim.fn.filereadable(path) == 1
-            end,
-            after = function()
-              require('avante_lib').load()
-              require('avante').setup({
-                provider = "copilot",
-              })
+      # {
+      #   plugin = avante-nvim;
+      #   type = "lua";
+      #   config = ''
+      #     require("lz.n").load {
+      #       "avante.nvim",
+      #       event = "DeferredUIEnter",
+      #       enabled = function()
+      #         local path = vim.fn.expand("~/.config/github-copilot/apps.json")
+      #         return vim.fn.filereadable(path) == 1
+      #       end,
+      #       after = function()
+      #         require('avante_lib').load()
+      #         require('avante').setup({
+      #           provider = "copilot",
+      #         })
 
-              vim.api.nvim_create_autocmd("FileType", {
-                group = vim.api.nvim_create_augroup("my_avante", { clear = true }),
-                pattern = "Avante*",
-                callback = function()
-                  vim.keymap.set({"n", "i", "v"}, "<C-q>", "<Cmd>AvanteToggle<CR>", { buffer = true })
-                end,
-              })
-            end,
-          }
-        '';
-        optional = true;
-      }
+      #         vim.api.nvim_create_autocmd("FileType", {
+      #           group = vim.api.nvim_create_augroup("my_avante", { clear = true }),
+      #           pattern = "Avante*",
+      #           callback = function()
+      #             vim.keymap.set({"n", "i", "v"}, "<C-q>", "<Cmd>AvanteToggle<CR>", { buffer = true })
+      #           end,
+      #         })
+      #       end,
+      #     }
+      #   '';
+      #   optional = true;
+      # }
       {
         plugin = tiny-inline-diagnostic-nvim;
         type = "lua";
