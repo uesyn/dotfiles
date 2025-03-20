@@ -1,14 +1,14 @@
 {
   config,
   pkgs,
+  lib,
   go,
   ...
 }: {
-  programs.go = {
-    enable = true;
-    goPath = "";
-    goBin = "bin";
-    goPrivate = go.private;
+  home.sessionVariables = {
+    GOPATH = "${config.home.homeDirectory}";
+    GOBIN = "${config.home.homeDirectory}/bin";
+    GOPRIVATE = lib.concatStringsSep "," go.private;
   };
 
   home.sessionPath = [

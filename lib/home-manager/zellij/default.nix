@@ -21,6 +21,7 @@
       scrollback_editor "nvim"
       mirror_session true
       auto_layout false
+      show_startup_tips false
 
       plugins {
           tab-bar { path "tab-bar"; }

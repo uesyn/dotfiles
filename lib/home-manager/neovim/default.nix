@@ -35,15 +35,8 @@ in {
 
     extraPackages = with pkgs; [
       bash
-      bash-language-server
       fzf
-      # jdt-language-server
-      nil # nix LSP
-      nodePackages.typescript-language-server
-      pyright
       ripgrep
-      unstable.gopls
-      unstable.rust-analyzer
     ];
 
     extraLuaConfig = ''

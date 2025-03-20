@@ -60,7 +60,6 @@ in {
       pkgs.pkg-config
       pkgs.procps
       pkgs.pstree
-      pkgs.python3
       pkgs.ripgrep
       pkgs.tree
       pkgs.unzip
