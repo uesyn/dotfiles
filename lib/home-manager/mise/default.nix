@@ -18,6 +18,9 @@
     };
     settings = {
       experimental = true;
+      all_compile = false;
+      node.compile = false;
+      python.compile = false;
     };
   };
 
