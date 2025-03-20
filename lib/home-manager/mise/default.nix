@@ -13,6 +13,7 @@
       tools = {
         go = "1.23.7";
         python = "3.12";
+        node = "23.10.0";
       };
     };
     settings = {
