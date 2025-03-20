@@ -3,10 +3,6 @@
   pkgs,
   ...
 }: {
-  home.packages = [
-    pkgs.nodejs
-  ];
-
   home.file = {
     ".npmrc".text = ''
       prefix=~/.node
