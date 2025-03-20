@@ -69,8 +69,8 @@
       },
       "original": {
         "owner": "NixOS",
-        "ref": "release-24.11",
         "repo": "nixpkgs",
+        "rev": "c84318386ea4b8e158b1fdafc3336de880c2e99f",
         "type": "github"
       }
     },
