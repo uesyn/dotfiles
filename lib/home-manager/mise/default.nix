@@ -1,6 +1,7 @@
 {
   inputs,
   pkgs,
+  config,
   ...
 }: {
   programs.mise = {
@@ -29,6 +30,10 @@
     pkgs.bzip2
     pkgs.openssl
     pkgs.ncurses
+  ];
+
+  home.sessionPath = [
+    "${config.home.homeDirectory}/.local/share/mise/shims"
   ];
 
   # For python building
