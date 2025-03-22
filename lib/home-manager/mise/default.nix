@@ -1,19 +1,27 @@
 {
   inputs,
   pkgs,
+  lib,
   config,
   ...
 }: {
+  programs.bash.initExtra = ''
+    eval "$(${lib.getExe pkgs.unstable.mise} activate --shims bash)"
+  '';
+
+  programs.zsh.initExtra = ''
+    eval "$(${lib.getExe pkgs.unstable.mise} activate --shims zsh)"
+  '';
   programs.mise = {
     package = pkgs.unstable.mise;
+    enableBashIntegration = false;
+    enableZshIntegration = false;
     enable = true;
-    enableZshIntegration = true;
-    enableBashIntegration = true;
     globalConfig = {
       tools = {
         go = "1.23.7";
         python = "3.12";
-        node = "23.10.0";
+        node = "22";
       };
     };
     settings = {
