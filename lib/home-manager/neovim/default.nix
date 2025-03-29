@@ -49,6 +49,7 @@ in {
       vim.g["loaded_ruby_provider"] = 0
       vim.g["mapleader"] = " "
       vim.g["netrw_fastbrowse"] = 0
+      vim.g["clipboard"] = 'osc52'
 
       -- Set up options
       vim.opt["ambiwidth"] = "single"
@@ -87,6 +88,18 @@ in {
           vim.keymap.set("n", "<C-q>", "<Cmd>clo<CR>", { buffer = true })
           vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
           vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+        end,
+      })
+
+      -- When yanked, sync system clipboard with OSC52
+      vim.api.nvim_create_autocmd('TextYankPost', {
+        pattern = '*',
+        callback = function()
+          event = vim.v.event
+          if event.operator == 'y' and event.regname == ''' then
+            vim.fn.setreg('+', event.regcontents, event.regtype)
+            print(vim.inspect(event))
+          end
         end,
       })
 
@@ -197,21 +210,6 @@ in {
           vim.keymap.set("v", "<Leader>ho", "<Esc><Cmd>'<,'>OpenInGHFile<CR>")
         '';
         optional = true;
-      }
-      {
-        plugin = nvim-osc52;
-        type = "lua";
-        config = ''
-          vim.keymap.set("v", "<leader>y", require("osc52").copy_visual)
-          vim.api.nvim_create_autocmd("TextYankPost", {
-            pattern = "*",
-            callback = function()
-              if vim.v.event.operator == "y" then
-                  require("osc52").copy_register("")
-              end
-            end,
-          })
-        '';
       }
       {
         plugin = hop-nvim;
