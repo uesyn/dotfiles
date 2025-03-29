@@ -98,7 +98,6 @@ in {
           event = vim.v.event
           if event.operator == 'y' and event.regname == ''' then
             vim.fn.setreg('+', event.regcontents, event.regtype)
-            print(vim.inspect(event))
           end
         end,
       })
