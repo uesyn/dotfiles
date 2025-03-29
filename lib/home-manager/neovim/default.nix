@@ -192,7 +192,7 @@ in {
         config = ''
           vim.keymap.set("n", "<Leader>fs", require('fzf-lua').live_grep)
           vim.keymap.set("n", "<Leader>ff", require('fzf-lua').files)
-          vim.keymap.set("n", "<Leader>;", require('fzf-lua').resume)
+          vim.keymap.set("n", "<Leader>f;", require('fzf-lua').resume)
         '';
       }
       {
