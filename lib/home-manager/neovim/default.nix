@@ -13,7 +13,6 @@
       inherit pname version src;
     };
   blame-nvim = mkNvimPlugin "blame.nvim" "https://github.com/FabijanZulj/blame.nvim.git" "main" "59cf695685c1d8d603d99b246cc8d42421937c09";
-  cellwidths-nvim = mkNvimPlugin "cellwidths.nvim" "https://github.com/delphinus/cellwidths.nvim.git" "main" "98d8b428020c7e0af098f316a02490e5b37e98da";
   winresize-nvim = mkNvimPlugin "winresize.nvim" "https://github.com/pogyomo/winresize.nvim.git" "main" "a54f4a0dbfd7e52e0e8153325d0c4571e0d33217";
 in {
   xdg.configFile = {
@@ -167,13 +166,6 @@ in {
           vim.keymap.set("n", "<C-n>", "<Cmd>BufferNext<CR>")
           vim.keymap.set("n", "<C-p>", "<Cmd>BufferPrevious<CR>")
           vim.keymap.set("n", "<C-q>", "<Cmd>BufferClose<CR>")
-        '';
-      }
-      {
-        plugin = cellwidths-nvim;
-        type = "lua";
-        config = ''
-          require("cellwidths").setup { name = "default" }
         '';
       }
       {
