@@ -151,6 +151,7 @@ in {
       plenary-nvim
       dressing-nvim
       nui-nvim
+      nvim-treesitter
       {
         plugin = dracula-nvim;
         type = "lua";
@@ -386,6 +387,29 @@ in {
           })
 
           vim.keymap.set({"n", "v", "t"}, "?", function() require("which-key").show({ global = true }) end, { desc = "Buffer Local Keymaps (which-key)" } )
+        '';
+      }
+
+      {
+        plugin = codecompanion-nvim;
+        type = "lua";
+        config = ''
+          require("codecompanion").setup({
+            opts = {
+              language = "Japanese",
+            },
+            strategies = {
+              chat = {
+                adapter = "copilot",
+              },
+              inline = {
+                adapter = "copilot",
+              },
+              cmd = {
+                adapter = "copilot",
+              }
+            },
+          })
         '';
       }
     ];
