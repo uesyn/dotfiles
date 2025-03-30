@@ -84,7 +84,7 @@ in {
         pattern = "qf",
         callback = function()
           vim.bo.buflisted = false
-          vim.keymap.set("n", "<C-q>", "<Cmd>clo<CR>", { buffer = true })
+          vim.keymap.set("n", "<C-q>", "<Cmd>clo<CR>", { desc = "Close quickfix", buffer = true })
           vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
           vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
         end,
@@ -114,39 +114,43 @@ in {
             vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
           end
 
+          function opts(desc)
+            return { desc = desc, noremap = true, silent = true, buffer = bufnr }
+          end
           local bufnr = args.buf
-          local bufopts = { noremap = true, silent = true, buffer = bufnr }
-          vim.keymap.set("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", bufopts)
-          vim.keymap.set("n", "gD", "<Cmd>lua require('fzf-lua').lsp_declarations()<CR>", bufopts)
-          vim.keymap.set("n", "gi", "<Cmd>lua require('fzf-lua').lsp_implementations()<CR>", bufopts)
-          vim.keymap.set("n", "gI", "<Cmd>lua require('fzf-lua').lsp_incoming_calls()<CR>", bufopts)
-          vim.keymap.set("n", "gO", "<Cmd>lua require('fzf-lua').lsp_outgoing_calls()<CR>", bufopts)
-          vim.keymap.set("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", bufopts)
-          vim.keymap.set("n", "gr", "<Cmd>lua require('fzf-lua').lsp_references()<CR>", bufopts)
-          vim.keymap.set("n", "gt", "<Cmd>lua require('fzf-lua').lsp_typedefs()<CR>", bufopts)
-          vim.keymap.set("n", "gs", "<Cmd>lua require('fzf-lua').lsp_document_symbols()<CR>", bufopts)
-          vim.keymap.set("i", "<C-l>", "<Cmd>lua vim.lsp.buf.signature_help()<CR>", bufopts)
-          vim.keymap.set("n", "<leader>lR", "<Cmd>lua vim.lsp.buf.rename()<CR>", bufopts)
-          vim.keymap.set("n", "<leader>la", "<Cmd>lua require('fzf-lua').lsp_code_actions()<CR>", bufopts)
-          vim.keymap.set("n", "<leader>ld", "<Cmd>lua require('fzf-lua').lsp_document_diagnostics()<CR>", bufopts)
+          vim.keymap.set("n", "gd", "<Cmd>lua vim.lsp.buf.definition()<CR>", opts("Go to definition"))
+          vim.keymap.set("n", "gD", "<Cmd>lua require('fzf-lua').lsp_declarations()<CR>", opts("Go to declarations"))
+          vim.keymap.set("n", "gi", "<Cmd>lua require('fzf-lua').lsp_implementations()<CR>", opts("Go to implementations"))
+          vim.keymap.set("n", "gI", "<Cmd>lua require('fzf-lua').lsp_incoming_calls()<CR>", opts("Go to incoming calls"))
+          vim.keymap.set("n", "gO", "<Cmd>lua require('fzf-lua').lsp_outgoing_calls()<CR>", opts("Go to outgoing calls"))
+          vim.keymap.set("n", "K", "<Cmd>lua vim.lsp.buf.hover()<CR>", opts("Displays hover information about the symbol"))
+          vim.keymap.set("n", "gr", "<Cmd>lua require('fzf-lua').lsp_references()<CR>", opts("Go to references"))
+          vim.keymap.set("n", "gt", "<Cmd>lua require('fzf-lua').lsp_typedefs()<CR>", opts("Go to type defenitions"))
+          vim.keymap.set("n", "gs", "<Cmd>lua require('fzf-lua').lsp_document_symbols()<CR>", opts("Go to document symbols"))
+          vim.keymap.set("i", "<C-l>", "<Cmd>lua vim.lsp.buf.signature_help()<CR>", opts("Show signature help"))
+          vim.keymap.set("n", "<leader>lR", "<Cmd>lua vim.lsp.buf.rename()<CR>", opts("Rename"))
+          vim.keymap.set("n", "<leader>la", "<Cmd>lua require('fzf-lua').lsp_code_actions()<CR>", opts("Run code actions"))
+          vim.keymap.set("n", "<leader>ld", "<Cmd>lua require('fzf-lua').lsp_document_diagnostics()<CR>", opts("Show document diagnostics"))
           vim.keymap.set("n", "<leader>lf", function()
               vim.lsp.buf.format({ async = true })
-          end, bufopts)
+          end, opts("Format"))
           vim.keymap.set(
             "n",
             "<leader>li",
             "<Cmd>lua vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())<CR>",
-            bufopts
+            opts("Toggle inlay hint")
           )
         end,
       })
+
       vim.lsp.enable({'gopls', 'typescript-language-server', 'rust_analyzer'})
     '';
 
     plugins = with pkgs.unstable.vimPlugins; [
-      lz-n
       nvim-web-devicons
       plenary-nvim
+      dressing-nvim
+      nui-nvim
       {
         plugin = dracula-nvim;
         type = "lua";
@@ -163,9 +167,9 @@ in {
             auto_hide = 0,
             exclude_ft = {'dump'},
           })
-          vim.keymap.set("n", "<C-n>", "<Cmd>BufferNext<CR>")
-          vim.keymap.set("n", "<C-p>", "<Cmd>BufferPrevious<CR>")
-          vim.keymap.set("n", "<C-q>", "<Cmd>BufferClose<CR>")
+          vim.keymap.set("n", "<C-n>", "<Cmd>BufferNext<CR>", { desc = "Go to next buffer" } )
+          vim.keymap.set("n", "<C-p>", "<Cmd>BufferPrevious<CR>", { desc = "Go to previous buffer" } )
+          vim.keymap.set("n", "<C-q>", "<Cmd>BufferClose<CR>", { desc = "Close current buffer" } )
         '';
       }
       {
@@ -182,9 +186,9 @@ in {
         plugin = fzf-lua;
         type = "lua";
         config = ''
-          vim.keymap.set("n", "<Leader>fs", require('fzf-lua').live_grep)
-          vim.keymap.set("n", "<Leader>ff", require('fzf-lua').files)
-          vim.keymap.set("n", "<Leader>f;", require('fzf-lua').resume)
+          vim.keymap.set("n", "<Leader>fs", require('fzf-lua').live_grep, { desc = "Grep files with fuzzy finder" })
+          vim.keymap.set("n", "<Leader>ff", require('fzf-lua').files, { desc = "Search Lines with fuzzy finder" })
+          vim.keymap.set("n", "<Leader>f;", require('fzf-lua').resume, { desc = "Resume fuzzy finder results" })
         '';
       }
       {
@@ -198,8 +202,8 @@ in {
         plugin = openingh-nvim;
         type = "lua";
         config = ''
-          vim.keymap.set("n", "<Leader>ho", "<Cmd>OpenInGHFile<CR>")
-          vim.keymap.set("v", "<Leader>ho", "<Esc><Cmd>'<,'>OpenInGHFile<CR>")
+          vim.keymap.set("n", "<Leader>ho", "<Cmd>OpenInGHFile<CR>", { desc = "Open in Github" })
+          vim.keymap.set("v", "<Leader>ho", "<Esc><Cmd>'<,'>OpenInGHFile<CR>", { desc = "Open fucusing lines in Github" })
         '';
         optional = true;
       }
@@ -208,8 +212,8 @@ in {
         type = "lua";
         config = ''
           require("hop").setup { keys = 'etovxqpdygfblzhckisuran' }
-          vim.keymap.set("n", "<leader><leader>", require('hop').hint_words)
-          vim.keymap.set("v", "<leader><leader>", function() require('hop').hint_words({ hint_position = require('hop.hint').HintPosition.END }) end)
+          vim.keymap.set("n", "<leader><leader>", require('hop').hint_words, { desc = "Hop cursor to hint words" })
+          vim.keymap.set("v", "<leader><leader>", function() require('hop').hint_words({ hint_position = require('hop.hint').HintPosition.END }) end, { desc = "Hop cursor to hint words" })
         '';
       }
       {
@@ -223,7 +227,7 @@ in {
             local api = require("nvim-tree.api")
 
             local function opts(desc)
-              return { desc = "nvim-tree: " .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+              return { desc = desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
             end
 
             local function has_marked_nodes()
@@ -291,7 +295,7 @@ in {
               },
             },
           })
-          vim.keymap.set("n", "<Leader>fo", "<Cmd>NvimTreeToggle<CR>", { silent = true })
+          vim.keymap.set("n", "<Leader>fo", "<Cmd>NvimTreeToggle<CR>", { desc = "Toggle file tree", silent = true })
         '';
       }
       {
@@ -304,7 +308,7 @@ in {
             pattern = "blame",
             callback = function()
               vim.bo.buflisted = false
-              vim.keymap.set("n", "<C-q>", ":clo<CR>", { buffer = true })
+              vim.keymap.set("n", "<C-q>", ":clo<CR>", { buffer = true, desc = "Close blame window" })
               vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
               vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
             end,
@@ -361,17 +365,27 @@ in {
         '';
       }
       {
-        plugin = dressing-nvim;
-      }
-      {
-        plugin = nui-nvim;
-      }
-      {
         plugin = tiny-inline-diagnostic-nvim;
         type = "lua";
         config = ''
           require('tiny-inline-diagnostic').setup()
           vim.diagnostic.config({ virtual_text = false })
+        '';
+      }
+      {
+        plugin = which-key-nvim;
+        type = "lua";
+        config = ''
+          require("which-key").setup({
+            delay = 1000,
+          })
+
+          require("which-key").add({
+            { "<leader>f", group = "file", mode = "n" }, -- group
+            { "g", group = "Go to somewhere", mode = "n" }, -- group
+          })
+
+          vim.keymap.set({"n", "v", "t"}, "?", function() require("which-key").show({ global = true }) end, { desc = "Buffer Local Keymaps (which-key)" } )
         '';
       }
     ];
