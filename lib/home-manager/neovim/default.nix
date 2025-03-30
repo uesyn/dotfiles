@@ -149,9 +149,22 @@ in {
     plugins = with pkgs.unstable.vimPlugins; [
       nvim-web-devicons
       plenary-nvim
-      dressing-nvim
       nui-nvim
-      nvim-treesitter
+      nvim-treesitter.withAllGrammars
+      {
+        plugin = snacks-nvim;
+        type = "lua";
+        config = ''
+          require("snacks").setup({
+            explorer = { enabled = true },
+            input = { enabled = true },
+            picker = { enabled = true },
+            notifier = { enabled = true },
+            scroll = { enabled = true },
+            statuscolumn = { enabled = true },
+          })
+        '';
+      }
       {
         plugin = dracula-nvim;
         type = "lua";
@@ -365,14 +378,17 @@ in {
           })
         '';
       }
+
       {
-        plugin = tiny-inline-diagnostic-nvim;
+        plugin = lsp_lines-nvim;
         type = "lua";
         config = ''
-          require('tiny-inline-diagnostic').setup()
           vim.diagnostic.config({ virtual_text = false })
+          require("lsp_lines").setup()
+          vim.keymap.set("n", "<Leader>ll", require("lsp_lines").toggle, { desc = "Toggle lsp_lines" })
         '';
       }
+
       {
         plugin = which-key-nvim;
         type = "lua";
@@ -382,11 +398,12 @@ in {
           })
 
           require("which-key").add({
-            { "<leader>f", group = "file", mode = "n" }, -- group
+            { "<leader>f", group = "File", mode = "n" }, -- group
+            { "<leader>c", group = "CodeCompanion", mode = "n" }, -- group
             { "g", group = "Go to somewhere", mode = "n" }, -- group
           })
 
-          vim.keymap.set({"n", "v", "t"}, "?", function() require("which-key").show({ global = true }) end, { desc = "Buffer Local Keymaps (which-key)" } )
+          vim.keymap.set({"n", "v", "t"}, "<leader>?", function() require("which-key").show({ global = true }) end, { desc = "Buffer Local Keymaps (which-key)" } )
         '';
       }
 
@@ -395,12 +412,23 @@ in {
         type = "lua";
         config = ''
           require("codecompanion").setup({
+            display = {
+              chat = {
+                window = {
+                  position = "right",
+                  border = "rounded",
+                },
+              },
+            },
             opts = {
               language = "Japanese",
             },
             strategies = {
               chat = {
                 adapter = "copilot",
+                keymaps = {
+                  stop = { modes = { n = "<S-s>" } },
+                },
               },
               inline = {
                 adapter = "copilot",
@@ -410,6 +438,20 @@ in {
               }
             },
           })
+
+          vim.keymap.set({"n", "v"}, "<Leader>ci", "<Cmd>CodeCompanion<CR>", { desc = "Open the inline assistant", buffer = true, silent = true })
+          vim.keymap.set({"n", "v"}, "<Leader>cc", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
+          vim.keymap.set({"n", "v"}, "<Leader>ca", "<Cmd>CodeCompanionActions<CR>", { desc = "Open the Action Palette", buffer = true, silent = true })
+
+          vim.api.nvim_create_autocmd("FileType", {
+            pattern = "codecompanion",
+            callback = function()
+              vim.keymap.set("n", "<Leader>cc", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
+              vim.keymap.set("n", "q", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
+            end,
+          })
+
+          vim.cmd([[cab cc CodeCompanion]])
         '';
       }
     ];
