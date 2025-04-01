@@ -258,26 +258,35 @@ in {
           require("gitsigns").setup()
         '';
       }
+      {plugin = blink-cmp-copilot;}
       {
-         plugin = blink-cmp;
-         type = "lua";
-         config = ''
-           require("blink.cmp").setup({
-             keymap = { preset = 'enter' },
-             signature = {
-               enabled = true,
-               window = { border = "single" },
-             },
-             completion = {
-               list = { selection = { preselect = false, auto_insert = false } },
-               documentation = { window = { border = "single" } },
-               menu = { border = "single" },
-             },
-             sources = {
-               default = { "lsp", "path", "snippets", "buffer" },
-             },
-           })
-         '';
+        plugin = blink-cmp;
+        type = "lua";
+        config = ''
+          require("blink.cmp").setup({
+            keymap = { preset = 'enter' },
+            signature = {
+              enabled = true,
+              window = { border = "single" },
+            },
+            completion = {
+              list = { selection = { preselect = false, auto_insert = false } },
+              documentation = { window = { border = "single" } },
+              menu = { border = "single" },
+            },
+            sources = {
+              default = { "lsp", "path", "snippets", "buffer", "copilot" },
+              providers = {
+                copilot = {
+                  name = "copilot",
+                  module = "blink-cmp-copilot",
+                  score_offset = 100,
+                  async = true,
+                },
+              },
+            },
+          })
+        '';
       }
       {
         plugin = copilot-lua;
