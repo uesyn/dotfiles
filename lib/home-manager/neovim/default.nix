@@ -117,7 +117,7 @@ in {
           local client = vim.lsp.get_client_by_id(args.data.client_id)
 
           if client:supports_method('textDocument/completion') then
-            vim.lsp.completion.enable(true, client.id, args.buf, { autotrigger = true })
+            vim.lsp.completion.enable(true, client.id, args.buf)
           end
 
           function opts(desc)
@@ -140,7 +140,7 @@ in {
         end,
       })
 
-      vim.lsp.enable({'gopls', 'typescript-language-server', 'rust_analyzer'})
+      vim.lsp.enable({'gopls', 'typescript_language_server', 'rust_analyzer'})
     '';
 
     plugins = with pkgs.unstable.vimPlugins; [
@@ -257,6 +257,27 @@ in {
         config = ''
           require("gitsigns").setup()
         '';
+      }
+      {
+         plugin = blink-cmp;
+         type = "lua";
+         config = ''
+           require("blink.cmp").setup({
+             keymap = { preset = 'enter' },
+             signature = {
+               enabled = true,
+               window = { border = "single" },
+             },
+             completion = {
+               list = { selection = { preselect = false, auto_insert = false } },
+               documentation = { window = { border = "single" } },
+               menu = { border = "single" },
+             },
+             sources = {
+               default = { "lsp", "path", "snippets", "buffer" },
+             },
+           })
+         '';
       }
       {
         plugin = copilot-lua;
