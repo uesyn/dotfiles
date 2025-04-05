@@ -1,8 +1,12 @@
 #!/usr/bin/env zsh
 
 if [[ -x "$(command -v ghq)" ]]; then
-  local selected_dir=$(ghq list | fzf)
+  list=($(ghq list) tmp)
+  local selected_dir=$(for e in "${list[@]}"; do echo "$e"; done | sort | uniq | fzf)
   if [[ -n $selected_dir ]]; then
+    if [[ $selected_dir == "tmp" ]]; then
+      mkdir -p $(ghq root)/${selected_dir}
+    fi
     cd $(ghq root)/${selected_dir}
   fi
 else
