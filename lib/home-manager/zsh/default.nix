@@ -20,7 +20,7 @@
     dotDir = ".config/zsh";
     defaultKeymap = "emacs";
     envExtra = ''
-      [[ -e "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
+      touch "$HOME/.zshenv.local" && source "$HOME/.zshenv.local"
     '';
     profileExtra = ''
       # Homebrew
