@@ -38,6 +38,8 @@
 
       typeset -Ug path fpath manpath
 
+      [[ "$TERM_PROGRAM" == "vscode" ]] && . "$(code --locate-shell-integration-path zsh)"
+
       path=(
         $path
         /usr/local/sbin
