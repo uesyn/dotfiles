@@ -213,15 +213,14 @@ _ssh_prompt_init() {
 }
 
 prompt_init() {
-  new_line=$'\n'
-
   async_init
   _git_info_prompt_init
   _kubernetes_prompt_init
   _venv_prompt_init
   _ssh_prompt_init
 
-  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n ${_ssh_prompt}📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}${new_line}%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
+  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n ${_ssh_prompt}📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}
+%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
   RPROMPT='📁 %~'
 }
 
