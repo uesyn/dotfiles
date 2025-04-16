@@ -19,7 +19,7 @@
     enable = true;
     globalConfig = {
       tools = {
-        go = "1.23.7";
+        go = "1.24.1";
         python = "3.12";
         node = "22";
       };
