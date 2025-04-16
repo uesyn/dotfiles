@@ -16,7 +16,7 @@ _git_info() {
   if ! command git rev-parse --git-dir >/dev/null 2>&1; then
     return
   fi
-  
+
   while read -r line; do
     case "$line" in
       "# branch.oid "*) oid="${line#\# branch.oid }" ;;
@@ -39,7 +39,7 @@ _git_info() {
       *) "$line: invalid git status line" ;;
     esac
   done < <(git --no-optional-locks status --porcelain=v2 --branch)
-  
+
   if [ -n "$ab" ]; then
     ahead="${ab% -*}"
     ahead="${ahead#+}"
@@ -53,7 +53,7 @@ _git_info() {
       head="${tag}"
     fi
   fi
-  
+
   git_prompt="${head}"
   if [[ -n "${upstream}" ]]; then
     _tmp_prompt="${git_prompt}"
@@ -67,15 +67,15 @@ _git_info() {
     fi
     git_prompt="${_tmp_prompt}"
   fi
-  
+
   if [[ "${staged}" -gt 0 ]]; then
     repo_condition="${repo_condition} +${staged}"
   fi
-  
+
   if [[ "${unstaged}" -gt 0 ]]; then
     repo_condition="${repo_condition} !${unstaged}"
   fi
-  
+
   if [[ "${untracked}" -gt 0 ]]; then
     repo_condition="${repo_condition} ?${untracked}"
   fi
@@ -89,7 +89,7 @@ _git_info() {
   if [[ -n ${repo_condition} ]]; then
     git_prompt="${git_prompt} %F{#ff5555}%f%K{#ff5555}%F{#f8f8f2}${repo_condition}%f%k%F{#ff5555}%f"
   fi
-  
+
   print "%F{#ff5555}%f ${git_prompt}"
 }
 
@@ -126,7 +126,7 @@ _git_info_prompt_init() {
 }
 
 _kubernetes_info() {
-  export KUBECONFIG="$1"
+  export KUBECONFIG="${KUBECONFIG:-${HOME}/.kube/config}"
   local context=""
 
   if [[ -x $(command -v kubectx) ]]; then
@@ -135,91 +135,33 @@ _kubernetes_info() {
     context="$(kubectl config current-context 2>/dev/null)"
   fi
 
-  print ${context}
-}
-
-_kubernetes_info_done() {
-  local code=$2
-  local stdout=$3
-
-  # when async worker crashes
-  if (( code != 0 )); then
-    async_stop_worker kubernetes_info
-    _kubernetes_prompt_init
+  if [[ -z "$context" ]]; then
+    return
   fi
 
-  if [[ -n $stdout ]]; then
-    _kubernetes_prompt="%F{#8be9fd}⎈ %f$stdout "
-  else
-    _kubernetes_prompt=""
-  fi
-  zle reset-prompt
-}
-
-_kubernetes_info_precmd() {
-  async_flush_jobs kubernetes_info 
-  async_job kubernetes_info _kubernetes_info "${KUBECONFIG:-${HOME}/.kube/config}"
-}
-
-_kubernetes_prompt_init() {
-  typeset -g _kubernetes_prompt=''
-  async_start_worker kubernetes_info
-  async_register_callback kubernetes_info _kubernetes_info_done
-  add-zsh-hook precmd _kubernetes_info_precmd
+  print "%F{#8be9fd}⎈ %f${context}"
 }
 
 _venv_info() {
-  VENV=$1
-  print ${VENV/"${HOME}"/'~'}
-}
-
-_venv_info_done() {
-  local code=$2
-  local stdout=$3
-
-  # when async worker crashes
-  if (( code != 0 )); then
-    async_stop_worker venv_info
-    _venv_prompt_init
+  VENV=${VIRTUAL_ENV/"${HOME}"/'~'}
+  if [[ -n $VENV ]]; then
+    print "🐍 ${VENV}"
   fi
-
-  if [[ -n $stdout ]]; then
-    _venv_prompt="🐍 $stdout "
-  else
-    _venv_prompt=""
-  fi
-  zle reset-prompt
 }
 
-_venv_info_precmd() {
-  async_flush_jobs venv_info 
-  async_job venv_info _venv_info $VIRTUAL_ENV
-}
-
-_venv_prompt_init() {
-  export VIRTUAL_ENV_DISABLE_PROMPT=1
-  typeset -g _venv_prompt=''
-  async_start_worker venv_info
-  async_register_callback venv_info _venv_info_done
-  add-zsh-hook precmd _venv_info_precmd
-}
-
-_ssh_prompt_init() {
+_ssh_prompt() {
   if [[ -n $SSH_CONNECTION ]]; then
-    _ssh_prompt="🌐 %m "
-  else
-    _ssh_prompt=""
+    print "🌐 %m "
   fi
 }
 
 prompt_init() {
+  export VIRTUAL_ENV_DISABLE_PROMPT=1
+
   async_init
   _git_info_prompt_init
-  _kubernetes_prompt_init
-  _venv_prompt_init
-  _ssh_prompt_init
 
-  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n ${_ssh_prompt}📁 %2d ${_git_info_prompt}${_kubernetes_prompt}${_venv_prompt}
+  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n $(_ssh_prompt)📁 %2d ${_git_info_prompt}$(_kubernetes_info)$(_venv_info)
 %F{#6272a4}╰─%f%F{#bd93f9}❯%f '
   RPROMPT='📁 %~'
 }
