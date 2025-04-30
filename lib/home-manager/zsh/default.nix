@@ -6,6 +6,7 @@
 }: {
   programs.zsh = {
     enable = true;
+    enableCompletion = false;
     shellAliases = {
       k = "kubectl";
       ks = "kubectl -n kube-system";
@@ -28,8 +29,20 @@
       [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
     '';
     initExtraFirst = ''
-      zmodload zsh/complete
       zmodload zsh/zle
+      autoload -U compinit
+      local now=$(date +"%s")
+      local updated=''${now}
+      if [[ -f ''${ZDOTDIR}/.zcompdump ]]; then
+        local updated=$(date -r ''${ZDOTDIR}/.zcompdump +"%s")
+      fi
+      local threshold=$((60 * 60 * 24))
+      if [ $((''${now} - ''${updated})) -gt ''${threshold} ]; then
+        compinit
+      else
+        # if there are new functions can be omitted by giving the option -C.
+        compinit -C
+      fi
     '';
     initExtra = ''
       source ${./hooks.zsh}
