@@ -4,4 +4,4 @@ if [[ -n ${target} ]]; then
 fi
 
 nix run --extra-experimental-features nix-command --extra-experimental-features flakes home-manager/release-24.11 -- \
-  switch --extra-experimental-features nix-command --extra-experimental-features flakes --flake ."${target}" --impure
+  switch --extra-experimental-features nix-command --extra-experimental-features flakes --flake ."${target}" --impure -b backup
