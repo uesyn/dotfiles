@@ -62,7 +62,7 @@ in {
       pkgs.pstree
       pkgs.ripgrep
       pkgs.tree
-      pkgs.unstable.github-mcp-server
+      pkgs.github-mcp-server
       pkgs.unzip
       pkgs.wget
       pkgs.xz

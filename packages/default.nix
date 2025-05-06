@@ -10,12 +10,4 @@ dotfiles.lib.forAllSystems (system: {
       # extraSpecialArgs = {};
     };
   };
-
-  nixosConfigurations = {
-    "wsl2" = dotfiles.lib.wsl2 {
-      inherit system;
-      # overlays = [];
-      # modules = [];
-    };
-  };
 })

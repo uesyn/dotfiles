@@ -26,14 +26,3 @@ $ git clone https://github.com/uesyn/dotfiles.git
 $ cd ./dotfiles
 $ nix --extra-experimental-features nix-command --extra-experimental-features flakes run .#hm
 ```
-
-### NixOS on WSL2
-
-After [Installation of NixOS on WSL2](https://github.com/nix-community/NixOS-WSL), run below commands.
-
-```sh
-$ nix-shell -p git curl
-$ git clone https://github.com/uesyn/dotfiles
-$ cd ./dotfiles
-$ nixos-rebuild switch --use-remote-sudo --flake .#wsl2
-```

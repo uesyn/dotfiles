@@ -4,7 +4,7 @@
   ...
 }: {
   home.packages = with pkgs; [
-    unstable.zellij
+    zellij
   ];
 
   home.file = {

@@ -1,20 +1,7 @@
 {
   nixpkgs,
-  nixpkgs-unstable,
   home-manager,
-  nixos-wsl,
 }: let
-  defaultOverlays = [
-    (final: prev: {
-      unstable = import nixpkgs-unstable {
-        system = "${prev.system}";
-        config = {
-          allowUnfree = true;
-        };
-      };
-    })
-  ];
-
   pkgsForSystem = {
     system,
     overlays ? [],
@@ -24,7 +11,7 @@
       config = {
         allowUnfree = true;
       };
-      overlays = overlays ++ defaultOverlays;
+      overlays = overlays;
     };
 
   hm = {
@@ -66,47 +53,9 @@
       extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs extraSpecialArgs;
     };
 
-  # TODO: accept extraSpecialArgs
-  nixos = {
-    system,
-    overlays ? [],
-    modules ? [],
-  }:
-    nixpkgs.lib.nixosSystem {
-      inherit system;
-      modules =
-        [
-          {
-            nixpkgs.config.allowUnfree = true;
-            nixpkgs.overlays = overlays ++ defaultOverlays;
-          }
-          ./nixos/common.nix
-        ]
-        ++ modules;
-    };
-
-  # For nixos running on wsl2
-  wsl2 = {
-    system,
-    overlays ? [],
-    modules ? [],
-  }:
-    nixos {
-      inherit system;
-      inherit overlays;
-      modules =
-        modules
-        ++ [
-          nixos-wsl.nixosModules.default
-          ./nixos/wsl2.nix
-        ];
-    };
-
   forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
 in {
   inherit pkgsForSystem;
   inherit hm;
-  inherit nixos;
-  inherit wsl2;
   inherit forAllSystems;
 }

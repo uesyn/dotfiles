@@ -12,4 +12,8 @@
   home.sessionPath = [
     "${config.home.homeDirectory}/.node/bin"
   ];
+
+  home.packages = [
+    pkgs.nodejs_22
+  ];
 }

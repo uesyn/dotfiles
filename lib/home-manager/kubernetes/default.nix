@@ -7,10 +7,10 @@
     krew
     kubectx
     stern
-    unstable.kind
-    unstable.kubectl
-    unstable.kubernetes-helm
-    unstable.kustomize
+    kind
+    kubectl
+    kubernetes-helm
+    kustomize
   ];
 
   home.sessionVariables = {

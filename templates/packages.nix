@@ -22,12 +22,4 @@ dotfiles.lib.forAllSystems (system: {
       # };
     };
   };
-
-  nixosConfigurations = {
-    "wsl2" = dotfiles.lib.wsl2 {
-      inherit system;
-      # overlays = [];
-      # modules = [];
-    };
-  };
 })

@@ -24,7 +24,7 @@ in {
 
   programs.neovim = {
     enable = true;
-    package = pkgs.unstable.neovim-unwrapped;
+    package = pkgs.neovim-unwrapped;
 
     withPython3 = false;
     withRuby = false;
@@ -37,7 +37,7 @@ in {
       fd
       fzf
       ripgrep
-      unstable.copilot-language-server
+      copilot-language-server
     ];
 
     extraLuaConfig = ''
@@ -143,7 +143,7 @@ in {
       vim.lsp.enable({'gopls', 'typescript_language_server', 'rust_analyzer'})
     '';
 
-    plugins = with pkgs.unstable.vimPlugins; [
+    plugins = with pkgs.vimPlugins; [
       nvim-web-devicons
       plenary-nvim
       nui-nvim

@@ -14,4 +14,9 @@
   home.sessionPath = [
     "${config.home.homeDirectory}/bin"
   ];
+
+  home.packages = [
+    pkgs.go
+    pkgs.gopls
+  ];
 }
