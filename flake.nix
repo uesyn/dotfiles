@@ -79,7 +79,7 @@
             ]
             ++ modules;
           extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs extraSpecialArgs;
-      };
+        };
     };
 
     packages = forAllSystems (system: {
@@ -96,7 +96,6 @@
     });
 
     formatter = forAllSystems (system: (pkgsForSystem {inherit system;}).alejandra);
-
   in {
     inherit lib;
     inherit apps;
