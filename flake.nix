@@ -32,7 +32,10 @@
     in {
       hm = {
         type = "app";
-        program = "${pkgs.writeShellScriptBin "hm.sh" (builtins.readFile ./apps/hm.sh)}/bin/hm.sh";
+        program = "${pkgs.writeShellScriptBin "hm.sh" ''
+          #!${pkgs.bash}/bin/bash
+          ${pkgs.home-manager}/bin/home-manager switch --flake . --impure -b backup
+        ''}/bin/hm.sh";
       };
     });
 
