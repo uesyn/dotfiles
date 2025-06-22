@@ -47,6 +47,7 @@ in {
       pkgs.findutils
       pkgs.fzf
       pkgs.gcc
+      pkgs.github-mcp-server
       pkgs.glib
       pkgs.gnugrep
       pkgs.gnumake
@@ -55,6 +56,7 @@ in {
       pkgs.htop
       pkgs.jq
       pkgs.jsonnet
+      pkgs.just
       pkgs.openssh
       pkgs.openssl
       pkgs.pkg-config
@@ -62,7 +64,6 @@ in {
       pkgs.pstree
       pkgs.ripgrep
       pkgs.tree
-      pkgs.github-mcp-server
       pkgs.unzip
       pkgs.wget
       pkgs.xz
