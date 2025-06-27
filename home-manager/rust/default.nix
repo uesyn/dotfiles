@@ -19,7 +19,7 @@
     NIX_STORE = "/nix/store";
   };
 
-  programs.zsh.initExtra = ''
+  programs.zsh.initContent = ''
     eval "$(${pkgs.rustup}/bin/rustup completions zsh)"
   '';
 }

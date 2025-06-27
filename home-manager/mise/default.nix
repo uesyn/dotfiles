@@ -9,7 +9,7 @@
     eval "$(${lib.getExe pkgs.mise} activate --shims bash)"
   '';
 
-  programs.zsh.initExtra = ''
+  programs.zsh.initContent = ''
     eval "$(${lib.getExe pkgs.mise} activate --shims zsh)"
   '';
   programs.mise = {
