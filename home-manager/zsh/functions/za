@@ -1,0 +1,6 @@
+if [[ -n ${ZELLIJ} ]]; then
+  echo "Already in zellij session"
+  return
+fi
+session="$(zellij list-sessions -n | grep -v 'EXITED' | fzf | cut -f1 -d' ')"
+zellij attach "${session}"

@@ -16,8 +16,6 @@
       ll = "ls --color -l";
       ls = "ls --color";
       venv = "python -m venv .venv";
-      z = "zellij attach -c";
-      tm = "tmux new-session -ADs main";
     };
     dotDir = ".config/zsh";
     defaultKeymap = "emacs";
