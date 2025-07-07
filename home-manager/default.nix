@@ -37,6 +37,7 @@ in {
 
   home.packages =
     [
+      pkgs.autoconf
       pkgs.coreutils-full
       pkgs.curl
       pkgs.diffutils
