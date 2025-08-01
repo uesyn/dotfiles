@@ -79,7 +79,7 @@ in {
     ++ lib.optionals isDarwin [
       # macOS packages
       pkgs.colima
-      pkgs.darwin.iproute2mac
+      pkgs.iproute2mac
       pkgs.docker-credential-helpers
     ];
 
