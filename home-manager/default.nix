@@ -66,6 +66,7 @@ in {
       pkgs.ripgrep
       pkgs.tree
       pkgs.unzip
+      pkgs.uv
       pkgs.wget
       pkgs.xz
       pkgs.yq-go
