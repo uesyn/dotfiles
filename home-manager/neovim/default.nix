@@ -289,18 +289,6 @@ in {
         '';
       }
       {
-        plugin = copilot-lua;
-        type = "lua";
-        config = ''
-          require("copilot").setup({
-            -- fix path
-            lsp_binary = "copilot-language-server",
-            suggestion = { enabled = false },
-            panel = { enabled = false },
-          })
-        '';
-      }
-      {
         plugin = fidget-nvim;
         type = "lua";
         config = ''
@@ -338,54 +326,6 @@ in {
           vim.diagnostic.config({ virtual_text = false })
           require("lsp_lines").setup()
           vim.keymap.set("n", "<Leader>ll", require("lsp_lines").toggle, { desc = "Toggle lsp_lines" })
-        '';
-      }
-
-      {
-        plugin = codecompanion-nvim;
-        type = "lua";
-        config = ''
-          require("codecompanion").setup({
-            display = {
-              chat = {
-                window = {
-                  position = "right",
-                  border = "rounded",
-                },
-              },
-            },
-            opts = {
-              language = "Japanese",
-            },
-            strategies = {
-              chat = {
-                adapter = "copilot",
-                keymaps = {
-                  stop = { modes = { n = "<S-s>" } },
-                },
-              },
-              inline = {
-                adapter = "copilot",
-              },
-              cmd = {
-                adapter = "copilot",
-              }
-            },
-          })
-
-          vim.keymap.set({"n", "v"}, "<Leader>ci", "<Cmd>CodeCompanion<CR>", { desc = "Open the inline assistant", buffer = true, silent = true })
-          vim.keymap.set({"n", "v"}, "<Leader>cc", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
-          vim.keymap.set({"n", "v"}, "<Leader>ca", "<Cmd>CodeCompanionActions<CR>", { desc = "Open the Action Palette", buffer = true, silent = true })
-
-          vim.api.nvim_create_autocmd("FileType", {
-            pattern = "codecompanion",
-            callback = function()
-              vim.keymap.set("n", "<Leader>cc", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
-              vim.keymap.set("n", "q", "<Cmd>CodeCompanionChat Toggle<CR>", { desc = "Toggle a chat buffer", buffer = true, silent = true })
-            end,
-          })
-
-          vim.cmd([[cab cc CodeCompanion]])
         '';
       }
     ];
