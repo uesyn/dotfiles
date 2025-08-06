@@ -1,0 +1,25 @@
+#!/usr/bin/env zsh
+
+cmd="${0##*/}"
+
+if [[ ! -x "$(command -v ghq)" ]]; then
+  echo "Please Install ghq!!!"
+  exit 1
+fi
+
+list=($(ghq list) tmp)
+local selected_dir=$(for e in "${list[@]}"; do echo "$e"; done | sort | uniq | fzf)
+if [[ -n $selected_dir ]]; then
+  if [[ $selected_dir == "tmp" ]]; then
+    mkdir -p $(ghq root)/${selected_dir}
+  fi
+
+  target="$(ghq root)/${selected_dir}"
+  if [[ $cmd == "co" ]]; then
+    env -i bash -c "exec $(which code) \"${target}\""
+  elif [[ $cmd == "cr" ]]; then
+    env -i bash -c "exec $(which code) -r \"${target}\""
+  elif [[ $cmd == "gg" ]]; then
+    cd "${target}"
+  fi
+fi
