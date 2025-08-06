@@ -16,9 +16,9 @@ if [[ -n $selected_dir ]]; then
 
   target="$(ghq root)/${selected_dir}"
   if [[ $cmd == "co" ]]; then
-    env -i bash -c "exec $(which code) \"${target}\""
+    code "${target}"
   elif [[ $cmd == "cr" ]]; then
-    env -i bash -c "exec $(which code) -r \"${target}\""
+    code -r "${target}"
   elif [[ $cmd == "gg" ]]; then
     cd "${target}"
   fi
