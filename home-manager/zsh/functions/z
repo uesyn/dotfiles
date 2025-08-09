@@ -1,6 +1,2 @@
-if [[ -n ${ZELLIJ} ]]; then
-  echo "Already in zellij session"
-  return
-fi
 current_dir="$(basename $(dirname ${PWD}))_$(basename ${PWD})"
 zellij attach -c "${current_dir}"
