@@ -13,7 +13,6 @@
       default_shell "zsh"
       pane_frames false
       theme "dracula"
-      default_layout "simple"
       default_mode "normal"
       mouse_mode false
       scroll_buffer_size 10000
@@ -48,7 +47,7 @@
 
       ui {
           pane_frames {
-              hide_session_name true
+              hide_session_name false
           }
       }
 
