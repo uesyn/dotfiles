@@ -58,6 +58,7 @@ in {
       pkgs.jq
       pkgs.jsonnet
       pkgs.just
+      pkgs.marp-cli
       pkgs.openssh
       pkgs.openssl
       pkgs.pkg-config
