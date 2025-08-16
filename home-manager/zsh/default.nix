@@ -12,7 +12,6 @@
       k = "kubectl";
       ks = "kubectl -n kube-system";
       kx = "kubectx";
-      kn = "kubens";
       ll = "ls --color -l";
       ls = "ls --color";
       venv = "python -m venv .venv";
