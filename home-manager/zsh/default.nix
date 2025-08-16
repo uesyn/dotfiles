@@ -16,7 +16,7 @@
       ls = "ls --color";
       venv = "python -m venv .venv";
     };
-    dotDir = ".config/zsh";
+    dotDir = "${config.home.homeDirectory}/.config/zsh";
     defaultKeymap = "emacs";
     envExtra = ''
       touch "$HOME/.zshenv.local" && source "$HOME/.zshenv.local"

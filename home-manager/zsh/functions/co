@@ -1,6 +1,7 @@
 #!/usr/bin/env zsh
 
 cmd="${0##*/}"
+arg="${1}"
 
 if [[ ! -x "$(command -v ghq)" ]]; then
   echo "Please Install ghq!!!"
@@ -16,9 +17,7 @@ if [[ -n $selected_dir ]]; then
 
   target="$(ghq root)/${selected_dir}"
   if [[ $cmd == "co" ]]; then
-    code "${target}"
-  elif [[ $cmd == "cr" ]]; then
-    code -r "${target}"
+    code ${arg} "${target}"
   elif [[ $cmd == "gg" ]]; then
     cd "${target}"
   fi
