@@ -5,18 +5,11 @@
   config,
   ...
 }: {
-  programs.bash.initExtra = ''
-    eval "$(${lib.getExe pkgs.mise} activate --shims bash)"
-  '';
-
-  programs.zsh.initContent = ''
-    eval "$(${lib.getExe pkgs.mise} activate --shims zsh)"
-  '';
   programs.mise = {
     package = pkgs.mise;
-    enableBashIntegration = false;
-    enableZshIntegration = false;
     enable = true;
+    enableBashIntegration = true;
+    enableZshIntegration = true;
     globalConfig = {
       tools = {
         python = "3.12";
