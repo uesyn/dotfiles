@@ -41,6 +41,7 @@
 
   home.sessionVariables = {
     MISE_ALL_COMPILE = "false";
+    MISE_IDIOMATIC_VERSION_FILE_ENABLE_TOOLS = "python";
     # # For python building
     #   CPPFLAGS="-I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
     #   CXXFLAGS="-I${pkgs.zlib.dev}/include -I${pkgs.libffi.dev}/include -I${pkgs.readline.dev}/include -I${pkgs.bzip2.dev}/include -I${pkgs.openssl.dev}/include";
