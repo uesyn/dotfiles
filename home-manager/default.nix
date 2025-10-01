@@ -64,6 +64,7 @@ in {
       pkgs.pkg-config
       pkgs.procps
       pkgs.pstree
+      pkgs.qwen-code
       pkgs.ripgrep
       pkgs.tree
       pkgs.unzip
