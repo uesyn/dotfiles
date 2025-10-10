@@ -12,7 +12,6 @@
     pkgs.vimUtils.buildVimPlugin {
       inherit pname version src;
     };
-  blame-nvim = mkNvimPlugin "blame.nvim" "https://github.com/FabijanZulj/blame.nvim.git" "main" "59cf695685c1d8d603d99b246cc8d42421937c09";
   winresize-nvim = mkNvimPlugin "winresize.nvim" "https://github.com/pogyomo/winresize.nvim.git" "main" "a54f4a0dbfd7e52e0e8153325d0c4571e0d33217";
 in {
   xdg.configFile = {
@@ -258,7 +257,75 @@ in {
           require("gitsigns").setup()
         '';
       }
-      {plugin = blink-cmp-copilot;}
+      {
+        plugin = copilot-lua;
+        type = "lua";
+        config = ''
+          require("copilot").setup({
+            suggestion = {
+              enabled = true,
+              auto_trigger = true,
+            },
+            panel = { enabled = false },
+          })
+
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "BlinkCmpMenuOpen",
+            callback = function()
+              vim.b.copilot_suggestion_hidden = true
+            end,
+          })
+          
+          vim.api.nvim_create_autocmd("User", {
+            pattern = "BlinkCmpMenuClose",
+            callback = function()
+              vim.b.copilot_suggestion_hidden = false
+            end,
+          })
+        '';
+      }
+      {
+        plugin = CopilotChat-nvim;
+        type = "lua";
+        config = ''
+          require("CopilotChat").setup({
+            model = 'gpt-4.1',
+            window = {
+              layout = 'float',
+              width = 100, -- Fixed width in columns
+              height = 30, -- Fixed height in rows
+              border = 'rounded', -- 'single', 'double', 'rounded', 'solid'
+              title = '🤖 AI Assistant',
+              zindex = 100, -- Ensure window stays on top
+            },
+            headers = {
+              user = '👤 You',
+              assistant = '🤖 Copilot',
+              tool = '🔧 Tool',
+            },
+            separator = '━━',
+            auto_fold = true, -- Automatically folds non-assistant messages
+          })
+
+          vim.keymap.set("n", "<Leader>cc", require("CopilotChat").toggle, { desc = "Open Copilot Chat" })
+          vim.api.nvim_create_autocmd("FileType", {
+            pattern = "copilot-chat",
+            callback = function()
+              vim.bo.buflisted = false
+              vim.keymap.set("n", "<C-r>", require("CopilotChat").reset, { buffer = true, desc = "Reset chat" })
+              vim.keymap.set("n", "q", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
+              vim.keymap.set("n", "<C-q>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
+              vim.keymap.set("n", "<C-[>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
+              vim.keymap.set("n", "<Esc>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
+              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+            end,
+          })
+        '';
+      }
+      {
+        plugin = blink-cmp-copilot;
+      }
       {
         plugin = blink-cmp;
         type = "lua";
@@ -318,7 +385,6 @@ in {
           })
         '';
       }
-
       {
         plugin = lsp_lines-nvim;
         type = "lua";
