@@ -10,6 +10,7 @@ in {
   imports = [
     ./bash
     ./commands
+    ./crush
     ./dircolors
     ./direnv
     ./fzf
@@ -39,7 +40,6 @@ in {
     [
       pkgs.autoconf
       pkgs.coreutils-full
-      pkgs.crush
       pkgs.curl
       pkgs.diffutils
       pkgs.dig
