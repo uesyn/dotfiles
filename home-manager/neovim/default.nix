@@ -166,14 +166,21 @@ in {
           })
 
           -- picker
-          vim.keymap.set("n", "<Leader>sg", Snacks.picker.grep, { desc = "Search files with grep and fuzzy finder" })
-          vim.keymap.set("n", "<Leader>sf", Snacks.picker.files, { desc = "Search Lines with fuzzy finder" })
-          vim.keymap.set("n", "<Leader>s;", Snacks.picker.resume, { desc = "Resume fuzzy finder results" })
-          vim.keymap.set("n", "<Leader>sk", Snacks.picker.keymaps, { desc = "Search keymaps" })
-          vim.keymap.set("n", "<Leader>sp", function() Snacks.picker() end, { desc = "Resume fuzzy finder results" })
+          vim.keymap.set("n", "<Leader>fg", Snacks.picker.grep, { desc = "Search files with grep and fuzzy finder" })
+          vim.keymap.set("n", "<Leader>ff", Snacks.picker.files, { desc = "Search Lines with fuzzy finder" })
+          vim.keymap.set("n", "<Leader>f;", Snacks.picker.resume, { desc = "Resume fuzzy finder results" })
 
           -- explorer
           vim.keymap.set("n", "<S-f>", function() Snacks.explorer.open() end, { desc = "Open file explorer" })
+
+          vim.api.nvim_create_autocmd("FileType", {
+            pattern = "snacks-picker-input",
+            callback = function()
+              vim.bo.buflisted = false
+              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
+              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+            end,
+          })
         '';
       }
 
@@ -265,6 +272,9 @@ in {
             suggestion = {
               enabled = true,
               auto_trigger = true,
+              keymap = {
+                accept = "<C-a>",
+              },
             },
             panel = { enabled = false },
           })
@@ -331,13 +341,17 @@ in {
         type = "lua";
         config = ''
           require("blink.cmp").setup({
-            keymap = { preset = 'enter' },
+            keymap = {
+              preset = "super-tab",
+              ["<C-b>"] = {},
+              ["<C-f>"] = {},
+            },
             signature = {
               enabled = true,
               window = { border = "single" },
             },
             completion = {
-              list = { selection = { preselect = false, auto_insert = false } },
+              list = { selection = { preselect = true, auto_insert = false } },
               documentation = { window = { border = "single" } },
               menu = { border = "single" },
             },
