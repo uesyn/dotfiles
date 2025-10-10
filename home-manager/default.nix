@@ -39,6 +39,7 @@ in {
     [
       pkgs.autoconf
       pkgs.coreutils-full
+      pkgs.crush
       pkgs.curl
       pkgs.diffutils
       pkgs.dig
