@@ -36,7 +36,6 @@ in {
       fd
       fzf
       ripgrep
-      copilot-language-server
     ];
 
     extraLuaConfig = ''
