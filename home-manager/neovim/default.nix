@@ -159,14 +159,14 @@ in {
                 input = {
                   keys = {
                     ["<c-q>"] = { "close", mode = { "n", "i" } },
-                    ["<CR>"] = { "qflist", mode = { "i", "n" } },
+                    ["<C-CR>"] = { "qflist", mode = { "i", "n" } },
                   },
                 },
                 list = {
                   keys = {
                     ["<c-q>"] = { "close", mode = { "n", "i" } },
                     ["<Esc>"] = { "close", mode = { "n", "i" } },
-                    ["<CR>"] = { "qflist", mode = { "i", "n" } },
+                    ["<C-CR>"] = { "qflist", mode = { "i", "n" } },
                   },
                 },
               },
