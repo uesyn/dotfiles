@@ -152,42 +152,20 @@ in {
         config = ''
           require("snacks").setup({
             input = { enabled = true },
-            picker = {
-              enabled = true,
-              formatters = { file = { truncate = 200 } },
-              win = {
-                input = {
-                  keys = {
-                    ["<c-q>"] = { "close", mode = { "n", "i" } },
-                    ["<C-CR>"] = { "qflist", mode = { "i", "n" } },
-                  },
-                },
-                list = {
-                  keys = {
-                    ["<c-q>"] = { "close", mode = { "n", "i" } },
-                    ["<Esc>"] = { "close", mode = { "n", "i" } },
-                    ["<C-CR>"] = { "qflist", mode = { "i", "n" } },
-                  },
-                },
-              },
-            },
             notifier = { enabled = true },
             statuscolumn = { enabled = true },
           })
+        '';
+      }
 
-          -- picker
-          vim.keymap.set("n", "<Leader>fg", Snacks.picker.grep, { desc = "Search files with grep and fuzzy finder" })
-          vim.keymap.set("n", "<Leader>ff", Snacks.picker.files, { desc = "Search Lines with fuzzy finder" })
-          vim.keymap.set("n", "<Leader>f;", Snacks.picker.resume, { desc = "Resume fuzzy finder results" })
-
-          vim.api.nvim_create_autocmd("FileType", {
-            pattern = "snacks-picker-input",
-            callback = function()
-              vim.bo.buflisted = false
-              vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
-              vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
-            end,
-          })
+      {
+        plugin = fzf-lua;
+        type = "lua";
+        config = ''
+          require("fzf-lua").setup()
+          vim.keymap.set("n", "<Leader>fg", require("fzf-lua").live_grep, { desc = "Search files with grep and fuzzy finder" })
+          vim.keymap.set("n", "<Leader>ff", require("fzf-lua").files, { desc = "Search Lines with fuzzy finder" })
+          vim.keymap.set("n", "<Leader>f;", require("fzf-lua").resume, { desc = "Resume fuzzy finder results" })
         '';
       }
 
