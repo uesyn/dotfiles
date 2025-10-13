@@ -154,7 +154,22 @@ in {
             input = { enabled = true },
             picker = {
               enabled = true,
-              formatters = { file = { truncate = 200 } }
+              formatters = { file = { truncate = 200 } },
+              win = {
+                input = {
+                  keys = {
+                    ["<c-q>"] = { "close", mode = { "n", "i" } },
+                    ["<CR>"] = { "qflist", mode = { "i", "n" } },
+                  },
+                },
+                list = {
+                  keys = {
+                    ["<c-q>"] = { "close", mode = { "n", "i" } },
+                    ["<Esc>"] = { "close", mode = { "n", "i" } },
+                    ["<CR>"] = { "qflist", mode = { "i", "n" } },
+                  },
+                },
+              },
             },
             notifier = { enabled = true },
             statuscolumn = { enabled = true },
