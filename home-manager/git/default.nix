@@ -15,26 +15,15 @@
 in {
   home.packages = [
     pkgs.ghq
+    pkgs.gh
+    pkgs.gh-copilot
+    pkgs.gh-dash
+    pkgs.gh-poi
+    pkgs.gh-s
   ];
 
   home.sessionVariables = {
     GIT_EDITOR = "nvim";
-  };
-
-  programs.gh = {
-    enable = true;
-    settings = {
-      editor = "nvim";
-      git_protocol = "https";
-      prompt = "enabled";
-    };
-    gitCredentialHelper.enable = false;
-    extensions = [
-      pkgs.gh-copilot
-      pkgs.gh-dash
-      pkgs.gh-poi
-      pkgs.gh-s
-    ];
   };
 
   programs.git-credential-oauth = {
