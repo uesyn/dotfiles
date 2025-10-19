@@ -20,13 +20,13 @@
       system,
       overlays ? [],
     }:
-    import nixpkgs {
-      inherit system;
-      config = {
-        allowUnfree = true;
+      import nixpkgs {
+        inherit system;
+        config = {
+          allowUnfree = true;
+        };
+        overlays = overlays;
       };
-      overlays = overlays;
-    };
 
     apps = forAllSystems (system: let
       pkgs = pkgsForSystem {inherit system;};
