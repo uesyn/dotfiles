@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nix-ai-tools.url = "github:numtide/nix-ai-tools";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -19,13 +20,13 @@
       system,
       overlays ? [],
     }:
-      import nixpkgs {
-        inherit system;
-        config = {
-          allowUnfree = true;
-        };
-        overlays = overlays;
+    import nixpkgs {
+      inherit system;
+      config = {
+        allowUnfree = true;
       };
+      overlays = overlays;
+    };
 
     apps = forAllSystems (system: let
       pkgs = pkgsForSystem {inherit system;};
