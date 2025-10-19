@@ -13,9 +13,16 @@
   outputs = {
     nixpkgs,
     home-manager,
+    nix-ai-tools,
     ...
   }: let
     forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
+    aitoolsPkgsForSystem = {
+      system,
+    }:
+      import nix-ai-tools {
+        inherit system;
+      };
     pkgsForSystem = {
       system,
       overlays ? [],
@@ -25,7 +32,13 @@
         config = {
           allowUnfree = true;
         };
-        overlays = overlays;
+        overlays = overlays ++ [
+          (final: prev: {
+            crush = nix-ai-tools.packages.${system}.crush;
+            code = nix-ai-tools.packages.${system}.code;
+            qwen-code = nix-ai-tools.packages.${system}.qwen-code;
+          })
+        ];
       };
 
     apps = forAllSystems (system: let

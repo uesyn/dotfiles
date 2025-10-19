@@ -18,6 +18,7 @@ $ echo "experimental-features = nix-command flakes" >> ~/.config/nix/nix.conf
 
 # Add nix-community cache
 $ nix run nixpkgs#cachix -- use nix-community
+$ nix run nixpkgs#cachix -- use numtide
 ```
 
 ```sh
