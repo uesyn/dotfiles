@@ -320,7 +320,7 @@ in {
               enabled = true,
               auto_trigger = true,
               keymap = {
-                accept = "<C-a>",
+                accept = "<Tab>",
               },
             },
             panel = { enabled = false },
@@ -390,6 +390,7 @@ in {
           require("blink.cmp").setup({
             keymap = {
               preset = "super-tab",
+              ['<CR>'] = { 'accept', 'fallback' },
               ["<C-b>"] = {},
               ["<C-f>"] = {},
             },
