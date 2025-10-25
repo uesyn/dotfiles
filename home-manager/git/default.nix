@@ -37,9 +37,6 @@ in {
   programs.git = {
     enable = true;
 
-    userName = git.user;
-    userEmail = git.email;
-
     ignores = [
       ".direnv"
       ".DS_Store"
@@ -50,6 +47,7 @@ in {
       ".venv"
       "venv"
       ".vim-lsp-settings"
+      "CRUSH.md"
     ];
 
     includes = [
@@ -61,8 +59,13 @@ in {
       pre-push = ./hooks/pre-push;
     };
 
-    extraConfig = {
+    settings = {
       ghq.root = "~/src";
+
+      user = {
+        name = git.user;
+        email = git.email;
+      };
 
       credential =
         {
