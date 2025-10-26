@@ -10,9 +10,12 @@
   home.file = {
     ".config/crush/crush.json".text = ''
       {
+        "options": {
+          "disable_auto_summarize": true
+        },
         "providers": {
           "AI Engine": {
-            "name": "Ollama",
+            "name": "AI Engine",
             "base_url": "https://api.ai.sakura.ad.jp/v1",
             "type": "openai",
             "models": [
