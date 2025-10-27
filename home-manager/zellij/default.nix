@@ -14,13 +14,14 @@
       pane_frames false
       theme "dracula"
       default_mode "normal"
-      mouse_mode false
+      mouse_mode true
       scroll_buffer_size 10000
       copy_on_select true
       scrollback_editor "nvim"
       mirror_session true
       auto_layout false
       show_startup_tips false
+      default_layout "compact"
 
       plugins {
           tab-bar { path "tab-bar"; }
