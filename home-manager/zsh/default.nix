@@ -7,7 +7,7 @@
 }: {
   programs.zsh = {
     enable = true;
-    enableCompletion = false;
+    enableCompletion = true;
     shellAliases = {
       k = "kubectl";
       ks = "kubectl -n kube-system";
