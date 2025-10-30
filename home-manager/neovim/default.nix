@@ -316,6 +316,10 @@ in {
         type = "lua";
         config = ''
           require("copilot").setup({
+            filetypes = {
+              markdown = false,
+              dump = false,
+            },
             suggestion = {
               enabled = true,
               auto_trigger = true,
