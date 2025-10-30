@@ -21,7 +21,7 @@
       mirror_session true
       auto_layout false
       show_startup_tips false
-      default_layout "compact"
+      default_layout "simple"
 
       plugins {
           tab-bar { path "tab-bar"; }
@@ -148,7 +148,7 @@
     ".config/zellij/layouts/simple.kdl".text = ''
       layout {
           pane size=1 borderless=true {
-              plugin location="zellij:compact-bar"
+              plugin location="compact-bar"
           }
           pane
       }
