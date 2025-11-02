@@ -15,14 +15,17 @@
     home-manager,
     nix-ai-tools,
     ...
-  }: let
-    forAllSystems = nixpkgs.lib.genAttrs ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
-    aitoolsPkgsForSystem = {
-      system,
-    }:
-      import nix-ai-tools {
-        inherit system;
-      };
+  } @ inputs:
+  let
+    # Utility functions
+    forAllSystems = nixpkgs.lib.genAttrs [
+      "x86_64-linux"
+      "aarch64-linux"
+      "x86_64-darwin"
+      "aarch64-darwin"
+    ];
+
+    # Package configurations
     pkgsForSystem = {
       system,
       overlays ? [],
@@ -41,7 +44,8 @@
         ];
       };
 
-    apps = forAllSystems (system: let
+    # Application definitions
+    appsForSystem = system: let
       pkgs = pkgsForSystem {inherit system;};
     in {
       hm = {
@@ -51,11 +55,14 @@
           ${pkgs.home-manager}/bin/home-manager switch --flake . --impure -b backup
         ''}/bin/hm.sh";
       };
-    });
+    };
 
+    # Library functions
     lib = {
       inherit pkgsForSystem;
       inherit forAllSystems;
+
+      # Home Manager configuration helper
       hm = {
         system,
         user ? builtins.getEnv "USER",
@@ -96,25 +103,25 @@
         };
     };
 
-    packages = forAllSystems (system: {
+    # Package definitions
+    packagesForSystem = system: {
       homeConfigurations = {
         ${builtins.getEnv "USER"} = lib.hm {
           inherit system;
-          # user = builtins.getEnv "USER";
-          # homeDirectory = builtins.getEnv "HOME";
-          # modules = [];
-          # overlays = [];
-          # extraSpecialArgs = {};
         };
       };
-    });
+    };
 
-    formatter = forAllSystems (system: (pkgsForSystem {inherit system;}).alejandra);
+    # Formatter configuration
+    formatterForSystem = system: (pkgsForSystem {inherit system;}).alejandra;
+
   in {
     inherit lib;
-    inherit apps;
-    inherit formatter;
-    inherit packages;
+
+    # Outputs organized by type
+    apps = forAllSystems appsForSystem;
+    packages = forAllSystems packagesForSystem;
+    formatter = forAllSystems formatterForSystem;
 
     templates = {
       default = {
