@@ -145,7 +145,24 @@ in {
       nvim-web-devicons
       plenary-nvim
       nui-nvim
-      nvim-treesitter.withAllGrammars
+      (pkgs.vimPlugins.nvim-treesitter.withPlugins (
+        p: [
+          p.bash
+          p.c
+          p.go
+          p.javascript
+          p.json
+          p.lua
+          p.markdown
+          p.markdown_inline
+          p.php
+          p.python
+          p.rust
+          p.toml
+          p.typescript
+          p.yaml
+        ])
+      )
       {
         plugin = snacks-nvim;
         type = "lua";
