@@ -123,17 +123,17 @@ in {
           end
           local bufnr = args.buf
           -- vim.keymap.set("n", "gd", function() lua vim.lsp.buf.definition() end, opts("Go to definition"))
-          vim.keymap.set("n", "gd", function() Snacks.picker.lsp_definitions() end, opts("Go to definition"))
-          vim.keymap.set("n", "gD", function() Snacks.picker.lsp_declarations() end, opts("Go to declarations"))
-          vim.keymap.set("n", "gi", function() Snacks.picker.lsp_implementations() end, opts("Go to implementations"))
-          vim.keymap.set("n", "K", function() vim.lsp.buf.hover() end, opts("Displays hover information about the symbol"))
-          vim.keymap.set("n", "gr", function() Snacks.picker.lsp_references() end, opts("Go to references")) -- should add nowait option?
-          vim.keymap.set("n", "gt", function() Snacks.picker.lsp_type_definitions() end, opts("Go to type defenitions"))
-          vim.keymap.set("n", "gs", function() Snacks.picker.lsp_symbols() end, opts("Go to document symbols"))
+          vim.keymap.set("n", "gd", function() FzfLua.lsp_definitions() end, opts("Go to definition"))
+          vim.keymap.set("n", "gD", function() FzfLua.lsp_declarations() end, opts("Go to declarations"))
+          vim.keymap.set("n", "gi", function() FzfLua.lsp_implementations() end, opts("Go to implementations"))
+          vim.keymap.set("n", "H", function() vim.lsp.buf.hover() end, opts("Displays hover information about the symbol"))
+          vim.keymap.set("n", "gr", function() FzfLua.lsp_references() end, opts("Go to references")) -- should add nowait option?
+          vim.keymap.set("n", "gt", function() FzfLua.lsp_type_definitions() end, opts("Go to type defenitions"))
+          vim.keymap.set("n", "gs", function() FzfLua.lsp_workspace_symbols() end, opts("Go to document symbols"))
           vim.keymap.set("i", "<C-l>", function() vim.lsp.buf.signature_help() end, opts("Show signature help"))
           vim.keymap.set("n", "<leader>lR", function() vim.lsp.buf.rename() end, opts("Rename"))
           vim.keymap.set("n", "<leader>lf", function() vim.lsp.buf.format({ async = true }) end, opts("Format"))
-          vim.keymap.set("n", "<leader>la", function() vim.lsp.buf.code_action() end, opts("Format"))
+          vim.keymap.set("n", "<leader>la", function() FzfLua.lsp_code_actions() end, opts("Format"))
           vim.keymap.set("n", "<leader>li", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end, opts("Toggle inlay hint"))
         end,
       })
@@ -153,7 +153,6 @@ in {
           require("snacks").setup({
             input = { enabled = true },
             notifier = { enabled = true },
-            statuscolumn = { enabled = true },
           })
         '';
       }
@@ -163,9 +162,9 @@ in {
         type = "lua";
         config = ''
           require("fzf-lua").setup()
-          vim.keymap.set("n", "<Leader>fg", require("fzf-lua").live_grep, { desc = "Search files with grep and fuzzy finder" })
-          vim.keymap.set("n", "<Leader>ff", require("fzf-lua").files, { desc = "Search Lines with fuzzy finder" })
-          vim.keymap.set("n", "<Leader>f;", require("fzf-lua").resume, { desc = "Resume fuzzy finder results" })
+          vim.keymap.set("n", "<Leader>fg", FzfLua.live_grep, { desc = "Search files with grep and fuzzy finder" })
+          vim.keymap.set("n", "<Leader>ff", FzfLua.files, { desc = "Search Lines with fuzzy finder" })
+          vim.keymap.set("n", "<Leader>f;", FzfLua.resume, { desc = "Resume fuzzy finder results" })
         '';
       }
 
