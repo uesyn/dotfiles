@@ -210,7 +210,6 @@ in {
                   "toggle_preview",
                   config = {
                     use_float = true,
-                    use_snacks_image = true,
                     use_image_nvim = true,
                   },
                 },
@@ -384,7 +383,7 @@ in {
             auto_fold = true, -- Automatically folds non-assistant messages
           })
 
-          vim.keymap.set("n", "<Leader>cc", require("CopilotChat").toggle, { desc = "Open Copilot Chat" })
+          vim.keymap.set({"n", "v"}, "<Leader>cc", require("CopilotChat").toggle, { desc = "Open Copilot Chat" })
           vim.api.nvim_create_autocmd("FileType", {
             pattern = "copilot-chat",
             callback = function()
