@@ -1,0 +1,5 @@
+vim.keymap.set({"n", "v"}, "<leader>", "<Nop>")
+vim.keymap.set("n", "ZZ", "<Nop>")
+vim.keymap.set("n", "ZQ", "<Nop>")
+vim.keymap.set("n", "q", "<Nop>")
+vim.keymap.set("n", "Q", "<Nop>")
