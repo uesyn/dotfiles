@@ -14,7 +14,6 @@
       kx = "kubectx";
       ll = "ls --color -l";
       ls = "ls --color";
-      venv = "python -m venv .venv";
     };
     dotDir = "${config.home.homeDirectory}/.config/zsh";
     defaultKeymap = "emacs";

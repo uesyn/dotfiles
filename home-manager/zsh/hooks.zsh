@@ -1,5 +1,3 @@
-autoload -U add-zsh-hook
-
 get_venv_path() {
   local venv_types=(".venv" "venv")
   local d
@@ -39,5 +37,3 @@ autoload_python_venv() {
   fi
   source ${vpath}/bin/activate
 }
-
-add-zsh-hook precmd autoload_python_venv

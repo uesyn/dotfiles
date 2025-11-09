@@ -1,5 +1,7 @@
 setopt PROMPT_SUBST
 
+autoload -U add-zsh-hook
+
 _git_info() {
   cd -q $1
   local ab=""
