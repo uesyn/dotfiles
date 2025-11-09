@@ -1,8 +1,7 @@
 return {
   "openingh.nvim",
   keys = {
-    {"<Leader>go", "n"},
-    {"<Leader>go", "v"},
+    {"<Leader>go", mode = {"n", "v"}},
   },
   after = function()
     vim.keymap.set("n", "<Leader>go", "<Cmd>OpenInGHFile<CR>", { desc = "Open in Github" })

@@ -1,8 +1,7 @@
 return {
   "CopilotChat.nvim",
   keys = {
-    {"<Leader>cc", "n"},
-    {"<Leader>cc", "v"},
+    {"<Leader>cc", mode = {"n", "v"}},
   },
   after = function()
     require("CopilotChat").setup({
