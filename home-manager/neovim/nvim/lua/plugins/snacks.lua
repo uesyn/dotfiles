@@ -6,7 +6,16 @@ return {
     require("snacks").setup({
       input = { enabled = true },
       notifier = { enabled = true },
+      picker = {
+	sources = {
+	  explorer = {
+	    ignored = true,
+	    hidden = true,
+	  },
+	},
+      },
     })
+    vim.api.nvim_set_hl(0, "SnacksPickerPathIgnored", { link = "Comment" })
 
     local explorer = function()
       Snacks.picker.explorer({
@@ -31,8 +40,6 @@ return {
               ["y"] = { "explorer_yank", mode = { "n", "x" } },
               ["p"] = "explorer_paste",
               ["u"] = "explorer_update",
-              ["I"] = "toggle_ignored",
-              ["H"] = "toggle_hidden",
               ["]g"] = "explorer_git_next",
               ["[g"] = "explorer_git_prev",
               ["]d"] = "explorer_diagnostic_next",
