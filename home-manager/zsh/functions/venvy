@@ -1,0 +1,51 @@
+#!/usr/bin/env zsh
+
+get_git_root() {
+  git rev-parse --show-toplevel
+}
+
+
+get_venv_path() {
+  local venv_types=(".venv" "venv")
+  local d
+
+  d=${PWD}
+  while true; do
+    [[ -z "${d}" ]] && break
+
+    for venv in "${venv_types[@]}"; do
+      vpath=${d}/${venv}
+      if [[ -d ${vpath} ]] && [[ -f ${vpath}/bin/activate ]]; then
+        echo -n ${vpath}
+        return
+      fi
+    done
+
+    d=${d%/*}
+  done
+}
+
+use_python_venv() {
+  local vpath="$(get_venv_path)"
+
+  if [[ -z "${vpath}" ]]; then
+    git_root=$(get_git_root)
+    if [[ -n "${git_root}" ]]; then
+      vpath=${git_root}/.venv
+    else
+      vpath=${PWD}/.venv
+    fi
+    python -m venv ${vpath}
+  fi
+
+  if [[ "$VIRTUAL_ENV" == "${vpath}" ]]; then
+    return
+  fi
+
+  if [[ -n "$(command -v deactivate)" ]]; then
+    deactivate
+  fi
+  source ${vpath}/bin/activate
+}
+
+use_python_venv

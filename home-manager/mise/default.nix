@@ -5,22 +5,29 @@
   config,
   ...
 }: {
+  xdg.configFile = {
+    "mise/config.toml".text = ''
+      [env]
+      _.python.venv = ".venv"
+    '';
+
+    "mise/settings.toml".text = ''
+      all_compile = false
+      experimental = true
+      
+      [node]
+      compile = false
+      
+      [python]
+      compile = false
+    '';
+  };
+
   programs.mise = {
     package = pkgs.mise;
     enable = true;
     enableBashIntegration = true;
     enableZshIntegration = true;
-    globalConfig = {
-      tools = {
-        python = "3.12";
-      };
-    };
-    settings = {
-      experimental = true;
-      all_compile = false;
-      node.compile = false;
-      python.compile = false;
-    };
   };
 
   home.sessionPath = [
