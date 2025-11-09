@@ -7,5 +7,17 @@ return {
       input = { enabled = true },
       notifier = { enabled = true },
     })
+
+    local explorer = function()
+      Snacks.picker.explorer({
+        layout = {
+	  preset = "telescope",
+	  reverse = false
+        },
+	auto_close = true,
+      })
+    end
+
+    vim.keymap.set("n", "<S-f>", explorer, { desc = "Open file explorer" })
   end,
 }

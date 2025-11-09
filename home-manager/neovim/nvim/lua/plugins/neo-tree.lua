@@ -1,5 +1,6 @@
 return {
   "neo-tree.nvim",
+  enabled = false,
   cmd = "Neotree",
   beforeAll = function()
     vim.keymap.set("n", "<S-f>", "<Cmd>Neotree toggle reveal<CR>", { desc = "Open file explorer" })
