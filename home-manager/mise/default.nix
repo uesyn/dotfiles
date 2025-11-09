@@ -7,8 +7,6 @@
 }: {
   xdg.configFile = {
     "mise/config.toml".text = ''
-      [env]
-      _.python.venv = ".venv"
     '';
 
     "mise/settings.toml".text = ''
