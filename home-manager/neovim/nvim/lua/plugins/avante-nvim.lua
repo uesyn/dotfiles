@@ -19,11 +19,5 @@ return {
         },
       },
     })
-    vim.api.nvim_create_autocmd("User", {
-      pattern = "ToJapanese",
-      callback = function() require("avante.config").override({system_prompt = "選択範囲を日本語に翻訳して"}) end,
-    })
-    
-    vim.keymap.set("v", "<leader>aj", function() vim.api.nvim_exec_autocmds("User", { pattern = "ToJapanese" }) end, { desc = "avante: Translate to japanese" })
   end,
 }
