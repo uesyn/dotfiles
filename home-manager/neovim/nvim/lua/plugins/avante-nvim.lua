@@ -18,6 +18,14 @@ return {
           },
         },
       },
+      windows = {
+        edit = {
+	  start_insert = false,
+	},
+	ask = {
+	  start_insert = false,
+	},
+      },
     })
   end,
 }
