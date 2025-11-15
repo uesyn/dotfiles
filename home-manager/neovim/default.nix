@@ -90,6 +90,7 @@ in {
       { plugin = blink-cmp; optional = true; }
       { plugin = fidget-nvim; optional = true; }
       { plugin = lsp_lines-nvim; optional = true; }
+      { plugin = avante-nvim; optional = true; }
     ];
   };
 }
