@@ -60,6 +60,7 @@ in {
       pkgs.jsonnet
       pkgs.just
       pkgs.marp-cli
+      pkgs.opencode
       pkgs.openssh
       pkgs.openssl
       pkgs.pkg-config
