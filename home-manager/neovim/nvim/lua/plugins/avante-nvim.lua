@@ -5,7 +5,7 @@ return {
   },
   after = function()
     require("avante").setup({
-      provider = "opencode",
+      provider = "qwen-cli",
       acp_providers = {
         ["qwen-cli"] = {
           command = "qwen",
