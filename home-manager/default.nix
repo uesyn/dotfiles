@@ -21,6 +21,7 @@ in {
     ./mise
     ./neovim
     ./node
+    ./opencode
     ./rust
     ./zellij
     ./zsh
@@ -60,7 +61,6 @@ in {
       pkgs.jsonnet
       pkgs.just
       pkgs.marp-cli
-      pkgs.opencode
       pkgs.openssh
       pkgs.openssl
       pkgs.pkg-config

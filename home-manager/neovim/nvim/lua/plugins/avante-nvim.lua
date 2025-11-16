@@ -5,7 +5,7 @@ return {
   },
   after = function()
     require("avante").setup({
-      provider = "qwen-cli",
+      provider = "opencode",
       acp_providers = {
         ["qwen-cli"] = {
           command = "qwen",
@@ -17,6 +17,13 @@ return {
 	    OPENAI_MODEL = os.getenv("OPENAI_MODEL"),
           },
         },
+	["opencode"] = {
+	  command = "opencode",
+	  args = {"acp"},
+          env = {
+	    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY"),
+          },
+	}
       },
       windows = {
         edit = {
