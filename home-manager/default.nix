@@ -46,6 +46,7 @@ in {
       pkgs.dig
       pkgs.docker-buildx
       pkgs.docker-client
+      pkgs.droid
       pkgs.file
       pkgs.findutils
       pkgs.fzf
