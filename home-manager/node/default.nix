@@ -2,7 +2,8 @@
   config,
   pkgs,
   ...
-}: {
+}:
+{
   home.file = {
     ".npmrc".text = ''
       prefix=~/.node

@@ -4,18 +4,18 @@
   lib,
   config,
   ...
-}: {
+}:
+{
   xdg.configFile = {
-    "mise/config.toml".text = ''
-    '';
+    "mise/config.toml".text = '''';
 
     "mise/settings.toml".text = ''
       all_compile = false
       experimental = true
-      
+
       [node]
       compile = false
-      
+
       [python]
       compile = false
     '';

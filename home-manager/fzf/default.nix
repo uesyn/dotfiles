@@ -1,4 +1,5 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   programs.fzf = {
     enable = true;
     enableBashIntegration = false;

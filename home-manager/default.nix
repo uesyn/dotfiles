@@ -3,10 +3,12 @@
   pkgs,
   lib,
   ...
-}: let
+}:
+let
   isLinux = pkgs.stdenv.hostPlatform.isLinux;
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
-in {
+in
+{
   imports = [
     ./bash
     ./commands
@@ -37,56 +39,55 @@ in {
   # Please read release note to update this: https://home-manager.dev/manual/unstable/release-notes.xhtml
   home.stateVersion = "25.05"; # Please read the comment before changing.
 
-  home.packages =
-    [
-      pkgs.autoconf
-      pkgs.coreutils-full
-      pkgs.curl
-      pkgs.diffutils
-      pkgs.dig
-      pkgs.docker-buildx
-      pkgs.docker-client
-      pkgs.droid
-      pkgs.file
-      pkgs.findutils
-      pkgs.fzf
-      pkgs.gcc
-      pkgs.github-mcp-server
-      pkgs.glib
-      pkgs.gnugrep
-      pkgs.gnumake
-      pkgs.gnused
-      pkgs.gnutar
-      pkgs.htop
-      pkgs.jq
-      pkgs.jsonnet
-      pkgs.just
-      pkgs.marp-cli
-      pkgs.openssh
-      pkgs.openssl
-      pkgs.pkg-config
-      pkgs.procps
-      pkgs.pstree
-      pkgs.qwen-code
-      pkgs.ripgrep
-      pkgs.tree
-      pkgs.unzip
-      pkgs.uv
-      pkgs.wget
-      pkgs.xz
-      pkgs.yq-go
-    ]
-    ++ lib.optionals isLinux [
-      # GNU/Linux packages
-      pkgs.iproute2
-      pkgs.xdg-utils
-    ]
-    ++ lib.optionals isDarwin [
-      # macOS packages
-      pkgs.colima
-      pkgs.iproute2mac
-      pkgs.docker-credential-helpers
-    ];
+  home.packages = [
+    pkgs.autoconf
+    pkgs.coreutils-full
+    pkgs.curl
+    pkgs.diffutils
+    pkgs.dig
+    pkgs.docker-buildx
+    pkgs.docker-client
+    pkgs.droid
+    pkgs.file
+    pkgs.findutils
+    pkgs.fzf
+    pkgs.gcc
+    pkgs.github-mcp-server
+    pkgs.glib
+    pkgs.gnugrep
+    pkgs.gnumake
+    pkgs.gnused
+    pkgs.gnutar
+    pkgs.htop
+    pkgs.jq
+    pkgs.jsonnet
+    pkgs.just
+    pkgs.marp-cli
+    pkgs.openssh
+    pkgs.openssl
+    pkgs.pkg-config
+    pkgs.procps
+    pkgs.pstree
+    pkgs.qwen-code
+    pkgs.ripgrep
+    pkgs.tree
+    pkgs.unzip
+    pkgs.uv
+    pkgs.wget
+    pkgs.xz
+    pkgs.yq-go
+  ]
+  ++ lib.optionals isLinux [
+    # GNU/Linux packages
+    pkgs.iproute2
+    pkgs.xdg-utils
+  ]
+  ++ lib.optionals isDarwin [
+    # macOS packages
+    pkgs.colima
+    pkgs.iproute2mac
+    pkgs.docker-credential-helpers
+  ];
 
   home.sessionVariables = {
     XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";

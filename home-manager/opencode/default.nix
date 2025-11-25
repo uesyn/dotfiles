@@ -4,9 +4,10 @@
   lib,
   config,
   ...
-}: {
+}:
+{
   home.packages = [
-      pkgs.opencode
+    pkgs.opencode
   ];
   xdg.configFile = {
     "opencode/config.json".text = ''

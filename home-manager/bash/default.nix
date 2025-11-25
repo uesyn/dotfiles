@@ -1,4 +1,5 @@
-{inputs, ...}: {
+{ inputs, ... }:
+{
   programs.bash = {
     enable = true;
     shellAliases = {

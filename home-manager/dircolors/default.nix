@@ -2,7 +2,8 @@
   inputs,
   pkgs,
   ...
-}: {
+}:
+{
   programs.dircolors = {
     enable = true;
     extraConfig = ''
