@@ -116,6 +116,11 @@
           ${builtins.getEnv "USER"} = lib.hm {
             inherit system;
           };
+          forecast = lib.hm {
+            inherit system;
+            user = "forecast";
+            homeDirectory = "/tmp";
+          };
         };
       };
 

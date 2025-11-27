@@ -27,3 +27,9 @@ $ git clone https://github.com/uesyn/dotfiles.git
 $ cd ./dotfiles
 $ nix --extra-experimental-features nix-command --extra-experimental-features flakes run .#hm
 ```
+
+## Check binary cache existance 
+
+```sh
+$ nix run nixpkgs#nix-forecast -- -o .#homeConfigurations.forecast -s -b https://cache.nixos.org -b https://numtide.cachix.org -b https://nix-community.cachix.org
+```
