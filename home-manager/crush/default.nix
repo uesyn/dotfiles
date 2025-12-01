@@ -23,7 +23,13 @@
               {
                 "name": "Qwen3-Coder-480B-A35B-Instruct-FP8",
                 "id": "Qwen3-Coder-480B-A35B-Instruct-FP8",
-                "context_window": 256000,
+                "context_window": 135000,
+                "default_max_tokens": 20000
+              },
+              {
+                "name": "Qwen3-Coder-30B-A3B-Instruct",
+                "id": "Qwen3-Coder-30B-A3B-Instruct",
+                "context_window": 135000,
                 "default_max_tokens": 20000
               }
             ]
