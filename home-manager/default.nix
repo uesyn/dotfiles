@@ -41,6 +41,7 @@ in
 
   home.packages = [
     pkgs.autoconf
+    pkgs.bun
     pkgs.coreutils-full
     pkgs.curl
     pkgs.diffutils
