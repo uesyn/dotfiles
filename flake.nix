@@ -91,6 +91,9 @@
                 device = false;
                 ghHosts = [ ];
               };
+              crush = {
+                providers = { };
+              };
             };
           in
           home-manager.lib.homeManagerConfiguration {
