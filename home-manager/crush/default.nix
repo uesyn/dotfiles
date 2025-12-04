@@ -10,7 +10,8 @@ let
     "AI Engine" = {
       name = "AI Engine";
       "base_url" = "https://api.ai.sakura.ad.jp/v1";
-      type = "openai";
+      api_key = "$AI_ENGINE_API_KEY";
+      type = "openai-compat";
       models = [
         {
           name = "Qwen3-Coder-480B-A35B-Instruct-FP8";
