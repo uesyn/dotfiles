@@ -71,6 +71,7 @@ in
     pkgs.qwen-code
     pkgs.ripgrep
     pkgs.tree
+    pkgs.typescript-language-server
     pkgs.unzip
     pkgs.uv
     pkgs.wget
