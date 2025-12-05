@@ -65,10 +65,10 @@ in
     pkgs.marp-cli
     pkgs.openssh
     pkgs.openssl
+    pkgs.phpactor
     pkgs.pkg-config
     pkgs.procps
     pkgs.pstree
-    pkgs.qwen-code
     pkgs.ripgrep
     pkgs.tree
     pkgs.typescript-language-server

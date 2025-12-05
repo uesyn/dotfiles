@@ -45,6 +45,14 @@ in
         "lsp": {
           "go": {
             "command": "gopls"
+          },
+          "typescript": {
+            "command": "typescript-language-server",
+            "args": ["--stdio"]
+          },
+          "php": {
+            "command": "phpactor",
+            "args": ["language-server"]
           }
         }
       }
