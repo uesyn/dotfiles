@@ -5,9 +5,10 @@
   ...
 }@inputs:
 let
-  crush = inputs.crush or {
-    providers = { };
-  };
+  crush =
+    inputs.crush or {
+      providers = { };
+    };
   defaultProviders = {
     "AI Engine" = {
       name = "AI Engine";

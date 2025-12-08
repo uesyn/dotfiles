@@ -3,14 +3,16 @@
   ...
 }@inputs:
 let
-  git = inputs.git or {
-    user = "uesyn";
-    email = "17411645+uesyn@users.noreply.github.com";
-  };
-  git-credential-oauth = inputs.git-credential-oauth or {
-    device = false;
-    ghHosts = [ ];
-  };
+  git =
+    inputs.git or {
+      user = "uesyn";
+      email = "17411645+uesyn@users.noreply.github.com";
+    };
+  git-credential-oauth =
+    inputs.git-credential-oauth or {
+      device = false;
+      ghHosts = [ ];
+    };
   git-oauth-credential-config =
     { git_host }:
     {

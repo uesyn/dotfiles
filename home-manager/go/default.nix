@@ -5,9 +5,10 @@
   ...
 }@inputs:
 let
-  go = inputs.go or {
-    private = [ ];
-  };
+  go =
+    inputs.go or {
+      private = [ ];
+    };
 in
 {
   home.sessionVariables = {
