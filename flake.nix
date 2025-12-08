@@ -76,8 +76,8 @@
             homeDirectory ? builtins.getEnv "HOME",
             modules ? [ ],
             overlays ? [ ],
-            extraSpecialArgs ? { },
-          }:
+            ...
+          }@hmInputs:
           let
             defaultArgs = {
               go = {
@@ -109,7 +109,7 @@
               ./home-manager/default.nix
             ]
             ++ modules;
-            extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs extraSpecialArgs;
+            extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs hmInputs;
           };
       };
 
