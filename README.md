@@ -28,6 +28,15 @@ $ cd ./dotfiles
 $ nix --extra-experimental-features nix-command --extra-experimental-features flakes run .#hm
 ```
 
+or init flake
+
+```sh
+$ nix-shell -p git curl home-manager
+$ mkdir path/to/empty/flake/dir
+$ cd path/to/empty/flake/dir
+$ nix flake init -t github:uesyn/dotfiles --refresh
+```
+
 ## Check binary cache existance 
 
 ```sh

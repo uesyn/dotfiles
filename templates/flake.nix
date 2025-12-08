@@ -3,7 +3,8 @@
 
   inputs = {
     dotfiles.url = "github:uesyn/dotfiles";
-    # nixpkgs.follows = "dotfiles/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # Independent management of nixpkgs
+    # nixpkgs.follows = "dotfiles/nixpkgs"; # Use dotfiles nix package
   };
 
   outputs =
