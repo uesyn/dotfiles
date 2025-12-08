@@ -2,9 +2,21 @@
   description = "dotfiles configuration";
 
   inputs = {
-    dotfiles.url = "github:uesyn/dotfiles";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # Independent management of nixpkgs
-    # nixpkgs.follows = "dotfiles/nixpkgs"; # Use dotfiles nix package
+    # Use dotfiles nix package
+    # dotfiles.url = "github:uesyn/dotfiles";
+    # nixpkgs= {
+    #   url = "github:NixOS/nixpkgs/nixpkgs-unstable"; # Independent management of nixpkgs
+    #   follows = "dotfiles/nixpkgs";
+    # };
+
+    # Independent management of nixpkgs
+    nix-ai-tools.url = "github:numtide/nix-ai-tools";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    dotfiles = {
+      url = "github:uesyn/dotfiles";
+      inputs.nix-ai-tools.follows = "nix-ai-tools";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
