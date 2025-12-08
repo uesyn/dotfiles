@@ -2,10 +2,12 @@
   config,
   pkgs,
   lib,
-  crush,
   ...
-}:
+}@inputs:
 let
+  crush = inputs.crush or {
+    providers = { };
+  };
   defaultProviders = {
     "AI Engine" = {
       name = "AI Engine";

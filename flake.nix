@@ -78,24 +78,6 @@
             overlays ? [ ],
             ...
           }@hmInputs:
-          let
-            defaultArgs = {
-              go = {
-                private = [ ];
-              };
-              git = {
-                user = "uesyn";
-                email = "17411645+uesyn@users.noreply.github.com";
-              };
-              git-credential-oauth = {
-                device = false;
-                ghHosts = [ ];
-              };
-              crush = {
-                providers = { };
-              };
-            };
-          in
           home-manager.lib.homeManagerConfiguration {
             pkgs = pkgsForSystem {
               inherit system;
@@ -109,7 +91,7 @@
               ./home-manager/default.nix
             ]
             ++ modules;
-            extraSpecialArgs = nixpkgs.lib.attrsets.recursiveUpdate defaultArgs hmInputs;
+            extraSpecialArgs = hmInputs;
           };
       };
 

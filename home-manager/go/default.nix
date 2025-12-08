@@ -2,9 +2,13 @@
   config,
   pkgs,
   lib,
-  go,
   ...
-}:
+}@inputs:
+let
+  go = inputs.go or {
+    private = [ ];
+  };
+in
 {
   home.sessionVariables = {
     GOPATH = "${config.home.homeDirectory}";
