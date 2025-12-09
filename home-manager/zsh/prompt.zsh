@@ -89,10 +89,10 @@ _git_info() {
   repo_condition=${repo_condition# }
 
   if [[ -n ${repo_condition} ]]; then
-    git_prompt="${git_prompt} %F{#ff5555}%f%K{#ff5555}%F{#f8f8f2}${repo_condition}%f%k%F{#ff5555}%f"
+    git_prompt="${git_prompt} %F{#ff5555}\ue0b6%f%K{#ff5555}%F{#f8f8f2}${repo_condition}%f%k%F{#ff5555}\ue0b4%f"
   fi
 
-  print "%F{#ff5555}%f ${git_prompt}"
+  print "%F{#ff5555}\uf126%f ${git_prompt}"
 }
 
 _git_info_done() {
@@ -153,19 +153,50 @@ _venv_info() {
 
 _ssh_prompt() {
   if [[ -n $SSH_CONNECTION ]]; then
-    print "🌐 %m "
+    print " 🌐 %m "
+  fi
+}
+
+_cmd_status() {
+  local result=$?
+  if [[ $result -ne 0 ]]; then
+    print "%F{#ff5555}✘ ${result}%f "
+  fi
+}
+
+_host_name() {
+  print " %F{#bd93f9}%n%f "
+}
+
+_current_time() {
+  print " %F{#6272a4}%D{%H:%M:%S}%f "
+}
+
+# Timer functions for command duration tracking
+_preexec_start_timer() {
+  CMD_START_TIME=$(date +%s%3N)
+}
+
+_precmd_stop_timer() {
+  if [[ -n $CMD_START_TIME ]]; then
+    CMD_DURATION=$(( $(date +%s%3N) - CMD_START_TIME ))
+    unset CMD_START_TIME
   fi
 }
 
 prompt_init() {
   export VIRTUAL_ENV_DISABLE_PROMPT=1
+  
+  # Hook to track command duration
+  add-zsh-hook preexec _preexec_start_timer
+  add-zsh-hook precmd _precmd_stop_timer
 
   async_init
   _git_info_prompt_init
 
-  PROMPT='%F{#6272a4}╭─%f %F{#ffb86c} %f %n $(_ssh_prompt)📁 %2d ${_git_info_prompt}$(_kubernetes_info)$(_venv_info)
-%F{#6272a4}╰─%f%F{#bd93f9}❯%f '
-  RPROMPT='📁 %~'
+  PROMPT='%F{#44475a}┌─%f$(_cmd_status)$(_host_name)$(_ssh_prompt)in %F{#8be9fd}%2d%f ${_git_info_prompt}$(_kubernetes_info)$(_venv_info)
+%F{#44475a}└─%f$(_current_time)%F{#ff79c6}❯%f '
+  RPROMPT='%F{#6272a4}[%~]%f'
 }
 
 prompt_init
