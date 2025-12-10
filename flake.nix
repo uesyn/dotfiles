@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nix-ai-tools.url = "github:numtide/nix-ai-tools";
+    nix-ai-tools.url = "github:numtide/llm-agents.nix";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
