@@ -56,6 +56,7 @@ in
       "venv"
       ".vim-lsp-settings"
       "CRUSH.md"
+      ".crush"
     ];
 
     includes = [
