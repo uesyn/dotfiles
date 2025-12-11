@@ -45,6 +45,9 @@ in
           "disable_auto_summarize": true
         },
         "providers": ${jsonProviders},
+        "permissions": {
+          "allowed_tools": [ "view" ]
+        },
         "lsp": {
           "go": {
             "command": "gopls"
@@ -55,7 +58,14 @@ in
           },
           "php": {
             "command": "phpactor",
-            "args": ["language-server"]
+            "args": ["language-server"],
+            "filetypes": [
+              "php"
+            ],
+            "root_makers": [
+              "composer.json",
+              ".git"
+            ]
           }
         }
       }
