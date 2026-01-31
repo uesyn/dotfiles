@@ -27,7 +27,6 @@ in
   home.packages = [
     pkgs.ghq
     pkgs.gh
-    pkgs.gh-copilot
     pkgs.gh-dash
     pkgs.gh-poi
     pkgs.gh-s
