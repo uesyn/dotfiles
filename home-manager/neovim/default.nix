@@ -44,7 +44,7 @@ in
       ripgrep
     ];
 
-    extraLuaConfig = ''
+    initLua = ''
       vim.loader.enable()
 
       require('keymap')
