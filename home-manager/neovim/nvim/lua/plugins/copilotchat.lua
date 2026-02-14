@@ -30,7 +30,6 @@ return {
         vim.bo.buflisted = false
         vim.keymap.set("n", "<C-r>", require("CopilotChat").reset, { buffer = true, desc = "Reset chat" })
         vim.keymap.set("n", "q", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
-        vim.keymap.set("n", "<C-q>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
         vim.keymap.set("n", "<C-[>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
         vim.keymap.set("n", "<Esc>", require("CopilotChat").toggle, { buffer = true, desc = "Reset chat" })
         vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
