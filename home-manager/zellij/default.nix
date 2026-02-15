@@ -14,7 +14,7 @@
       default_shell "zsh"
       pane_frames false
       theme "dracula"
-      default_mode "locked"
+      default_mode "normal"
       mouse_mode true
       scroll_buffer_size 10000
       copy_on_select true
