@@ -23,6 +23,7 @@ in
     ./mise
     ./neovim
     ./node
+    ./opencode
     ./rust
     ./zellij
     ./zsh
