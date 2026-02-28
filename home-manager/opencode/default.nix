@@ -6,7 +6,7 @@
 }@inputs:
 let
   defaultProvider = {
-    "AI Engine" = {
+    "ai-engine" = {
       npm = "@ai-sdk/openai-compatible";
       name = "AI Engine";
       models = {
@@ -19,6 +19,7 @@ let
       };
       options = {
         baseURL = "https://api.ai.sakura.ad.jp/v1";
+        apiKey = "{env:AI_ENGINE_DEV_API_KEY}";
       };
     };
   };
