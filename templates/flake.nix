@@ -58,6 +58,26 @@
             #     };
             #   };
             # };
+            # opencode = {
+            #   provider = {
+            #     "ai-engine" = {
+            #       npm = "@ai-sdk/openai-compatible";
+            #       name = "AI Engine";
+            #       models = {
+            #         "Qwen3-Coder-480B-A35B-Instruct-FP8" = {
+            #           name = "Qwen3-Coder-480B-A35B-Instruct-FP8";
+            #         };
+            #         "Qwen3-Coder-30B-A3B-Instruct" = {
+            #           name = "Qwen3-Coder-30B-A3B-Instruct";
+            #         };
+            #       };
+            #       options = {
+            #         baseURL = "https://api.ai.sakura.ad.jp/v1";
+            #         apiKey = "{env:AI_ENGINE_DEV_API_KEY}";
+            #       };
+            #     };
+            #   };
+            # };
           };
         };
       });

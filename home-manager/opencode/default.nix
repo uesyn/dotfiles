@@ -5,6 +5,10 @@
   ...
 }@inputs:
 let
+  opencode =
+    inputs.opencode or {
+      provider = { };
+    };
   defaultProvider = {
     "ai-engine" = {
       npm = "@ai-sdk/openai-compatible";
@@ -23,7 +27,7 @@ let
       };
     };
   };
-  provider = defaultProvider;
+  provider = defaultProvider // opencode.provider;
   jsonProvider = builtins.toJSON provider;
 in
 {
