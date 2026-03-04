@@ -42,7 +42,6 @@ in
       {
         "$schema": "https://opencode.ai/tui.json",
         "autoupdate": false,
-        "plugin": ["opencode-antigravity-auth@latest"],
         "provider": ${jsonProvider}
       }
     '';
