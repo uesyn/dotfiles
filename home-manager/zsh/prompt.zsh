@@ -172,24 +172,8 @@ _current_time() {
   print " %F{#6272a4}%D{%H:%M:%S}%f "
 }
 
-# Timer functions for command duration tracking
-_preexec_start_timer() {
-  CMD_START_TIME=$(date +%s%3N)
-}
-
-_precmd_stop_timer() {
-  if [[ -n $CMD_START_TIME ]]; then
-    CMD_DURATION=$(( $(date +%s%3N) - CMD_START_TIME ))
-    unset CMD_START_TIME
-  fi
-}
-
 prompt_init() {
   export VIRTUAL_ENV_DISABLE_PROMPT=1
-  
-  # Hook to track command duration
-  add-zsh-hook preexec _preexec_start_timer
-  add-zsh-hook precmd _precmd_stop_timer
 
   async_init
   _git_info_prompt_init
