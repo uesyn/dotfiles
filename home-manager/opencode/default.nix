@@ -71,7 +71,7 @@ in
             "*.env": "deny",
             "*.env.*": "deny",
             "*.env.example": "allow"
-          }
+          },
           "skill": "allow",
           "task": "allow",
           "todoread": "allow",
