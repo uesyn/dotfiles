@@ -40,9 +40,47 @@ in
   home.file = {
     ".config/opencode/opencode.jsonc".text = ''
       {
-        "$schema": "https://opencode.ai/tui.json",
-        "autoupdate": false,
-        "provider": ${jsonProvider}
+        "$schema": "https://opencode.ai/config.json",
+        "agent": {
+          "plan": {
+            "mode": "primary",
+          },
+          "build": {
+            "mode": "primary",
+          },
+        },
+        "permission": {
+          "*": "ask",
+          "bash": {
+            "*": "ask",
+            "grep *": "allow",
+            "ls *": "allow",
+            "rg *": "allow",
+          },
+          "codesearch": "allow",
+          "doom_loop": "ask",
+          "edit": "ask",
+          "external_directory": "ask",
+          "glob": "allow",
+          "grep": "allow",
+          "list": "allow",
+          "lsp": "allow",
+          "question": "allow",
+          "read": {
+            "*": "allow",
+            "*.env": "deny",
+            "*.env.*": "deny",
+            "*.env.example": "allow"
+          }
+          "skill": "allow",
+          "task": "allow",
+          "todoread": "allow",
+          "todowrite": "allow",
+          "webfetch": "ask",
+          "websearch": "ask",
+        },
+        "provider": ${jsonProvider},
+        "autoupdate": false
       }
     '';
     ".config/opencode/tui.json".text = ''
