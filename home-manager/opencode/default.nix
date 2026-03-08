@@ -23,7 +23,7 @@ let
       };
       options = {
         baseURL = "https://api.ai.sakura.ad.jp/v1";
-        apiKey = "{env:AI_ENGINE_DEV_API_KEY}";
+        apiKey = "{env:AI_ENGINE_API_KEY}";
       };
     };
   };
