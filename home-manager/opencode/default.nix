@@ -20,6 +20,9 @@ let
         "Qwen3-Coder-30B-A3B-Instruct" = {
           name = "Qwen3-Coder-30B-A3B-Instruct";
         };
+        "preview/Kimi-K2.5" = {
+          name = "preview/Kimi-K2.5";
+        };
       };
       options = {
         baseURL = "https://api.ai.sakura.ad.jp/v1";
