@@ -9,6 +9,13 @@ let
     inputs.opencode or {
       provider = { };
     };
+  skills = pkgs.fetchFromGitHub {
+    owner = "anthropics";
+    repo = "skills";
+    rev = "b0cbd3df1533b396d281a6886d5132f623393a9c";
+    hash = "sha256-GzNpraXV85qUwyGs5XDe0zHYr2AazqFppWtH9JvO3QE=";
+    fetchSubmodules = false;
+  };
   defaultProvider = {
     "ai-engine" = {
       npm = "@ai-sdk/openai-compatible";
@@ -41,6 +48,9 @@ in
     OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
   };
   home.file = {
+    ".config/opencode/skills/skill-creator" = {
+      source = "${skills}/skills/skill-creator";
+    };
     ".config/opencode/opencode.jsonc".text = ''
       {
         "$schema": "https://opencode.ai/config.json",

@@ -58,7 +58,7 @@
             type = "app";
             program = "${pkgs.writeShellScriptBin "hm.sh" ''
               #!${pkgs.bash}/bin/bash
-              ${pkgs.home-manager}/bin/home-manager switch --flake . --impure -b backup
+              ${pkgs.home-manager}/bin/home-manager switch --flake . --impure -b backup --show-trace
             ''}/bin/hm.sh";
           };
         };
