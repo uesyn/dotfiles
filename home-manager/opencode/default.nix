@@ -83,6 +83,8 @@ in
             "git show*": "allow",
             "git diff*": "allow",
             "git log*": "allow",
+            "head *": "allow",
+            "tail *": "allow",
             "grep *": "allow",
             "ls *": "allow",
             "rg *": "allow",
