@@ -1,0 +1,20 @@
+{
+  "skill_name": "kubebuilder-operator",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "kubebuilder v4を使って、データベース接続プールを管理するためのKubernetes Operatorを作成してください。Custom ResourceはDatabasePoolという名前で、specに接続文字列、プールサイズ、使用するデータベースタイプ（PostgreSQLまたはMySQL）を定義してください。コントローラーは、これらの設定に基づいてConfigMapを作成し、ステータスを更新して接続が確立されたことを示すようにしてください。",
+      "expected_output": "The skill should provide a complete workflow including: project initialization with kubebuilder init, API creation for DatabasePool resource with appropriate spec fields (connectionString, poolSize, dbType), controller implementation that creates a ConfigMap based on the spec, and status updates. Should include proper validation markers and Go code examples."
+    },
+    {
+      "id": 2,
+      "prompt": "既存のkubebuilderプロジェクトにWebhookを追加したいです。MyAppリソースに対して、デフォルト値の設定とバリデーションを行うWebhookを作成する手順を教えてください。具体的には、 replicasフィールドのデフォルト値を1に設定し、replicasが10を超えないことを検証したいです。",
+      "expected_output": "The skill should explain webhook creation with `kubebuilder create webhook`, then provide implementation details for Default() and ValidateCreate() methods. Should show how to set default values (replicas=1) and validation logic (replicas <= 10). Should include the marker comments for webhook configuration."
+    },
+    {
+      "id": 3,
+      "prompt": "kubebuilderで作成したOperatorを本番環境にデプロイするための手順を教えてください。Dockerイメージのビルド、マルチアーキテクチャ対応（AMD64とARM64）、そしてKubernetesクラスタへのデプロイ方法を含めてください。また、CRDのインストール方法やトラブルシューティングのヒントも必要です。",
+      "expected_output": "The skill should provide the complete deployment workflow: `make docker-build` for image creation, explanation of multi-arch builds (buildx), `make install` for CRDs, `make deploy` for operator deployment, and troubleshooting tips for common issues. Should also explain RBAC requirements and webhook certificate management with cert-manager."
+    }
+  ]
+}

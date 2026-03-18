@@ -16,6 +16,13 @@ let
     hash = "sha256-GzNpraXV85qUwyGs5XDe0zHYr2AazqFppWtH9JvO3QE=";
     fetchSubmodules = false;
   };
+  kubebuilder = pkgs.fetchFromGitHub {
+    owner = "kubernetes-sigs";
+    repo = "kubebuilder";
+    rev = "v4.13.0";
+    hash = "sha256-8rdi9jP4kRJCNOSzjDqD3MOccOq5/TXz6xubzilISco=";
+    fetchSubmodules = false;
+  };
   defaultProvider = {
     "ai-engine" = {
       npm = "@ai-sdk/openai-compatible";
@@ -50,6 +57,13 @@ in
   home.file = {
     ".config/opencode/skills/skill-creator" = {
       source = "${skills}/skills/skill-creator";
+    };
+    ".config/opencode/skills/kubebuilder" = {
+      source = ./skills/kubebuilder;
+      recursive = true;
+    };
+    ".config/opencode/skills/kubebuilder/references" = {
+      source = "${kubebuilder}/docs";
     };
     ".config/opencode/opencode.jsonc".text = ''
       {
