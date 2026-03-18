@@ -56,6 +56,9 @@ in
           "*": "ask",
           "bash": {
             "*": "ask",
+            "git show*": "allow",
+            "git diff*": "allow",
+            "git log*": "allow",
             "grep *": "allow",
             "ls *": "allow",
             "rg *": "allow",
