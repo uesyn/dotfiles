@@ -85,6 +85,7 @@ in
           "*": "ask",
           "bash": {
             "*": "ask",
+            "git status*": "allow",
             "git show*": "allow",
             "git diff*": "allow",
             "git log*": "allow",
