@@ -96,9 +96,6 @@ in
             "rg *": "allow",
           },
           "codesearch": "allow",
-          "doom_loop": "ask",
-          "edit": "ask",
-          "external_directory": "ask",
           "glob": "allow",
           "grep": "allow",
           "list": "allow",
@@ -114,8 +111,6 @@ in
           "task": "allow",
           "todoread": "allow",
           "todowrite": "allow",
-          "webfetch": "ask",
-          "websearch": "ask",
         },
         "provider": ${jsonProvider},
         "autoupdate": false
