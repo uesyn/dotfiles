@@ -12,7 +12,6 @@ in
   imports = [
     ./bash
     ./commands
-    ./crush
     ./dircolors
     ./direnv
     ./fzf
