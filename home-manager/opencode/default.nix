@@ -65,9 +65,14 @@ in
     ".config/opencode/skills/kubebuilder/references" = {
       source = "${kubebuilder}/docs";
     };
+    # ".config/opencode/agents" = {
+    #   source = ./agents;
+    #   recursive = true;
+    # };
     ".config/opencode/opencode.jsonc".text = ''
       {
         "$schema": "https://opencode.ai/config.json",
+        "default_agent": "plan",
         "agent": {
           "plan": {
             "mode": "primary",
