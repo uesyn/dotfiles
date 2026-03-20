@@ -55,6 +55,15 @@ in
       pkgs.gh-s
       # pkgs.gh-enhance
     ];
+    settings = {
+      prompt = "enabled";
+      aliases = {
+        o = "browse";
+        pr = "pr create -w";
+        co = "pr checkout";
+        pv = "pr view";
+      };
+    };
   };
   programs.gh-dash = {
     enable = true;
