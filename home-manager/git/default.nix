@@ -16,6 +16,8 @@ let
   git-oauth-credential-config =
     { git_host }:
     {
+      # Use the OAuth client information published at github.com/cli/cli
+      # https://github.com/cli/cli/blob/trunk/internal/authflow/flow.go#L20-L25
       "https://${git_host}" = {
         oauthClientId = "0120e057bd645470c1ed";
         oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
