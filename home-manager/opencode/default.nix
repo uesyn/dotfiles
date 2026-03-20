@@ -9,6 +9,16 @@ let
     inputs.opencode or {
       provider = { };
     };
+
+  codesearch = pkgs.writeShellScriptBin "codesearch" ''
+    if [ -z "''${1}" ]; then
+      echo "Usage: codesearch <query>"
+      exit 1
+    fi
+    
+    ${pkgs.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
+  '';
+
   skills = pkgs.fetchFromGitHub {
     owner = "anthropics";
     repo = "skills";
@@ -50,6 +60,7 @@ in
 {
   home.packages = [
     pkgs.opencode
+    codesearch
   ];
   home.sessionVariables = {
     OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
