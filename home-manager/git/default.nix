@@ -3,6 +3,8 @@
   ...
 }@inputs:
 let
+  git-allow = pkgs.writeShellScriptBin "git-allow" (builtins.readFile ./commands/git-allow);
+  git-fixup = pkgs.writeShellScriptBin "git-fixup" (builtins.readFile ./commands/git-fixup);
   git =
     inputs.git or {
       user = "uesyn";
@@ -32,6 +34,10 @@ in
     pkgs.gh-dash
     pkgs.gh-poi
     pkgs.gh-s
+
+    # commands
+    git-allow
+    git-fixup
   ];
 
   home.sessionVariables = {
