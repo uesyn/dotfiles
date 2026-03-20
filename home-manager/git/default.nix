@@ -30,10 +30,6 @@ in
 {
   home.packages = [
     pkgs.ghq
-    pkgs.gh
-    pkgs.gh-dash
-    pkgs.gh-poi
-    pkgs.gh-s
 
     # commands
     git-allow
@@ -47,6 +43,89 @@ in
   programs.git-credential-oauth = {
     enable = true;
     extraFlags = if git-credential-oauth.device then [ "--device" ] else [ ];
+  };
+
+  programs.git-worktree-switcher.enable = true;
+
+  programs.gh = {
+    enable = true;
+    extensions = [
+      pkgs.gh-dash
+      pkgs.gh-poi
+      pkgs.gh-s
+      # pkgs.gh-enhance
+    ];
+  };
+  programs.gh-dash = {
+    enable = true;
+    settings = {
+      prSections = [
+        {
+          title = "My Pull Requests";
+          filters = "is:open author:@me";
+        }
+        {
+          title = "Review Requests";
+          filters = "is:open review-requested:@me";
+        }
+        {
+          title = "Open PRs";
+          filters = "is:open";
+        }
+        {
+          title = "All PRs";
+          filters = "";
+        }
+      ];
+      issuesSections = [
+        {
+          title = "Assigned Issues";
+          filters = "is:open assignee:@me";
+        }
+        {
+          title = "Open Issues";
+          filters = "is:open";
+        }
+        {
+          title = "All Issues";
+          filters = "";
+        }
+      ];
+      notificationsSections = [
+        {
+          title = "All";
+          filters = "";
+        }
+        {
+          title = "Created";
+          filters = "reason:author";
+        }
+        {
+          title = "Participating";
+          filters = "reason:participating";
+        }
+        {
+          title = "Mentioned";
+          filters = "reason:mention";
+        }
+        {
+          title = "Review Requested";
+          filters = "reason:review-requested";
+        }
+        {
+          title = "Assigned";
+          filters = "reason:assign";
+        }
+        {
+          title = "Subscribed";
+          filters = "reason:subscribed";
+        }
+        {
+          title = "Team Mentioned";
+          filters = "reason:team-mention";
+        }
+      ];
+    };
   };
 
   programs.git = {
