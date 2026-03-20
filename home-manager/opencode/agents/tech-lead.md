@@ -1,6 +1,6 @@
 ---
 description: Tech Lead. アーキテクチャ設計、技術選定、コードレビュー。
-mode: subagent
+mode: primary
 permission:
   bash: "ask"
   skill:
