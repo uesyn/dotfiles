@@ -35,7 +35,6 @@
           ${builtins.getEnv "USER"} = lib.hm {
             inherit system;
           };
-
         };
       };
 
