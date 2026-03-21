@@ -2,62 +2,39 @@
   description = "dotfiles configuration";
 
   inputs = {
-    # Independent management of nixpkgs
-    nix-ai-tools.url = "github:numtide/llm-agents.nix";
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    nix-ai-tools.url = "github:numtide/llm-agents.nix";
+
     dotfiles = {
       url = "github:uesyn/dotfiles";
-      inputs.nix-ai-tools.follows = "nix-ai-tools";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix-ai-tools.follows = "nix-ai-tools";
     };
   };
 
   outputs =
-    { dotfiles, ... }:
     {
-      packages = dotfiles.lib.forAllSystems (system: {
-        homeConfigurations = {
-          ${builtins.getEnv "USER"} = dotfiles.lib.hm {
-            inherit system;
-            # user = builtins.getEnv "USER";
-            # homeDirectory = builtins.getEnv "HOME";
-            # modules = [];
-            # overlays = [];
-            # go = {
-            #   private = [];
-            # };
-            # git = {
-            #   user = "uesyn";
-            #   email = "17411645+uesyn@users.noreply.github.com";
-            # };
-            # git-credential-oauth = {
-            #   device = false;
-            #   ghHosts = [];
-            # };
-            # opencode = {
-            #   provider = {
-            #     "ai-engine" = {
-            #       npm = "@ai-sdk/openai-compatible";
-            #       name = "AI Engine";
-            #       models = {
-            #         "Qwen3-Coder-480B-A35B-Instruct-FP8" = {
-            #           name = "Qwen3-Coder-480B-A35B-Instruct-FP8";
-            #         };
-            #         "Qwen3-Coder-30B-A3B-Instruct" = {
-            #           name = "Qwen3-Coder-30B-A3B-Instruct";
-            #         };
-            #       };
-            #       options = {
-            #         baseURL = "https://api.ai.sakura.ad.jp/v1";
-            #         apiKey = "{env:AI_ENGINE_DEV_API_KEY}";
-            #       };
-            #     };
-            #   };
-            # };
-          };
+      nixpkgs,
+      home-manager,
+      dotfiles,
+      ...
+    }:
+    {
+      homeConfigurations."${builtins.getEnv "USER"}" = home-manager.lib.homeManagerConfiguration {
+        pkgs = nixpkgs.legacyPackages.x86_64-linux;
+        extraSpecialArgs = {
+          inherit dotfiles;
         };
-      });
-      apps = dotfiles.apps;
-      formatter = dotfiles.formatter;
+        modules = [
+          dotfiles.homeManagerModules.default
+          ./home.nix
+        ];
+      };
     };
 }

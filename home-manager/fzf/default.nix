@@ -1,4 +1,4 @@
-{ inputs, ... }:
+{ ... }:
 {
   programs.fzf = {
     enable = true;

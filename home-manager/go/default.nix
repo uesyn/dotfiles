@@ -3,26 +3,30 @@
   pkgs,
   lib,
   ...
-}@inputs:
-let
-  go =
-    inputs.go or {
-      private = [ ];
-    };
-in
+}:
 {
-  home.sessionVariables = {
-    GOPATH = "${config.home.homeDirectory}";
-    GOBIN = "${config.home.homeDirectory}/bin";
-    GOPRIVATE = lib.concatStringsSep "," go.private;
+  options.dotfiles.go = {
+    private = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Go private module patterns for GOPRIVATE";
+    };
   };
 
-  home.sessionPath = [
-    "${config.home.homeDirectory}/bin"
-  ];
+  config = {
+    home.sessionVariables = {
+      GOPATH = "${config.home.homeDirectory}";
+      GOBIN = "${config.home.homeDirectory}/bin";
+      GOPRIVATE = lib.concatStringsSep "," config.dotfiles.go.private;
+    };
 
-  home.packages = [
-    pkgs.go
-    pkgs.gopls
-  ];
+    home.sessionPath = [
+      "${config.home.homeDirectory}/bin"
+    ];
+
+    home.packages = [
+      pkgs.go
+      pkgs.gopls
+    ];
+  };
 }

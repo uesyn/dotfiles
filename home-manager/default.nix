@@ -1,3 +1,4 @@
+self:
 {
   config,
   pkgs,
@@ -9,6 +10,8 @@ let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in
 {
+  nixpkgs.overlays = builtins.attrValues self.overlays;
+
   imports = [
     ./bash
     ./commands

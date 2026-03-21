@@ -11,14 +11,23 @@
   };
 
   outputs =
-    { self, nixpkgs, home-manager, nix-ai-tools, ... }@inputs:
+    {
+      self,
+      nixpkgs,
+      home-manager,
+      nix-ai-tools,
+      ...
+    }@inputs:
     let
       lib = import ./lib inputs;
 
       appsForSystem =
         system:
         let
-          pkgs = lib.pkgsForSystem { inherit system; overlays = []; };
+          pkgs = lib.pkgsForSystem {
+            inherit system;
+            overlays = [ ];
+          };
         in
         {
           hm = {
@@ -30,11 +39,19 @@
           };
         };
 
-      packagesForSystem = system: {
-        homeConfigurations = {
-          ${builtins.getEnv "USER"} = lib.hm {
-            inherit system;
+      homeConfigurations = {
+        ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
+          pkgs = lib.pkgsForSystem {
+            system = "x86_64-linux";
+            overlays = [ ];
           };
+          modules = [
+            self.homeManagerModules.default
+            {
+              home.username = builtins.getEnv "USER";
+              home.homeDirectory = builtins.getEnv "HOME";
+            }
+          ];
         };
       };
 
@@ -44,9 +61,17 @@
     {
       inherit lib;
 
+      overlays = {
+        nix-ai-tools = nix-ai-tools.overlays.default;
+      };
+
+      homeManagerModules = {
+        default = import ./home-manager self;
+      };
+
       apps = lib.forAllSystems appsForSystem;
-      packages = lib.forAllSystems packagesForSystem;
       formatter = lib.forAllSystems formatterForSystem;
+      inherit homeConfigurations;
 
       templates = {
         default = {
