@@ -16,7 +16,7 @@ let
       exit 1
     fi
     
-    ${pkgs.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
+    ${pkgs.llm-agents.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
   '';
 
   skills = pkgs.fetchFromGitHub {
@@ -59,7 +59,7 @@ let
 in
 {
   home.packages = [
-    pkgs.opencode
+    pkgs.llm-agents.opencode
     codesearch
   ];
   home.sessionVariables = {

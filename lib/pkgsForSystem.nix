@@ -9,8 +9,6 @@ import nixpkgs {
     allowUnfree = true;
   };
   overlays = overlays ++ [
-    (final: prev: {
-      opencode = nix-ai-tools.packages.${system}.opencode;
-    })
+    nix-ai-tools.overlays.default
   ];
 }
