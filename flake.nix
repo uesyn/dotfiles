@@ -11,47 +11,14 @@
   };
 
   outputs =
-    {
-      nixpkgs,
-      home-manager,
-      nix-ai-tools,
-      ...
-    }@inputs:
+    { self, nixpkgs, home-manager, nix-ai-tools, ... }@inputs:
     let
-      # Utility functions
-      forAllSystems = nixpkgs.lib.genAttrs [
-        "x86_64-linux"
-        "aarch64-linux"
-        "aarch64-darwin"
-      ];
+      lib = import ./lib inputs;
 
-      # Package configurations
-      pkgsForSystem =
-        {
-          system,
-          overlays ? [ ],
-        }:
-        import nixpkgs {
-          inherit system;
-          config = {
-            allowUnfree = true;
-          };
-          overlays = overlays ++ [
-            (final: prev: {
-              crush = nix-ai-tools.packages.${system}.crush;
-              code = nix-ai-tools.packages.${system}.code;
-              qwen-code = nix-ai-tools.packages.${system}.qwen-code;
-              opencode = nix-ai-tools.packages.${system}.opencode;
-              droid = nix-ai-tools.packages.${system}.droid;
-            })
-          ];
-        };
-
-      # Application definitions
       appsForSystem =
         system:
         let
-          pkgs = pkgsForSystem { inherit system; };
+          pkgs = lib.pkgsForSystem { inherit system; overlays = []; };
         in
         {
           hm = {
@@ -63,39 +30,6 @@
           };
         };
 
-      # Library functions
-      lib = {
-        inherit pkgsForSystem;
-        inherit forAllSystems;
-
-        # Home Manager configuration helper
-        hm =
-          {
-            system,
-            user ? builtins.getEnv "USER",
-            homeDirectory ? builtins.getEnv "HOME",
-            modules ? [ ],
-            overlays ? [ ],
-            ...
-          }@hmInputs:
-          home-manager.lib.homeManagerConfiguration {
-            pkgs = pkgsForSystem {
-              inherit system;
-              inherit overlays;
-            };
-            modules = [
-              {
-                home.username = user;
-                home.homeDirectory = homeDirectory;
-              }
-              ./home-manager/default.nix
-            ]
-            ++ modules;
-            extraSpecialArgs = hmInputs;
-          };
-      };
-
-      # Package definitions
       packagesForSystem = system: {
         homeConfigurations = {
           ${builtins.getEnv "USER"} = lib.hm {
@@ -109,17 +43,15 @@
         };
       };
 
-      # Formatter configuration
-      formatterForSystem = system: (pkgsForSystem { inherit system; }).nixfmt-tree;
+      formatterForSystem = system: (lib.pkgsForSystem { inherit system; }).nixfmt-tree;
 
     in
     {
       inherit lib;
 
-      # Outputs organized by type
-      apps = forAllSystems appsForSystem;
-      packages = forAllSystems packagesForSystem;
-      formatter = forAllSystems formatterForSystem;
+      apps = lib.forAllSystems appsForSystem;
+      packages = lib.forAllSystems packagesForSystem;
+      formatter = lib.forAllSystems formatterForSystem;
 
       templates = {
         default = {
