@@ -1,7 +1,4 @@
-{ nixpkgs, home-manager, nix-ai-tools, forAllSystems }:
-let
-  pkgsForSystem = import ./pkgsForSystem.nix nixpkgs nix-ai-tools;
-in
+{ home-manager, pkgsForSystem, forAllSystems }:
 {
   system,
   user ? builtins.getEnv "USER",
