@@ -29,6 +29,7 @@ in
     ./node
     ./opencode
     ./rust
+    ./tmux
     ./zellij
     ./zsh
   ];
