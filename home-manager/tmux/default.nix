@@ -4,7 +4,7 @@
 }:
 let
   osc52-copy = pkgs.writeScriptBin "osc52-copy" ''
-    #!/bin/sh
+    #!${pkgs.bash}/bin/bash
     # Copy to both tmux buffer and OSC52 (system clipboard)
     tmux load-buffer -
     printf '\\033]52;c;%s\\033\\' "$(cat | base64 -w0)"
