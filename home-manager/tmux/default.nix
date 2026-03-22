@@ -157,13 +157,13 @@ in
       bind -r 9 select-window -t :9
 
       # Window operations
-      bind c new-window
+      bind c new-window -c "#{pane_current_path}"
       bind x kill-pane
       bind & kill-window
 
       # Pane splitting
-      bind "\"" split-window -v
-      bind % split-window -h
+      bind "\"" split-window -v -c "#{pane_current_path}"
+      bind % split-window -h -c "#{pane_current_path}"
 
       # Zoom pane
       bind z resize-pane -Z
