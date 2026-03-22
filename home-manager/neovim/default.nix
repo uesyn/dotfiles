@@ -1,23 +1,10 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 let
-  # Use this to create a plugin from a flake input
-  mkNvimPlugin =
-    name: url: branch: rev:
-    let
-      pname = "${pkgs.lib.strings.sanitizeDerivationName "${name}"}";
-      version = rev;
-      src = builtins.fetchGit {
-        inherit url;
-        ref = branch;
-        rev = rev;
-      };
-    in
-    pkgs.vimUtils.buildVimPlugin {
-      inherit pname version src;
-    };
-  winresize-nvim =
-    mkNvimPlugin "winresize.nvim" "https://github.com/pogyomo/winresize.nvim.git" "main"
-      "a54f4a0dbfd7e52e0e8153325d0c4571e0d33217";
+  winresize-nvim = pkgs.vimUtils.buildVimPlugin {
+    pname = "winresize-nvim";
+    version = inputs.winresize-nvim.rev or "latest";
+    src = inputs.winresize-nvim;
+  };
 in
 {
   xdg.configFile = {

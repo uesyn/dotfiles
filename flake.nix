@@ -8,6 +8,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
     };
+    winresize-nvim = {
+      url = "github:pogyomo/winresize.nvim";
+      flake = false;
+    };
+    anthropic-skills = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    kubebuilder = {
+      url = "github:kubernetes-sigs/kubebuilder/v4.13.0";
+      flake = false;
+    };
   };
 
   outputs =

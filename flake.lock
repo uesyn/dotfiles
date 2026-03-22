@@ -1,5 +1,21 @@
 {
   "nodes": {
+    "anthropic-skills": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772827583,
+        "narHash": "sha256-GzNpraXV85qUwyGs5XDe0zHYr2AazqFppWtH9JvO3QE=",
+        "owner": "anthropics",
+        "repo": "skills",
+        "rev": "b0cbd3df1533b396d281a6886d5132f623393a9c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
     "blueprint": {
       "inputs": {
         "nixpkgs": [
@@ -115,6 +131,23 @@
         "type": "github"
       }
     },
+    "kubebuilder": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772207819,
+        "narHash": "sha256-8rdi9jP4kRJCNOSzjDqD3MOccOq5/TXz6xubzilISco=",
+        "owner": "kubernetes-sigs",
+        "repo": "kubebuilder",
+        "rev": "bb95ce240477f3d9be177b8c8f40d4876a618f45",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kubernetes-sigs",
+        "ref": "v4.13.0",
+        "repo": "kubebuilder",
+        "type": "github"
+      }
+    },
     "nix-ai-tools": {
       "inputs": {
         "blueprint": "blueprint",
@@ -172,9 +205,12 @@
     },
     "root": {
       "inputs": {
+        "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
+        "kubebuilder": "kubebuilder",
         "nix-ai-tools": "nix-ai-tools",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "winresize-nvim": "winresize-nvim"
       }
     },
     "systems": {
@@ -210,6 +246,22 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "winresize-nvim": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1736192087,
+        "narHash": "sha256-g+2JAzYiTOA2MuJ3eSdnTWObx96UAheFsslVvQgitFI=",
+        "owner": "pogyomo",
+        "repo": "winresize.nvim",
+        "rev": "df7ac44154565b0bb91a8894ffe57c5a93689f10",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pogyomo",
+        "repo": "winresize.nvim",
         "type": "github"
       }
     }

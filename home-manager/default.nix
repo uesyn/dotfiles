@@ -10,6 +10,8 @@ let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in
 {
+  _module.args.inputs = self.inputs;
+
   nixpkgs.overlays = builtins.attrValues self.overlays;
 
   imports = [
