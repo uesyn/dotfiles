@@ -197,12 +197,6 @@ in
           x: y: x // (git-oauth-credential-config { git_host = y; })
         ) { } config.dotfiles.git-credential-oauth.ghHosts;
 
-        url = {
-          "https://github.com/" = {
-            insteadOf = "git@github.com:";
-          };
-        };
-
         pull.ff = "only";
         feature.manyFiles = true;
         init.defaultBranch = "main";
