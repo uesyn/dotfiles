@@ -79,9 +79,9 @@
       ORPHAN 48;2;33;34;44;38;2;255;85;85;01 # symlink to nonexistent file, or non-stat'able file ...
       MISSING 00      # ... and the files they point to
       SETUID 38;2;248;248;242;48;2;255;85;85	# file that is setuid (u+s)
-      SETGID 38;2;33;34;44;48;2;241;250;140	# file that is setgid (g+s)
+      SETGID 38;2;98;114;164;48;2;241;250;140	# file that is setgid (g+s)
       CAPABILITY 00	# file with capability (very expensive to lookup)
-      STICKY_OTHER_WRITABLE 38;2;33;34;44;48;2;80;250;123 # dir that is sticky and other-writable (+t,o+w)
+      STICKY_OTHER_WRITABLE 38;2;98;114;164;48;2;80;250;123 # dir that is sticky and other-writable (+t,o+w)
       OTHER_WRITABLE 38;2;189;147;249;48;2;80;250;123 # dir that is other-writable (o+w) and not sticky
       STICKY 38;2;248;248;242;48;2;189;147;249	# dir with the sticky bit set (+t) and not other-writable
 
