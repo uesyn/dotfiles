@@ -106,10 +106,6 @@ in
         plugin = copilot-lua;
         optional = true;
       }
-      {
-        plugin = CopilotChat-nvim;
-        optional = true;
-      }
       blink-cmp-copilot
       {
         plugin = blink-cmp;
