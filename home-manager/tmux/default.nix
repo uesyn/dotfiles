@@ -33,6 +33,7 @@ in
       set -g mode-keys vi
       set -g default-terminal "tmux-256color"
       set -as terminal-overrides ",xterm*:Tc"
+      set -g allow-passthrough on
       set -g status-position top
       set -g window-style 'fg=#f8f8f2,bg=#282a36'
       set -g window-active-style 'fg=#f8f8f2,bg=#282a36'
