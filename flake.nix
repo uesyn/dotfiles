@@ -3,7 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    nix-ai-tools.url = "github:numtide/llm-agents.nix";
+    llm-agents.url = "github:numtide/llm-agents.nix";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -27,7 +27,7 @@
       self,
       nixpkgs,
       home-manager,
-      nix-ai-tools,
+      llm-agents,
       ...
     }@inputs:
     let
@@ -74,7 +74,7 @@
       inherit lib;
 
       overlays = {
-        nix-ai-tools = nix-ai-tools.overlays.default;
+        llm-agents = llm-agents.overlays.default;
       };
 
       homeManagerModules = {

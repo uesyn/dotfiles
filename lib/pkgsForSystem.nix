@@ -1,4 +1,4 @@
-nixpkgs: nix-ai-tools:
+nixpkgs: llm-agents:
 {
   system,
   overlays ? [ ],
@@ -9,6 +9,6 @@ import nixpkgs {
     allowUnfree = true;
   };
   overlays = overlays ++ [
-    nix-ai-tools.overlays.default
+    llm-agents.overlays.default
   ];
 }

@@ -19,11 +19,11 @@
     "blueprint": {
       "inputs": {
         "nixpkgs": [
-          "nix-ai-tools",
+          "llm-agents",
           "nixpkgs"
         ],
         "systems": [
-          "nix-ai-tools",
+          "llm-agents",
           "systems"
         ]
       },
@@ -44,20 +44,20 @@
     "bun2nix": {
       "inputs": {
         "flake-parts": [
-          "nix-ai-tools",
+          "llm-agents",
           "flake-parts"
         ],
         "import-tree": "import-tree",
         "nixpkgs": [
-          "nix-ai-tools",
+          "llm-agents",
           "nixpkgs"
         ],
         "systems": [
-          "nix-ai-tools",
+          "llm-agents",
           "systems"
         ],
         "treefmt-nix": [
-          "nix-ai-tools",
+          "llm-agents",
           "treefmt-nix"
         ]
       },
@@ -78,7 +78,7 @@
     "flake-parts": {
       "inputs": {
         "nixpkgs-lib": [
-          "nix-ai-tools",
+          "llm-agents",
           "nixpkgs"
         ]
       },
@@ -148,7 +148,7 @@
         "type": "github"
       }
     },
-    "nix-ai-tools": {
+    "llm-agents": {
       "inputs": {
         "blueprint": "blueprint",
         "bun2nix": "bun2nix",
@@ -158,11 +158,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1773759021,
-        "narHash": "sha256-HPUdNyg+xPaji5u8X9Fbk5eomzXWoNNHxEkHmuBE+cY=",
+        "lastModified": 1774149162,
+        "narHash": "sha256-nEccD+VNmqMkDbTssNY01AKQ/T2yX0ZHj2QXOF/TIUQ=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "7fdb84d674946b83fedccc54d3a889540a06c4f2",
+        "rev": "104fae2a6ddde32838b7b1dabaa77edbdb69378a",
         "type": "github"
       },
       "original": {
@@ -173,11 +173,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1773597492,
-        "narHash": "sha256-hQ284SkIeNaeyud+LS0WVLX+WL2rxcVZLFEaK0e03zg=",
+        "lastModified": 1773840656,
+        "narHash": "sha256-9tpvMGFteZnd3gRQZFlRCohVpqooygFuy9yjuyRL2C0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "a07d4ce6bee67d7c838a8a5796e75dff9caa21ef",
+        "rev": "9cf7092bdd603554bd8b63c216e8943cf9b12512",
         "type": "github"
       },
       "original": {
@@ -208,7 +208,7 @@
         "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
         "kubebuilder": "kubebuilder",
-        "nix-ai-tools": "nix-ai-tools",
+        "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2",
         "winresize-nvim": "winresize-nvim"
       }
@@ -231,7 +231,7 @@
     "treefmt-nix": {
       "inputs": {
         "nixpkgs": [
-          "nix-ai-tools",
+          "llm-agents",
           "nixpkgs"
         ]
       },
