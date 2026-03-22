@@ -4,7 +4,7 @@
     enable = true;
     enableBashIntegration = false;
     enableFishIntegration = false;
-    enableZshIntegration = false;
+    enableZshIntegration = true;
     defaultOptions = [
       "--height 60%"
       "--reverse"
