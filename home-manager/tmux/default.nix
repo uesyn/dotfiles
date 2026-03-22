@@ -22,7 +22,8 @@ in
       # ========================================
       # Basic Settings
       # ========================================
-      set -g default-shell /bin/zsh
+      set -g default-shell ${pkgs.zsh}/bin/zsh
+      set-option -g set-clipboard on
       set -g mouse on
       set -g history-limit 10000
       set -g escape-time 0
