@@ -13,7 +13,7 @@ in
 {
   home.packages = with pkgs; [
     tmux
-    tmuxPlugins.tmux-thumbs
+    tmuxPlugins.fingers
     osc52-copy
   ];
 
@@ -106,27 +106,12 @@ in
       bind -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "osc52-copy"
 
       # ========================================
-      # tmux-thumbs Settings
+      # tmux-fingers Settings
       # ========================================
-      run-shell "tmux-thumbs"
+      run-shell ${pkgs.tmuxPlugins.fingers}/share/tmux-plugins/tmux-fingers/tmux-fingers.tmux
 
-      set -g @thumbs-key Space
-      set -g @thumbs-alphabet qwerty
-      set -g @thumbs-reverse disabled
-      set -g @thumbs-unique disabled
-      set -g @thumbs-position left
-      set -g @thumbs-contrast 1
-      set -g @thumbs-osc52 1
-
-      # Dracula colors for tmux-thumbs
-      set -g @thumbs-bg-color "#44475a"
-      set -g @thumbs-fg-color "#50fa7b"
-      set -g @thumbs-hint-bg-color "#282a36"
-      set -g @thumbs-hint-fg-color "#ffb86c"
-      set -g @thumbs-select-fg-color "#ff79c6"
-      set -g @thumbs-select-bg-color "#bd93f9"
-      set -g @thumbs-multi-fg-color "#f1fa8c"
-      set -g @thumbs-multi-bg-color "#8be9fd"
+      set -g @fingers-key "F"
+      set -g @fingers-main-action "osc52-copy"
 
       # ========================================
       # Key Bindings
