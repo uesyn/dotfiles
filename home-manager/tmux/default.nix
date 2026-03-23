@@ -98,9 +98,6 @@ in
       # ========================================
       # Copy/Paste Settings
       # ========================================
-      # Paste from tmux buffer only (not system clipboard)
-      bind p paste-buffer
-
       # Copy in copy-mode-vi: tmux buffer + OSC52
       bind -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "osc52-copy"
       bind -T copy-mode-vi Enter send-keys -X copy-pipe-and-cancel "osc52-copy"
@@ -108,19 +105,24 @@ in
       # ========================================
       # tmux-fingers Settings
       # ========================================
-      run-shell ${pkgs.tmuxPlugins.fingers}/share/tmux-plugins/tmux-fingers/tmux-fingers.tmux
 
-      set -g @fingers-key "F"
+      set -g @fingers-key "Space"
       set -g @fingers-main-action "osc52-copy"
       set -g @fingers-pattern-0 '^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$' # UUID
       set -g @fingers-pattern-1 '(sha256|sha384|sha512)-[A-Za-z0-9\+/]+={0,2}( +[!-~]*)?'
       set -g @fingers-pattern-2 '[0-9a-f]{7,40}' # git hashes
+
+      run-shell ${pkgs.tmuxPlugins.fingers}/share/tmux-plugins/tmux-fingers/tmux-fingers.tmux
 
       # ========================================
       # Key Bindings
       # ========================================
       # Enter copy-mode (scroll back)
       bind '[' copy-mode
+
+      # Window navigation (prev/next)
+      bind n next-window
+      bind p previous-window
 
       # Pane navigation (vi-mode)
       bind h select-pane -L
