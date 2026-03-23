@@ -51,22 +51,6 @@
           };
         };
 
-      homeConfigurations = {
-        ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
-          pkgs = lib.pkgsForSystem {
-            system = "x86_64-linux";
-            overlays = [ ];
-          };
-          modules = [
-            self.homeManagerModules.default
-            {
-              home.username = builtins.getEnv "USER";
-              home.homeDirectory = builtins.getEnv "HOME";
-            }
-          ];
-        };
-      };
-
       formatterForSystem = system: (lib.pkgsForSystem { inherit system; }).nixfmt-tree;
 
     in
@@ -83,7 +67,23 @@
 
       apps = lib.forAllSystems appsForSystem;
       formatter = lib.forAllSystems formatterForSystem;
-      inherit homeConfigurations;
+      packages = lib.forAllSystems (system: {
+        homeConfigurations = {
+          ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
+            pkgs = lib.pkgsForSystem {
+              inherit system;
+              overlays = [ ];
+            };
+            modules = [
+              self.homeManagerModules.default
+              {
+                home.username = builtins.getEnv "USER";
+                home.homeDirectory = builtins.getEnv "HOME";
+              }
+            ];
+          };
+        };
+      });
 
       templates = {
         default = {
