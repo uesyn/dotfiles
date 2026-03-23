@@ -112,6 +112,9 @@ in
 
       set -g @fingers-key "F"
       set -g @fingers-main-action "osc52-copy"
+      set -g @fingers-pattern-0 '^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$' # UUID
+      set -g @fingers-pattern-1 '(sha256|sha384|sha512)-[A-Za-z0-9\+/]+={0,2}( +[!-~]*)?'
+      set -g @fingers-pattern-2 '[0-9a-f]{7,40}' # git hashes
 
       # ========================================
       # Key Bindings
