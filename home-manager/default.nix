@@ -18,7 +18,6 @@ in
     ./bash
     ./commands
     ./dircolors
-    ./direnv
     ./fzf
     ./git
     ./go
