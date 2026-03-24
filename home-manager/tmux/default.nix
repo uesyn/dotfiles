@@ -41,7 +41,10 @@ in
       # Prefix: Ctrl-s (instead of Ctrl-b)
       unbind C-b
       set -g prefix C-s
-      bind C-s send-prefix
+      bind C-s clock-mode
+
+      # unbinds keys
+      unbind f
 
       # ========================================
       # Dracula Theme Colors
