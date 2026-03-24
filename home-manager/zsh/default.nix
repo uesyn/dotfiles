@@ -18,15 +18,22 @@
     dotDir = "${config.home.homeDirectory}/.config/zsh";
     defaultKeymap = "emacs";
     envExtra = ''
+      setopt no_global_rcs
       touch "$HOME/.zshenv.local" && source "$HOME/.zshenv.local"
     '';
     profileExtra = ''
       # Homebrew
-      [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
-      [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
+      if [[ -z "''${_HOMEBREW_LOADED}" ]]; then
+        [[ -f /usr/local/bin/brew ]] && eval $(/usr/local/bin/brew shellenv)
+        [[ -f /opt/homebrew/bin/brew ]] && eval $(/opt/homebrew/bin/brew shellenv)
+      fi
+      export _HOMEBREW_LOADED=1
     '';
     initContent = lib.mkMerge [
       (lib.mkOrder 500 ''
+        if [ -r /etc/zshrc ]; then
+          . /etc/zshrc
+        fi
         zmodload zsh/zle
         autoload -U compinit
         local now=$(date +"%s")
