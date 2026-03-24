@@ -26,15 +26,22 @@
       ...
     }:
     {
-      homeConfigurations."${builtins.getEnv "USER"}" = home-manager.lib.homeManagerConfiguration {
-        pkgs = nixpkgs.legacyPackages.x86_64-linux;
-        extraSpecialArgs = {
-          inherit dotfiles;
+      packages = dotfiles.lib.forAllSystems (system: {
+        homeConfigurations = {
+          ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
+            pkgs = dotfiles.lib.pkgsForSystem {
+              inherit system;
+              overlays = [ ];
+            };
+            modules = [
+              dotfiles.homeManagerModules.default
+              {
+                home.username = builtins.getEnv "USER";
+                home.homeDirectory = builtins.getEnv "HOME";
+              }
+            ];
+          };
         };
-        modules = [
-          dotfiles.homeManagerModules.default
-          ./home.nix
-        ];
-      };
+      });
     };
 }
