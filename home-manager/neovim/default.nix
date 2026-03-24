@@ -1,11 +1,4 @@
 { inputs, pkgs, ... }:
-let
-  winresize-nvim = pkgs.vimUtils.buildVimPlugin {
-    pname = "winresize-nvim";
-    version = inputs.winresize-nvim.rev or "latest";
-    src = inputs.winresize-nvim;
-  };
-in
 {
   xdg.configFile = {
     "nvim" = {
@@ -84,10 +77,6 @@ in
       }
       {
         plugin = barbar-nvim;
-        optional = true;
-      }
-      {
-        plugin = winresize-nvim;
         optional = true;
       }
       {

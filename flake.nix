@@ -8,10 +8,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
     };
-    winresize-nvim = {
-      url = "github:pogyomo/winresize.nvim";
-      flake = false;
-    };
     anthropic-skills = {
       url = "github:anthropics/skills";
       flake = false;
