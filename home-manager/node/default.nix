@@ -15,6 +15,6 @@
   ];
 
   home.packages = [
-    pkgs.nodejs_22
+    pkgs.nodejs_24
   ];
 }

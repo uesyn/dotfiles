@@ -6,8 +6,6 @@
 }:
 {
   xdg.configFile = {
-    "mise/config.toml".text = "";
-
     "mise/settings.toml".text = ''
       all_compile = false
       experimental = true

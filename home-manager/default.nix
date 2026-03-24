@@ -28,6 +28,7 @@ in
     ./neovim
     ./node
     ./opencode
+    ./python
     ./rust
     ./tmux
     ./zellij

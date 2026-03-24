@@ -28,5 +28,12 @@
       pkgs.go
       pkgs.gopls
     ];
+
+    xdg.configFile = {
+      "mise/conf.d/go.toml".text = ''
+        [tools]
+        go = "1.26.1"
+      '';
+    };
   };
 }
