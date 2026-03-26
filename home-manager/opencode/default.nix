@@ -72,6 +72,9 @@
         ".config/opencode/skills/kubebuilder/references" = {
           source = "${kubebuilder}/docs";
         };
+        ".config/opencode/skills/sakura-cloud-iaas/SKILL.md" = {
+          source = ./skills/sakura-cloud-iaas/SKILL.md;
+        };
         ".config/opencode/agents" = {
           source = ./agents;
           recursive = true;
