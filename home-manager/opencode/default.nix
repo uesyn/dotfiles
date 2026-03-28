@@ -59,6 +59,7 @@
         codesearch
       ];
       home.sessionVariables = {
+        OPENCODE_ENABLE_EXA = "true";
         OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
       };
       home.file = {
