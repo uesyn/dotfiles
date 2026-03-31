@@ -36,9 +36,3 @@ $ mkdir path/to/empty/flake/dir
 $ cd path/to/empty/flake/dir
 $ nix flake init -t github:uesyn/dotfiles --refresh
 ```
-
-## Check binary cache existance 
-
-```sh
-$ nix run nixpkgs#nix-forecast -- -o .#homeConfigurations.forecast -s -b https://cache.nixos.org -b https://numtide.cachix.org -b https://nix-community.cachix.org
-```

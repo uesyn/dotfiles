@@ -2,7 +2,7 @@
   description = "dotfiles configuration";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     llm-agents.url = "github:numtide/llm-agents.nix";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
