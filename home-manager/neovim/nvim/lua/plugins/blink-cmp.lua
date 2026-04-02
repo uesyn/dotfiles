@@ -21,7 +21,7 @@ return {
         menu = { border = "single" },
       },
       sources = {
-        default = { "avante", "lsp", "path", "snippets", "buffer", "copilot" },
+        default = { "lsp", "path", "snippets", "buffer", "copilot" },
         providers = {
           copilot = {
             name = "copilot",
@@ -29,10 +29,6 @@ return {
             score_offset = 100,
             async = true,
           },
-          avante = {
-            module = 'blink-cmp-avante',
-            name = 'Avante',
-          }
         },
       },
     })

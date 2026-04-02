@@ -109,11 +109,6 @@
         optional = true;
       }
       {
-        plugin = avante-nvim;
-        optional = true;
-      }
-      { plugin = blink-cmp-avante; }
-      {
         plugin = render-markdown-nvim;
         optional = true;
       }
