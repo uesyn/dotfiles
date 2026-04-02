@@ -91,11 +91,7 @@
         plugin = blame-nvim;
         optional = true;
       }
-      {
-        plugin = copilot-lua;
-        optional = true;
-      }
-      blink-cmp-copilot
+      blink-copilot
       {
         plugin = blink-cmp;
         optional = true;

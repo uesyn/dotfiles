@@ -48,6 +48,7 @@ in
   home.packages = [
     pkgs.autoconf
     pkgs.bun
+    pkgs.copilot-language-server
     pkgs.coreutils-full
     pkgs.curl
     pkgs.diffutils

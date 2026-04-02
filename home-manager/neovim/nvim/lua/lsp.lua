@@ -30,4 +30,4 @@ vim.api.nvim_create_autocmd('LspAttach', {
   end,
 })
 
-vim.lsp.enable({'gopls', 'typescript_language_server', 'rust_analyzer', 'phpactor'})
+vim.lsp.enable({'copilot', 'gopls', 'typescript_language_server', 'rust_analyzer', 'phpactor'})
