@@ -105,6 +105,7 @@
                 "grep *": "allow",
                 "ls *": "allow",
                 "rg *": "allow",
+                "go doc *": "allow",
               },
               "codesearch": "allow",
               "glob": "allow",
