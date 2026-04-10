@@ -58,6 +58,9 @@
               "allowRead": [
                 "/nix/store/**"
               ],
+              "allowWrite": [
+                "~/pkg/**"
+              ]
             }
           }
         '';
