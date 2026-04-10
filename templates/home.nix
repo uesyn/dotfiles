@@ -11,6 +11,9 @@
   # dotfiles.git-credential-oauth.device = false;
   # dotfiles.git-credential-oauth.ghHosts = [];
 
+  # dotfiles.fence.allowedDomains = [ "example.com" ];
+  # dotfiles.fence.deniedCommands = [ "rm", "dd" ];
+
   # dotfiles.opencode.provider = {
   #   "ai-engine" = {
   #     npm = "@ai-sdk/openai-compatible";

@@ -62,24 +62,7 @@
         OPENCODE_ENABLE_EXA = "true";
         OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
       };
-      home.file = {
-        ".config/opencode/skills/skill-creator" = {
-          source = "${skills}/skills/skill-creator";
-        };
-        ".config/opencode/skills/kubebuilder" = {
-          source = ./skills/kubebuilder;
-          recursive = true;
-        };
-        ".config/opencode/skills/kubebuilder/references" = {
-          source = "${kubebuilder}/docs";
-        };
-        ".config/opencode/skills/sakura-cloud-iaas/SKILL.md" = {
-          source = ./skills/sakura-cloud-iaas/SKILL.md;
-        };
-        # ".config/opencode/agents" = {
-        #   source = ./agents;
-        #   recursive = true;
-        # };
+      xdg.configFile = {
         ".config/opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
