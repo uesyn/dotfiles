@@ -75,38 +75,6 @@
                 "mode": "primary",
               },
             },
-            "permission": {
-              "*": "ask",
-              "bash": {
-                "*": "ask",
-                "git status*": "allow",
-                "git show*": "allow",
-                "git diff*": "allow",
-                "git log*": "allow",
-                "head *": "allow",
-                "tail *": "allow",
-                "grep *": "allow",
-                "ls *": "allow",
-                "rg *": "allow",
-                "go doc *": "allow",
-              },
-              "codesearch": "allow",
-              "glob": "allow",
-              "grep": "allow",
-              "list": "allow",
-              "lsp": "allow",
-              "question": "allow",
-              "read": {
-                "*": "allow",
-                "*.env": "deny",
-                "*.env.*": "deny",
-                "*.env.example": "allow"
-              },
-              "skill": "allow",
-              "task": "allow",
-              "todoread": "allow",
-              "todowrite": "allow",
-            },
             "provider": ${jsonProvider},
             "autoupdate": false
           }
