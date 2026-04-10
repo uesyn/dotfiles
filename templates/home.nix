@@ -12,6 +12,7 @@
   # dotfiles.git-credential-oauth.ghHosts = [];
 
   # dotfiles.fence.allowedDomains = [ "example.com" ];
+  # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
   # dotfiles.fence.deniedCommands = [ "rm", "dd" ];
 
   # dotfiles.opencode.provider = {

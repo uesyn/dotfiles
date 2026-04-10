@@ -12,6 +12,11 @@
       default = [ ];
       description = "Allowed domains for network access in fence.";
     };
+    allowedUnixSockets = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Allowed unix sockets for network access in fence.";
+    };
     deniedCommands = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
@@ -22,6 +27,7 @@
   config =
   let
     allowedDomains = builtins.toJSON config.dotfiles.fence.allowedDomains;
+    allowedUnixSockets = builtins.toJSON config.dotfiles.fence.allowedUnixSockets;
     deniedCommands = builtins.toJSON config.dotfiles.fence.deniedCommands;
   in
     {
@@ -40,7 +46,8 @@
               "deny": ${deniedCommands},
             },
             "network": {
-              "allowedDomains": ${allowedDomains}
+              "allowedDomains": ${allowedDomains},
+              "allowUnixSockets": ${allowedUnixSockets},
             },
             "filesystem": {
               "allowExecute": [
