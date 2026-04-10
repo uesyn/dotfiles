@@ -19,7 +19,7 @@
     defaultKeymap = "emacs";
     envExtra = ''
       setopt no_global_rcs
-      touch "$HOME/.zshenv.local" && source "$HOME/.zshenv.local"
+      [[ -f "$HOME/.zshenv.local" ]] && source "$HOME/.zshenv.local"
     '';
     profileExtra = ''
       # Homebrew
