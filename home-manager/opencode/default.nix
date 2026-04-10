@@ -63,7 +63,7 @@
         OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
       };
       xdg.configFile = {
-        ".config/opencode/opencode.jsonc".text = ''
+        "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
             "default_agent": "plan",
@@ -111,7 +111,7 @@
             "autoupdate": false
           }
         '';
-        ".config/opencode/tui.json".text = ''
+        "opencode/tui.json".text = ''
           {
             "$schema": "https://opencode.ai/tui.json",
             "theme": "dracula",
@@ -208,7 +208,7 @@
             }
           }
         '';
-        ".config/opencode/themes/dracula.json".text = ''
+        "opencode/themes/dracula.json".text = ''
           {
             "$schema": "https://opencode.ai/theme.json",
             "defs": {
