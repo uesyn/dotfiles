@@ -27,6 +27,10 @@
         ${pkgs.llm-agents.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
       '';
 
+      oc = pkgs.writeShellScriptBin "oc" ''
+        exec ${pkgs.fence}/bin/fence opencode "$@"
+      '';
+
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       defaultProvider = {
@@ -57,6 +61,7 @@
       home.packages = [
         pkgs.llm-agents.opencode
         codesearch
+        oc
       ];
       home.sessionVariables = {
         OPENCODE_ENABLE_EXA = "true";
