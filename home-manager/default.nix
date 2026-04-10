@@ -19,6 +19,7 @@ in
     ./commands
     ./dircolors
     ./direnv
+    ./fence
     ./fzf
     ./git
     ./go
