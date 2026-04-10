@@ -78,6 +78,7 @@ in
     pkgs.procps
     pkgs.pstree
     pkgs.ripgrep
+    pkgs.socat
     pkgs.tree
     pkgs.typescript-language-server
     pkgs.unzip

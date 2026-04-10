@@ -29,11 +29,16 @@
     allowedDomains = builtins.toJSON config.dotfiles.fence.allowedDomains;
     allowedUnixSockets = builtins.toJSON config.dotfiles.fence.allowedUnixSockets;
     deniedCommands = builtins.toJSON config.dotfiles.fence.deniedCommands;
+    isLinux = pkgs.stdenv.hostPlatform.isLinux;
   in
     {
       home.packages = [
         pkgs.fence
-      ];
+      ]
+      ++ lib.optionals isLinux [
+        pkgs.bubblewrap
+        pkgs.bpftrace
+      ] ;
       xdg.configFile = {
         "fence/fence.json".text = ''
           {
@@ -50,7 +55,8 @@
               "allowUnixSockets": ${allowedUnixSockets},
             },
             "filesystem": {
-              "allowExecute": [
+              "allowRead": [
+                "/nix/store/**"
               ],
             }
           }
