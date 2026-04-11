@@ -71,6 +71,16 @@
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
+            "permission": {
+              "external_directory": {
+                "/tmp/**": "allow",
+                "~/src/**": "allow"
+              },
+              "edit": {
+                "/tmp/**": "deny",
+                "~/src/**": "deny"
+              }
+            },
             "default_agent": "plan",
             "agent": {
               "plan": {
