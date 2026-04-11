@@ -76,12 +76,6 @@
                 home.username = builtins.getEnv "USER";
                 home.homeDirectory = builtins.getEnv "HOME";
               }
-              {
-                dotfiles.fence.allowedDomains = [
-                  "*.minimax.io"
-                  "*.exa.ai"
-                ];
-              }
             ];
           };
         };

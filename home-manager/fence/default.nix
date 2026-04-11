@@ -43,23 +43,50 @@
         "fence/fence.json".text = ''
           {
             "$schema": "https://raw.githubusercontent.com/Use-Tusk/fence/main/docs/schema/fence.schema.json",
-            "extends": "code",
+            "extends": "./base.json",
             "command": {
-              "acceptSharedBinaryCannotRuntimeDeny": [
-                "chroot"
-              ],
               "deny": ${deniedCommands},
             },
             "network": {
               "allowedDomains": ${allowedDomains},
               "allowUnixSockets": ${allowedUnixSockets},
             },
+          }
+        '';
+        "fence/base.json".text = ''
+          {
+            "$schema": "https://raw.githubusercontent.com/Use-Tusk/fence/main/docs/schema/fence.schema.json",
+            "extends": "code",
+            "network": {
+              "allowedDomains": [
+                // MiniMax
+                "*.minimax.io",
+                "*.exa.ai",
+
+                // Sakura Internet
+                "*.sakura.ad.jp",
+
+                // Go
+                "*.pkg.go.dev"
+              ],
+              "allowUnixSockets": [
+                // Colima
+                "~/.colima/docker.sock",
+                "~/.colima/default/docker.sock"
+              ]
+            },
             "filesystem": {
-              "allowRead": [
+              "allowExecute": [
                 "/nix/store/**"
               ],
               "allowWrite": [
+                // Go
                 "~/pkg/**"
+              ]
+            },
+            "command": {
+              "acceptSharedBinaryCannotRuntimeDeny": [
+                "chroot"
               ]
             }
           }
