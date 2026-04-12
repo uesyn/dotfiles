@@ -73,6 +73,19 @@
         OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
       };
       xdg.configFile = {
+        "opencode/skills/skill-creator" = {
+          source = "${skills}/skills/skill-creator";
+        };
+        "opencode/skills/kubebuilder" = {
+          source = ./skills/kubebuilder;
+          recursive = true;
+        };
+        "opencode/skills/kubebuilder/references" = {
+          source = "${kubebuilder}/docs";
+        };
+        "opencode/skills/sakura-cloud-iaas/SKILL.md" = {
+          source = ./skills/sakura-cloud-iaas/SKILL.md;
+        };
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
