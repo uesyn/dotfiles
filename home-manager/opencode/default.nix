@@ -27,10 +27,6 @@
         ${pkgs.llm-agents.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
       '';
 
-      oc = pkgs.writeShellScriptBin "oc" ''
-        exec ${pkgs.fence}/bin/fence opencode "$@"
-      '';
-
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       defaultProvider = {
@@ -58,10 +54,19 @@
       jsonProvider = builtins.toJSON provider;
     in
     {
+      programs.zsh = {
+        shellAliases = {
+          opencode = "${pkgs.fence}/bin/fence ${pkgs.llm-agents.opencode}/bin/opencode";
+        };
+      };
+      programs.bash = {
+        shellAliases = {
+          opencode = "${pkgs.fence}/bin/fence ${pkgs.llm-agents.opencode}/bin/opencode";
+        };
+      };
       home.packages = [
         pkgs.llm-agents.opencode
         codesearch
-        oc
       ];
       home.sessionVariables = {
         OPENCODE_ENABLE_EXA = "true";
