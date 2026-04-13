@@ -19,6 +19,7 @@
     "mise/conf.d/kubectl.toml".text = ''
       [tools]
       kubectl = "1.35.3"
+      kubebuilder = "4.13.1"
     '';
   };
 
