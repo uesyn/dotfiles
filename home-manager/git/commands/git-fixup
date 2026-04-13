@@ -1,4 +1,3 @@
-#!/usr/bin/env bash
 
 FILTER=${FILTER:-fzf}
 MAX_LOG_COUNT=${MAX_LOG_COUNT:-30}
