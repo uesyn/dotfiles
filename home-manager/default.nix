@@ -16,7 +16,6 @@ in
 
   imports = [
     ./bash
-    ./commands
     ./dircolors
     ./direnv
     ./fence
