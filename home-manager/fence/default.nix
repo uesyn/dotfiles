@@ -72,7 +72,8 @@
               "allowUnixSockets": [
                 // Colima
                 "~/.colima/docker.sock",
-                "~/.colima/default/docker.sock"
+                "~/.colima/default/docker.sock",
+                "~/.config/colima/docker.sock"
               ]
             },
             "filesystem": {
