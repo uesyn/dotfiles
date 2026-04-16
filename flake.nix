@@ -3,7 +3,8 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    llm-agents.url = "github:numtide/llm-agents.nix";
+    # llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.url = "github:uesyn/llm-agents.nix/feat/add-fence";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -53,9 +54,9 @@
     {
       inherit lib;
 
-      overlays = {
-        llm-agents = llm-agents.overlays.default;
-      };
+      overlays = [
+        llm-agents.overlays.default
+      ];
 
       homeManagerModules = {
         default = import ./home-manager self;

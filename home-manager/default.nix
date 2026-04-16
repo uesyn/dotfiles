@@ -12,7 +12,7 @@ in
 {
   _module.args.inputs = self.inputs;
 
-  nixpkgs.overlays = builtins.attrValues self.overlays;
+  nixpkgs.overlays = self.overlays;
 
   imports = [
     ./bash

@@ -33,7 +33,7 @@
     in
     {
       home.packages = [
-        pkgs.fence
+        pkgs.llm-agents.fence
       ]
       ++ lib.optionals isLinux [
         pkgs.bubblewrap
