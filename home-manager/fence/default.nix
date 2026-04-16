@@ -78,7 +78,7 @@
             },
             "filesystem": {
               "allowRead": [
-                "/nix/store/**"
+                "/nix/**"
               ],
               "allowWrite": [
                 // Go
