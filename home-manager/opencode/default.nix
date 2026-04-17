@@ -89,6 +89,7 @@
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
+            "share": "disabled",
             "permission": {
               "external_directory": {
                 "/tmp/**": "allow",
