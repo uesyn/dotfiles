@@ -49,15 +49,22 @@
             },
             "network": {
               "allowedDomains": ${allowedDomains},
-              "allowUnixSockets": ${allowedUnixSockets},
+              "allowUnixSockets": ${allowedUnixSockets}
             },
           }
         '';
         "fence/base.json".text = ''
           {
-            "$schema": "https://raw.githubusercontent.com/Use-Tusk/fence/main/docs/schema/fence.schema.json",
-            "extends": "./code.json",
+            "allowPty": true,
             "network": {
+              "allowLocalBinding": true,
+              "allowLocalOutbound": true,
+              "allowUnixSockets": [
+                // Colima
+                "~/.colima/docker.sock",
+                "~/.colima/default/docker.sock",
+                "~/.config/colima/docker.sock"
+              ],
               "allowedDomains": [
                 // MiniMax
                 "*.minimax.io",
@@ -67,38 +74,8 @@
                 "*.sakura.ad.jp",
 
                 // Go
-                "*.pkg.go.dev"
-              ],
-              "allowUnixSockets": [
-                // Colima
-                "~/.colima/docker.sock",
-                "~/.colima/default/docker.sock",
-                "~/.config/colima/docker.sock"
-              ]
-            },
-            "filesystem": {
-              "allowRead": [
-                "/nix/**"
-              ],
-              "allowWrite": [
-                // Go
-                "~/pkg/**"
-              ]
-            },
-            "command": {
-              "acceptSharedBinaryCannotRuntimeDeny": [
-                "chroot"
-              ]
-            }
-          }
-        '';
-        "fence/code.json".text = ''
-          {
-            "allowPty": true,
-            "network": {
-              "allowLocalBinding": true,
-              "allowLocalOutbound": true,
-              "allowedDomains": [
+                "*.pkg.go.dev",
+
                 // LLM API providers
                 "api.openai.com",
                 "*.anthropic.com",
@@ -172,8 +149,15 @@
             },
 
             "filesystem": {
+              "allowRead": [
+                "/nix/**"
+              ],
               "allowWrite": [
                 ".",
+
+                // Go
+                "~/pkg/**",
+
                 // Temp files
                 "/tmp",
 
@@ -234,6 +218,9 @@
 
             "command": {
               "useDefaults": true,
+              "acceptSharedBinaryCannotRuntimeDeny": [
+                "chroot"
+              ],
               "deny": [
                 // Git commands that modify remote state
                 "git push",
