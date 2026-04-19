@@ -3,8 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # llm-agents.url = "github:numtide/llm-agents.nix";
-    llm-agents.url = "github:uesyn/llm-agents.nix/feat/add-fence";
+    llm-agents.url = "github:numtide/llm-agents.nix";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
