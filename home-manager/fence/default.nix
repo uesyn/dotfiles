@@ -150,7 +150,8 @@
 
             "filesystem": {
               "allowRead": [
-                "/nix/**"
+                "/nix/**",
+                "~/.config/**"
               ],
               "allowWrite": [
                 ".",
@@ -184,7 +185,6 @@
 
                 // XDG directories for app configs/data
                 "~/.local/share/**",
-                "~/.config/**"
               ],
 
               "denyRead": [
