@@ -45,7 +45,6 @@
         p.bash
         p.c
         p.go
-        p.javascript
         p.json
         p.lua
         p.markdown
