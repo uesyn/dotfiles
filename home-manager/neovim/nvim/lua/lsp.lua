@@ -1,4 +1,9 @@
 -- Language Server Configurations
+vim.diagnostic.config({
+  virtual_text = false,
+  virtual_lines = true,
+})
+
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(args)
     if not (args.data and args.data.client_id) then
@@ -23,5 +28,14 @@ vim.api.nvim_create_autocmd('LspAttach', {
     vim.keymap.set("n", "<leader>li", function() vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled()) end, opts("Toggle inlay hint"))
   end,
 })
+
+local diagnostic_enabled = true
+vim.keymap.set("n", "<leader>ll", function()
+  diagnostic_enabled = not diagnostic_enabled
+  vim.diagnostic.config({
+    virtual_lines = diagnostic_enabled,
+    virtual_text = not diagnostic_enabled,
+  })
+end, { desc = "Toggle diagnostic display" })
 
 vim.lsp.enable({'copilot', 'gopls', 'typescript_language_server', 'rust_analyzer', 'phpactor'})

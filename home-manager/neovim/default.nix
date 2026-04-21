@@ -99,10 +99,7 @@
         plugin = fidget-nvim;
         optional = true;
       }
-      {
-        plugin = lsp_lines-nvim;
-        optional = true;
-      }
+
       {
         plugin = render-markdown-nvim;
         optional = true;
