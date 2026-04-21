@@ -1,7 +1,4 @@
 -- Set up globals
-vim.g["loaded_perl_provider"] = 0
-vim.g["loaded_python_provider"] = 0
-vim.g["loaded_ruby_provider"] = 0
 vim.g["mapleader"] = " "
 vim.g["netrw_fastbrowse"] = 0
 vim.g["clipboard"] = 'osc52'
