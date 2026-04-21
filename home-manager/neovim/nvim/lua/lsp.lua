@@ -5,16 +5,10 @@ vim.api.nvim_create_autocmd('LspAttach', {
       return
     end
 
-    local client = vim.lsp.get_client_by_id(args.data.client_id)
-
-    if client:supports_method('textDocument/completion') then
-      vim.lsp.completion.enable(true, client.id, args.buf)
-    end
-
+    local bufnr = args.buf
     function opts(desc)
       return { desc = desc, noremap = true, silent = true, buffer = bufnr }
     end
-    local bufnr = args.buf
     vim.keymap.set("n", "gd", function() vim.lsp.buf.definition() end, opts("Go to definition"))
     vim.keymap.set("n", "gD", function() vim.lsp.buf.declaration() end, opts("Go to declarations"))
     vim.keymap.set("n", "gi", function() vim.lsp.buf.implementation() end, opts("Go to implementations"))
