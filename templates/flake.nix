@@ -29,10 +29,7 @@
       packages = dotfiles.lib.forAllSystems (system: {
         homeConfigurations = {
           ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
-            pkgs = dotfiles.lib.pkgsForSystem {
-              inherit system;
-              overlays = [ ];
-            };
+            pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               dotfiles.homeManagerModules.default
               {
