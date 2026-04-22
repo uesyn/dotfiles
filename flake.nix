@@ -61,7 +61,9 @@
       };
 
       apps = lib.forAllSystems appsForSystem;
+
       formatter = lib.forAllSystems formatterForSystem;
+
       packages = lib.forAllSystems (system: {
         homeConfigurations = {
           ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
