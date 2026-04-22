@@ -12,7 +12,14 @@ in
 {
   _module.args.inputs = self.inputs;
 
-  nixpkgs.overlays = self.overlays;
+  nixpkgs = {
+    overlays = [
+      self.inputs.llm-agents.overlays.default
+    ];
+    config = {
+      allowUnfree = true;
+    };
+  };
 
   imports = [
     ./bash

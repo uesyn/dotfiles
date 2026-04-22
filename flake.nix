@@ -27,15 +27,20 @@
       ...
     }@inputs:
     let
-      lib = import ./lib inputs;
+      lib = {
+        forAllSystems = nixpkgs.lib.genAttrs [
+          "x86_64-linux"
+          "aarch64-linux"
+          "aarch64-darwin"
+        ];
+      };
+
+      formatterForSystem = system: nixpkgs.legacyPackages.${system}.nixfmt-tree;
 
       appsForSystem =
         system:
         let
-          pkgs = lib.pkgsForSystem {
-            inherit system;
-            overlays = [ ];
-          };
+          pkgs = nixpkgs.legacyPackages.${system};
         in
         {
           hm = {
@@ -47,15 +52,9 @@
           };
         };
 
-      formatterForSystem = system: (lib.pkgsForSystem { inherit system; }).nixfmt-tree;
-
     in
     {
       inherit lib;
-
-      overlays = [
-        llm-agents.overlays.default
-      ];
 
       homeManagerModules = {
         default = import ./home-manager self;
@@ -66,10 +65,7 @@
       packages = lib.forAllSystems (system: {
         homeConfigurations = {
           ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
-            pkgs = lib.pkgsForSystem {
-              inherit system;
-              overlays = [ ];
-            };
+            pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               self.homeManagerModules.default
               {
