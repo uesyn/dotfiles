@@ -4,10 +4,9 @@
   ...
 }:
 {
-  xdg.configFile = {
-    "mise/conf.d/python.toml".text = ''
-      [tools]
-      python = "3.14.2"
-    '';
+  config = {
+    home.packages = [
+      pkgs.python315
+    ];
   };
 }
