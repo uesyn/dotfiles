@@ -30,4 +30,6 @@
   #     };
   #   };
   # };
+  # dotfiles.opencode.enabledProviders = [ "test" ];
+  # dotfiles.opencode.disabledProviders = [ "test" ];
 }

@@ -12,6 +12,16 @@
       default = { };
       description = "OpenCode provider configuration to merge with defaults";
     };
+    enabledProviders = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "OpenCode enabled providers";
+    };
+    disabledProviders = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "OpenCode disabled providers";
+    };
   };
 
   config =
@@ -29,6 +39,13 @@
 
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
+      defaultEnabledProviders = [
+        "minimax"
+        "github-copilot"
+        "opencode-go"
+        "dynamic"
+        "ai-engine"
+      ];
       defaultProvider = {
         "ai-engine" = {
           npm = "@ai-sdk/openai-compatible";
@@ -49,9 +66,25 @@
             apiKey = "{env:AI_ENGINE_API_KEY}";
           };
         };
+        "dynamic" = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "Dynamic";
+          models = {
+            "{env:OPENAI_DYNAMIC_MODEL}" = {
+              name = "{env:OPENAI_DYNAMIC_MODEL}";
+            };
+          };
+          options = {
+            baseURL = "{env:OPENAI_DYNAMIC_BASE_URL}";
+            apiKey = "{env:OPENAI_DYNAMIC_API_KEY}";
+          };
+        };
       };
       provider = defaultProvider // opencode.provider;
       jsonProvider = builtins.toJSON provider;
+      enabledProviders = defaultEnabledProviders ++ opencode.enabledProviders;
+      jsonEnabledProviders = builtins.toJSON enabledProviders;
+      jsonDisabledProviders = builtins.toJSON opencode.disabledProviders;
     in
     {
       programs.zsh = {
@@ -90,6 +123,8 @@
           {
             "$schema": "https://opencode.ai/config.json",
             "share": "disabled",
+            "enabled_providers": ${jsonEnabledProviders},
+            "disabled_providers": ${jsonDisabledProviders},
             "permission": {
               "external_directory": {
                 "/tmp/**": "allow",
