@@ -90,11 +90,6 @@
         plugin = blame-nvim;
         optional = true;
       }
-      blink-copilot
-      {
-        plugin = blink-cmp;
-        optional = true;
-      }
       {
         plugin = fidget-nvim;
         optional = true;
