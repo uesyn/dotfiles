@@ -13,7 +13,7 @@
 
   # dotfiles.fence.allowedDomains = [ "example.com" ];
   # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
-  # dotfiles.fence.deniedCommands = [ "rm", "dd" ];
+  # dotfiles.fence.deniedCommands = [ "rm" "dd" ];
 
   # dotfiles.opencode.provider = {
   #   "ai-engine" = {
