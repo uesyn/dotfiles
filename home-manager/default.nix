@@ -24,7 +24,6 @@ in
   imports = [
     ./bash
     ./dircolors
-    ./direnv
     ./fence
     ./fzf
     ./git
