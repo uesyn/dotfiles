@@ -37,21 +37,6 @@
 
       formatterForSystem = system: nixpkgs.legacyPackages.${system}.nixfmt-tree;
 
-      appsForSystem =
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-        in
-        {
-          hm = {
-            type = "app";
-            program = "${pkgs.writeShellScriptBin "hm.sh" ''
-              #!${pkgs.bash}/bin/bash
-              ${pkgs.home-manager}/bin/home-manager switch --flake . --impure -b backup --show-trace
-            ''}/bin/hm.sh";
-          };
-        };
-
     in
     {
       inherit lib;
@@ -59,8 +44,6 @@
       homeManagerModules = {
         default = import ./home-manager self;
       };
-
-      apps = lib.forAllSystems appsForSystem;
 
       formatter = lib.forAllSystems formatterForSystem;
 

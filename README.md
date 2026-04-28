@@ -25,7 +25,8 @@ $ nix run nixpkgs#cachix -- use numtide
 $ nix-shell -p git curl home-manager
 $ git clone https://github.com/uesyn/dotfiles.git
 $ cd ./dotfiles
-$ nix --extra-experimental-features nix-command --extra-experimental-features flakes run .#hm
+$ nix-shell -p git curl home-manager
+$ home-manager switch --flake . --impure -b backup --show-trace
 ```
 
 or init flake
