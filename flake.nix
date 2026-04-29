@@ -42,7 +42,7 @@
         default = import ./home-manager self;
       };
 
-      formatter = lib.forAllSystems nixpkgs.legacyPackages.${system}.nixfmt-tree;;
+      formatter = lib.forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
       packages = lib.forAllSystems (system: {
         homeConfigurations = {
