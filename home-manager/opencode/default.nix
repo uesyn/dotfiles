@@ -70,13 +70,13 @@
           npm = "@ai-sdk/openai-compatible";
           name = "Dynamic";
           models = {
-            "{env:OPENAI_DYNAMIC_MODEL}" = {
-              name = "{env:OPENAI_DYNAMIC_MODEL}";
+            "{env:OPENCODE_OPENAI_DYNAMIC_MODEL}" = {
+              name = "{env:OPENCODE_OPENAI_DYNAMIC_MODEL}";
             };
           };
           options = {
-            baseURL = "{env:OPENAI_DYNAMIC_BASE_URL}";
-            apiKey = "{env:OPENAI_DYNAMIC_API_KEY}";
+            baseURL = "{env:OPENCODE_OPENAI_DYNAMIC_BASE_URL}";
+            apiKey = "{env:OPENCODE_OPENAI_DYNAMIC_API_KEY}";
           };
         };
       };
