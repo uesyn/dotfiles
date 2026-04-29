@@ -34,9 +34,6 @@
           "aarch64-darwin"
         ];
       };
-
-      formatterForSystem = system: nixpkgs.legacyPackages.${system}.nixfmt-tree;
-
     in
     {
       inherit lib;
@@ -45,7 +42,7 @@
         default = import ./home-manager self;
       };
 
-      formatter = lib.forAllSystems formatterForSystem;
+      formatter = lib.forAllSystems nixpkgs.legacyPackages.${system}.nixfmt-tree;;
 
       packages = lib.forAllSystems (system: {
         homeConfigurations = {
