@@ -4,8 +4,6 @@ vim.diagnostic.config({
   virtual_lines = true,
 })
 
-vim.o.pumborder = 'rounded' -- ポップアップメニューに罫線を追加
-
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(args)
     if not (args.data and args.data.client_id) then
