@@ -3,6 +3,8 @@
   # home.username = "username";
   # home.homeDirectory = "/home/username";
 
+  # dotfiles.overlays = [];
+
   # dotfiles.go.private = [];
 
   # dotfiles.git.user = "username";
