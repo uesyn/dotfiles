@@ -54,6 +54,11 @@ return {
       })
     end
 
+    local gitbrowse = function()
+      Snacks.gitbrowse.open()
+    end
+
     vim.keymap.set("n", "<S-f>", explorer, { desc = "Open file explorer" })
+    vim.keymap.set({ "n", "v" }, "<Leader>go", gitbrowse, { desc = "Open in Github" })
   end,
 }

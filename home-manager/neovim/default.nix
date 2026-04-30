@@ -70,10 +70,6 @@
         optional = true;
       }
       {
-        plugin = openingh-nvim;
-        optional = true;
-      }
-      {
         plugin = barbar-nvim;
         optional = true;
       }
