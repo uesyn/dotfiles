@@ -16,11 +16,17 @@ in
       default = [ ];
       description = "package overlays";
     };
+    additionalPackages = lib.mkOption {
+      type = lib.types.addCheck lib.types.anything builtins.isFunction;
+      default = pkgs: [ ];
+      description = "Additional packages";
+    };
   };
 
   config =
     let
       overlays = config.dotfiles.overlays;
+      additionalPackages = config.dotfiles.additionalPackages;
     in
     {
       _module.args.inputs = self.inputs;
@@ -93,7 +99,8 @@ in
         pkgs.colima
         pkgs.iproute2mac
         pkgs.docker-credential-helpers
-      ];
+      ]
+      ++ (additionalPackages pkgs);
 
       home.sessionVariables = {
         XDG_CONFIG_HOME = "${config.home.homeDirectory}/.config";

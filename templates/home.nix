@@ -4,6 +4,7 @@
   # home.homeDirectory = "/home/username";
 
   # dotfiles.overlays = [];
+  # dotfiles.additionalPackages = pkgs: [ pkgs.sl ];
 
   # dotfiles.go.private = [];
 
