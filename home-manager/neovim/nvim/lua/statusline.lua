@@ -91,7 +91,7 @@ function _G.statusline()
 
   line = line .. vim.bo.fileencoding .. " "
   line = line .. vim.bo.fileformat .. " "
-  line = line .. "%p%%" .. " "
+  line = line .. "%3p%%" .. " "
   return line
 end
 
