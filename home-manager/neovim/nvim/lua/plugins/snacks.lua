@@ -7,6 +7,32 @@ return {
       input = { enabled = true },
       notifier = { enabled = true },
       picker = {
+        layout = {
+	  preset = "telescope",
+	  reverse = false
+        },
+	actions = {
+	  confirm_or_qflist = function(picker, item, action)
+            local sel = picker:selected()
+            if #sel > 1 then
+	      require("snacks.picker.actions").qflist(picker)
+	    else
+	      require("snacks.picker.actions").jump(picker, item, action)
+            end
+          end,
+	},
+        win = {
+          list = {
+            keys = {
+              ["<CR>"] = "confirm_or_qflist",
+            },
+          },
+          input = {
+            keys = {
+              ["<CR>"] = "confirm_or_qflist",
+            },
+          },
+	},
 	sources = {
 	  explorer = {
 	    ignored = true,
@@ -24,21 +50,9 @@ return {
 	  reverse = false
         },
 	auto_close = true,
-	actions = {
-	  confirm_or_qflist = function(picker, item, action)
-            local sel = picker:selected()
-            if #sel > 1 then
-	      require("snacks.picker.actions").qflist(picker)
-	    else
-	      require("snacks.picker.actions").jump(picker, item, action)
-            end
-          end,
-	},
 	win = {
 	  list = {
 	    keys = {
-              ["l"] = "confirm_or_qflist",
-              ["<CR>"] = "confirm_or_qflist",
               ["h"] = "explorer_close", -- close directory
               ["a"] = "explorer_add",
               ["d"] = "explorer_del",
@@ -64,11 +78,21 @@ return {
       })
     end
 
+    local grep = function()
+      Snacks.picker.pick("grep", {})
+    end
+
+    local files = function()
+      Snacks.picker.pick("files", {})
+    end
+
     local gitbrowse = function()
       Snacks.gitbrowse.open()
     end
 
     vim.keymap.set("n", "<S-f>", explorer, { desc = "Open file explorer" })
+    vim.keymap.set("n", "<Leader>fg", grep, { desc = "Grep files" })
+    vim.keymap.set("n", "<Leader>ff", files, { desc = "Find files" })
     vim.keymap.set({ "n", "v" }, "<Leader>go", gitbrowse, { desc = "Open in Github" })
   end,
 }

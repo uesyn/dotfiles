@@ -62,10 +62,6 @@
         optional = true;
       }
       {
-        plugin = fzf-lua;
-        optional = true;
-      }
-      {
         plugin = barbar-nvim;
         optional = true;
       }
