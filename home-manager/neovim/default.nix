@@ -31,6 +31,7 @@
       require('option')
       require('autocmd')
       require('lsp')
+      require('statusline')
       require("lz.n").load("plugins")
     '';
 
@@ -56,8 +57,6 @@
         p.typescript
         p.yaml
       ]))
-      nvim-navic
-      lualine-nvim
       {
         plugin = gitsigns-nvim;
         optional = true;
@@ -83,18 +82,9 @@
         optional = true;
       }
       {
-        plugin = hop-nvim;
-        optional = true;
-      }
-      {
         plugin = blame-nvim;
         optional = true;
       }
-      {
-        plugin = fidget-nvim;
-        optional = true;
-      }
-
       {
         plugin = render-markdown-nvim;
         optional = true;

@@ -61,4 +61,17 @@ vim.keymap.set("n", "<leader>ll", function()
   })
 end, { desc = "Toggle diagnostic display" })
 
+vim.api.nvim_create_autocmd('LspProgress', { buffer = buf, callback = function(ev)
+    local value = ev.data.params.value
+    vim.api.nvim_echo({ { value.message or 'done' } }, false, {
+      id = 'lsp.' .. ev.data.params.token,
+      kind = 'progress',
+      source = 'vim.lsp',
+      title = value.title,
+      status = value.kind ~= 'end' and 'running' or 'success',
+      percent = value.percentage,
+    })
+  end,
+})
+
 vim.lsp.enable({'copilot', 'gopls', 'typescript_language_server', 'rust_analyzer', 'phpactor'})
