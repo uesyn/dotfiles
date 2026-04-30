@@ -32,10 +32,6 @@
             pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               dotfiles.homeManagerModules.default
-              {
-                home.username = builtins.getEnv "USER";
-                home.homeDirectory = builtins.getEnv "HOME";
-              }
             ];
           };
         };

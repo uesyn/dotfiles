@@ -50,10 +50,6 @@
             pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               self.homeManagerModules.default
-              {
-                home.username = builtins.getEnv "USER";
-                home.homeDirectory = builtins.getEnv "HOME";
-              }
             ];
           };
         };

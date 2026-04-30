@@ -11,6 +11,16 @@ let
 in
 {
   options.dotfiles = {
+    username = lib.mkOption {
+      type = lib.types.str;
+      default = builtins.getEnv "USER";
+      description = "username";
+    };
+    homeDirectory = lib.mkOption {
+      type = lib.types.str;
+      default = builtins.getEnv "HOME";
+      description = "username";
+    };
     overlays = lib.mkOption {
       type = lib.types.listOf lib.types.package;
       default = [ ];
@@ -19,12 +29,14 @@ in
     additionalPackages = lib.mkOption {
       type = lib.types.addCheck lib.types.anything builtins.isFunction;
       default = pkgs: [ ];
-      description = "Additional packages";
+      description = "additional packages";
     };
   };
 
   config =
     let
+      username = config.dotfiles.username;
+      homeDirectory = config.dotfiles.homeDirectory;
       overlays = config.dotfiles.overlays;
       additionalPackages = config.dotfiles.additionalPackages;
     in
@@ -39,6 +51,9 @@ in
           allowUnfree = true;
         };
       };
+
+      home.username = username;
+      home.homeDirectory = homeDirectory;
 
       # This value determines the Home Manager release that your configuration is
       # compatible with. This helps avoid breakage when a new Home Manager release

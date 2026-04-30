@@ -1,7 +1,7 @@
 { ... }:
 {
-  # home.username = "username";
-  # home.homeDirectory = "/home/username";
+  # dotfiles.username = "username";
+  # dotfiles.homeDirectory = "/home/username";
 
   # dotfiles.overlays = [];
   # dotfiles.additionalPackages = pkgs: [ pkgs.sl ];
