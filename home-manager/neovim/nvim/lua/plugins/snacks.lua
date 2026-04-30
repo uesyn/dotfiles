@@ -24,11 +24,21 @@ return {
 	  reverse = false
         },
 	auto_close = true,
+	actions = {
+	  confirm_or_qflist = function(picker, item, action)
+            local sel = picker:selected()
+            if #sel > 1 then
+	      require("snacks.picker.actions").qflist(picker)
+	    else
+	      require("snacks.picker.actions").jump(picker, item, action)
+            end
+          end,
+	},
 	win = {
 	  list = {
 	    keys = {
-              ["l"] = "confirm",
-              ["<CR>"] = "confirm",
+              ["l"] = "confirm_or_qflist",
+              ["<CR>"] = "confirm_or_qflist",
               ["h"] = "explorer_close", -- close directory
               ["a"] = "explorer_add",
               ["d"] = "explorer_del",
@@ -37,8 +47,8 @@ return {
               ["m"] = "explorer_move",
               ["o"] = "explorer_open", -- open with system application
               ["P"] = "toggle_preview",
-              ["y"] = { "explorer_yank", mode = { "n", "x" } },
               ["p"] = "explorer_paste",
+              ["y"] = { "explorer_yank", mode = { "n", "x" } },
               ["u"] = "explorer_update",
               ["]g"] = "explorer_git_next",
               ["[g"] = "explorer_git_prev",
