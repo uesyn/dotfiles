@@ -53,7 +53,7 @@ return {
 	win = {
 	  list = {
 	    keys = {
-              ["h"] = "explorer_close", -- close directory
+              ["h"] = "explorer_close",
               ["a"] = "explorer_add",
               ["d"] = "explorer_del",
               ["r"] = "explorer_rename",
@@ -64,14 +64,6 @@ return {
               ["p"] = "explorer_paste",
               ["y"] = { "explorer_yank", mode = { "n", "x" } },
               ["u"] = "explorer_update",
-              ["]g"] = "explorer_git_next",
-              ["[g"] = "explorer_git_prev",
-              ["]d"] = "explorer_diagnostic_next",
-              ["[d"] = "explorer_diagnostic_prev",
-              ["]w"] = "explorer_warn_next",
-              ["[w"] = "explorer_warn_prev",
-              ["]e"] = "explorer_error_next",
-              ["[e"] = "explorer_error_prev",
 	    },
 	  },
 	},
