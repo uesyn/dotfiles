@@ -66,10 +66,6 @@
         optional = true;
       }
       {
-        plugin = neo-tree-nvim;
-        optional = true;
-      }
-      {
         plugin = barbar-nvim;
         optional = true;
       }
