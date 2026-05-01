@@ -1,7 +1,7 @@
 return {
   "barbar.nvim",
   event = {
-    "DeferredUIEnter",
+    "BufEnter",
   },
   after = function()
     require("barbar").setup({
