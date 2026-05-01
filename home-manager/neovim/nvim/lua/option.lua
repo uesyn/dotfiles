@@ -24,4 +24,4 @@ vim.opt["wildmode"] = "full"
 vim.opt["termguicolors"] = true
 vim.opt["winborder"] = 'rounded'
 vim.opt["pumborder"] = 'rounded'
-vim.opt["completeopt"] = { 'menu', 'popup', 'noselect' }
+vim.opt["completeopt"] = { 'menu', 'menuone', 'popup', 'noselect', 'noinsert' }
