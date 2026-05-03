@@ -50,7 +50,6 @@
         fi
       '')
       (lib.mkOrder 1000 ''
-        source ${./hooks.zsh}
         source ${./async.zsh}
         source ${./prompt.zsh}
 
