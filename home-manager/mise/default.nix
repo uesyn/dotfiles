@@ -26,10 +26,6 @@
     enableFishIntegration = false;
   };
 
-  home.sessionPath = [
-    "${config.home.homeDirectory}/.local/share/mise/shims"
-  ];
-
   home.sessionVariables = {
     MISE_ALL_COMPILE = "false";
     MISE_IDIOMATIC_VERSION_FILE_ENABLE_TOOLS = "python";
