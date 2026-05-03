@@ -1,2 +1,0 @@
-current_dir="$(basename $(dirname ${PWD}))_$(basename ${PWD})"
-zellij attach -c "${current_dir}"

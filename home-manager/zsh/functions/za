@@ -1,2 +1,0 @@
-session="$(zellij list-sessions -n | grep -v 'EXITED' | fzf | cut -f1 -d' ')"
-zellij attach "${session}"

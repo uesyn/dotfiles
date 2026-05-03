@@ -11,25 +11,17 @@ return {
 	  preset = "telescope",
 	  reverse = false
         },
-	actions = {
-	  confirm_or_qflist = function(picker, item, action)
-            local sel = picker:selected()
-            if #sel > 1 then
-	      require("snacks.picker.actions").qflist(picker)
-	    else
-	      require("snacks.picker.actions").jump(picker, item, action)
-            end
-          end,
-	},
         win = {
           list = {
             keys = {
-              ["<CR>"] = "confirm_or_qflist",
+	      ["q"] = "qflist",
+	      ["<C-q>"] = "cancel",
             },
           },
           input = {
             keys = {
-              ["<CR>"] = "confirm_or_qflist",
+	      ["q"] = "qflist",
+	      ["<C-q>"] = "cancel",
             },
           },
 	},
@@ -70,6 +62,10 @@ return {
       })
     end
 
+    local resume = function()
+      Snacks.picker.resume()
+    end
+
     local grep = function()
       Snacks.picker.pick("grep", {})
     end
@@ -82,9 +78,20 @@ return {
       Snacks.gitbrowse.open()
     end
 
+    local ghIssues = function()
+      Snacks.picker.gh_issue({ state = "all" })
+    end
+
+    local ghPRs = function()
+      Snacks.picker.gh_pr({ state = "all" })
+    end
+
     vim.keymap.set("n", "<S-f>", explorer, { desc = "Open file explorer" })
-    vim.keymap.set("n", "<Leader>fg", grep, { desc = "Grep files" })
-    vim.keymap.set("n", "<Leader>ff", files, { desc = "Find files" })
-    vim.keymap.set({ "n", "v" }, "<Leader>go", gitbrowse, { desc = "Open in Github" })
+    vim.keymap.set("n", "<leader>fr", resume, { desc = "Resume picker" })
+    vim.keymap.set("n", "<leader>fg", grep, { desc = "Grep files" })
+    vim.keymap.set("n", "<leader>ff", files, { desc = "Find files" })
+    vim.keymap.set({ "n", "v" }, "<leader>go", gitbrowse, { desc = "Open in Github" })
+    vim.keymap.set("n", "<leader>fgi", ghIssues, { desc = "Open Github issues" })
+    vim.keymap.set("n", "<leader>fgp", ghPRs, { desc = "Open Github pull requests" })
   end,
 }
