@@ -40,6 +40,7 @@
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       defaultEnabledProviders = [
+        "nvidia"
         "minimax"
         "github-copilot"
         "opencode-go"
