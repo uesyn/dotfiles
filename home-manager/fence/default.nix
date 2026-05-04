@@ -66,6 +66,9 @@
                 "~/.config/colima/docker.sock"
               ],
               "allowedDomains": [
+                // nvidia
+                "integrate.api.nvidia.com",
+
                 // MiniMax
                 "*.minimax.io",
                 "*.exa.ai",
