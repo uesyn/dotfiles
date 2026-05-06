@@ -68,10 +68,10 @@
               "allowedDomains": [
                 // nvidia
                 "integrate.api.nvidia.com",
-
-                // MiniMax
-                "*.minimax.io",
-                "*.exa.ai",
+                
+                // ollama cloud
+                "ollama.com",
+                "*.ollama.com",
 
                 // Sakura Internet
                 "*.sakura.ad.jp",

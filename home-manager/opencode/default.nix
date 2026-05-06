@@ -41,11 +41,10 @@
       kubebuilder = inputs.kubebuilder;
       defaultEnabledProviders = [
         "nvidia"
-        "minimax"
+        "ollama-cloud"
         "github-copilot"
-        "opencode-go"
-        "dynamic"
         "ai-engine"
+        "dynamic"
       ];
       defaultProvider = {
         "ai-engine" = {
