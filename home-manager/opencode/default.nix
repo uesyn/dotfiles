@@ -40,7 +40,6 @@
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       defaultEnabledProviders = [
-        "nvidia"
         "ollama-cloud"
         "github-copilot"
         "ai-engine"
