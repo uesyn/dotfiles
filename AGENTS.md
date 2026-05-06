@@ -10,6 +10,8 @@ There is no flake app. Use home-manager directly:
 home-manager switch --flake . --impure -b backup --show-trace
 ```
 
+`--impure` is required because the config reads environment variables at evaluation time.
+
 ## Format
 
 ```sh
@@ -41,9 +43,7 @@ Wraps `opencode run --agent plan "@explorer ${query}"`.
 - Bundled skills: `kubebuilder` (references `inputs.kubebuilder/docs`), `sakura-cloud-iaas`, `skill-creator` (from `inputs.anthropic-skills`).
 - Default agent is `plan`; `autoupdate: false`; `share: disabled`.
 - Env vars set: `OPENCODE_ENABLE_EXA=true`, `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`.
-- Providers enabled by default: `ai-engine`, `minimax`, `github-copilot`, `opencode-go`, `dynamic`.
-- AI Engine provider uses `https://api.ai.sakura.ad.jp/v1` and expects `AI_ENGINE_API_KEY`.
-- Dynamic provider reads `OPENCODE_OPENAI_DYNAMIC_MODEL`, `OPENCODE_OPENAI_DYNAMIC_BASE_URL`, `OPENCODE_OPENAI_DYNAMIC_API_KEY`.
+- Providers enabled by default: `ollama-cloud`, `github-copilot`, `ai-engine`, `dynamic`.
 - TUI theme: Dracula. Leader key: `ctrl+x`.
 
 ### Permissions
@@ -63,10 +63,12 @@ Wraps `opencode run --agent plan "@explorer ${query}"`.
 
 ## Environment Quirks
 
+- `allowUnfree = true` is set in nixpkgs config, so unfree packages resolve without extra flags.
 - `GOPATH="$HOME"` and `GOBIN="$HOME/bin"` (not `~/go`).
 - Node prefix is `~/.node`; `PATH` includes `$HOME/.node/bin`.
 - Mise shims path: `$HOME/.local/share/mise/shims`.
 - `EDITOR = nvim`, `KUBE_EDITOR = nvim`.
+- macOS-only non-Nix dependencies managed via `Brewfile` (`brew bundle`).
 
 ## Shell & Multiplexer
 
