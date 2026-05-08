@@ -20,6 +20,74 @@ description: |
 4. **検索** - フィルタリングとソートでリソースを検索
 5. **エラーハンドリング** - APIエラーを適切に処理
 
+## インストール
+
+### go get
+
+```bash
+go get github.com/sacloud/iaas-api-go
+```
+
+**推奨される依存パッケージ（helper/api などを使用する場合）：**
+
+```bash
+# APIクライアントの高度な設定用
+go get github.com/sacloud/api-client-go
+
+# サイズ計算（MemoryMBなどの変換で使用）
+go get github.com/sacloud/packages-go
+```
+
+**go.mod の例：**
+
+```go
+module your-project
+
+go 1.22
+
+require (
+    github.com/sacloud/iaas-api-go v1.14.0
+    github.com/sacloud/api-client-go v0.3.5
+    github.com/sacloud/packages-go v0.1.0
+)
+```
+
+### 依存関係の自動解決
+
+`iaas-api-go` をインポートすれば、Go Modules が自動的に必要な依存関係を解決してインストールします。
+
+**基本的なインポート例：**
+
+```go
+import (
+    "github.com/sacloud/iaas-api-go"           // メインライブラリ
+    "github.com/sacloud/iaas-api-go/helper/api"  // クライアント設定ヘルパー
+    "github.com/sacloud/iaas-api-go/helper/power"  // 電源操作ヘルパー
+    "github.com/sacloud/iaas-api-go/helper/wait"   // 待機処理ヘルパー
+    "github.com/sacloud/iaas-api-go/helper/query"  // 検索クエリヘルパー
+    "github.com/sacloud/iaas-api-go/helper/cleanup" // クリーンアップヘルパー
+    "github.com/sacloud/iaas-api-go/helper/plans"   // プラン変更ヘルパー
+    "github.com/sacloud/iaas-api-go/search"        // 検索フィルタ
+    "github.com/sacloud/iaas-api-go/types"         // 定数・型
+    "github.com/sacloud/iaas-api-go/ostype"        // OSタイプ定数
+)
+```
+
+## ドキュメント・リファレンス
+
+- **GoDoc (pkg.go.dev)**: https://pkg.go.dev/github.com/sacloud/iaas-api-go
+  - すべての型、関数、インターフェースの詳細なAPIドキュメント
+- **GitHubリポジトリ**: https://github.com/sacloud/iaas-api-go
+  - ソースコード、CHANGELOG、Issue管理
+- **設計・概要ドキュメント**: https://github.com/sacloud/iaas-api-go/blob/main/docs/design/overview.md
+  - ライブラリの設計思想、実装方針、libsacloudとの違い
+
+### 関連プロジェクト
+
+- [sacloud/iaas-service-go](https://github.com/sacloud/iaas-service-go): `iaas-api-go` を用いた高レベルAPIライブラリ
+- [sacloud/api-client-go](https://github.com/sacloud/api-client-go): HTTP/APIクライアントライブラリ（環境変数やプロファイル処理など）
+- [sacloud/packages-go](https://github.com/sacloud/packages-go): 汎用パッケージ群（サイズ計算など）
+
 ## クライアント初期化
 
 ### 基本的な方法
@@ -194,13 +262,13 @@ sw, err := iaas.NewSwitchOp(client).Create(ctx, "is1a", &iaas.SwitchCreateReques
     Tags:        types.Tags{"env:prod", "app:web"},
 })
 
-// サーバー作成
+// サーバー作成（ディスクレス）
 server, err := iaas.NewServerOp(client).Create(ctx, "is1a", &iaas.ServerCreateRequest{
     CPU:               1,
     MemoryMB:          1024,
     Commitment:        types.Commitments.Standard,
     Generation:        types.PlanGenerations.Default,
-    ConnectedSwitches: []*iaas.ConnectedSwitch{},
+    ConnectedSwitches: []*iaas.ConnectedSwitch{{Scope: types.Scopes.Shared}},
     InterfaceDriver:   types.InterfaceDrivers.VirtIO,
     Name:              "my-server",
     Description:       "説明",
@@ -209,9 +277,56 @@ server, err := iaas.NewServerOp(client).Create(ctx, "is1a", &iaas.ServerCreateRe
 // ディスク作成
 disk, err := iaas.NewDiskOp(client).Create(ctx, "is1a", &iaas.DiskCreateRequest{
     Name:            "my-disk",
-    SizeMB:          20 * 1024 * 1024, // 20GB
+    SizeMB:          20 * 1024, // 20GB (MiB単位)
     DiskPlanID:      types.DiskPlans.SSD,
     Connection:      types.DiskConnections.VirtIO,
+}, nil, 0)
+```
+
+### OSイメージからディスク作成
+
+```go
+import (
+    "github.com/sacloud/iaas-api-go/helper/query"
+    "github.com/sacloud/iaas-api-go/ostype"
+)
+
+// Ubuntuのアーカイブを検索
+archive, err := query.FindArchiveByOSType(ctx, iaas.NewArchiveOp(client), "is1a", ostype.Ubuntu)
+if err != nil {
+    log.Fatal(err)
+}
+
+// アーカイブからディスク作成
+disk, err := iaas.NewDiskOp(client).Create(ctx, "is1a", &iaas.DiskCreateRequest{
+    Name:         "ubuntu-disk",
+    SizeMB:       40 * 1024, // 40GB
+    DiskPlanID:   types.DiskPlans.SSD,
+    Connection:   types.DiskConnections.VirtIO,
+    SourceArchiveID: archive.ID,
+}, nil, 0)
+```
+
+### サーバー＋ディスク一括作成
+
+```go
+// サーバー作成
+server, err := iaas.NewServerOp(client).Create(ctx, "is1a", &iaas.ServerCreateRequest{
+    CPU:               2,
+    MemoryMB:          4 * 1024,
+    Name:              "web-server",
+    Commitment:        types.Commitments.Standard,
+    Generation:        types.PlanGenerations.Default,
+    ConnectedSwitches: []*iaas.ConnectedSwitch{{Scope: types.Scopes.Shared}},
+})
+
+// ディスク作成（サーバーに接続）
+disk, err := iaas.NewDiskOp(client).Create(ctx, "is1a", &iaas.DiskCreateRequest{
+    Name:            "web-server-disk",
+    SizeMB:          100 * 1024,
+    DiskPlanID:      types.DiskPlans.SSD,
+    Connection:      types.DiskConnections.VirtIO,
+    ServerID:        server.ID,
 }, nil, 0)
 ```
 
@@ -271,11 +386,62 @@ for _, server := range result.Servers {
 - `search.AndEqual(val1, val2...)` - すべてに一致
 - `search.KeyWithOp(key, search.OpLessThan)` - 数値比較（<, >, <=, >=）
 
+## helper/query - 便利な検索クエリ
+
+```go
+import "github.com/sacloud/iaas-api-go/helper/query"
+
+// OSタイプから最新アーカイブを取得
+archive, err := query.FindArchiveByOSType(ctx, archiveOp, "is1a", ostype.Ubuntu)
+
+// サーバープランを検索
+plan, err := query.FindServerPlan(ctx, serverPlanOp, "is1a", &query.FindServerPlanRequest{
+    CPU:        2,
+    MemoryGB:   4,
+    Commitment: types.Commitments.Standard,
+    Generation: types.PlanGenerations.Default,
+})
+
+// Databaseプランを検索
+dbPlan, err := query.FindDatabasePlan(ctx, databasePlanOp, "is1a", &query.FindDatabasePlanRequest{
+    CPU:      2,
+    MemoryGB: 4,
+})
+
+// NFSプランを検索
+nfsPlan, err := query.FindNFSPlan(ctx, nfsPlanOp, "is1a", &query.FindNFSPlanRequest{
+    SizeGB: 100,
+    Plan:   types.NFSPlans.HDD,
+})
+```
+
 ## リソースの削除
 
 ```go
 err := iaas.NewServerOp(client).Delete(ctx, "is1a", serverID)
 ```
+
+### helper/cleanup - クリーンアップ削除
+
+リソースと関連リソースをまとめて削除：
+
+```go
+import "github.com/sacloud/iaas-api-go/helper/cleanup"
+
+// サーバー削除（接続ディスクも同時削除）
+err := cleanup.DeleteServer(ctx, client, "is1a", serverID, true)
+
+// 接続ディスクを残してサーバー削除
+err := cleanup.DeleteServer(ctx, client, "is1a", serverID, false)
+
+// その他のクリーンアップ関数
+err := cleanup.DeleteSwitch(ctx, client, "is1a", switchID)
+err := cleanup.DeleteDisk(ctx, client, "is1a", diskID)
+err := cleanup.DeleteInternet(ctx, client, "is1a", routerID)
+err := cleanup.DeleteBridge(ctx, client, "is1a", bridgeID)
+```
+
+**注意:** `DeleteServer` はサーバーが起動中の場合、強制シャットダウンしてから削除します。
 
 ## 電源操作
 
@@ -319,6 +485,23 @@ db, err := wait.UntilDatabaseIsUp(ctx, dbOp, "is1a", dbID)
 router, err := wait.UntilVPCRouterIsUp(ctx, routerOp, "is1a", routerID)
 ```
 
+## helper/plans - プラン変更
+
+サーバーやルーターのプランを変更：
+
+```go
+import "github.com/sacloud/iaas-api-go/helper/plans"
+
+// サーバープラン変更（旧IDをタグに自動保存）
+server, err := plans.ChangeServerPlan(ctx, client, "is1a", serverID, &iaas.ServerChangePlanRequest{
+    CPU:      4,
+    MemoryMB: 8 * 1024,
+})
+
+// ルータープラン変更（帯域変更）
+router, err := plans.ChangeRouterPlan(ctx, client, "is1a", routerID, 100)
+```
+
 ## エラーハンドリング
 
 ```go
@@ -343,6 +526,23 @@ if apiErr, ok := err.(iaas.APIError); ok {
     errorCode := apiErr.Code()
     message := apiErr.Message()
 }
+```
+
+## カスタムHTTPリクエスト
+
+通常はOpを使用しますが、生のHTTPリクエストが必要な場合：
+
+```go
+// Client.Do を使用
+client := iaas.NewClientFromEnv()
+url := "https://secure.sakura.ad.jp/cloud/zone/is1a/api/cloud/1.1/zone"
+data, err := client.Do(ctx, http.MethodGet, url, nil)
+
+// nakedパッケージでレスポンスをパース
+var result struct {
+    Zones []*naked.Zone
+}
+err = json.Unmarshal(data, &result)
 ```
 
 ## フェイクモード（テスト）
@@ -495,7 +695,8 @@ func TestServerLifecycle(t *testing.T) {
 
 **注意点：**
 - **AccessToken/Secretは必須**：FakeModeでも`CallerOptions.Options`にダミー値を設定する必要があります
-- **データは分離される**：デフォルトではテスト間でデータは共有されません
+- **データはプロセス内で共有される**：デフォルトのInMemoryStoreでは、同じプロセス内のすべてのFakeModeクライアントでデータが共有されます。テスト間でデータを独立させたい場合は、明示的にクリーンアップしてください
+- **JSONFileStoreはグローバルに変更される**：`FakeStorePath`を指定すると`fake.DataStore`がグローバルに書き換わり、すべてのFakeModeクライアントが同じファイルを参照します
 - **一部の機能制限**：実際のネットワーク接続検証などはできません
 
 ### テストユーティリティとの組み合わせ
@@ -533,33 +734,6 @@ func TestCreateSwitch(t *testing.T) {
         t.Errorf("Expected positive ID, got %d", sw.ID)
     }
 }
-```
-
-## 一般的な定数
-
-```go
-import "github.com/sacloud/iaas-api-go/types"
-
-// ゾーン
-"is1a"  // 石狩第1
-"is1b"  // 石狩第2
-"tk1a"  // 東京第1
-"tk1b"  // 東京第2
-
-// ディスクリプラン
-types.DiskPlans.HDD
-types.DiskPlans.SSD
-
-// コミットメント（課金タイプ）
-types.Commitments.Standard
-
-// スコープ
-types.Scopes.Shared    // 共有
-types.Scopes.User      // ユーザー
-
-// インターフェースのドライバ
-interfaceDrivers.VirtIO
-interfaceDrivers.E1000
 ```
 
 ## スタートアップスクリプト（cloud-config / UserData）
@@ -606,7 +780,7 @@ diskOp := iaas.NewDiskOp(client)
 disk, err := diskOp.CreateWithConfig(ctx, "is1a",
     &iaas.DiskCreateRequest{
         Name:       "server-disk",
-        SizeMB:     20 * 1024 * 1024,
+        SizeMB:     20 * 1024,
         DiskPlanID: types.DiskPlans.SSD,
     },
     &iaas.DiskEditRequest{
@@ -646,6 +820,37 @@ err = diskOp.Config(ctx, "is1a", diskID, &iaas.DiskEditRequest{
         {PublicKey: "ssh-rsa AAAAB3..."},
     },
 })
+```
+
+## 一般的な定数
+
+```go
+import "github.com/sacloud/iaas-api-go/types"
+
+// ゾーン
+"is1a"  // 石狩第1
+"is1b"  // 石狩第2
+"tk1a"  // 東京第1
+"tk1b"  // 東京第2
+
+// ディスクリプラン
+types.DiskPlans.HDD
+types.DiskPlans.SSD
+
+// コミットメント（課金タイプ）
+types.Commitments.Standard
+
+// スコープ
+types.Scopes.Shared    // 共有
+types.Scopes.User      // ユーザー
+
+// インターフェースのドライバ
+types.InterfaceDrivers.VirtIO
+types.InterfaceDrivers.E1000
+
+// サーバーインスタンスステータス
+types.ServerInstanceStatuses.Up
+types.ServerInstanceStatuses.Down
 ```
 
 ## 実践例：完全なCRUDフロー
@@ -711,3 +916,4 @@ func main() {
     log.Println("Complete!")
 }
 ```
+
