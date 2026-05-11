@@ -157,7 +157,6 @@
               "theme_list": "none",
               "sidebar_toggle": "none",
               "scrollbar_toggle": "none",
-              "username_toggle": "none",
               "status_view": "none",
               "tool_details": "none",
               "session_export": "none",
