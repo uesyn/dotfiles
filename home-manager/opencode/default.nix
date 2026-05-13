@@ -56,8 +56,8 @@
             "Qwen3-Coder-30B-A3B-Instruct" = {
               name = "Qwen3-Coder-30B-A3B-Instruct";
             };
-            "preview/Kimi-K2.5" = {
-              name = "preview/Kimi-K2.5";
+            "preview/Kimi-K2.6" = {
+              name = "preview/Kimi-K2.6";
             };
           };
           options = {
