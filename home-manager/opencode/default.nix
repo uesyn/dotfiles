@@ -127,7 +127,8 @@
             "permission": {
               "external_directory": {
                 "/tmp/**": "allow",
-                "~/src/**": "allow"
+                "~/src/**": "allow",
+                "~/pkg/**": "allow"
               },
               "edit": {
                 "/tmp/**": "deny",
