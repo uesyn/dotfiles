@@ -13,16 +13,15 @@
 
   # dotfiles.git-credential-oauth.device = false;
   # dotfiles.git-credential-oauth.ghHosts = [
-  #   {
-  #     host = "github.com";
-  #     # To use your own OAuth app, create one at
-  #     # https://github.com/settings/developers and override:
-  #     # credentials = {
-  #     #   oauthClientId = "...";
-  #     #   oauthClientSecret = "...";
-  #     #   oauthRedirectURL = "http://localhost/";
-  #     # };
-  #   }
+  #   { host = "github.com"; }
+  #   # Add additional GitHub Enterprise hosts. Override the bundled
+  #   # OAuth app with your own by setting the credentials:
+  #   # {
+  #   #   host = "github.example.com";
+  #   #   oauthClientId = "...";
+  #   #   oauthClientSecret = "...";
+  #   #   # oauthRedirectURL = "https://github.example.com/oauth/callback";
+  #   # }
   # ];
 
   # dotfiles.fence.allowedDomains = [ "example.com" ];

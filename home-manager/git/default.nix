@@ -12,9 +12,29 @@ let
     oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
     oauthRedirectURL = "http://localhost/";
   };
-  git-host-config = entry: {
-    "https://${entry.host}" = defaultOAuthCredentials // entry.credentials;
-  };
+  git-host-config =
+    entry:
+    let
+      clientId =
+        if entry.oauthClientId == null then defaultOAuthCredentials.oauthClientId else entry.oauthClientId;
+      clientSecret =
+        if entry.oauthClientSecret == null then
+          defaultOAuthCredentials.oauthClientSecret
+        else
+          entry.oauthClientSecret;
+      redirectURL =
+        if entry.oauthRedirectURL == null then
+          defaultOAuthCredentials.oauthRedirectURL
+        else
+          entry.oauthRedirectURL;
+    in
+    {
+      "https://${entry.host}" = {
+        oauthClientId = clientId;
+        oauthClientSecret = clientSecret;
+        oauthRedirectURL = redirectURL;
+      };
+    };
 in
 {
   options.dotfiles.git = {
@@ -44,20 +64,60 @@ in
               type = lib.types.str;
               description = "GitHub host (e.g. \"github.com\")";
             };
-            credentials = lib.mkOption {
-              type = lib.types.attrs;
-              default = { };
-              description = "Override default OAuth credentials (clientId, clientSecret, redirectURL)";
+            oauthClientId = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                OAuth app client id. When `null` (the default) the bundled
+                default credentials are used. Setting this requires
+                `oauthClientSecret` to be set as well.
+              '';
+            };
+            oauthClientSecret = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                OAuth app client secret. When `null` (the default) the bundled
+                default credentials are used. Setting this requires
+                `oauthClientId` to be set as well.
+              '';
+            };
+            oauthRedirectURL = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = ''
+                OAuth redirect URL. When `null` (the default) `http://localhost/`
+                is used. Useful when running behind a reverse proxy or
+                matching a custom OAuth app's registered redirect URL.
+              '';
             };
           };
         }
       );
-      default = [ ];
-      description = "GitHub hosts for OAuth credential configuration";
+      default = [
+        { host = "github.com"; }
+      ];
+      description = ''
+        GitHub hosts for OAuth credential configuration. `github.com` is
+        included by default with the bundled OAuth app. Override the
+        credentials to use your own OAuth app.
+      '';
     };
   };
 
   config = {
+    assertions = [
+      {
+        assertion = lib.all (
+          entry: (entry.oauthClientId == null) == (entry.oauthClientSecret == null)
+        ) config.dotfiles.git-credential-oauth.ghHosts;
+        message = ''
+          dotfiles.git-credential-oauth.ghHosts: oauthClientId and
+          oauthClientSecret must be set together (or both left as null
+          to use the bundled default credentials) for each host entry.
+        '';
+      }
+    ];
     home.packages = [
       pkgs.ghq
 
