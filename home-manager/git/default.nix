@@ -12,29 +12,22 @@ let
     oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
     oauthRedirectURL = "http://localhost/";
   };
-  git-host-config =
-    entry:
-    let
-      clientId =
+  git-host-config = entry: {
+    "https://${entry.host}" = {
+      oauthClientId =
         if entry.oauthClientId == null then defaultOAuthCredentials.oauthClientId else entry.oauthClientId;
-      clientSecret =
+      oauthClientSecret =
         if entry.oauthClientSecret == null then
           defaultOAuthCredentials.oauthClientSecret
         else
           entry.oauthClientSecret;
-      redirectURL =
+      oauthRedirectURL =
         if entry.oauthRedirectURL == null then
           defaultOAuthCredentials.oauthRedirectURL
         else
           entry.oauthRedirectURL;
-    in
-    {
-      "https://${entry.host}" = {
-        oauthClientId = clientId;
-        oauthClientSecret = clientSecret;
-        oauthRedirectURL = redirectURL;
-      };
     };
+  };
 in
 {
   options.dotfiles.git = {
