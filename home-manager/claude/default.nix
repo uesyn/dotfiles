@@ -14,6 +14,7 @@
     };
     home.packages = [
       pkgs.llm-agents.claude-code
+      pkgs.llm-agents.claude-code-router
     ];
   };
 }
