@@ -7,15 +7,14 @@
 let
   git-allow = pkgs.writeShellScriptBin "git-allow" (builtins.readFile ./commands/git-allow);
   git-fixup = pkgs.writeShellScriptBin "git-fixup" (builtins.readFile ./commands/git-fixup);
-  git-oauth-credential-config =
-    { git_host }:
-    {
-      "https://${git_host}" = {
-        oauthClientId = "0120e057bd645470c1ed";
-        oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
-        oauthRedirectURL = "http://localhost/";
-      };
-    };
+  defaultOAuthCredentials = {
+    oauthClientId = "0120e057bd645470c1ed";
+    oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
+    oauthRedirectURL = "http://localhost/";
+  };
+  git-host-config = entry: {
+    "https://${entry.host}" = defaultOAuthCredentials // entry.credentials;
+  };
 in
 {
   options.dotfiles.git = {
@@ -38,7 +37,21 @@ in
       description = "Use device flow for git-credential-oauth";
     };
     ghHosts = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
+      type = lib.types.listOf (
+        lib.types.submodule {
+          options = {
+            host = lib.mkOption {
+              type = lib.types.str;
+              description = "GitHub host (e.g. \"github.com\")";
+            };
+            credentials = lib.mkOption {
+              type = lib.types.attrs;
+              default = { };
+              description = "Override default OAuth credentials (clientId, clientSecret, redirectURL)";
+            };
+          };
+        }
+      );
       default = [ ];
       description = "GitHub hosts for OAuth credential configuration";
     };
@@ -194,7 +207,7 @@ in
           ];
         }
         // builtins.foldl' (
-          x: y: x // (git-oauth-credential-config { git_host = y; })
+          acc: entry: acc // git-host-config entry
         ) { } config.dotfiles.git-credential-oauth.ghHosts;
 
         pull.ff = "only";

@@ -8,9 +8,43 @@
 {
   options.dotfiles.opencode = {
     provider = lib.mkOption {
-      type = lib.types.attrs;
+      type = lib.types.attrsOf (
+        lib.types.submodule (
+          { _provider-id, ... }:
+          let
+            providerId = _provider-id;
+          in
+          {
+            options = {
+              npm = lib.mkOption {
+                type = lib.types.str;
+                default = "@ai-sdk/openai-compatible";
+                description = "NPM package providing the provider SDK";
+              };
+              name = lib.mkOption {
+                type = lib.types.str;
+                default = providerId;
+                description = "Display name of the provider";
+              };
+              models = lib.mkOption {
+                type = lib.types.attrs;
+                default = { };
+                description = "Models exposed by the provider (fully replaces the defaults when set)";
+              };
+              options = lib.mkOption {
+                type = lib.types.attrs;
+                default = { };
+                description = "Provider connection options (fully replaces the defaults when set)";
+              };
+            };
+          }
+        )
+      );
       default = { };
-      description = "OpenCode provider configuration to merge with defaults";
+      description = ''
+        OpenCode provider configuration. Top-level provider keys are merged with the
+        defaults; nested attributes (models, options) are fully replaced when set.
+      '';
     };
     enabledProviders = lib.mkOption {
       type = lib.types.listOf lib.types.str;
