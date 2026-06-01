@@ -10,10 +10,7 @@
     provider = lib.mkOption {
       type = lib.types.attrsOf (
         lib.types.submodule (
-          { _provider-id, ... }:
-          let
-            providerId = _provider-id;
-          in
+          { name, ... }:
           {
             options = {
               npm = lib.mkOption {
@@ -23,7 +20,7 @@
               };
               name = lib.mkOption {
                 type = lib.types.str;
-                default = providerId;
+                default = name;
                 description = "Display name of the provider";
               };
               models = lib.mkOption {

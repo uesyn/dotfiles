@@ -19,7 +19,7 @@ in
     homeDirectory = lib.mkOption {
       type = lib.types.str;
       default = builtins.getEnv "HOME";
-      description = "username";
+      description = "home directory";
     };
     overlays = lib.mkOption {
       type = lib.types.listOf lib.types.package;
