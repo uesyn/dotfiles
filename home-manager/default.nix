@@ -131,6 +131,7 @@ in
 
   imports = [
     ./bash
+    ./claude
     ./dircolors
     ./fence
     ./fzf

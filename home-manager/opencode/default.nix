@@ -88,12 +88,12 @@
     {
       programs.zsh = {
         shellAliases = {
-          opencode = "${pkgs.llm-agents.fence}/bin/fence ${pkgs.llm-agents.opencode}/bin/opencode";
+          opencode = "fence opencode";
         };
       };
       programs.bash = {
         shellAliases = {
-          opencode = "${pkgs.llm-agents.fence}/bin/fence ${pkgs.llm-agents.opencode}/bin/opencode";
+          opencode = "fence opencode";
         };
       };
       home.packages = [
