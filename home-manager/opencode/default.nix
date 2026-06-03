@@ -74,6 +74,7 @@
         "ollama-cloud"
         "github-copilot"
         "ai-engine"
+        "minimax-coding-plan"
         "dynamic"
       ];
       defaultProvider = {
