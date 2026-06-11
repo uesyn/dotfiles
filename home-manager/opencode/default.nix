@@ -153,6 +153,7 @@
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
+            "plugin": ["context-mode"],
             "share": "disabled",
             "enabled_providers": ${jsonEnabledProviders},
             "disabled_providers": ${jsonDisabledProviders},
