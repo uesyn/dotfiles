@@ -53,6 +53,11 @@
       default = [ ];
       description = "OpenCode disabled providers";
     };
+    plugins = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "OpenCode plugins to load";
+    };
   };
 
   config =
@@ -107,6 +112,7 @@
       enabledProviders = defaultEnabledProviders ++ opencode.enabledProviders;
       jsonEnabledProviders = builtins.toJSON enabledProviders;
       jsonDisabledProviders = builtins.toJSON opencode.disabledProviders;
+      jsonPlugins = builtins.toJSON opencode.plugins;
     in
     {
       programs.zsh = {
@@ -121,7 +127,6 @@
       };
       home.packages = [
         pkgs.llm-agents.opencode
-        codesearch
       ];
       home.sessionVariables = {
         OPENCODE_ENABLE_EXA = "true";
@@ -144,7 +149,7 @@
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
-            "plugin": ["context-mode"],
+            "plugin": ${jsonPlugins},
             "share": "disabled",
             "enabled_providers": ${jsonEnabledProviders},
             "disabled_providers": ${jsonDisabledProviders},

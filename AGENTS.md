@@ -20,14 +20,6 @@ nix fmt
 
 Uses `nixfmt-tree`.
 
-## Code Search
-
-```sh
-codesearch <query>
-```
-
-Wraps `opencode run --agent plan "@explorer ${query}"`.
-
 ## Repo Structure
 
 - `flake.nix` — entry point; defines `homeManagerModules.default`, `packages.homeConfigurations`, `templates`, and `formatter`.

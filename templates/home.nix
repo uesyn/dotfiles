@@ -45,4 +45,5 @@
   # };
   # dotfiles.opencode.enabledProviders = [ "test" ];
   # dotfiles.opencode.disabledProviders = [ "test" ];
+  # dotfiles.opencode.plugins = [ "plugin-name" ];
 }
