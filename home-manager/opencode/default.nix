@@ -24,7 +24,50 @@
                 description = "Display name of the provider";
               };
               models = lib.mkOption {
-                type = lib.types.attrs;
+                type = lib.types.attrsOf (
+                  lib.types.submodule (
+                    { name, ... }:
+                    {
+                      options = {
+                        name = lib.mkOption {
+                          type = lib.types.str;
+                          default = name;
+                          description = "Display name of the model";
+                        };
+                        variants = lib.mkOption {
+                          type = lib.types.attrsOf lib.types.attrs;
+                          default = { };
+                          description = ''
+                            Variant-specific configuration for the model. Each variant
+                            name maps to a set of provider-specific options (e.g.,
+                            reasoningEffort, textVerbosity, thinking, budgetTokens).
+                            Set a variant to { disabled = true; } to disable a built-in
+                            variant.
+                          '';
+                          example = lib.literalExpression ''
+                            {
+                              high = {
+                                reasoningEffort = "high";
+                                textVerbosity = "low";
+                              };
+                              low = {
+                                reasoningEffort = "low";
+                                textVerbosity = "low";
+                              };
+                              fast = { disabled = true; };
+                            }
+                          '';
+                        };
+                        options = lib.mkOption {
+                          type = lib.types.attrs;
+                          default = { };
+                          description = "Model-specific provider options (e.g., reasoningEffort, thinking). Fully replaces the defaults when set.";
+                        };
+                      };
+                      freeformType = lib.types.attrs;
+                    }
+                  )
+                );
                 default = { };
                 description = "Models exposed by the provider (fully replaces the defaults when set)";
               };

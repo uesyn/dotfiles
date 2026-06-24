@@ -35,6 +35,18 @@
   #     models = {
   #       "model-name" = {
   #         name = "Model Name";
+  #         # Custom variants for the model. Each variant name maps to a set of
+  #         # provider-specific options (e.g., reasoningEffort, textVerbosity,
+  #         # thinking, budgetTokens). Set a variant to { disabled = true; } to
+  #         # disable a built-in variant.
+  #         variants = {
+  #           high = { reasoningEffort = "high"; textVerbosity = "low"; };
+  #           low = { reasoningEffort = "low"; };
+  #         };
+  #         # Model-level provider options (e.g., thinking budget).
+  #         options = {
+  #           thinking = { type = "enabled"; budgetTokens = 16000; };
+  #         };
   #       };
   #     };
   #     options = {
