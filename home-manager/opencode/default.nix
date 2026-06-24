@@ -59,15 +59,6 @@
     let
       opencode = config.dotfiles.opencode;
 
-      codesearch = pkgs.writeShellScriptBin "codesearch" ''
-        if [ -z "''${1}" ]; then
-          echo "Usage: codesearch <query>"
-          exit 1
-        fi
-
-        ${pkgs.llm-agents.opencode}/bin/opencode run --agent plan "@explorer ''${1}"
-      '';
-
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       defaultEnabledProviders = [
