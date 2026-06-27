@@ -57,5 +57,8 @@
   # };
   # dotfiles.opencode.enabledProviders = [ "test" ];
   # dotfiles.opencode.disabledProviders = [ "test" ];
-  # dotfiles.opencode.plugins = [ "plugin-name" ];
+  # dotfiles.opencode.plugin = [
+  #   { name = "opencode-helicone-session"; version = "2.1.0"; }
+  #   { name = "@my-org/custom-plugin"; version = "0.5.1"; }
+  # ];
 }

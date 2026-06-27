@@ -96,10 +96,41 @@
       default = [ ];
       description = "OpenCode disabled providers";
     };
-    plugins = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
+    plugin = lib.mkOption {
+      description = ''
+        Additional OpenCode plugins to load. Each entry must pin an exact npm
+        package version. Defaults (always loaded) are merged in automatically.
+      '';
+      type = lib.types.listOf (
+        lib.types.submodule (
+          { name, ... }:
+          {
+            options = {
+              name = lib.mkOption {
+                type = lib.types.str;
+                description = "NPM package name (scoped or unscoped)";
+                example = "opencode-helicone-session";
+              };
+              version = lib.mkOption {
+                type = lib.types.strMatching "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$";
+                description = ''
+                  Exact version to pin. Must match `MAJOR.MINOR.PATCH` with
+                  optional pre-release (`-rc.1`) and build metadata
+                  (`+build.123`). No `^`, `~`, `latest`, dist-tags, or ranges.
+                '';
+                example = "1.2.3";
+              };
+            };
+          }
+        )
+      );
       default = [ ];
-      description = "OpenCode plugins to load";
+      example = lib.literalExpression ''
+        [
+          { name = "opencode-helicone-session"; version = "2.1.0"; }
+          { name = "@my-org/custom-plugin"; version = "0.5.1"; }
+        ]
+      '';
     };
   };
 
@@ -109,6 +140,12 @@
 
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
+      defaultPlugins = [
+        {
+          name = "@fencesandbox/opencode-fence";
+          version = "0.1.1";
+        }
+      ];
       defaultEnabledProviders = [
         "ollama-cloud"
         "github-copilot"
@@ -155,7 +192,9 @@
       enabledProviders = defaultEnabledProviders ++ opencode.enabledProviders;
       jsonEnabledProviders = builtins.toJSON enabledProviders;
       jsonDisabledProviders = builtins.toJSON opencode.disabledProviders;
-      jsonPlugins = builtins.toJSON opencode.plugins;
+      jsonPlugins = builtins.toJSON (
+        map (p: "${p.name}@${p.version}") (defaultPlugins ++ opencode.plugin)
+      );
     in
     {
       programs.zsh = {

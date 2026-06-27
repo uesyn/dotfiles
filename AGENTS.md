@@ -38,6 +38,19 @@ Uses `nixfmt-tree`.
 - Providers enabled by default: `ollama-cloud`, `github-copilot`, `ai-engine`, `dynamic`.
 - TUI theme: Dracula. Leader key: `ctrl+x`.
 
+### Plugin pinning
+
+OpenCode npm plugins must be pinned to an exact version. Configure additional plugins in `home.nix` as:
+
+```nix
+dotfiles.opencode.plugin = [
+  { name = "opencode-helicone-session"; version = "2.1.0"; }
+  { name = "@my-org/custom-plugin"; version = "0.5.1"; }
+];
+```
+
+`home-manager` evaluates an exact-version regex on each `version` field and rejects bare names, `@latest`, `^`/`~` ranges, and dist-tags at evaluation time. The serialized spec (`name@version`) is passed through `npm-package-arg` to Bun at startup; Bun resolves to the exact version and caches it under `~/.cache/opencode/packages/<spec>/`. Default plugins (always loaded in addition to user entries) are defined inline in `home-manager/opencode/default.nix`.
+
 ### Permissions
 
 - `opencode.jsonc` allows reading `/tmp/**` and `~/src/**`, but denies edits to both.
