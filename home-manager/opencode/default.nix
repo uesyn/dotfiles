@@ -112,11 +112,13 @@
                 example = "opencode-helicone-session";
               };
               version = lib.mkOption {
-                type = lib.types.strMatching "^[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$";
+                type = lib.types.strMatching "^v?[0-9]+\\.[0-9]+\\.[0-9]+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?$";
                 description = ''
                   Exact version to pin. Must match `MAJOR.MINOR.PATCH` with
                   optional pre-release (`-rc.1`) and build metadata
-                  (`+build.123`). No `^`, `~`, `latest`, dist-tags, or ranges.
+                  (`+build.123`). An optional leading `v` (e.g. `v1.2.3`) is
+                  accepted and preserved in the serialized config. No `^`,
+                  `~`, `latest`, dist-tags, or ranges.
                 '';
                 example = "1.2.3";
               };

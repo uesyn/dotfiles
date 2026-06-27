@@ -49,7 +49,7 @@ dotfiles.opencode.plugin = [
 ];
 ```
 
-`home-manager` evaluates an exact-version regex on each `version` field and rejects bare names, `@latest`, `^`/`~` ranges, and dist-tags at evaluation time. The serialized spec (`name@version`) is passed through `npm-package-arg` to Bun at startup; Bun resolves to the exact version and caches it under `~/.cache/opencode/packages/<spec>/`. Default plugins (always loaded in addition to user entries) are defined inline in `home-manager/opencode/default.nix`.
+`home-manager` evaluates an exact-version regex on each `version` field and rejects bare names, `@latest`, `^`/`~` ranges, and dist-tags at evaluation time. An optional leading `v` (e.g. `v1.2.3`) is accepted and preserved in the serialized config. The serialized spec (`name@version`) is passed through `npm-package-arg` to Bun at startup; Bun resolves to the exact version and caches it under `~/.cache/opencode/packages/<spec>/`. Default plugins (always loaded in addition to user entries) are defined inline in `home-manager/opencode/default.nix`.
 
 ### Permissions
 
