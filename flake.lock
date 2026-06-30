@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "agentic-nvim": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1782652801,
-        "narHash": "sha256-olrSbH2Alw7IUPMJH17RV7cmKvIL1BPMPpKCWndF22U=",
-        "owner": "carlos-algms",
-        "repo": "agentic.nvim",
-        "rev": "37a53a7ad074d12740d90eab9efc0c01e6155864",
-        "type": "github"
-      },
-      "original": {
-        "owner": "carlos-algms",
-        "repo": "agentic.nvim",
-        "type": "github"
-      }
-    },
     "anthropic-skills": {
       "flake": false,
       "locked": {
@@ -205,7 +189,6 @@
     },
     "root": {
       "inputs": {
-        "agentic-nvim": "agentic-nvim",
         "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
         "kubebuilder": "kubebuilder",
