@@ -16,6 +16,10 @@
       url = "github:kubernetes-sigs/kubebuilder/v4.13.0";
       flake = false;
     };
+    agentic-nvim = {
+      url = "github:carlos-algms/agentic.nvim";
+      flake = false;
+    };
   };
 
   outputs =

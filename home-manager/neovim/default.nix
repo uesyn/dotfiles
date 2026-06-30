@@ -42,6 +42,16 @@
       nui-nvim
       snacks-nvim
       dracula-nvim
+      {
+        plugin = (
+          pkgs.vimUtils.buildVimPlugin {
+            name = "agentic.nvim";
+            pname = "agentic.nvim";
+            src = inputs.agentic-nvim;
+          }
+        );
+        optional = true;
+      }
       (pkgs.vimPlugins.nvim-treesitter.withPlugins (p: [
         p.bash
         p.c
