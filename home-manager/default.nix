@@ -44,7 +44,7 @@ in
       _module.args.inputs = self.inputs;
       nixpkgs = {
         overlays = [
-          self.inputs.llm-agents.overlays.default
+          self.inputs.llm-agents.overlays.shared-nixpkgs
         ]
         ++ overlays;
         config = {
