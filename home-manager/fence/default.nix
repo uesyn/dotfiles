@@ -207,9 +207,6 @@
                 "~/.config/gcloud/**",
                 "~/.kube/**",
 
-                // Docker config (may contain registry auth)
-                "~/.docker/**",
-
                 // Package manager auth tokens
                 "~/.pypirc",
                 "~/.netrc",
