@@ -172,6 +172,9 @@
                 "~/.opencode/**",
                 "~/.local/state/**",
 
+                // Docker
+                "~/.docker/buildx/activity/**",
+
                 // Package manager caches
                 "~/.npm/_cacache",
                 "~/.npm/_npx",
