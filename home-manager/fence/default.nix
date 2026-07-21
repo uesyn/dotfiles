@@ -9,7 +9,7 @@
   options.dotfiles.fence = {
     allowedDomains = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ ];
+      default = [ "*" ];
       description = "Allowed domains for network access in fence.";
     };
     allowedUnixSockets = lib.mkOption {
@@ -65,79 +65,6 @@
                 "~/.colima/default/docker.sock",
                 "~/.config/colima/docker.sock"
               ],
-              "allowedDomains": [
-                // nvidia
-                "integrate.api.nvidia.com",
-                
-                // ollama cloud
-                "ollama.com",
-                "*.ollama.com",
-
-                // Sakura Internet
-                "*.sakura.ad.jp",
-
-                // Go
-                "*.pkg.go.dev",
-
-                // LLM API providers
-                "api.openai.com",
-                "*.anthropic.com",
-                "api.githubcopilot.com",
-                "generativelanguage.googleapis.com",
-                "api.mistral.ai",
-                "api.cohere.ai",
-                "api.together.xyz",
-                "openrouter.ai",
-                "api.morphllm.com",
-                "*.amazonaws.com",
-
-                // OpenCode
-                "opencode.ai",
-                "api.opencode.ai",
-
-                // Amp
-                "ampcode.com",
-                "*.ampcode.com",
-
-                // Factory CLI (droid)
-                "*.factory.ai",
-                "api.workos.com",
-
-                // Cursor API
-                "*.cursor.sh",
-
-                // Charm
-                "data.charm.land",
-                "catwalk.charm.sh",
-
-                // Copilot
-                "*.githubcopilot.com",
-
-                // Git hosting
-                "github.com",
-                "api.github.com",
-                "raw.githubusercontent.com",
-                "codeload.github.com",
-                "objects.githubusercontent.com",
-                "release-assets.githubusercontent.com",
-                "gitlab.com",
-
-                // Package registries
-                "registry.npmjs.org",
-                "*.npmjs.org",
-                "registry.yarnpkg.com",
-                "pypi.org",
-                "files.pythonhosted.org",
-                "crates.io",
-                "static.crates.io",
-                "index.crates.io",
-                "proxy.golang.org",
-                "sum.golang.org",
-                "formulae.brew.sh",
-
-                // Model registry
-                "models.dev"
-              ],
 
               "deniedDomains": [
                 // Cloud metadata APIs (prevent credential theft)
@@ -173,7 +100,7 @@
                 "~/.local/state/**",
 
                 // Docker
-                "~/.docker/buildx/activity/**",
+                "~/.docker/buildx/**",
 
                 // Package manager caches
                 "~/.npm/_cacache",
