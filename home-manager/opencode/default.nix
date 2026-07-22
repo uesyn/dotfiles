@@ -142,12 +142,7 @@
 
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
-      defaultPlugins = [
-        {
-          name = "@fencesandbox/opencode-fence";
-          version = "0.1.1";
-        }
-      ];
+      defaultPlugins = [ ];
       defaultEnabledProviders = [
         "ollama-cloud"
         "github-copilot"
