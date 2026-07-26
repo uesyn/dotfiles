@@ -22,6 +22,18 @@
       default = [ ];
       description = "Denied commands for fence command policy.";
     };
+    wrap = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "opencode" ];
+      description = ''
+        Commands to wrap with fence. Each entry creates a shell alias of the
+        same name in both zsh and bash. When `allowedDomains` contains `"*"`,
+        the wrapper additionally unsets `HTTP_PROXY` / `HTTPS_PROXY` /
+        `ALL_PROXY` (and lowercase variants) so the wrapped command makes
+        direct connections that fence can permit.
+      '';
+      example = lib.literalExpression ''[ "opencode" "claude" ]'';
+    };
   };
 
   config =
@@ -87,6 +99,15 @@
       deniedCommands = builtins.toJSON (
         lib.unique (baseDeniedCommands ++ config.dotfiles.fence.deniedCommands)
       );
+
+      isPermissive = lib.elem "*" config.dotfiles.fence.allowedDomains;
+      fenceWrap =
+        cmd:
+        if isPermissive then
+          "fence env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy ${cmd}"
+        else
+          "fence ${cmd}";
+      wrappedAliases = lib.genAttrs config.dotfiles.fence.wrap fenceWrap;
     in
     {
       home.packages = [
@@ -96,6 +117,8 @@
         pkgs.bubblewrap
         pkgs.bpftrace
       ];
+      programs.zsh.shellAliases = wrappedAliases;
+      programs.bash.shellAliases = wrappedAliases;
       xdg.configFile = {
         "fence/fence.json".text = ''
           {

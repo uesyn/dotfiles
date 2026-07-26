@@ -194,16 +194,6 @@
       );
     in
     {
-      programs.zsh = {
-        shellAliases = {
-          opencode = "fence opencode";
-        };
-      };
-      programs.bash = {
-        shellAliases = {
-          opencode = "fence opencode";
-        };
-      };
       home.packages = [
         pkgs.llm-agents.opencode
       ];
