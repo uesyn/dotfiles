@@ -54,8 +54,8 @@ dotfiles.opencode.plugin = [
 ### Permissions
 
 - `opencode.jsonc` allows reading `/tmp/**` and `~/src/**`, but denies edits to both.
-- `fence/base.json` blocks reads of `~/.ssh`, `~/.aws`, `~/.kube`, `~/.gnupg`, `~/.docker`, and cloud metadata APIs.
-- `fence/base.json` denies remote-mutating `git`/`gh` commands, package publishing, and `sudo`.
+- `fence.json` blocks reads of `~/.ssh`, `~/.aws`, `~/.kube`, `~/.gnupg`, `~/.docker`, and cloud metadata APIs.
+- `fence.json` denies remote-mutating `git`/`gh` commands, package publishing, and `sudo`.
 
 ## Git
 

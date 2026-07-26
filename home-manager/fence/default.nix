@@ -20,16 +20,73 @@
     deniedCommands = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [ ];
-      description = "Denied commands for network access in fence.";
+      description = "Denied commands for fence command policy.";
     };
   };
 
   config =
     let
-      allowedDomains = builtins.toJSON config.dotfiles.fence.allowedDomains;
-      allowedUnixSockets = builtins.toJSON config.dotfiles.fence.allowedUnixSockets;
-      deniedCommands = builtins.toJSON config.dotfiles.fence.deniedCommands;
       isLinux = pkgs.stdenv.hostPlatform.isLinux;
+
+      allowedDomains = builtins.toJSON config.dotfiles.fence.allowedDomains;
+
+      # macOS only (Colima)
+      colimaSockets = lib.optionals (!isLinux) [
+        "~/.colima/docker.sock"
+        "~/.colima/default/docker.sock"
+        "~/.config/colima/docker.sock"
+      ];
+      allowedUnixSockets = builtins.toJSON (
+        lib.unique (colimaSockets ++ config.dotfiles.fence.allowedUnixSockets)
+      );
+
+      baseDeniedCommands = [
+        # Git commands that modify remote state
+        "git push"
+        "git reset"
+        "git clean"
+        "git checkout --"
+        "git rebase"
+        "git merge"
+
+        # Package publishing
+        "npm publish"
+        "pnpm publish"
+        "yarn publish"
+        "cargo publish"
+        "twine upload"
+        "gem push"
+
+        # Privilege escalation
+        "sudo"
+
+        # GitHub CLI (remote-mutating)
+        "gh pr create"
+        "gh pr merge"
+        "gh pr close"
+        "gh pr reopen"
+        "gh pr review"
+        "gh pr comment"
+        "gh release create"
+        "gh release delete"
+        "gh repo create"
+        "gh repo fork"
+        "gh repo delete"
+        "gh issue create"
+        "gh issue close"
+        "gh issue comment"
+        "gh gist create"
+        "gh workflow run"
+        "gh api"
+        "gh auth login"
+        "gh secret set"
+        "gh secret delete"
+        "gh variable set"
+        "gh variable delete"
+      ];
+      deniedCommands = builtins.toJSON (
+        lib.unique (baseDeniedCommands ++ config.dotfiles.fence.deniedCommands)
+      );
     in
     {
       home.packages = [
@@ -43,29 +100,12 @@
         "fence/fence.json".text = ''
           {
             "$schema": "https://raw.githubusercontent.com/Use-Tusk/fence/main/docs/schema/fence.schema.json",
-            "extends": "./base.json",
-            "command": {
-              "deny": ${deniedCommands},
-            },
-            "network": {
-              "allowedDomains": ${allowedDomains},
-              "allowUnixSockets": ${allowedUnixSockets}
-            },
-          }
-        '';
-        "fence/base.json".text = ''
-          {
             "allowPty": true,
             "network": {
               "allowLocalBinding": true,
               "allowLocalOutbound": true,
-              "allowUnixSockets": [
-                // Colima
-                "~/.colima/docker.sock",
-                "~/.colima/default/docker.sock",
-                "~/.config/colima/docker.sock"
-              ],
-
+              "allowedDomains": ${allowedDomains},
+              "allowUnixSockets": ${allowedUnixSockets},
               "deniedDomains": [
                 // Cloud metadata APIs (prevent credential theft)
                 "169.254.169.254",
@@ -151,50 +191,7 @@
               "acceptSharedBinaryCannotRuntimeDeny": [
                 "chroot"
               ],
-              "deny": [
-                // Git commands that modify remote state
-                "git push",
-                "git reset",
-                "git clean",
-                "git checkout --",
-                "git rebase",
-                "git merge",
-
-                // Package publishing commands
-                "npm publish",
-                "pnpm publish",
-                "yarn publish",
-                "cargo publish",
-                "twine upload",
-                "gem push",
-
-                // Privilege escalation
-                "sudo",
-
-                // GitHub CLI commands that modify remote state
-                "gh pr create",
-                "gh pr merge",
-                "gh pr close",
-                "gh pr reopen",
-                "gh pr review",
-                "gh pr comment",
-                "gh release create",
-                "gh release delete",
-                "gh repo create",
-                "gh repo fork",
-                "gh repo delete",
-                "gh issue create",
-                "gh issue close",
-                "gh issue comment",
-                "gh gist create",
-                "gh workflow run",
-                "gh api",
-                "gh auth login",
-                "gh secret set",
-                "gh secret delete",
-                "gh variable set",
-                "gh variable delete"
-              ]
+              "deny": ${deniedCommands}
             }
           }
         '';
