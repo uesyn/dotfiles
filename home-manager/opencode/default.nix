@@ -164,6 +164,9 @@
             "preview/Kimi-K2.6" = {
               name = "preview/Kimi-K2.6";
             };
+            "preview/Kimi-K2.7-Code" = {
+              name = "preview/Kimi-K2.7-Code";
+            };
           };
           options = {
             baseURL = "https://api.ai.sakura.ad.jp/v1";
