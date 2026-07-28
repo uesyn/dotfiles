@@ -144,7 +144,7 @@
       kubebuilder = inputs.kubebuilder;
       defaultPlugins = [ ];
       defaultEnabledProviders = [
-        "ollama-cloud"
+        "openai"
         "github-copilot"
         "ai-engine"
         "minimax-coding-plan"
