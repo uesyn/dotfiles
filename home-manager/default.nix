@@ -123,6 +123,7 @@ in
         XDG_CACHE_HOME = "${config.home.homeDirectory}/.cache";
         HOMEBREW_NO_AUTO_UPDATE = "1";
         EDITOR = "nvim";
+        LC_CTYPE = "C.UTF-8";
       };
 
       # Let Home Manager install and manage itself.
