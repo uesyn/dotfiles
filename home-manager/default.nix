@@ -22,9 +22,11 @@ in
       description = "home directory";
     };
     overlays = lib.mkOption {
-      type = lib.types.listOf lib.types.package;
+      type = lib.types.listOf (
+        lib.types.functionTo (lib.types.functionTo lib.types.attrs)
+      );
       default = [ ];
-      description = "package overlays";
+      description = "Nixpkgs overlays";
     };
     additionalPackages = lib.mkOption {
       type = lib.types.addCheck lib.types.anything builtins.isFunction;
