@@ -181,7 +181,6 @@
       ];
       home.sessionVariables = {
         OPENCODE_ENABLE_EXA = "true";
-        OPENCODE_EXPERIMENTAL_LSP_TOOL = "true";
       };
       xdg.configFile = {
         "opencode/skills/skill-creator" = {
@@ -201,6 +200,7 @@
           {
             "$schema": "https://opencode.ai/config.json",
             "plugin": ${jsonPlugins},
+            "lsp": true,
             "share": "disabled",
             "enabled_providers": ${jsonEnabledProviders},
             "disabled_providers": ${jsonDisabledProviders},
