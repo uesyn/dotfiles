@@ -22,9 +22,7 @@ in
       description = "home directory";
     };
     overlays = lib.mkOption {
-      type = lib.types.listOf (
-        lib.types.functionTo (lib.types.functionTo lib.types.attrs)
-      );
+      type = lib.types.listOf (lib.types.functionTo (lib.types.functionTo lib.types.attrs));
       default = [ ];
       description = "Nixpkgs overlays";
     };
@@ -134,7 +132,6 @@ in
 
   imports = [
     ./bash
-    ./claude
     ./dircolors
     ./fence
     ./fzf
@@ -146,6 +143,7 @@ in
     ./neovim
     ./node
     ./opencode
+    ./pi
     ./python
     ./rust
     ./tmux

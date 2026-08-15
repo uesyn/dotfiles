@@ -24,7 +24,10 @@
     };
     wrap = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "opencode" ];
+      default = [
+        "opencode"
+        "pi"
+      ];
       description = ''
         Commands to wrap with fence. Each entry creates a shell alias of the
         same name in both zsh and bash. When `allowedDomains` contains `"*"`,
@@ -32,7 +35,7 @@
         `ALL_PROXY` (and lowercase variants) so the wrapped command makes
         direct connections that fence can permit.
       '';
-      example = lib.literalExpression ''[ "opencode" "claude" ]'';
+      example = lib.literalExpression ''[ "opencode" "pi" ]'';
     };
   };
 
@@ -151,6 +154,7 @@
 
                 // Go
                 "~/pkg/**",
+                "~/bin/**",
 
                 // Temp files
                 "/tmp",
@@ -158,12 +162,16 @@
                 // Local cache, needed by tools like `uv`
                 "~/.cache/**",
 
+                // Pi
+                "~/.pi/**",
+
                 // OpenCode
                 "~/.opencode/**",
                 "~/.local/state/**",
 
                 // Docker
                 "~/.docker/buildx/**",
+                "~/.docker/**",
 
                 // Package manager caches
                 "~/.npm/_cacache",

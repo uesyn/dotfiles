@@ -28,6 +28,19 @@
   # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
   # dotfiles.fence.deniedCommands = [ "rm" "dd" ];
 
+  # Add custom Pi model providers. These are merged with the built-in providers.
+  # dotfiles.pi.providers = {
+  #   openrouter = {
+  #     name = "OpenRouter";
+  #     baseUrl = "https://openrouter.ai/api/v1";
+  #     api = "openai-completions";
+  #     apiKey = "$OPENROUTER_API_KEY";
+  #     models = [
+  #       { id = "openai/gpt-4o"; }
+  #     ];
+  #   };
+  # };
+
   # dotfiles.opencode.provider = {
   #   "ai-engine" = {
   #     name = "AI Engine";
