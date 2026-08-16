@@ -71,9 +71,19 @@ export default function planMode(pi: ExtensionAPI): void {
       return;
     }
 
-    if (toolsBeforePlanMode) {
-      pi.setActiveTools(toolsBeforePlanMode);
-    }
+    /*
+     * Restore the pre-plan tool list, but keep tools that other extensions
+     * activated while plan mode was on. This mirrors the session_start
+     * restore below, which avoids blindly reapplying a stale list.
+     */
+    const restored = toolsBeforePlanMode ?? [];
+    const kept = pi
+      .getActiveTools()
+      .filter(
+        (tool) => !restored.includes(tool) && !DISABLED_TOOLS.has(tool),
+      );
+
+    pi.setActiveTools([...restored, ...kept]);
 
     toolsBeforePlanMode = undefined;
     enabled = false;
@@ -169,11 +179,17 @@ The user can leave PLAN MODE with /plan.
   });
 
   /*
-   * Remove stale plan-mode content from the LLM context once plan mode is
-   * disabled. The injected [PLAN MODE ACTIVE] messages are persisted in the
-   * session, and the model's plan-mode-era responses repeat the same claims,
-   * so without this filter the model keeps believing plan mode is still
-   * active even after /plan.
+   * Remove stale plan-mode instructions from the LLM context once plan mode
+   * is disabled. The injected [PLAN MODE ACTIVE] custom messages are
+   * persisted in the session, so without this filter the model would keep
+   * seeing the instructions after /plan and still act as if plan mode were
+   * active.
+   *
+   * Only the injected custom messages and user messages carrying the marker
+   * are removed. Assistant and tool messages are left untouched so
+   * toolCall/toolResult pairs stay intact; the model's own plan-mode-era
+   * replies remain in history, which is fine once the authoritative
+   * instructions are gone.
    */
   pi.on("context", async (event) => {
     if (enabled) {

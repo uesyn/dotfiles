@@ -63,12 +63,16 @@ function saveLastModel(model: LastModel): Promise<void> {
 }
 
 export default function lastModelExtension(pi: ExtensionAPI) {
-  // Ignore selection events emitted while pi restores the initial model.
-  // The startup/new-session handler below applies our own state first.
+  // Ignore selection events emitted while the handler below restores our own
+  // state: model_select/thinking_level_select caused by pi.setModel() /
+  // pi.setThinkingLevel() in the restore path must not be saved back.
   let initialized = false;
 
   pi.on("session_start", async (event, ctx) => {
-    if (event.reason === "startup" || event.reason === "new") {
+    // Restore on every session start except "reload": reload keeps the same
+    // session, whose model is already current. startup/new/resume/fork all
+    // apply the saved last model.
+    if (event.reason !== "reload") {
       const lastModel = await loadLastModel();
 
       if (lastModel) {
