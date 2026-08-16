@@ -1,7 +1,7 @@
 import type {
   ExtensionAPI,
   ExtensionContext,
-} from "@mariozechner/pi-coding-agent";
+} from "@earendil-works/pi-coding-agent";
 
 const DISABLED_TOOLS = new Set([
   "bash",
@@ -128,18 +128,15 @@ export default function planMode(pi: ExtensionAPI): void {
     };
   });
 
-  pi.on("before_agent_start", async (event) => {
+  pi.on("before_agent_start", async () => {
     if (!enabled) {
       return;
     }
 
     return {
-      systemPrompt:
-        event.systemPrompt +
-        `
-
-# PLAN MODE
-
+      message: {
+        customType: "plan-mode-context",
+        content: `[PLAN MODE ACTIVE]
 You are currently in PLAN MODE.
 
 Your task is to investigate, reason, and produce an implementation plan.
@@ -166,6 +163,57 @@ Prefer plans that identify:
 
 The user can leave PLAN MODE with /plan.
 `,
+        display: false,
+      },
+    };
+  });
+
+  /*
+   * Remove stale plan-mode content from the LLM context once plan mode is
+   * disabled. The injected [PLAN MODE ACTIVE] messages are persisted in the
+   * session, and the model's plan-mode-era responses repeat the same claims,
+   * so without this filter the model keeps believing plan mode is still
+   * active even after /plan.
+   */
+  pi.on("context", async (event) => {
+    if (enabled) {
+      return;
+    }
+
+    return {
+      messages: event.messages.filter((message) => {
+        const msg = message as {
+          customType?: string;
+          content?: unknown;
+        };
+
+        // Injected plan-mode instructions (custom messages).
+        if (msg.customType === "plan-mode-context") {
+          return false;
+        }
+
+        // Only user messages may carry the marker; leave assistant/tool
+        // results untouched so toolCall/toolResult pairs stay intact.
+        if (message.role !== "user") {
+          return true;
+        }
+
+        const content = msg.content;
+        if (typeof content === "string") {
+          return !content.includes("[PLAN MODE ACTIVE]");
+        }
+        if (Array.isArray(content)) {
+          return !content.some(
+            (block) =>
+              (block as { type?: string }).type === "text" &&
+              typeof (block as { text?: unknown }).text === "string" &&
+              (block as { text: string }).text.includes(
+                "[PLAN MODE ACTIVE]",
+              ),
+          );
+        }
+        return true;
+      }),
     };
   });
 
