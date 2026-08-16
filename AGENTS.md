@@ -24,9 +24,15 @@ Uses `nixfmt-tree`.
 
 - `flake.nix` — entry point; defines `homeManagerModules.default`, `packages.homeConfigurations`, `templates`, and `formatter`.
 - `home-manager/default.nix` — imports all modules.
-- `home-manager/<category>/default.nix` — bash, dircolors, fence, fzf, git, go, kubernetes, mise, neovim, node, opencode, python, rust, tmux, zellij, zsh, misc.
+- `home-manager/<category>/default.nix` — bash, dircolors, fence, fzf, git, go, kubernetes, mise, neovim, node, opencode, pi, python, rust, tmux, zellij, zsh, misc.
 - `home-manager/opencode/skills/` — custom OpenCode skills (`kubebuilder`, `sakura-cloud-iaas`).
+- `home-manager/pi/extensions/pi-undo/` — pi extension providing `/undo` `/redo` for agent runs (conversation rewind + file snapshot restore, no git required). See its README.
 - No `lib/` directory; flake utilities (`forAllSystems`) are defined inline in `flake.nix`.
+
+## Pi
+
+- Extensions are wired via `home-manager/pi/default.nix` into `programs.pi-coding-agent.settings.extensions`; sources live in `home-manager/pi/extensions/`.
+- `pi-undo` adds `/undo`, `/redo`, `/undo-status` to pi. Snapshots are stored content-addressed under `~/.pi/agent/undo/<sessionId>/`; config in `~/.pi/agent/undo.json` or `.pi/undo.json`. Tests: `bun test home-manager/pi/extensions/pi-undo/test/`.
 
 ## OpenCode
 
