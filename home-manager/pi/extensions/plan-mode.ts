@@ -114,7 +114,7 @@ export default function planMode(pi: ExtensionAPI): void {
     },
   });
 
-  pi.registerShortcut("ctrl+p", {
+  pi.registerShortcut("ctrl+l", {
     description: "Toggle read-only plan mode",
     handler: (ctx) => {
       toggle(ctx);

@@ -76,6 +76,15 @@
           "app.model.select" = [ ];
           "app.models.toggleProvider" = [ ];
           "app.session.togglePath" = [ ];
+          "app.tree.filter.labeledOnly" = [ ];
+          "tui.select.up" = [
+            "up"
+            "ctrl+p"
+          ];
+          "tui.select.down" = [
+            "down"
+            "ctrl+n"
+          ];
         };
         settings = {
           compaction = {
@@ -85,6 +94,7 @@
           };
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/autocomplete-priority.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
