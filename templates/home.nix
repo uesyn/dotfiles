@@ -53,8 +53,15 @@
   #         # thinking, budgetTokens). Set a variant to { disabled = true; } to
   #         # disable a built-in variant.
   #         variants = {
-  #           high = { reasoningEffort = "high"; textVerbosity = "low"; };
-  #           low = { reasoningEffort = "low"; };
+  #           no-think = {
+  #             chat_template_kwargs = { reasoning_effort = "no_think"; };
+  #           };
+  #           low = {
+  #             chat_template_kwargs = { reasoning_effort = "low"; };
+  #           };
+  #           high = {
+  #             chat_template_kwargs = { reasoning_effort = "high"; };
+  #           };
   #         };
   #         # Model-level provider options (e.g., thinking budget).
   #         options = {
