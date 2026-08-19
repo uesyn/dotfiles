@@ -1,4 +1,8 @@
-import type { UserMessage } from "@earendil-works/pi-ai";
+import type {
+  AssistantMessage,
+  Message,
+  UserMessage,
+} from "@earendil-works/pi-ai";
 import {
   BorderedLoader,
   buildSessionContext,
@@ -20,9 +24,11 @@ only the supplied context. Be concise and answer the question directly.
 `;
 
 type QueryResult =
-  | { kind: "answer"; text: string }
+  | { kind: "answer"; text: string; message: AssistantMessage }
   | { kind: "cancelled" }
   | { kind: "error"; error: unknown };
+
+const MAX_SIDE_EXCHANGES = 20;
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
@@ -38,7 +44,11 @@ function extractText(response: {
     .trim();
 }
 
-function buildMessages(ctx: ExtensionCommandContext, question: string) {
+function buildMessages(
+  ctx: ExtensionCommandContext,
+  question: string,
+  sideMessages: Message[],
+) {
   const sessionContext = buildSessionContext(
     ctx.sessionManager.getEntries(),
     ctx.sessionManager.getLeafId(),
@@ -51,12 +61,13 @@ function buildMessages(ctx: ExtensionCommandContext, question: string) {
     timestamp: Date.now(),
   };
 
-  return [...messages, questionMessage];
+  return [...messages, ...sideMessages, questionMessage];
 }
 
 async function runQuery(
   ctx: ExtensionCommandContext,
   question: string,
+  sideMessages: Message[],
   signal: AbortSignal,
 ): Promise<QueryResult> {
   const model = ctx.model;
@@ -64,7 +75,7 @@ async function runQuery(
     return { kind: "error", error: new Error("No model selected") };
   }
 
-  const messages = buildMessages(ctx, question);
+  const messages = buildMessages(ctx, question, sideMessages);
 
   try {
     const response = await ctx.modelRegistry.complete(
@@ -97,7 +108,16 @@ async function runQuery(
       return { kind: "error", error: new Error("The model returned an empty response") };
     }
 
-    return { kind: "answer", text };
+    return {
+      kind: "answer",
+      text,
+      // Keep only the displayed text when carrying this exchange forward.
+      // Thinking/tool-call blocks are intentionally not part of the side chat.
+      message: {
+        ...response,
+        content: [{ type: "text", text }],
+      },
+    };
   } catch (error) {
     return { kind: "error", error };
   }
@@ -106,6 +126,7 @@ async function runQuery(
 async function askWithLoader(
   ctx: ExtensionCommandContext,
   question: string,
+  sideMessages: Message[],
 ): Promise<QueryResult> {
   const model = ctx.model;
   if (!model) {
@@ -125,7 +146,7 @@ async function askWithLoader(
 
       loader.onAbort = () => finish({ kind: "cancelled" });
 
-      void runQuery(ctx, question, loader.signal).then(finish, (error) =>
+      void runQuery(ctx, question, sideMessages, loader.signal).then(finish, (error) =>
         finish({ kind: "error", error }),
       );
 
@@ -240,6 +261,8 @@ async function showAnswer(
 }
 
 export default function btwExtension(pi: ExtensionAPI): void {
+  const sideHistoryBySession = new Map<string, Message[]>();
+
   pi.registerCommand("btw", {
     description: "Ask a temporary question about the current conversation",
     handler: async (args, ctx) => {
@@ -265,7 +288,9 @@ export default function btwExtension(pi: ExtensionAPI): void {
         return;
       }
 
-      const result = await askWithLoader(ctx, question);
+      const sessionId = ctx.sessionManager.getSessionId();
+      const sideMessages = sideHistoryBySession.get(sessionId) ?? [];
+      const result = await askWithLoader(ctx, question, sideMessages);
       if (result.kind === "cancelled") {
         ctx.ui.notify("btw cancelled", "info");
         return;
@@ -274,6 +299,20 @@ export default function btwExtension(pi: ExtensionAPI): void {
         ctx.ui.notify(`btw failed: ${errorMessage(result.error)}`, "error");
         return;
       }
+
+      sideMessages.push(
+        {
+          role: "user",
+          content: [{ type: "text", text: question }],
+          timestamp: Date.now(),
+        },
+        result.message,
+      );
+      const maxMessages = MAX_SIDE_EXCHANGES * 2;
+      if (sideMessages.length > maxMessages) {
+        sideMessages.splice(0, sideMessages.length - maxMessages);
+      }
+      sideHistoryBySession.set(sessionId, sideMessages);
 
       await showAnswer(ctx, question, result.text);
     },
