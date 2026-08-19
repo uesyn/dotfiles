@@ -30,6 +30,14 @@ type QueryResult =
 
 const MAX_SIDE_EXCHANGES = 20;
 
+type SideHistory = {
+  messages: Message[];
+  latest?: {
+    question: string;
+    answer: string;
+  };
+};
+
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
@@ -261,13 +269,26 @@ async function showAnswer(
 }
 
 export default function btwExtension(pi: ExtensionAPI): void {
-  const sideHistoryBySession = new Map<string, Message[]>();
+  const sideHistoryBySession = new Map<string, SideHistory>();
 
   pi.registerCommand("btw", {
-    description: "Ask a temporary question about the current conversation",
+    description: "Ask a temporary question with /btw <question>",
     handler: async (args, ctx) => {
       if (ctx.mode !== "tui") {
         ctx.ui.notify("btw requires interactive mode", "error");
+        return;
+      }
+
+      const sessionId = ctx.sessionManager.getSessionId();
+      const history = sideHistoryBySession.get(sessionId);
+      const question = args.trim();
+
+      if (!question) {
+        if (history?.latest) {
+          await showAnswer(ctx, history.latest.question, history.latest.answer);
+        } else {
+          ctx.ui.notify("No previous btw answer. Usage: /btw <question>", "info");
+        }
         return;
       }
 
@@ -276,21 +297,8 @@ export default function btwExtension(pi: ExtensionAPI): void {
         return;
       }
 
-      let question = args.trim();
-      if (!question) {
-        const input = await ctx.ui.input("btw question", "Ask a temporary question");
-        if (input === undefined) return;
-        question = input.trim();
-      }
-
-      if (!question) {
-        ctx.ui.notify("Question cannot be empty", "warning");
-        return;
-      }
-
-      const sessionId = ctx.sessionManager.getSessionId();
-      const sideMessages = sideHistoryBySession.get(sessionId) ?? [];
-      const result = await askWithLoader(ctx, question, sideMessages);
+      const currentHistory = history ?? { messages: [] };
+      const result = await askWithLoader(ctx, question, currentHistory.messages);
       if (result.kind === "cancelled") {
         ctx.ui.notify("btw cancelled", "info");
         return;
@@ -300,7 +308,7 @@ export default function btwExtension(pi: ExtensionAPI): void {
         return;
       }
 
-      sideMessages.push(
+      currentHistory.messages.push(
         {
           role: "user",
           content: [{ type: "text", text: question }],
@@ -309,10 +317,14 @@ export default function btwExtension(pi: ExtensionAPI): void {
         result.message,
       );
       const maxMessages = MAX_SIDE_EXCHANGES * 2;
-      if (sideMessages.length > maxMessages) {
-        sideMessages.splice(0, sideMessages.length - maxMessages);
+      if (currentHistory.messages.length > maxMessages) {
+        currentHistory.messages.splice(
+          0,
+          currentHistory.messages.length - maxMessages,
+        );
       }
-      sideHistoryBySession.set(sessionId, sideMessages);
+      currentHistory.latest = { question, answer: result.text };
+      sideHistoryBySession.set(sessionId, currentHistory);
 
       await showAnswer(ctx, question, result.text);
     },
