@@ -158,11 +158,15 @@ async function showAnswer(
       );
       const markdown = new Markdown(answer, 1, 1, getMarkdownTheme());
       const footer = new Text(
-        theme.fg("dim", "Ctrl+P/Ctrl+N to scroll · Press Enter or Esc to close"),
+        theme.fg(
+          "dim",
+          "Ctrl+P/Ctrl+N line · Ctrl+F/Ctrl+B page · Enter/Esc close",
+        ),
         1,
         0,
       );
       let scrollOffset = 0;
+      let viewportHeight = 0;
 
       const render = (width: number): string[] => {
         const borderLines = border.render(width);
@@ -176,7 +180,7 @@ async function showAnswer(
         );
         const fixedHeight =
           borderLines.length * 2 + titleLines.length + footerLines.length;
-        const viewportHeight = Math.max(0, maxHeight - fixedHeight);
+        viewportHeight = Math.max(0, maxHeight - fixedHeight);
         const maxScrollOffset = Math.max(0, answerLines.length - viewportHeight);
 
         scrollOffset = Math.min(scrollOffset, maxScrollOffset);
@@ -207,6 +211,14 @@ async function showAnswer(
           }
           if (matchesKey(data, "ctrl+n")) {
             scrollOffset += 1;
+            return;
+          }
+          if (matchesKey(data, "ctrl+b")) {
+            scrollOffset = Math.max(0, scrollOffset - Math.max(1, viewportHeight));
+            return;
+          }
+          if (matchesKey(data, "ctrl+f")) {
+            scrollOffset += Math.max(1, viewportHeight);
             return;
           }
           if (matchesKey(data, "enter") || matchesKey(data, "escape")) {
