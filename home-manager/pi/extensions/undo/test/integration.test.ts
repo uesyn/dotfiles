@@ -39,6 +39,7 @@ class RpcClient {
   private settledQueue: Array<() => void> = [];
   private waitingSettled = 0;
   private exited = false;
+  readonly statusUpdates: Array<{ statusKey: string; statusText?: string }> = [];
 
   constructor(
     cwd: string,
@@ -117,6 +118,13 @@ class RpcClient {
     }
     if (msg.type === "extension_ui_request") {
       const method = msg.method as string;
+      if (method === "setStatus") {
+        this.statusUpdates.push({
+          statusKey: String(msg.statusKey ?? ""),
+          statusText: typeof msg.statusText === "string" ? msg.statusText : undefined,
+        });
+        return;
+      }
       if (method === "confirm" || method === "select" || method === "input") {
         // Auto-cancel unexpected dialogs.
         this.proc.stdin!.write(
@@ -232,6 +240,13 @@ describe("pi-undo integration", () => {
       try {
         await client.prompt("Create a file named a.txt whose content is exactly: hello");
 
+        const undoStatuses = client.statusUpdates
+          .filter((status) => status.statusKey === "pi-undo")
+          .map((status) => status.statusText);
+        expect(undoStatuses).toContain("⏳ undo準備中...");
+        expect(undoStatuses).toContain("⏳ undo初期スナップショットを作成中...");
+        expect(undoStatuses).toContain("⏳ undoチェックポイントを保存中...");
+        expect(undoStatuses.at(-1)).toBe("⤴1 ⤵0");
         expect(await readFile(join(projectDir, "a.txt"), "utf8")).toBe("hello");
 
         await client.prompt(

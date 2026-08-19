@@ -13,6 +13,12 @@ import { CHECKPOINT_VERSION, CUSTOM_TYPE, REDO_TYPE } from "./types.ts";
 import type { CheckpointMeta, Config, UndoState } from "./types.ts";
 import { contentText, summarizeDiff, truncate } from "./util.ts";
 
+/** Show a transient loading message in the footer. */
+export function setLoadingStatus(ctx: ExtensionContext, message: string): void {
+  if (!ctx.hasUI) return;
+  ctx.ui.setStatus("pi-undo", `⏳ ${message}`);
+}
+
 /** Update the footer status indicator. */
 export function updateStatus(ctx: ExtensionContext, state: UndoState): void {
   if (!ctx.hasUI) return;

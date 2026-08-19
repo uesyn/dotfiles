@@ -27,6 +27,7 @@ import {
   captureInitial,
   persistRedoStack,
   rebuildFromSession,
+  setLoadingStatus,
   updateStatus,
 } from "./history.ts";
 import {
@@ -57,50 +58,54 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
   };
 
   pi.on("session_start", async (_event, ctx) => {
-    config = await loadConfig(ctx.cwd);
+    setLoadingStatus(ctx, "undo準備中...");
+    try {
+      config = await loadConfig(ctx.cwd);
 
-    const sessionId = ctx.sessionManager.getSessionId();
-    const sessionFile = ctx.sessionManager.getSessionFile();
-    state.sessionId = sessionId;
-    state.ephemeral = !sessionFile;
-    state.checkpoints = [];
-    state.redoStack = [];
-    state.enabled = false;
-    state.worktree = "";
-    state.gitdir = "";
+      const sessionId = ctx.sessionManager.getSessionId();
+      const sessionFile = ctx.sessionManager.getSessionFile();
+      state.sessionId = sessionId;
+      state.ephemeral = !sessionFile;
+      state.checkpoints = [];
+      state.redoStack = [];
+      state.enabled = false;
+      state.worktree = "";
+      state.gitdir = "";
 
-    // Snapshot/undo requires a git worktree (opencode parity).
-    const root = await gitWorktreeRoot(ctx.cwd);
-    if (root) {
-      state.enabled = true;
-      state.worktree = root;
-      try {
-        state.gitdir = (await initGitDir(root)).gitdir;
-      } catch (error) {
-        state.enabled = false;
-        console.error("pi-undo: gitdir init failed:", error);
+      // Snapshot/undo requires a git worktree (opencode parity).
+      const root = await gitWorktreeRoot(ctx.cwd);
+      if (root) {
+        state.enabled = true;
+        state.worktree = root;
+        try {
+          state.gitdir = (await initGitDir(root)).gitdir;
+        } catch (error) {
+          state.enabled = false;
+          console.error("pi-undo: gitdir init failed:", error);
+        }
       }
+      // Discard v1 snapshot data (old manifest store) of this session (D2).
+      await removeLegacyStateDir(sessionId);
+
+      await registerSession(sessionId, sessionFile, root);
+
+      // Orphan GC + auto-gc at most once per process.
+      if (!gcDone) {
+        gcDone = true;
+        try {
+          await gcOrphanedSessions(sessionId);
+        } catch (error) {
+          console.error("pi-undo: orphan GC failed:", error);
+        }
+        if (state.enabled) {
+          gcAuto(state.gitdir).catch((error) => console.error("pi-undo: gc failed:", error));
+        }
+      }
+
+      rebuildFromSession(ctx.sessionManager, state);
+    } finally {
+      updateStatus(ctx, state);
     }
-    // Discard v1 snapshot data (old manifest store) of this session (D2).
-    await removeLegacyStateDir(sessionId);
-
-    await registerSession(sessionId, sessionFile, root);
-
-    // Orphan GC + auto-gc at most once per process.
-    if (!gcDone) {
-      gcDone = true;
-      try {
-        await gcOrphanedSessions(sessionId);
-      } catch (error) {
-        console.error("pi-undo: orphan GC failed:", error);
-      }
-      if (state.enabled) {
-        gcAuto(state.gitdir).catch((error) => console.error("pi-undo: gc failed:", error));
-      }
-    }
-
-    rebuildFromSession(ctx.sessionManager, state);
-    updateStatus(ctx, state);
   });
 
   // C0: capture the workspace before the first run of the session.
@@ -108,20 +113,28 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
     const cfg = config;
     if (!cfg?.autoCheckpoint || !state.enabled) return;
     if (state.checkpoints.length > 0) return;
-    await enqueue(() => captureInitial(ctx, state, pi)).catch((error) => {
-      console.error("pi-undo: initial capture failed:", error);
-    });
-    updateStatus(ctx, state);
+    setLoadingStatus(ctx, "undo初期スナップショットを作成中...");
+    try {
+      await enqueue(() => captureInitial(ctx, state, pi)).catch((error) => {
+        console.error("pi-undo: initial capture failed:", error);
+      });
+    } finally {
+      updateStatus(ctx, state);
+    }
   });
 
   // Ci: capture after every settled agent run (once per run, after retries).
   pi.on("agent_settled", async (_event, ctx) => {
     const cfg = config;
     if (!cfg?.autoCheckpoint || !state.enabled) return;
-    await enqueue(() => captureAfterRun(ctx, state, pi, cfg)).catch((error) => {
-      console.error("pi-undo: checkpoint capture failed:", error);
-    });
-    updateStatus(ctx, state);
+    setLoadingStatus(ctx, "undoチェックポイントを保存中...");
+    try {
+      await enqueue(() => captureAfterRun(ctx, state, pi, cfg)).catch((error) => {
+        console.error("pi-undo: checkpoint capture failed:", error);
+      });
+    } finally {
+      updateStatus(ctx, state);
+    }
   });
 
   // New user work invalidates the redo stack (standard undo/redo semantics).
