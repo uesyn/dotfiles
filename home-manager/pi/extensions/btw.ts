@@ -1,4 +1,4 @@
-import { uuidv7, type UserMessage } from "@earendil-works/pi-ai";
+import type { UserMessage } from "@earendil-works/pi-ai";
 import {
   BorderedLoader,
   buildSessionContext,
@@ -75,8 +75,9 @@ async function runQuery(
       },
       {
         signal,
-        cacheRetention: "none",
-        sessionId: uuidv7(),
+        // Reuse the main session's prompt cache for the shared conversation context.
+        cacheRetention: "short",
+        sessionId: ctx.sessionManager.getSessionId(),
       },
     );
 
