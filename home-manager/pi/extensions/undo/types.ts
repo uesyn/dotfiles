@@ -1,17 +1,19 @@
 /**
  * Shared types for the pi-undo extension.
  *
- * The extension implements a content-addressed file snapshot system:
- * - objects/<sha256>: file contents, deduplicated by hash
- * - checkpoints/<index>.json: manifest (path -> hash) per checkpoint
+ * The extension snapshots the workspace with a private git repository
+ * (opencode-style): each checkpoint stores a git tree hash; undo/redo apply
+ * the file difference between two checkpoint trees.
  *
  * Checkpoint *metadata* (small) is persisted in the session via
- * `pi.appendEntry(CUSTOM_TYPE, meta)` so it survives restarts; the manifest
- * itself (potentially large) lives in the state directory.
+ * `pi.appendEntry(CUSTOM_TYPE, meta)` so it survives restarts; the snapshot
+ * itself (git objects) lives in a per-worktree private gitdir under
+ * <agentDir>/undo/git/<hash(worktree)>/. Trees are pinned with refs
+ * (`refs/pi-undo/<sessionId>/<index>`) so gc never collects them.
  */
 
-/** Version of the persisted checkpoint format. */
-export const CHECKPOINT_VERSION = 1 as const;
+/** Version of the persisted checkpoint format (v1 used a manifest store). */
+export const CHECKPOINT_VERSION = 2 as const;
 
 /** Custom entry type used to persist checkpoint metadata in the session. */
 export const CUSTOM_TYPE = "pi-undo.checkpoint";
@@ -27,26 +29,7 @@ export const CUSTOM_TYPE = "pi-undo.checkpoint";
  */
 export const REDO_TYPE = "pi-undo.redo";
 
-/** A regular file entry in a manifest. */
-export interface ManifestEntry {
-  hash: string;
-  size: number;
-  mtimeMs: number;
-  /** Permission bits, restored on rollback. */
-  mode: number;
-}
-
-/** A symbolic link entry in a manifest. */
-export interface SymlinkEntry {
-  symlink: string;
-}
-
-export type ManifestValue = ManifestEntry | SymlinkEntry;
-
-/** Manifest: relative path (POSIX, forward slashes) -> content reference. */
-export type Manifest = Record<string, ManifestValue>;
-
-export type FileChangeStatus = "M" | "A" | "D";
+export type FileChangeStatus = "M" | "A" | "D" | "T";
 
 export interface FileChange {
   path: string;
@@ -79,11 +62,8 @@ export interface CheckpointMeta {
   /** Files changed between the previous checkpoint and this one. */
   filesChanged: FileChange[];
   timestamp: number;
-}
-
-/** Checkpoint with its manifest loaded from the state directory. */
-export interface Checkpoint extends CheckpointMeta {
-  manifest: Manifest;
+  /** Git tree hash of the workspace at this checkpoint. */
+  treeHash: string;
 }
 
 /** Extension configuration. */
@@ -96,12 +76,6 @@ export interface Config {
   confirmBeforeRestore: boolean;
   /** Restore the undone prompt into the editor after /undo. */
   restorePromptToEditor: boolean;
-  /** Additional directory patterns to exclude from snapshots. */
-  exclude: string[];
-  /** Files larger than this (MB) are excluded from snapshots. */
-  maxFileSizeMB: number;
-  /** Override for the snapshot state directory base. */
-  stateDir: string | null;
 }
 
 export const DEFAULT_CONFIG: Config = {
@@ -109,45 +83,39 @@ export const DEFAULT_CONFIG: Config = {
   maxCheckpoints: 50,
   confirmBeforeRestore: true,
   restorePromptToEditor: true,
-  exclude: [
-    "node_modules",
-    "dist",
-    "build",
-    ".venv",
-    "venv",
-    "target",
-    "__pycache__",
-    ".next",
-    ".turbo",
-    ".cache",
-  ],
-  maxFileSizeMB: 20,
-  stateDir: null,
 };
 
 /** In-memory extension state (per session runtime instance). */
 export interface UndoState {
+  /** Snapshot/undo is available (session cwd is inside a git worktree). */
+  enabled: boolean;
+  /** Git worktree root (snapshot scope). Empty when disabled. */
+  worktree: string;
+  /** Private gitdir used for snapshots. Empty when disabled. */
+  gitdir: string;
+  sessionId: string;
   /** Checkpoints on the active path; index 0 is always the session start. */
   checkpoints: CheckpointMeta[];
   /** Undone checkpoints available for /redo (most recent first). */
   redoStack: CheckpointMeta[];
-  /** Serializes capture operations (fs work must not overlap). */
-  captureQueue: Promise<void>;
+  /** Serializes git operations (git work must not overlap in-process). */
+  gitQueue: Promise<void>;
   /** True while we are navigating the tree ourselves (undo/redo). */
   programmaticNavigation: boolean;
-  /** Resolved snapshot state directory for the current session. */
-  stateDir: string;
   /** True when the session has no backing file (ephemeral). */
   ephemeral: boolean;
 }
 
 export function createState(): UndoState {
   return {
+    enabled: false,
+    worktree: "",
+    gitdir: "",
+    sessionId: "",
     checkpoints: [],
     redoStack: [],
-    captureQueue: Promise.resolve(),
+    gitQueue: Promise.resolve(),
     programmaticNavigation: false,
-    stateDir: "",
     ephemeral: false,
   };
 }

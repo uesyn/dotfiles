@@ -66,6 +66,7 @@
         extraPackages = [
           pkgs.nodejs
           pkgs.bun
+          pkgs.git
         ];
         models.providers = providers;
         keybindings = {

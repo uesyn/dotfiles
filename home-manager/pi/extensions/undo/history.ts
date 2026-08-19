@@ -8,35 +8,18 @@ import type {
   ExtensionContext,
   SessionEntry,
 } from "@earendil-works/pi-coding-agent";
-import {
-  captureSnapshot,
-  snapshotOptions,
-  summarizeDiff,
-} from "./snapshot.ts";
-import type { SnapshotOptions } from "./snapshot.ts";
-import {
-  deleteCheckpointManifest,
-  gcObjects,
-  loadCheckpointManifest,
-  objectsDir,
-  saveCheckpointManifest,
-} from "./store.ts";
+import { capture, deleteRef, filesChangedBetween, refName, setRef } from "./gitstore.ts";
 import { CHECKPOINT_VERSION, CUSTOM_TYPE, REDO_TYPE } from "./types.ts";
-import type { Checkpoint, CheckpointMeta, Config, UndoState } from "./types.ts";
-import { contentText, truncate } from "./util.ts";
-
-/** Build snapshot options for the session (root = session cwd). */
-export function buildOptions(
-  ctx: ExtensionContext,
-  config: Config,
-  stateDir: string,
-): SnapshotOptions {
-  return snapshotOptions(ctx.sessionManager.getCwd(), config, [stateDir]);
-}
+import type { CheckpointMeta, Config, UndoState } from "./types.ts";
+import { contentText, summarizeDiff, truncate } from "./util.ts";
 
 /** Update the footer status indicator. */
 export function updateStatus(ctx: ExtensionContext, state: UndoState): void {
   if (!ctx.hasUI) return;
+  if (!state.enabled) {
+    ctx.ui.setStatus("pi-undo", "");
+    return;
+  }
   const undoCount = Math.max(0, state.checkpoints.length - 1);
   const redoCount = state.redoStack.length;
   ctx.ui.setStatus("pi-undo", `⤴${undoCount} ⤵${redoCount}`);
@@ -44,7 +27,8 @@ export function updateStatus(ctx: ExtensionContext, state: UndoState): void {
 
 /**
  * Rebuild the checkpoint stack from the session's active branch, and the
- * redo stack from the last `pi-undo.redo` marker on that branch.
+ * redo stack from the last `pi-undo.redo` marker on that branch. Only v2
+ * checkpoints (with a tree hash) are restored; v1 checkpoints are discarded.
  */
 export function rebuildFromSession(
   sm: {
@@ -61,7 +45,8 @@ export function rebuildFromSession(
       data &&
       data.v === CHECKPOINT_VERSION &&
       typeof data.index === "number" &&
-      data.index >= 0
+      data.index >= 0 &&
+      typeof data.treeHash === "string"
     ) {
       // The appended data may predate entryId tracking; fix it up so
       // subsequent redo-marker writes can reference this checkpoint.
@@ -97,7 +82,12 @@ function loadRedoStack(sm: {
         continue;
       }
       const meta = checkpointEntry.data as CheckpointMeta | undefined;
-      if (meta && meta.v === CHECKPOINT_VERSION && typeof meta.index === "number") {
+      if (
+        meta &&
+        meta.v === CHECKPOINT_VERSION &&
+        typeof meta.index === "number" &&
+        typeof meta.treeHash === "string"
+      ) {
         metas.push({ ...meta, entryId: checkpointEntry.id });
       }
     }
@@ -171,12 +161,10 @@ export async function captureInitial(
   ctx: ExtensionContext,
   state: UndoState,
   pi: ExtensionAPI,
-  config: Config,
-  stateDir: string,
 ): Promise<void> {
   const sm = ctx.sessionManager;
-  const opts = buildOptions(ctx, config, stateDir);
-  const { manifest } = await captureSnapshot(opts, null, objectsDir(stateDir));
+  const store = { gitdir: state.gitdir, worktree: state.worktree };
+  const treeHash = await capture(store);
 
   const meta: CheckpointMeta = {
     v: CHECKPOINT_VERSION,
@@ -184,8 +172,9 @@ export async function captureInitial(
     anchorId: sm.getLeafId(),
     filesChanged: [],
     timestamp: Date.now(),
+    treeHash,
   };
-  await saveCheckpointManifest({ ...meta, manifest }, stateDir);
+  await setRef(state.gitdir, refName(state.sessionId, 0), treeHash);
   state.checkpoints = [meta];
   pi.appendEntry(CUSTOM_TYPE, meta);
   meta.entryId = sm.getLeafId() ?? undefined;
@@ -197,7 +186,6 @@ export async function captureAfterRun(
   state: UndoState,
   pi: ExtensionAPI,
   config: Config,
-  stateDir: string,
 ): Promise<void> {
   const sm = ctx.sessionManager;
   const prev = state.checkpoints[state.checkpoints.length - 1];
@@ -205,13 +193,9 @@ export async function captureAfterRun(
   // Guard against duplicate settle events for the same run.
   if (prev && prev.anchorId === leafId) return;
 
-  const opts = buildOptions(ctx, config, stateDir);
-  const prevManifest = prev ? await loadCheckpointManifest(prev, stateDir) : null;
-  const { manifest, filesChanged } = await captureSnapshot(
-    opts,
-    prevManifest,
-    objectsDir(stateDir),
-  );
+  const store = { gitdir: state.gitdir, worktree: state.worktree };
+  const treeHash = await capture(store);
+  const filesChanged = prev ? await filesChangedBetween(store, prev.treeHash, treeHash) : [];
 
   const runInfo = findRunInfo(sm, prev?.anchorId ?? null);
 
@@ -224,24 +208,26 @@ export async function captureAfterRun(
     promptCount: runInfo.promptCount,
     filesChanged,
     timestamp: Date.now(),
+    treeHash,
   };
-  await saveCheckpointManifest({ ...meta, manifest }, stateDir);
+  await setRef(state.gitdir, refName(state.sessionId, meta.index), treeHash);
   state.checkpoints.push(meta);
   pi.appendEntry(CUSTOM_TYPE, meta);
   meta.entryId = sm.getLeafId() ?? undefined;
 
-  const redoChanged = await pruneCheckpoints(state, config, stateDir);
+  const redoChanged = await pruneCheckpoints(state, config, state.gitdir, state.sessionId);
   if (redoChanged) persistRedoStack(pi, state);
 }
 
 /**
- * Enforce maxCheckpoints: drop the oldest non-C0 checkpoint and GC objects.
- * Returns true when the redo stack was filtered (caller should persist).
+ * Enforce maxCheckpoints: drop the oldest non-C0 checkpoint and unpin its
+ * tree. Returns true when the redo stack was filtered (caller should persist).
  */
-export async function pruneCheckpoints(
+async function pruneCheckpoints(
   state: UndoState,
   config: Config,
-  stateDir: string,
+  gitdir: string,
+  sessionId: string,
 ): Promise<boolean> {
   if (state.checkpoints.length <= config.maxCheckpoints) return false;
 
@@ -250,7 +236,7 @@ export async function pruneCheckpoints(
     const removedMeta = state.checkpoints.splice(1, 1)[0];
     if (removedMeta) {
       removed.add(removedMeta.index);
-      await deleteCheckpointManifest(removedMeta.index, stateDir);
+      await deleteRef(gitdir, refName(sessionId, removedMeta.index));
     }
   }
   let redoChanged = false;
@@ -259,17 +245,6 @@ export async function pruneCheckpoints(
     redoChanged = filtered.length !== state.redoStack.length;
     state.redoStack = filtered;
   }
-
-  // Garbage-collect objects no longer referenced by retained manifests.
-  // Keep manifests referenced by the redo stack too (undo -> restart -> redo
-  // must still be able to restore files).
-  const keepMetas = [...state.checkpoints, ...state.redoStack];
-  const keepManifests: Array<Checkpoint["manifest"]> = [];
-  for (const meta of keepMetas) {
-    const manifest = await loadCheckpointManifest(meta, stateDir);
-    if (manifest) keepManifests.push(manifest);
-  }
-  await gcObjects(stateDir, keepManifests);
   return redoChanged;
 }
 

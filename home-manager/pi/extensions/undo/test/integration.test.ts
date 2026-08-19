@@ -7,9 +7,8 @@
  */
 
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { spawn, type ChildProcess } from "node:child_process";
+import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import {
-  access,
   mkdir,
   mkdtemp,
   readFile,
@@ -55,6 +54,10 @@ class RpcClient {
         sessionDir,
         "-e",
         EXT_PATH,
+        // Isolate from globally-installed extensions (the undo extension may
+        // already be installed via settings; without this the command would
+        // be renamed to "undo:1" and /undo would not match).
+        "--no-extensions",
         "--provider",
         PROVIDER,
         "--model",
@@ -69,8 +72,8 @@ class RpcClient {
     );
     this.proc.stdout!.setEncoding("utf8");
     this.proc.stdout!.on("data", (chunk: string) => this.onData(chunk));
-    this.proc.stderr!.on("data", () => {
-      /* startup diagnostics */
+    this.proc.stderr!.on("data", (d: Buffer) => {
+      process.stderr.write(`[pi-stderr] ${d.toString("utf8")}`);
     });
     this.proc.on("exit", (code) => {
       this.exited = true;
@@ -193,6 +196,7 @@ const TIMEOUT = 240_000;
 let dir: string;
 let sessionDir: string;
 let projectDir: string;
+let nonGitDir: string;
 let client: RpcClient;
 
 beforeAll(
@@ -200,8 +204,14 @@ beforeAll(
     dir = await mkdtemp(join(tmpdir(), "pi-undo-it-"));
     sessionDir = join(dir, "sessions");
     projectDir = join(dir, "project");
+    nonGitDir = join(dir, "non-git");
     await mkdir(join(projectDir, ".pi"), { recursive: true });
     await mkdir(sessionDir, { recursive: true });
+    await mkdir(nonGitDir, { recursive: true });
+    // The snapshot engine requires a git worktree (opencode parity).
+    execFileSync("git", ["init", "-q"], { cwd: projectDir });
+    execFileSync("git", ["config", "user.email", "test@test"], { cwd: projectDir });
+    execFileSync("git", ["config", "user.name", "test"], { cwd: projectDir });
     await writeFile(
       join(projectDir, ".pi", "undo.json"),
       JSON.stringify({ confirmBeforeRestore: false, restorePromptToEditor: false }),
@@ -262,8 +272,7 @@ describe("pi-undo integration", () => {
   it(
     "undo works after restarting pi (checkpoints persisted)",
     async () => {
-      const client1 = new RpcClient(projectDir, sessionDir, ["--name", "undo-it-2"]);
-      let sessionFile: string;
+      const client1 = new RpcClient(projectDir, sessionDir, ["--name", "undo-it-2"]);      let sessionFile: string;
       try {
         await client1.prompt("Create a file named c.txt whose content is exactly: charlie");
         expect(await readFile(join(projectDir, "c.txt"), "utf8")).toBe("charlie");
@@ -322,6 +331,23 @@ describe("pi-undo integration", () => {
         expect(await readFile(join(projectDir, "d.txt"), "utf8")).toBe("omega");
       } finally {
         await client.close();
+      }
+    },
+    TIMEOUT,
+  );
+
+  it(
+    "undo is unavailable outside a git worktree",
+    async () => {
+      const client2 = new RpcClient(nonGitDir, sessionDir, ["--name", "undo-it-4"]);
+      try {
+        await client2.prompt("Create a file named e.txt whose content is exactly: echo");
+        expect(await readFile(join(nonGitDir, "e.txt"), "utf8")).toBe("echo");
+        // Snapshot engine is disabled: /undo must leave the file alone.
+        await client2.command("/undo 1");
+        expect(await readFile(join(nonGitDir, "e.txt"), "utf8")).toBe("echo");
+      } finally {
+        await client2.close();
       }
     },
     TIMEOUT,

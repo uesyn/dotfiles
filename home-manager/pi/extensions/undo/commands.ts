@@ -3,22 +3,15 @@
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
+import { applyTreeDiff, divergentPaths, filesChangedBetween } from "./gitstore.ts";
 import {
-  applyManifestDiff,
-  diffManifests,
-  findDivergentPaths,
-  summarizeDiff,
-} from "./snapshot.ts";
-import {
-  buildOptions,
   formatCheckpoint,
   persistRedoStack,
   resolveNavigationTarget,
   updateStatus,
 } from "./history.ts";
-import { loadCheckpointManifest, objectsDir } from "./store.ts";
 import type { Config, UndoState } from "./types.ts";
-import { errorMessage, listPaths, truncate } from "./util.ts";
+import { errorMessage, listPaths, summarizeDiff, truncate } from "./util.ts";
 
 export function registerCommands(
   pi: ExtensionAPI,
@@ -29,6 +22,10 @@ export function registerCommands(
     description:
       "Undo the last agent run(s): rewind the conversation and restore files to that point",
     handler: async (args, ctx) => {
+      if (!state.enabled) {
+        ctx.ui.notify("pi-undo: undo/redo は git リポジトリ内でのみ利用できます", "warning");
+        return;
+      }
       await undoCommand(args, ctx, state, getConfig(), pi);
     },
   });
@@ -36,6 +33,10 @@ export function registerCommands(
   pi.registerCommand("redo", {
     description: "Redo a previously undone agent run",
     handler: async (args, ctx) => {
+      if (!state.enabled) {
+        ctx.ui.notify("pi-undo: undo/redo は git リポジトリ内でのみ利用できます", "warning");
+        return;
+      }
       await redoCommand(args, ctx, state, getConfig(), pi);
     },
   });
@@ -66,6 +67,7 @@ async function undoCommand(
   pi: ExtensionAPI,
 ): Promise<void> {
   await ctx.waitForIdle();
+  await state.gitQueue; // drain any in-flight capture
 
   const { checkpoints } = state;
   if (checkpoints.length <= 1) {
@@ -140,34 +142,24 @@ async function doUndoTo(
     return;
   }
 
-  const opts = buildOptions(ctx, config, state.stateDir);
-  const objDir = objectsDir(state.stateDir);
-  const currentManifest = await loadCheckpointManifest(current, state.stateDir);
-  const targetManifest = await loadCheckpointManifest(target, state.stateDir);
+  const store = { gitdir: state.gitdir, worktree: state.worktree };
 
-  if (!currentManifest || !targetManifest) {
-    ctx.ui.notify(
-      "Checkpoint manifests missing — conversation will rewind but files will NOT be restored.",
-      "warning",
+  const divergent = await divergentPaths(store);
+  if (divergent.length > 0 && config.confirmBeforeRestore && ctx.hasUI) {
+    const ok = await ctx.ui.confirm(
+      "Overwrite manual changes?",
+      `Changes made outside pi since the last checkpoint (${divergent.length} file(s)):\n${listPaths(divergent)}\n\nOverwrite them to undo?`,
     );
-  } else {
-    const divergent = await findDivergentPaths(opts, currentManifest);
-    if (divergent.length > 0 && config.confirmBeforeRestore && ctx.hasUI) {
-      const ok = await ctx.ui.confirm(
-        "Overwrite manual changes?",
-        `Changes made outside pi since the last checkpoint (${divergent.length} file(s)):\n${listPaths(divergent)}\n\nOverwrite them to undo?`,
-      );
-      if (!ok) return;
-    }
+    if (!ok) return;
+  }
 
-    const diff = diffManifests(currentManifest, targetManifest);
-    if (diff.length > 0 && config.confirmBeforeRestore && ctx.hasUI) {
-      const ok = await ctx.ui.confirm(
-        "Restore files?",
-        `${summarizeDiff(diff)}:\n${listPaths(diff.map((c) => `${c.status} ${c.path}`))}`,
-      );
-      if (!ok) return;
-    }
+  const diff = await filesChangedBetween(store, current.treeHash, target.treeHash);
+  if (diff.length > 0 && config.confirmBeforeRestore && ctx.hasUI) {
+    const ok = await ctx.ui.confirm(
+      "Restore files?",
+      `${summarizeDiff(diff)}:\n${listPaths(diff.map((c) => `${c.status} ${c.path}`))}`,
+    );
+    if (!ok) return;
   }
 
   // Rewind the conversation first (cancellable, no file side effects).
@@ -186,19 +178,15 @@ async function doUndoTo(
 
   // Restore files.
   let restored: string;
-  if (currentManifest && targetManifest) {
-    try {
-      await applyManifestDiff(currentManifest, targetManifest, opts, objDir);
-      restored = summarizeDiff(diffManifests(currentManifest, targetManifest));
-    } catch (error) {
-      ctx.ui.notify(
-        `⤴ File restore failed: ${errorMessage(error)} — run /redo to recover.`,
-        "error",
-      );
-      return;
-    }
-  } else {
-    restored = "history only";
+  try {
+    await applyTreeDiff(store, current.treeHash, target.treeHash);
+    restored = summarizeDiff(diff);
+  } catch (error) {
+    ctx.ui.notify(
+      `⤴ File restore failed: ${errorMessage(error)} — run /redo to recover.`,
+      "error",
+    );
+    return;
   }
 
   // Update stacks and persist the redo stack (survives restarts).
@@ -226,6 +214,7 @@ async function redoCommand(
   pi: ExtensionAPI,
 ): Promise<void> {
   await ctx.waitForIdle();
+  await state.gitQueue; // drain any in-flight capture
 
   if (state.redoStack.length === 0) {
     ctx.ui.notify("⤵ Nothing to redo.", "info");
@@ -259,22 +248,12 @@ async function doRedoOne(
 ): Promise<boolean> {
   const sm = ctx.sessionManager;
   const entry = state.redoStack[state.redoStack.length - 1];
-  if (!entry) return false;
-
   const current = state.checkpoints[state.checkpoints.length - 1];
   if (!entry || !current) return false;
-  const opts = buildOptions(ctx, config, state.stateDir);
-  const objDir = objectsDir(state.stateDir);
-  const currentManifest = await loadCheckpointManifest(current, state.stateDir);
-  const targetManifest = await loadCheckpointManifest(entry, state.stateDir);
 
-  if (!currentManifest || !targetManifest) {
-    state.redoStack.pop();
-    ctx.ui.notify("Redo checkpoint manifest missing — skipped.", "warning");
-    return false;
-  }
+  const store = { gitdir: state.gitdir, worktree: state.worktree };
 
-  const divergent = await findDivergentPaths(opts, currentManifest);
+  const divergent = await divergentPaths(store);
   if (divergent.length > 0 && config.confirmBeforeRestore && ctx.hasUI) {
     const ok = await ctx.ui.confirm(
       "Overwrite manual changes?",
@@ -293,8 +272,9 @@ async function doRedoOne(
   }
   if (navResult.cancelled) return false;
 
+  const diff = await filesChangedBetween(store, current.treeHash, entry.treeHash);
   try {
-    await applyManifestDiff(currentManifest, targetManifest, opts, objDir);
+    await applyTreeDiff(store, current.treeHash, entry.treeHash);
   } catch (error) {
     ctx.ui.notify(
       `⤵ File restore failed: ${errorMessage(error)} — run /undo to recover.`,
@@ -310,9 +290,8 @@ async function doRedoOne(
   updateStatus(ctx, state);
   const label = entry.prompt ? truncate(entry.prompt, 40) : "run";
   ctx.ui.notify(
-    `⤵ Redo: "${label}" — ${summarizeDiff(diffManifests(currentManifest, targetManifest))}`,
+    `⤵ Redo: "${label}" — ${summarizeDiff(diff)}`,
     "info",
   );
   return true;
 }
-

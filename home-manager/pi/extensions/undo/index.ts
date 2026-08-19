@@ -1,5 +1,5 @@
 /**
- * pi-undo — undo/redo for pi agent runs.
+ * pi-undo — undo/redo for pi agent runs (git-backed, opencode-style).
  *
  * Commands:
  *   /undo [N|all]  — rewind the conversation and restore files to a checkpoint
@@ -7,13 +7,16 @@
  *   /undo-status   — show the checkpoint stack
  *
  * How it works:
- * - A checkpoint is captured before the first run (C0) and after every settled
- *   agent run (Ci). Checkpoint metadata is persisted in the session via
- *   `pi.appendEntry`; file contents live in a content-addressed snapshot store
- *   under ~/.pi/agent/undo/<sessionId>/ (no git involved).
+ * - Requires the session cwd to be inside a git worktree (like opencode).
+ * - A checkpoint is captured before the first run (C0) and after every
+ *   settled agent run (Ci) as a git tree hash in a per-worktree private
+ *   gitdir (<agentDir>/undo/git/<hash>). Checkpoint metadata is persisted in
+ *   the session via `pi.appendEntry`; trees are pinned with refs so git gc
+ *   never collects them.
  * - /undo navigates the session tree back to the run boundary
- *   (`ctx.navigateTree`, summarize disabled) and then applies the reverse file
- *   diff from the snapshot store.
+ *   (`ctx.navigateTree`, summarize disabled) and applies the file difference
+ *   between the two checkpoint trees with `git checkout`. Undone turns remain
+ *   in the session file and can be revisited with /tree.
  */
 
 import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
@@ -27,13 +30,12 @@ import {
   updateStatus,
 } from "./history.ts";
 import {
-  cleanupEphemeralState,
-  ensureStateDir,
-  gcOrphanedSessions,
-  registerSession,
-  resolveStateDir,
-  undoBaseDir,
-} from "./store.ts";
+  deleteRefsByPrefix,
+  gcAuto,
+  gitWorktreeRoot,
+  initGitDir,
+} from "./gitstore.ts";
+import { gcOrphanedSessions, registerSession, removeLegacyStateDir } from "./store.ts";
 import { createState, DEFAULT_CONFIG } from "./types.ts";
 import type { Config, UndoState } from "./types.ts";
 
@@ -44,24 +46,56 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
 
   const getConfig = (): Config => config ?? DEFAULT_CONFIG;
 
+  /** Serialize git operations (captures, restores) per process. */
+  const enqueue = (fn: () => Promise<void>): Promise<void> => {
+    const run = state.gitQueue.then(fn);
+    state.gitQueue = run.then(
+      () => undefined,
+      () => undefined,
+    );
+    return run;
+  };
+
   pi.on("session_start", async (_event, ctx) => {
     config = await loadConfig(ctx.cwd);
 
     const sessionId = ctx.sessionManager.getSessionId();
     const sessionFile = ctx.sessionManager.getSessionFile();
-    state.stateDir = resolveStateDir(config, sessionId, sessionFile);
+    state.sessionId = sessionId;
     state.ephemeral = !sessionFile;
+    state.checkpoints = [];
+    state.redoStack = [];
+    state.enabled = false;
+    state.worktree = "";
+    state.gitdir = "";
 
-    await ensureStateDir(state.stateDir);
-    await registerSession(undoBaseDir(config), sessionId, sessionFile);
+    // Snapshot/undo requires a git worktree (opencode parity).
+    const root = await gitWorktreeRoot(ctx.cwd);
+    if (root) {
+      state.enabled = true;
+      state.worktree = root;
+      try {
+        state.gitdir = (await initGitDir(root)).gitdir;
+      } catch (error) {
+        state.enabled = false;
+        console.error("pi-undo: gitdir init failed:", error);
+      }
+    }
+    // Discard v1 snapshot data (old manifest store) of this session (D2).
+    await removeLegacyStateDir(sessionId);
 
-    // GC orphaned sessions at most once per process.
+    await registerSession(sessionId, sessionFile, root);
+
+    // Orphan GC + auto-gc at most once per process.
     if (!gcDone) {
       gcDone = true;
       try {
-        await gcOrphanedSessions(undoBaseDir(config), sessionId);
+        await gcOrphanedSessions(sessionId);
       } catch (error) {
         console.error("pi-undo: orphan GC failed:", error);
+      }
+      if (state.enabled) {
+        gcAuto(state.gitdir).catch((error) => console.error("pi-undo: gc failed:", error));
       }
     }
 
@@ -72,27 +106,21 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
   // C0: capture the workspace before the first run of the session.
   pi.on("before_agent_start", async (_event, ctx) => {
     const cfg = config;
-    if (!cfg?.autoCheckpoint) return;
+    if (!cfg?.autoCheckpoint || !state.enabled) return;
     if (state.checkpoints.length > 0) return;
-    state.captureQueue = state.captureQueue
-      .then(() => captureInitial(ctx, state, pi, cfg, state.stateDir))
-      .catch((error) => {
-        console.error("pi-undo: initial capture failed:", error);
-      });
-    await state.captureQueue;
+    await enqueue(() => captureInitial(ctx, state, pi)).catch((error) => {
+      console.error("pi-undo: initial capture failed:", error);
+    });
     updateStatus(ctx, state);
   });
 
   // Ci: capture after every settled agent run (once per run, after retries).
   pi.on("agent_settled", async (_event, ctx) => {
     const cfg = config;
-    if (!cfg?.autoCheckpoint) return;
-    state.captureQueue = state.captureQueue
-      .then(() => captureAfterRun(ctx, state, pi, cfg, state.stateDir))
-      .catch((error) => {
-        console.error("pi-undo: checkpoint capture failed:", error);
-      });
-    await state.captureQueue;
+    if (!cfg?.autoCheckpoint || !state.enabled) return;
+    await enqueue(() => captureAfterRun(ctx, state, pi, cfg)).catch((error) => {
+      console.error("pi-undo: checkpoint capture failed:", error);
+    });
     updateStatus(ctx, state);
   });
 
@@ -121,9 +149,10 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
   });
 
   pi.on("session_shutdown", async () => {
-    await state.captureQueue;
-    if (state.ephemeral && state.stateDir) {
-      await cleanupEphemeralState(state.stateDir);
+    await state.gitQueue;
+    // Ephemeral sessions leave nothing behind: drop their refs.
+    if (state.enabled && state.ephemeral && state.gitdir) {
+      await deleteRefsByPrefix(state.gitdir, `refs/pi-undo/${state.sessionId}`).catch(() => undefined);
     }
   });
 

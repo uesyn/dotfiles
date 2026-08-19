@@ -30,3 +30,16 @@ export function listPaths(paths: string[], max = 8): string {
   }
   return lines.join("\n");
 }
+
+/** Summarize a diff for display. */
+export function summarizeDiff(changes: Array<{ status: string; path: string }>): string {
+  const byStatus: Record<string, number> = { M: 0, A: 0, D: 0, T: 0 };
+  for (const c of changes) byStatus[c.status] = (byStatus[c.status] ?? 0) + 1;
+  const parts: string[] = [];
+  if ((byStatus.M ?? 0) > 0) parts.push(`${byStatus.M ?? 0} modified`);
+  if ((byStatus.A ?? 0) > 0) parts.push(`${byStatus.A ?? 0} added`);
+  if ((byStatus.D ?? 0) > 0) parts.push(`${byStatus.D ?? 0} deleted`);
+  if ((byStatus.T ?? 0) > 0) parts.push(`${byStatus.T ?? 0} typechanged`);
+  if (parts.length === 0) return "no file changes";
+  return parts.join(", ");
+}

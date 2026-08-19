@@ -11,7 +11,7 @@ import { join } from "node:path";
 import { CONFIG_DIR_NAME } from "@earendil-works/pi-coding-agent";
 import { DEFAULT_CONFIG } from "./types.ts";
 import type { Config } from "./types.ts";
-import { getAgentDir } from "./store.ts";
+import { getAgentDir } from "./gitstore.ts";
 
 /** Pick only known keys with compatible types from a raw JSON object. */
 function sanitize(value: unknown): Partial<Config> {
@@ -28,18 +28,6 @@ function sanitize(value: unknown): Partial<Config> {
   }
   if (typeof raw.restorePromptToEditor === "boolean") {
     out.restorePromptToEditor = raw.restorePromptToEditor;
-  }
-  if (
-    Array.isArray(raw.exclude) &&
-    raw.exclude.every((item) => typeof item === "string")
-  ) {
-    out.exclude = raw.exclude;
-  }
-  if (typeof raw.maxFileSizeMB === "number" && raw.maxFileSizeMB > 0) {
-    out.maxFileSizeMB = raw.maxFileSizeMB;
-  }
-  if (typeof raw.stateDir === "string" && raw.stateDir.length > 0) {
-    out.stateDir = raw.stateDir;
   }
 
   return out;
