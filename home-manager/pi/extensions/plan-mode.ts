@@ -14,6 +14,26 @@ type PlanModeState = {
   toolsBeforePlanMode?: string[];
 };
 
+function isPlanModeState(value: unknown): value is PlanModeState {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const candidate = value as {
+    enabled?: unknown;
+    toolsBeforePlanMode?: unknown;
+  };
+
+  return (
+    typeof candidate.enabled === "boolean" &&
+    (candidate.toolsBeforePlanMode === undefined ||
+      (Array.isArray(candidate.toolsBeforePlanMode) &&
+        candidate.toolsBeforePlanMode.every(
+          (tool): tool is string => typeof tool === "string",
+        )))
+  );
+}
+
 export default function planMode(pi: ExtensionAPI): void {
   let enabled = false;
   let toolsBeforePlanMode: string[] | undefined;
@@ -73,8 +93,8 @@ export default function planMode(pi: ExtensionAPI): void {
 
     /*
      * Restore the pre-plan tool list, but keep tools that other extensions
-     * activated while plan mode was on. This mirrors the session_start
-     * restore below, which avoids blindly reapplying a stale list.
+     * activated while plan mode was on. This mirrors session restoration,
+     * which avoids blindly reapplying a stale list.
      */
     const restored = toolsBeforePlanMode ?? [];
     const kept = pi
@@ -233,50 +253,98 @@ The user can leave PLAN MODE with /plan.
     };
   });
 
-  /*
-   * Restore mode when resuming/reloading a session.
-   */
-  pi.on("session_start", async (_event, ctx) => {
-    const entries = ctx.sessionManager.getEntries();
+  function getLastPlanModeState(
+    ctx: ExtensionContext,
+  ): PlanModeState | undefined {
+    let lastState: PlanModeState | undefined;
 
-    const entry = entries
-      .filter(
-        (entry: {
-          type: string;
-          customType?: string;
-        }) =>
-          entry.type === "custom" &&
-          entry.customType === "plan-mode",
-      )
-      .pop() as
-      | {
-          data?: PlanModeState;
-        }
-      | undefined;
+    /*
+     * Session entries form a tree. Only inspect the current branch so that
+     * an entry from an abandoned branch cannot override the current state.
+     * getBranch() returns entries from the root to the current leaf.
+     */
+    for (const entry of ctx.sessionManager.getBranch()) {
+      if (entry.type !== "custom") {
+        continue;
+      }
 
-    if (entry?.data) {
-      enabled = entry.data.enabled ?? false;
-      toolsBeforePlanMode =
-        entry.data.toolsBeforePlanMode;
+      const customEntry = entry as {
+        customType?: string;
+        data?: unknown;
+      };
+
+      if (
+        customEntry.customType === "plan-mode" &&
+        isPlanModeState(customEntry.data)
+      ) {
+        lastState = customEntry.data;
+      }
     }
 
-    if (enabled) {
-      /*
-       * Do not blindly use the persisted list as the active
-       * list here. New custom/MCP tools may have appeared since
-       * the previous session.
-       *
-       * Remove only tools that are explicitly forbidden.
-       */
-      const active = pi.getActiveTools();
+    return lastState;
+  }
 
+  function restoreState(ctx: ExtensionContext): void {
+    const savedState = getLastPlanModeState(ctx);
+    const nextEnabled = savedState?.enabled ?? false;
+    const nextToolsBeforePlanMode =
+      savedState?.toolsBeforePlanMode === undefined
+        ? undefined
+        : [...savedState.toolsBeforePlanMode];
+    const wasEnabled = enabled;
+    const previousToolsBeforePlanMode = toolsBeforePlanMode;
+    const activeTools = pi.getActiveTools();
+
+    if (nextEnabled) {
+      /*
+       * On a fresh process, use the persisted pre-plan tool list. When
+       * switching branches in an existing process, this also replaces the
+       * snapshot used when leaving plan mode.
+       */
+      toolsBeforePlanMode =
+        nextToolsBeforePlanMode ??
+        (wasEnabled ? previousToolsBeforePlanMode : activeTools);
+      enabled = true;
+
+      // Preserve newly available tools, but always remove plan-mode tools.
       pi.setActiveTools(
-        active.filter(
-          (tool) => !DISABLED_TOOLS.has(tool),
-        ),
+        activeTools.filter((tool) => !DISABLED_TOOLS.has(tool)),
       );
+    } else {
+      if (wasEnabled) {
+        /*
+         * A tree navigation from an enabled branch to a disabled branch must
+         * restore the tools that were active before plan mode was enabled.
+         * Keep tools added by other extensions while plan mode was active.
+         */
+        const restored = previousToolsBeforePlanMode ?? [];
+        const kept = activeTools.filter(
+          (tool) =>
+            !restored.includes(tool) && !DISABLED_TOOLS.has(tool),
+        );
+        pi.setActiveTools([...restored, ...kept]);
+      }
+
+      enabled = false;
+      toolsBeforePlanMode = undefined;
     }
 
     updateStatus(ctx);
+  }
+
+  /*
+   * Restore mode when starting/resuming/reloading a session. The session
+   * manager has already loaded the session before session_start fires.
+   */
+  pi.on("session_start", async (_event, ctx) => {
+    restoreState(ctx);
+  });
+
+  /*
+   * Keep the in-memory mode and active tools in sync when /tree changes the
+   * current branch without restarting pi.
+   */
+  pi.on("session_tree", async (_event, ctx) => {
+    restoreState(ctx);
   });
 }
