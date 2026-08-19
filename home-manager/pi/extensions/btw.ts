@@ -8,7 +8,7 @@ import {
   type ExtensionAPI,
   type ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
-import { Container, Markdown, matchesKey, Text } from "@earendil-works/pi-tui";
+import { Markdown, matchesKey, Text } from "@earendil-works/pi-tui";
 
 const SIDE_QUESTION_PROMPT = `
 You are answering a temporary side question about an ongoing conversation.
@@ -149,24 +149,66 @@ async function showAnswer(
   answer: string,
 ): Promise<void> {
   await ctx.ui.custom<void>(
-    (_tui, theme, _keybindings, done) => {
-      const container = new Container();
+    (tui, theme, _keybindings, done) => {
       const border = new DynamicBorder((s: string) => theme.fg("accent", s));
+      const title = new Text(
+        theme.fg("accent", theme.bold(`btw: ${question}`)),
+        1,
+        0,
+      );
+      const markdown = new Markdown(answer, 1, 1, getMarkdownTheme());
+      const footer = new Text(
+        theme.fg("dim", "Ctrl+P/Ctrl+N to scroll · Press Enter or Esc to close"),
+        1,
+        0,
+      );
+      let scrollOffset = 0;
 
-      container.addChild(border);
-      container.addChild(
-        new Text(theme.fg("accent", theme.bold(`btw: ${question}`)), 1, 0),
-      );
-      container.addChild(new Markdown(answer, 1, 1, getMarkdownTheme()));
-      container.addChild(
-        new Text(theme.fg("dim", "Press Enter or Esc to close"), 1, 0),
-      );
-      container.addChild(border);
+      const render = (width: number): string[] => {
+        const borderLines = border.render(width);
+        const titleLines = title.render(width);
+        const answerLines = markdown.render(width);
+        const footerLines = footer.render(width);
+        const availableHeight = Math.max(1, tui.terminal.rows - 2);
+        const maxHeight = Math.min(
+          availableHeight,
+          Math.max(1, Math.floor(tui.terminal.rows * 0.8)),
+        );
+        const fixedHeight =
+          borderLines.length * 2 + titleLines.length + footerLines.length;
+        const viewportHeight = Math.max(0, maxHeight - fixedHeight);
+        const maxScrollOffset = Math.max(0, answerLines.length - viewportHeight);
+
+        scrollOffset = Math.min(scrollOffset, maxScrollOffset);
+
+        return [
+          ...borderLines,
+          ...titleLines,
+          ...answerLines.slice(scrollOffset, scrollOffset + viewportHeight),
+          ...footerLines,
+          ...borderLines,
+        ];
+      };
 
       return {
-        render: (width: number) => container.render(width),
-        invalidate: () => container.invalidate(),
+        render,
+        invalidate: () => {
+          border.invalidate();
+          title.invalidate();
+          markdown.invalidate();
+          footer.invalidate();
+        },
         handleInput: (data: string) => {
+          // The overlay owns input while open, so these take precedence over
+          // the normal editor/selector keybindings.
+          if (matchesKey(data, "ctrl+p")) {
+            scrollOffset = Math.max(0, scrollOffset - 1);
+            return;
+          }
+          if (matchesKey(data, "ctrl+n")) {
+            scrollOffset += 1;
+            return;
+          }
           if (matchesKey(data, "enter") || matchesKey(data, "escape")) {
             done(undefined);
           }
