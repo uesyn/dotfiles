@@ -29,6 +29,15 @@ export const CUSTOM_TYPE = "pi-undo.checkpoint";
  */
 export const REDO_TYPE = "pi-undo.redo";
 
+/**
+ * Custom entry that invalidates every checkpoint preceding it on this branch.
+ * This lets /undo-purge persist its effect across pi restarts.
+ */
+export const PURGE_TYPE = "pi-undo.purge";
+
+/** Legacy snapshot-removal marker, retained for session compatibility. */
+export const LEGACY_CLEAR_TYPE = "pi-undo.clear";
+
 export type FileChangeStatus = "M" | "A" | "D" | "T";
 
 export interface FileChange {

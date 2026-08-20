@@ -9,7 +9,13 @@ import type {
   SessionEntry,
 } from "@earendil-works/pi-coding-agent";
 import { capture, deleteRef, filesChangedBetween, refName, setRef } from "./gitstore.ts";
-import { CHECKPOINT_VERSION, CUSTOM_TYPE, REDO_TYPE } from "./types.ts";
+import {
+  CHECKPOINT_VERSION,
+  CUSTOM_TYPE,
+  LEGACY_CLEAR_TYPE,
+  PURGE_TYPE,
+  REDO_TYPE,
+} from "./types.ts";
 import type { CheckpointMeta, Config, UndoState } from "./types.ts";
 import { contentText, summarizeDiff, truncate } from "./util.ts";
 
@@ -44,7 +50,17 @@ export function rebuildFromSession(
   state: UndoState,
 ): void {
   const metas: CheckpointMeta[] = [];
+  // getBranch is ordered from root to the active leaf. A purge marker drops
+  // the older metadata collected so far; checkpoints appended after it start
+  // a new, independent stack.
   for (const entry of sm.getBranch()) {
+    if (
+      entry.type === "custom" &&
+      (entry.customType === PURGE_TYPE || entry.customType === LEGACY_CLEAR_TYPE)
+    ) {
+      metas.length = 0;
+      continue;
+    }
     if (entry.type !== "custom" || entry.customType !== CUSTOM_TYPE) continue;
     const data = entry.data as CheckpointMeta | undefined;
     if (
@@ -74,11 +90,22 @@ function loadRedoStack(sm: {
   getBranch(): SessionEntry[];
   getEntry(id: string): SessionEntry | undefined;
 }): CheckpointMeta[] {
+  let redo: CheckpointMeta[] = [];
+  // The active branch is root-to-leaf, so the latest marker wins. A purge
+  // marker invalidates any redo marker that came before it.
   for (const entry of sm.getBranch()) {
+    if (
+      entry.type === "custom" &&
+      (entry.customType === PURGE_TYPE || entry.customType === LEGACY_CLEAR_TYPE)
+    ) {
+      redo = [];
+      continue;
+    }
     if (entry.type !== "custom" || entry.customType !== REDO_TYPE) continue;
     const data = entry.data as { redo?: unknown } | undefined;
     if (!data || !Array.isArray(data.redo)) {
-      return [];
+      redo = [];
+      continue;
     }
     const metas: CheckpointMeta[] = [];
     for (const id of data.redo) {
@@ -97,9 +124,9 @@ function loadRedoStack(sm: {
         metas.push({ ...meta, entryId: checkpointEntry.id });
       }
     }
-    return metas;
+    redo = metas;
   }
-  return [];
+  return redo;
 }
 
 /** Persist the current redo stack as a marker entry at the current leaf. */

@@ -20,10 +20,12 @@ import {
   gitDirFor,
   gitWorktreeRoot,
   initGitDir,
+  undoBaseDir,
   refName,
   setRef,
   type GitStore,
 } from "../gitstore.ts";
+import { purgeSessionStorage, registerSession } from "../store.ts";
 
 process.env.PI_CODING_AGENT_DIR = join(tmpdir(), `pi-undo-agent-${process.pid}`);
 
@@ -215,6 +217,32 @@ describe("git store", () => {
     const after = (await git(["--git-dir", store.gitdir, "for-each-ref", "--format=%(refname)", "refs/pi-undo/sess-test"]))
       .stdout.trim();
     expect(after).toBe("");
+  });
+
+  it("purges all on-disk state that belongs to a session", async () => {
+    const sessionId = "purge-test";
+    const sessionFile = join(project, "purge-session.json");
+    const legacyDir = join(undoBaseDir(), sessionId);
+    const tree = await capture(store);
+    await setRef(store.gitdir, refName(sessionId, 0), tree);
+    await writeFile(sessionFile, "{}");
+    await mkdir(legacyDir, { recursive: true });
+    await writeFile(join(legacyDir, "state.json"), "{}");
+    await registerSession(sessionId, sessionFile, project);
+
+    await purgeSessionStorage(sessionId, store.gitdir);
+
+    const refs = await git([
+      "--git-dir",
+      store.gitdir,
+      "for-each-ref",
+      "--format=%(refname)",
+      `refs/pi-undo/${sessionId}`,
+    ]);
+    expect(refs.stdout.trim()).toBe("");
+    await expect(stat(legacyDir)).rejects.toThrow();
+    const registry = JSON.parse(await readFile(join(undoBaseDir(), "registry.json"), "utf8"));
+    expect(registry[sessionId]).toBeUndefined();
   });
 
   it("detects non-git directories and resolves subdirectories of a worktree", async () => {

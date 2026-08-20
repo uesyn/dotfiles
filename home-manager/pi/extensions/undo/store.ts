@@ -4,13 +4,14 @@
  * The registry maps sessionId -> { file, worktree } so orphaned sessions'
  * snapshot refs can be garbage-collected. Private gitdirs are never deleted
  * (git gc reclaims object space); only refs of sessions whose file no longer
- * exists are removed, along with legacy v1 state dirs.
+ * exists are removed, along with legacy v1 state dirs. An explicit purge also
+ * removes the current session's registry entry and legacy state directory.
  */
 
 import { existsSync } from "node:fs";
 import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
-import { deleteRefsByPrefix, gitDirFor, undoBaseDir } from "./gitstore.ts";
+import { deleteRefsByPrefix, gcPrune, gitDirFor, undoBaseDir } from "./gitstore.ts";
 
 interface RegistryEntry {
   file?: string;
@@ -50,6 +51,27 @@ export async function registerSession(
   const registry = await readRegistry();
   registry[sessionId] = { file: sessionFile, worktree: worktree ?? undefined };
   await writeRegistry(registry);
+}
+
+/**
+ * Delete every on-disk record that belongs exclusively to one session.
+ *
+ * The private gitdir is shared by sessions in a worktree, so it is not
+ * deleted. Removing the session's refs followed by git GC reclaims objects
+ * that are no longer shared with another session.
+ */
+export async function purgeSessionStorage(sessionId: string, gitdir: string): Promise<void> {
+  if (gitdir) {
+    await deleteRefsByPrefix(gitdir, `refs/pi-undo/${sessionId}`);
+    await gcPrune(gitdir);
+  }
+  await rm(join(undoBaseDir(), sessionId), { recursive: true, force: true });
+
+  const registry = await readRegistry();
+  if (sessionId in registry) {
+    delete registry[sessionId];
+    await writeRegistry(registry);
+  }
 }
 
 /**

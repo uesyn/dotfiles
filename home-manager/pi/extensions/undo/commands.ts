@@ -1,5 +1,5 @@
 /**
- * /undo, /redo and /undo-status command handlers.
+ * /undo, /redo and /undo-purge command handlers.
  */
 
 import type { ExtensionAPI, ExtensionCommandContext } from "@earendil-works/pi-coding-agent";
@@ -10,6 +10,8 @@ import {
   resolveNavigationTarget,
   updateStatus,
 } from "./history.ts";
+import { purgeSessionStorage } from "./store.ts";
+import { PURGE_TYPE } from "./types.ts";
 import type { Config, UndoState } from "./types.ts";
 import { errorMessage, listPaths, summarizeDiff, truncate } from "./util.ts";
 
@@ -41,22 +43,50 @@ export function registerCommands(
     },
   });
 
-  pi.registerCommand("undo-status", {
-    description: "Show the undo/redo checkpoint stack",
-    handler: async (_args, ctx) => {
-      const { checkpoints, redoStack } = state;
-      const lines: string[] = [
-        `checkpoints: ${checkpoints.length}` +
-          (checkpoints.length > 0
-            ? ` (current index ${checkpoints[checkpoints.length - 1]?.index})`
-            : ""),
-        ...checkpoints.map(formatCheckpoint),
-        `redo: ${redoStack.length}`,
-        ...[...redoStack].reverse().map(formatCheckpoint),
-      ];
-      ctx.ui.notify(lines.join("\n"), "info");
+  pi.registerCommand("undo-purge", {
+    description: "Permanently delete this session's on-disk undo data",
+    handler: async (args, ctx) => {
+      if (args.trim() !== "") {
+        ctx.ui.notify("Usage: /undo-purge — permanently delete this session's undo data", "warning");
+        return;
+      }
+      await purgeSessionCommand(ctx, state, pi);
     },
   });
+}
+
+/** Remove all current on-disk undo records for this session. */
+async function purgeSessionCommand(
+  ctx: ExtensionCommandContext,
+  state: UndoState,
+  pi: ExtensionAPI,
+): Promise<void> {
+  await ctx.waitForIdle();
+  await state.gitQueue;
+
+  const ok = !ctx.hasUI || await ctx.ui.confirm(
+    "Permanently delete undo data?",
+    "Delete all on-disk undo data for this session? New checkpoints will be created before the next agent run.",
+  );
+  if (!ok) return;
+
+  try {
+    // This marker prevents session metadata from referring to refs that were
+    // removed below when the session is opened again.
+    pi.appendEntry(PURGE_TYPE, {});
+    await purgeSessionStorage(state.sessionId, state.gitdir);
+    state.checkpoints = [];
+    state.redoStack = [];
+    // Keep the extension enabled: before_agent_start captures a fresh C0 for
+    // the next run, making undo/redo available again in this same session.
+    updateStatus(ctx, state);
+    ctx.ui.notify(
+      "pi-undo: purged this session's on-disk undo data; undo is ready for the next agent run.",
+      "info",
+    );
+  } catch (error) {
+    ctx.ui.notify(`pi-undo: undo-data purge failed: ${errorMessage(error)}`, "error");
+  }
 }
 
 async function undoCommand(

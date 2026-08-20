@@ -4,7 +4,7 @@
  * Commands:
  *   /undo [N|all]  — rewind the conversation and restore files to a checkpoint
  *   /redo [N]      — redo previously undone runs
- *   /undo-status   — show the checkpoint stack
+ *   /undo-purge    — permanently delete this session's on-disk undo data
  *
  * How it works:
  * - Requires the session cwd to be inside a git worktree (like opencode).
@@ -115,6 +115,13 @@ export default function piUndoExtension(pi: ExtensionAPI): void {
     if (state.checkpoints.length > 0) return;
     setLoadingStatus(ctx, "undo初期スナップショットを作成中...");
     try {
+      // /undo-purge removes the registry entry. Register again before making
+      // the first new checkpoint so another pi process cannot orphan-GC it.
+      await registerSession(
+        state.sessionId,
+        ctx.sessionManager.getSessionFile(),
+        state.worktree,
+      );
       await enqueue(() => captureInitial(ctx, state, pi)).catch((error) => {
         console.error("pi-undo: initial capture failed:", error);
       });

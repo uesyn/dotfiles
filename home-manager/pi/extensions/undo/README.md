@@ -8,7 +8,7 @@ files that were changed up to that point.
   - `N`: undo the last N agent runs
   - `all`: undo back to the session start
 - `/redo [N]` — redo previously undone runs
-- `/undo-status` — show the checkpoint stack
+- `/undo-purge` — permanently delete this session's on-disk undo data
 
 ## How it works
 
@@ -32,7 +32,7 @@ Git-backed snapshots, no custom snapshot engine (opencode-style):
   (`pi-undo.checkpoint`), so undo keeps working after a restart or `/resume`.
   Trees are pinned with refs, so git gc never collects them.
 - The redo stack is persisted the same way (`pi-undo.redo` marker entries,
-  rewritten on every undo/redo/clear), so **redo also survives restarts**.
+  rewritten whenever the stack changes), so **redo also survives restarts**.
 - `/undo` moves the session leaf back to the run boundary with
   `ctx.navigateTree` (no LLM cost) and then applies the file diff between the
   two checkpoint trees with `git checkout <tree> -- <path>` (delete for paths
@@ -86,6 +86,13 @@ Git-backed snapshots, no custom snapshot engine (opencode-style):
   does *not* lose it.
 - Checkpoints are pruned beyond `maxCheckpoints`; pruning unpins the dropped
   trees (git gc reclaims the objects later).
+- `/undo-purge` is the destructive cleanup command: it removes this session's
+  refs, registry entry, and legacy session directory from `~/.pi/agent/undo`,
+  persists a purge marker so old checkpoints cannot be restored after a
+  restart, then immediately GCs unshared snapshot objects. The per-worktree
+  private gitdir itself is retained because other sessions may use it. A fresh
+  initial checkpoint is captured before the next agent run, so undo/redo is
+  available again in the same session for work done after the purge.
 - The undone prompt is restored to the editor only when
   `restorePromptToEditor` is enabled and no editor text was already set by the
   navigation.

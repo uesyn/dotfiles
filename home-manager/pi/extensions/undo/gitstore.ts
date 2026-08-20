@@ -322,8 +322,10 @@ export async function deleteRef(gitdir: string, ref: string): Promise<void> {
 /** Delete all refs under a prefix (e.g. refs/pi-undo/<sessionId>). */
 export async function deleteRefsByPrefix(gitdir: string, prefix: string): Promise<void> {
   const result = await runGit(["--git-dir", gitdir, "for-each-ref", "--format=%(refname)", prefix]);
+  if (result.code !== 0) throw new Error(`git for-each-ref failed: ${result.stderr}`);
   for (const ref of result.stdout.split("\n").map((x) => x.trim()).filter(Boolean)) {
-    await runGit(["--git-dir", gitdir, "update-ref", "-d", ref]);
+    const deleted = await runGit(["--git-dir", gitdir, "update-ref", "-d", ref]);
+    if (deleted.code !== 0) throw new Error(`git update-ref failed: ${deleted.stderr}`);
   }
 }
 
@@ -333,4 +335,10 @@ export async function gcAuto(gitdir: string): Promise<void> {
   if (result.code !== 0) {
     console.error("pi-undo: git gc failed:", result.stderr);
   }
+}
+
+/** Reclaim all currently unreachable objects after an explicit session purge. */
+export async function gcPrune(gitdir: string): Promise<void> {
+  const result = await runGit(["--git-dir", gitdir, "gc", "--prune=now", "--quiet"]);
+  if (result.code !== 0) throw new Error(`git gc failed: ${result.stderr}`);
 }
