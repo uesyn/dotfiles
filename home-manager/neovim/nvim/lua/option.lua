@@ -25,3 +25,6 @@ vim.opt["termguicolors"] = true
 vim.opt["winborder"] = 'rounded'
 vim.opt["pumborder"] = 'rounded'
 vim.opt["completeopt"] = { 'menu', 'fuzzy', 'popup', 'noselect', 'noinsert' }
+vim.opt["autocomplete"] = true
+vim.opt["complete"] = { "o" }
+vim.opt["autocompletedelay"] = 150
