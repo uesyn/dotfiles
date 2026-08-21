@@ -51,6 +51,7 @@
     in
     {
       home.file.".local/share/pi/extensions/btw.ts".source = ./extensions/btw.ts;
+      home.file.".local/share/pi/extensions/directory-tree.ts".source = ./extensions/directory-tree.ts;
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
         ./extensions/dynamic-provider.ts;
       home.file.".local/share/pi/extensions/last-model.ts".source = ./extensions/last-model.ts;
@@ -99,6 +100,7 @@
           };
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/directory-tree.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/autocomplete-priority.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
