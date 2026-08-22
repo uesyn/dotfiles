@@ -193,9 +193,6 @@
         "opencode/skills/kubebuilder/references" = {
           source = "${kubebuilder}/docs";
         };
-        "opencode/skills/sakura-cloud-iaas/SKILL.md" = {
-          source = ./skills/sakura-cloud-iaas/SKILL.md;
-        };
         "opencode/opencode.jsonc".text = ''
           {
             "$schema": "https://opencode.ai/config.json",
