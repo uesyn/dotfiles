@@ -24,10 +24,10 @@
       default_layout "simple"
 
       plugins {
-          tab-bar { path "tab-bar"; }
-          status-bar { path "status-bar"; }
-          strider { path "strider"; }
-          compact-bar { path "compact-bar"; }
+          tab-bar location="zellij:tab-bar"
+          status-bar location="zellij:status-bar"
+          strider location="zellij:strider"
+          compact-bar location="zellij:compact-bar"
       }
 
       themes {
@@ -43,12 +43,6 @@
               cyan 139 233 253
               white 255 255 255
               orange 255 184 108
-          }
-      }
-
-      ui {
-          pane_frames {
-              hide_session_name false
           }
       }
 
@@ -83,10 +77,6 @@
           }
           renametab {
               bind "Esc" "Ctrl [" "Ctrl c" { UndoRenameTab; SwitchToMode "normal"; }
-              bind "Enter" { SwitchToMode "normal"; }
-          }
-          renamepane {
-              bind "Esc" "Ctrl [" "Ctrl c" { UndoRenamePane; SwitchToMode "normal"; }
               bind "Enter" { SwitchToMode "normal"; }
           }
           move {
@@ -139,7 +129,6 @@
               bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
               bind "C" { Clear; SwitchToMode "normal"; }
               bind "," { SwitchToMode "renametab"; TabNameInput 0; }
-              bind "<" { SwitchToMode "renamepane"; TabNameInput 0; }
               bind "d" { Detach; }
           }
       }
