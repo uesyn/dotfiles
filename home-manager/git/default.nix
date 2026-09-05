@@ -234,6 +234,7 @@ in
         ".vim-lsp-settings"
         "CRUSH.md"
         ".crush"
+        ".code-review-graph/"
       ];
 
       includes = [

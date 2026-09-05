@@ -48,8 +48,55 @@
         };
       };
       providers = defaultProviders // pi.providers;
+      codeReviewGraphTools = [
+        "build_or_update_graph_tool"
+        "get_minimal_context_tool"
+        "get_review_context_tool"
+        "get_impact_radius_tool"
+        "detect_changes_tool"
+        "query_graph_tool"
+        "semantic_search_nodes_tool"
+        "list_graph_stats_tool"
+        "get_architecture_overview_tool"
+        "get_affected_flows_tool"
+      ];
+      codeReviewGraphDirectTools = [
+        "build_or_update_graph_tool"
+        "get_minimal_context_tool"
+        "get_review_context_tool"
+        "get_impact_radius_tool"
+        "detect_changes_tool"
+        "query_graph_tool"
+      ];
     in
     {
+      home.packages = [ pkgs.llm-agents.code-review-graph ];
+
+      home.file.".pi/agent/mcp.json".text = builtins.toJSON {
+        settings = {
+          hostConfigDiscovery = "off";
+          toolPrefix = "server";
+          toolResultRendering = "compact";
+        };
+        mcpServers = {
+          "code-review-graph" = {
+            command = lib.getExe pkgs.llm-agents.code-review-graph;
+            args = [
+              "serve"
+              "--auto-watch"
+              "--tools"
+              (lib.concatStringsSep "," codeReviewGraphTools)
+            ];
+            lifecycle = "lazy-keep-alive";
+            requestTimeoutMs = 120000;
+            directTools = codeReviewGraphDirectTools;
+          };
+        };
+      };
+
+      home.file.".pi/agent/skills/code-review-graph/SKILL.md".source =
+        ./skills/code-review-graph/SKILL.md;
+
       home.file.".local/share/pi/extensions/btw.ts".source = ./extensions/btw.ts;
       home.file.".local/share/pi/extensions/directory-tree.ts".source = ./extensions/directory-tree.ts;
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
@@ -69,6 +116,7 @@
           pkgs.nodejs
           pkgs.bun
           pkgs.git
+          pkgs.llm-agents.code-review-graph
         ];
         models.providers = providers;
         keybindings = {
@@ -111,7 +159,9 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/web-search.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
           ];
-          packages = [ ];
+          packages = [
+            "npm:pi-mcp-adapter@2.32.1"
+          ];
           skills = [
             "${config.home.homeDirectory}/.config/opencode/skills"
           ];
