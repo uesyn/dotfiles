@@ -55,6 +55,7 @@
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
         ./extensions/dynamic-provider.ts;
       home.file.".local/share/pi/extensions/last-model.ts".source = ./extensions/last-model.ts;
+      home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
       home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
       home.file.".local/share/pi/extensions/web-search.ts".source = ./extensions/web-search.ts;
       home.file.".local/share/pi/extensions/undo" = {
@@ -81,6 +82,7 @@
           "app.model.cycleForward" = [ ];
           "app.model.select" = [ ];
           "app.models.toggleProvider" = [ ];
+          "app.session.toggleNamedFilter" = [ ];
           "app.session.togglePath" = [ ];
           "app.tree.filter.labeledOnly" = [ ];
           "tui.select.up" = [
@@ -104,6 +106,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/autocomplete-priority.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/web-search.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
