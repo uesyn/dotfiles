@@ -12,7 +12,13 @@ import {
   type ExtensionAPI,
   type ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
-import { Markdown, matchesKey, Text } from "@earendil-works/pi-tui";
+import {
+  Markdown,
+  matchesKey,
+  Text,
+  truncateToWidth,
+  visibleWidth,
+} from "@earendil-works/pi-tui";
 
 const SIDE_QUESTION_PROMPT = `
 You are answering a temporary side question about an ongoing conversation.
@@ -279,28 +285,53 @@ async function showAnswer(
       updateAnswer();
 
       const render = (width: number): string[] => {
-        const borderLines = border.render(width);
-        const titleLines = title.render(width);
-        const answerLines = markdown.render(width);
-        const footerLines = footer.render(width);
+        const hasSideBorders = width >= 3;
+        const contentWidth = hasSideBorders ? width - 2 : width;
+        const topBorderLines = hasSideBorders
+          ? [
+              `${theme.fg("accent", "╭")}${border.render(width - 2)[0]!}${theme.fg("accent", "╮")}`,
+            ]
+          : border.render(width);
+        const bottomBorderLines = hasSideBorders
+          ? [
+              `${theme.fg("accent", "╰")}${border.render(width - 2)[0]!}${theme.fg("accent", "╯")}`,
+            ]
+          : border.render(width);
+        const titleLines = title.render(contentWidth);
+        const answerLines = markdown.render(contentWidth);
+        const footerLines = footer.render(contentWidth);
+        const addSideBorders = (lines: string[]): string[] => {
+          if (!hasSideBorders) {
+            return lines.map((line) => truncateToWidth(line, contentWidth, ""));
+          }
+
+          return lines.map((line) => {
+            const content = truncateToWidth(line, contentWidth, "");
+            return `${theme.fg("accent", "│")}${content}${" ".repeat(
+              Math.max(0, contentWidth - visibleWidth(content)),
+            )}${theme.fg("accent", "│")}`;
+          });
+        };
         const availableHeight = Math.max(1, tui.terminal.rows - 2);
         const maxHeight = Math.min(
           availableHeight,
           Math.max(1, Math.floor(tui.terminal.rows * 0.8)),
         );
         const fixedHeight =
-          borderLines.length * 2 + titleLines.length + footerLines.length;
+          topBorderLines.length + bottomBorderLines.length + titleLines.length + footerLines.length;
         viewportHeight = Math.max(0, maxHeight - fixedHeight);
         const maxScrollOffset = Math.max(0, answerLines.length - viewportHeight);
 
         scrollOffset = Math.min(scrollOffset, maxScrollOffset);
 
         return [
-          ...borderLines,
-          ...titleLines,
-          ...answerLines.slice(scrollOffset, scrollOffset + viewportHeight),
-          ...footerLines,
-          ...borderLines,
+          ...topBorderLines,
+          ...addSideBorders(titleLines),
+          ...addSideBorders(
+            answerLines.slice(scrollOffset, scrollOffset + viewportHeight),
+          ),
+          ...addSideBorders(footerLines),
+          ...bottomBorderLines,
         ];
       };
 
