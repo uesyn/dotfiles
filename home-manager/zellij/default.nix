@@ -14,7 +14,7 @@
       pane_frames false
       theme "dracula"
       default_mode "normal"
-      mouse_mode true
+      mouse_mode false
       scroll_buffer_size 10000
       copy_on_select true
       scrollback_editor "nvim"
