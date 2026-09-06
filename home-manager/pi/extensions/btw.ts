@@ -30,12 +30,15 @@ type QueryResult =
 
 const MAX_SIDE_EXCHANGES = 20;
 
+type SideExchange = {
+  question: string;
+  answer: string;
+  userMessage: UserMessage;
+  assistantMessage: AssistantMessage;
+};
+
 type SideHistory = {
-  messages: Message[];
-  latest?: {
-    question: string;
-    answer: string;
-  };
+  exchanges: SideExchange[];
 };
 
 function errorMessage(error: unknown): string {
@@ -50,6 +53,40 @@ function extractText(response: {
     .map((content) => content.text)
     .join("\n")
     .trim();
+}
+
+function getSideMessages(history: SideHistory): Message[] {
+  return history.exchanges.flatMap((exchange) => [
+    exchange.userMessage,
+    exchange.assistantMessage,
+  ]);
+}
+
+function addSideExchange(
+  history: SideHistory,
+  question: string,
+  answer: string,
+  assistantMessage: AssistantMessage,
+): number {
+  history.exchanges.push({
+    question,
+    answer,
+    userMessage: {
+      role: "user",
+      content: [{ type: "text", text: question }],
+      timestamp: Date.now(),
+    },
+    assistantMessage,
+  });
+
+  if (history.exchanges.length > MAX_SIDE_EXCHANGES) {
+    history.exchanges.splice(
+      0,
+      history.exchanges.length - MAX_SIDE_EXCHANGES,
+    );
+  }
+
+  return history.exchanges.length - 1;
 }
 
 function buildMessages(
@@ -174,28 +211,72 @@ async function askWithLoader(
 
 async function showAnswer(
   ctx: ExtensionCommandContext,
-  question: string,
-  answer: string,
+  history: SideHistory,
+  initialIndex: number,
 ): Promise<void> {
   await ctx.ui.custom<void>(
     (tui, theme, _keybindings, done) => {
       const border = new DynamicBorder((s: string) => theme.fg("accent", s));
-      const title = new Text(
-        theme.fg("accent", theme.bold(`btw: ${question}`)),
-        1,
-        0,
-      );
-      const markdown = new Markdown(answer, 1, 1, getMarkdownTheme());
+      const title = new Text("", 1, 0);
+      const markdown = new Markdown("", 1, 1, getMarkdownTheme());
       const footer = new Text(
         theme.fg(
           "dim",
-          "Ctrl+P/Ctrl+N line · Ctrl+F/Ctrl+B page · Enter/Esc close",
+          "Ctrl+A ask · Ctrl+L prev · Ctrl+H next · Ctrl+P/N line · Ctrl+F/B page · Enter/Esc close",
         ),
         1,
         0,
       );
+      let selectedIndex = initialIndex;
       let scrollOffset = 0;
       let viewportHeight = 0;
+      let asking = false;
+
+      const updateAnswer = () => {
+        const exchange = history.exchanges[selectedIndex];
+        if (!exchange) return;
+
+        title.setText(
+          theme.fg(
+            "accent",
+            theme.bold(
+              `btw [${selectedIndex + 1}/${history.exchanges.length}]: ${exchange.question}`,
+            ),
+          ),
+        );
+        markdown.setText(exchange.answer);
+        scrollOffset = 0;
+      };
+
+      const askAdditionalQuestion = async () => {
+        const input = await ctx.ui.input("btw: 追加の質問", "");
+        const question = input?.trim();
+        if (!question) return;
+
+        const result = await askWithLoader(
+          ctx,
+          question,
+          getSideMessages(history),
+        );
+        if (result.kind === "cancelled") {
+          ctx.ui.notify("btw cancelled", "info");
+          return;
+        }
+        if (result.kind === "error") {
+          ctx.ui.notify(`btw failed: ${errorMessage(result.error)}`, "error");
+          return;
+        }
+
+        selectedIndex = addSideExchange(
+          history,
+          question,
+          result.text,
+          result.message,
+        );
+        updateAnswer();
+      };
+
+      updateAnswer();
 
       const render = (width: number): string[] => {
         const borderLines = border.render(width);
@@ -234,20 +315,48 @@ async function showAnswer(
         handleInput: (data: string) => {
           // The overlay owns input while open, so these take precedence over
           // the normal editor/selector keybindings.
+          if (matchesKey(data, "ctrl+a")) {
+            if (asking) return;
+            asking = true;
+            void askAdditionalQuestion().finally(() => {
+              asking = false;
+              tui.requestRender();
+            });
+            return;
+          }
+          if (matchesKey(data, "ctrl+l")) {
+            selectedIndex = Math.max(0, selectedIndex - 1);
+            updateAnswer();
+            tui.requestRender();
+            return;
+          }
+          if (matchesKey(data, "ctrl+h")) {
+            selectedIndex = Math.min(
+              history.exchanges.length - 1,
+              selectedIndex + 1,
+            );
+            updateAnswer();
+            tui.requestRender();
+            return;
+          }
           if (matchesKey(data, "ctrl+p")) {
             scrollOffset = Math.max(0, scrollOffset - 1);
+            tui.requestRender();
             return;
           }
           if (matchesKey(data, "ctrl+n")) {
             scrollOffset += 1;
+            tui.requestRender();
             return;
           }
           if (matchesKey(data, "ctrl+b")) {
             scrollOffset = Math.max(0, scrollOffset - Math.max(1, viewportHeight));
+            tui.requestRender();
             return;
           }
           if (matchesKey(data, "ctrl+f")) {
             scrollOffset += Math.max(1, viewportHeight);
+            tui.requestRender();
             return;
           }
           if (matchesKey(data, "enter") || matchesKey(data, "escape")) {
@@ -284,8 +393,8 @@ export default function btwExtension(pi: ExtensionAPI): void {
       const question = args.trim();
 
       if (!question) {
-        if (history?.latest) {
-          await showAnswer(ctx, history.latest.question, history.latest.answer);
+        if (history && history.exchanges.length > 0) {
+          await showAnswer(ctx, history, history.exchanges.length - 1);
         } else {
           ctx.ui.notify("No previous btw answer. Usage: /btw <question>", "info");
         }
@@ -297,8 +406,12 @@ export default function btwExtension(pi: ExtensionAPI): void {
         return;
       }
 
-      const currentHistory = history ?? { messages: [] };
-      const result = await askWithLoader(ctx, question, currentHistory.messages);
+      const currentHistory = history ?? { exchanges: [] };
+      const result = await askWithLoader(
+        ctx,
+        question,
+        getSideMessages(currentHistory),
+      );
       if (result.kind === "cancelled") {
         ctx.ui.notify("btw cancelled", "info");
         return;
@@ -308,25 +421,15 @@ export default function btwExtension(pi: ExtensionAPI): void {
         return;
       }
 
-      currentHistory.messages.push(
-        {
-          role: "user",
-          content: [{ type: "text", text: question }],
-          timestamp: Date.now(),
-        },
+      const answerIndex = addSideExchange(
+        currentHistory,
+        question,
+        result.text,
         result.message,
       );
-      const maxMessages = MAX_SIDE_EXCHANGES * 2;
-      if (currentHistory.messages.length > maxMessages) {
-        currentHistory.messages.splice(
-          0,
-          currentHistory.messages.length - maxMessages,
-        );
-      }
-      currentHistory.latest = { question, answer: result.text };
       sideHistoryBySession.set(sessionId, currentHistory);
 
-      await showAnswer(ctx, question, result.text);
+      await showAnswer(ctx, currentHistory, answerIndex);
     },
   });
 }
