@@ -165,12 +165,6 @@
         ];
         models.providers = providers;
         keybindings = {
-          # Make Ctrl+C a clean exit (/quit equivalent) instead of clear/exit-on-second-press.
-          "app.clear" = [ ];
-          "app.exit" = [
-            "ctrl+c"
-            "ctrl+d"
-          ];
           "app.model.cycleBackward" = [ ];
           "app.model.cycleForward" = [ ];
           "app.model.select" = [ ];
