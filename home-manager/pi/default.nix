@@ -90,11 +90,6 @@
       home.packages = [ pkgs.llm-agents.code-review-graph ];
 
       home.file.".pi/agent/mcp.json".text = builtins.toJSON {
-        settings = {
-          hostConfigDiscovery = "off";
-          toolPrefix = "server";
-          toolResultRendering = "compact";
-        };
         mcpServers = {
           "code-review-graph" = {
             command = lib.getExe pkgs.llm-agents.code-review-graph;
