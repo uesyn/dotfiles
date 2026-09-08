@@ -82,26 +82,6 @@
         };
       };
       providers = defaultProviders // pi.providers;
-      codeReviewGraphTools = [
-        "build_or_update_graph_tool"
-        "get_minimal_context_tool"
-        "get_review_context_tool"
-        "get_impact_radius_tool"
-        "detect_changes_tool"
-        "query_graph_tool"
-        "semantic_search_nodes_tool"
-        "list_graph_stats_tool"
-        "get_architecture_overview_tool"
-        "get_affected_flows_tool"
-      ];
-      codeReviewGraphDirectTools = [
-        "build_or_update_graph_tool"
-        "get_minimal_context_tool"
-        "get_review_context_tool"
-        "get_impact_radius_tool"
-        "detect_changes_tool"
-        "query_graph_tool"
-      ];
       systemPromptModifiers = lib.mapAttrs (
         _: modifier: lib.filterAttrs (_: text: text != null) modifier
       ) pi.systemPromptModifier;
@@ -121,18 +101,11 @@
             args = [
               "serve"
               "--auto-watch"
-              "--tools"
-              (lib.concatStringsSep "," codeReviewGraphTools)
             ];
-            lifecycle = "lazy-keep-alive";
             requestTimeoutMs = 120000;
-            directTools = codeReviewGraphDirectTools;
           };
         };
       };
-
-      home.file.".pi/agent/skills/code-review-graph/SKILL.md".source =
-        ./skills/code-review-graph/SKILL.md;
 
       home.file.".pi/agent/system-prompt-modifier.json" = lib.mkIf (systemPromptModifiers != { }) {
         text = builtins.toJSON {
