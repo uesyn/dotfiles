@@ -97,6 +97,7 @@
               "serve"
               "--auto-watch"
             ];
+            lifecycle = "keep-alive";
             requestTimeoutMs = 120000;
           };
         };
