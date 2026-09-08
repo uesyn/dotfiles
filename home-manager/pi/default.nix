@@ -105,6 +105,8 @@
       home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
       home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
       home.file.".local/share/pi/extensions/web-search.ts".source = ./extensions/web-search.ts;
+      home.file.".local/share/pi/extensions/systemp-prompt-modifier.ts".source =
+        ./extensions/systemp-prompt-modifier.ts;
       home.file.".local/share/pi/extensions/undo" = {
         source = ./extensions/undo;
         recursive = true;
@@ -158,6 +160,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/web-search.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier.ts"
           ];
           packages = [
             "npm:pi-mcp-adapter@2.32.1"
