@@ -28,6 +28,40 @@
         }
       '';
     };
+    systemPromptModifier = lib.mkOption {
+      type = lib.types.attrsOf (
+        lib.types.submodule {
+          options = {
+            prepend = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Text prepended to the model's system prompt.";
+            };
+            append = lib.mkOption {
+              type = lib.types.nullOr lib.types.str;
+              default = null;
+              description = "Text appended to the model's system prompt.";
+            };
+          };
+        }
+      );
+      default = { };
+      description = ''
+        Per-model system prompt modifiers for the `systemp-prompt-modifier`
+        extension. Attribute names are Pi model identifiers of the form
+        `provider/model-id`. `prepend` and `append` are joined with the
+        model's system prompt (separated by newlines). Models without any
+        modifier content are omitted, and the configuration file is only
+        generated when at least one model defines content.
+      '';
+      example = lib.literalExpression ''
+        {
+          "ai-engine/preview/Kimi-K2.7-Code" = {
+            prepend = "Always respond in Japanese.";
+          };
+        }
+      '';
+    };
   };
 
   config =
@@ -68,6 +102,9 @@
         "detect_changes_tool"
         "query_graph_tool"
       ];
+      systemPromptModifiers = lib.mapAttrs (
+        _: modifier: lib.filterAttrs (_: text: text != null) modifier
+      ) pi.systemPromptModifier;
     in
     {
       home.packages = [ pkgs.llm-agents.code-review-graph ];
@@ -96,6 +133,12 @@
 
       home.file.".pi/agent/skills/code-review-graph/SKILL.md".source =
         ./skills/code-review-graph/SKILL.md;
+
+      home.file.".pi/agent/system-prompt-modifier.json" = lib.mkIf (systemPromptModifiers != { }) {
+        text = builtins.toJSON {
+          models = systemPromptModifiers;
+        };
+      };
 
       home.file.".local/share/pi/extensions/btw.ts".source = ./extensions/btw.ts;
       home.file.".local/share/pi/extensions/directory-tree.ts".source = ./extensions/directory-tree.ts;

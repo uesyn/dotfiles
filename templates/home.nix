@@ -41,6 +41,21 @@
   #   };
   # };
 
+  # Customize Pi system prompts per model via the systemp-prompt-modifier
+  # extension. Keys are `provider/model-id`; `prepend` and `append` are joined
+  # with the model's system prompt. Generated into
+  # ~/.pi/agent/system-prompt-modifier.json.
+  # dotfiles.pi.systemPromptModifier = {
+  #   "ai-engine/preview/Kimi-K2.7-Code" = {
+  #     prepend = ''
+  #       Always respond in Japanese.
+  #     '';
+  #     append = ''
+  #       Keep answers concise and to the point.
+  #     '';
+  #   };
+  # };
+
   # dotfiles.opencode.provider = {
   #   "ai-engine" = {
   #     name = "AI Engine";
