@@ -134,13 +134,6 @@ export default function planMode(pi: ExtensionAPI): void {
     },
   });
 
-  pi.registerShortcut("ctrl+l", {
-    description: "Toggle read-only plan mode",
-    handler: (ctx) => {
-      toggle(ctx);
-    },
-  });
-
   /*
    * Bash is removed from the active tool list above, but keep this guard for
    * tool calls that were already in flight when plan mode was enabled.
