@@ -99,6 +99,23 @@
             ];
             lifecycle = "keep-alive";
             requestTimeoutMs = 120000;
+            directTools = [
+              "get_minimal_context_tool"
+              "semantic_search_nodes_tool"
+              "query_graph_tool"
+              "get_hub_nodes_tool"
+              "get_bridge_nodes_tool"
+              "list_flows_tool"
+              "get_flow_tool"
+              "get_affected_flows_tool"
+              "get_architecture_overview_tool"
+              "list_communities_tool"
+              "get_community_tool"
+              "traverse_graph_tool"
+              "get_impact_radius_tool"
+              "get_surprising_connections_tool"
+              "find_large_functions_tool"
+            ];
           };
           "exa" = {
             url = "https://mcp.exa.ai/mcp";
