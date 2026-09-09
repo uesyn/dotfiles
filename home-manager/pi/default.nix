@@ -100,6 +100,16 @@
             lifecycle = "keep-alive";
             requestTimeoutMs = 120000;
           };
+          "exa" = {
+            url = "https://mcp.exa.ai/mcp";
+            headers."x-api-key" = "\${EXA_API_KEY}";
+            lifecycle = "lazy";
+            requestTimeoutMs = 60000;
+            toolPrefix = "none";
+            directTools = [
+              "web_search_exa"
+            ];
+          };
         };
       };
 
@@ -116,7 +126,6 @@
       home.file.".local/share/pi/extensions/last-model.ts".source = ./extensions/last-model.ts;
       home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
       home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
-      home.file.".local/share/pi/extensions/web-search.ts".source = ./extensions/web-search.ts;
       home.file.".local/share/pi/extensions/systemp-prompt-modifier.ts".source =
         ./extensions/systemp-prompt-modifier.ts;
       home.file.".local/share/pi/extensions/undo" = {
@@ -164,7 +173,6 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/web-search.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier.ts"
           ];
