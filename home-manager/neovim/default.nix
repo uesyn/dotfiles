@@ -77,6 +77,10 @@
         plugin = render-markdown-nvim;
         optional = true;
       }
+      {
+        plugin = baleia-nvim;
+        optional = true;
+      }
     ];
   };
 }
