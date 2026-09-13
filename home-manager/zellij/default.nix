@@ -46,7 +46,7 @@
 
       keybinds clear-defaults=true {
           normal {
-              bind "e" { EditScrollback { ansi true; }; SwitchToMode "Locked"; }
+              bind "[" { EditScrollback { ansi true; }; SwitchToMode "Locked"; }
               bind "z" { ToggleFocusFullscreen; SwitchToMode "Locked"; }
               bind "f" { ToggleFloatingPanes; SwitchToMode "Locked"; }
               bind "h" { MoveFocusOrTab "Left"; SwitchToMode "Locked"; }
