@@ -54,10 +54,8 @@
               bind "j" { MoveFocus "Down"; SwitchToMode "Locked"; }
               bind "k" { MoveFocus "Up"; SwitchToMode "Locked"; }
               bind "x" { CloseFocus; SwitchToMode "Locked"; }
-
               bind "%" { NewPane; SwitchToMode "Locked"; }
               bind "\"" { NewPane "Down"; SwitchToMode "Locked"; }
-
               bind "1" { GoToTab 1; SwitchToMode "Locked"; }
               bind "2" { GoToTab 2; SwitchToMode "Locked"; }
               bind "3" { GoToTab 3; SwitchToMode "Locked"; }
@@ -78,7 +76,6 @@
               bind "j" "Down" { Resize "Increase Down"; }
               bind "k" "Up" { Resize "Increase Up"; }
               bind "l" "Right" { Resize "Increase Right"; }
-
               bind "H" { Resize "Decrease Left"; }
               bind "J" { Resize "Decrease Down"; }
               bind "K" { Resize "Decrease Up"; }
@@ -87,29 +84,21 @@
 
           pane {
               bind "p" { SwitchToMode "Normal"; }
-
               bind "h" { MoveFocus "Left"; }
               bind "l" { MoveFocus "Right"; }
               bind "j" { MoveFocus "Down"; }
               bind "k" { MoveFocus "Up"; }
-
-              bind "n" { NewPane; SwitchToMode "Locked"; }
-              bind "d" { NewPane "Down"; SwitchToMode "Locked"; }
-              bind "r" { NewPane "Right"; SwitchToMode "Locked"; }
               bind "s" { NewPane "stacked"; SwitchToMode "Locked"; }
-
               bind "z" { TogglePaneFrames; SwitchToMode "Locked"; }
               bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "Locked"; }
-              bind "c" { SwitchToMode "RenamePane"; PaneNameInput 0; }
+              bind "r" { SwitchToMode "RenamePane"; PaneNameInput 0; }
               bind "i" { TogglePanePinned; SwitchToMode "Locked"; }
           }
 
           move {
               bind "m" { SwitchToMode "Normal"; }
-
               bind "n" "Tab" { MovePane; }
               bind "p" { MovePaneBackwards; }
-
               bind "h" "Left" { MovePane "Left"; }
               bind "j" "Down" { MovePane "Down"; }
               bind "k" "Up" { MovePane "Up"; }
@@ -118,21 +107,11 @@
 
           tab {
               bind "t" { SwitchToMode "Normal"; }
-
               bind "r" { SwitchToMode "RenameTab"; TabNameInput 0; }
-
               bind "h" "k" { GoToPreviousTab; }
               bind "l" "j" { GoToNextTab; }
-
               bind "n" { NewTab; SwitchToMode "Locked"; }
               bind "x" { CloseTab; SwitchToMode "Locked"; }
-              bind "s" { ToggleActiveSyncTab; SwitchToMode "Locked"; }
-
-              bind "b" { BreakPane; SwitchToMode "Locked"; }
-              bind "]" { BreakPaneRight; SwitchToMode "Locked"; }
-              bind "[" { BreakPaneLeft; SwitchToMode "Locked"; }
-      
-              bind "Tab" { ToggleTab; }
           }
 
           renametab {
@@ -147,13 +126,10 @@
 
           session {
               bind "o" { SwitchToMode "Normal"; }
-
               bind "d" { Detach; }
-
               bind "]" { FocusHostSession; SwitchToMode "Locked"; }
               bind "[" { FocusGuestSession; SwitchToMode "Locked"; }
               bind "f" { ToggleHostFullscreen; SwitchToMode "Locked"; }
-
               bind "w" {
                   LaunchOrFocusPlugin "session-manager" {
                       floating true
@@ -161,7 +137,6 @@
                   }
                   SwitchToMode "Locked"
               }
-
               bind "c" {
                   LaunchOrFocusPlugin "configuration" {
                       floating true
@@ -169,7 +144,6 @@
                   }
                   SwitchToMode "Locked"
               }
-
               bind "p" {
                   LaunchOrFocusPlugin "plugin-manager" {
                       floating true
