@@ -56,6 +56,7 @@
               bind "x" { CloseFocus; SwitchToMode "Locked"; }
               bind "%" { NewPane; SwitchToMode "Locked"; }
               bind "\"" { NewPane "Down"; SwitchToMode "Locked"; }
+              bind "c" { NewTab; SwitchToMode "Locked"; }
               bind "1" { GoToTab 1; SwitchToMode "Locked"; }
               bind "2" { GoToTab 2; SwitchToMode "Locked"; }
               bind "3" { GoToTab 3; SwitchToMode "Locked"; }
@@ -65,6 +66,10 @@
               bind "7" { GoToTab 7; SwitchToMode "Locked"; }
               bind "8" { GoToTab 8; SwitchToMode "Locked"; }
               bind "9" { GoToTab 9; SwitchToMode "Locked"; }
+              bind "Shift h" { Resize "Increase Left"; }
+              bind "Shift j" { Resize "Increase Down"; }
+              bind "Shift k" { Resize "Increase Up"; }
+              bind "Shift l" { Resize "Increase Right"; }
           }
 
           locked {
@@ -106,7 +111,6 @@
           }
 
           tab {
-              bind "t" { SwitchToMode "Normal"; }
               bind "r" { SwitchToMode "RenameTab"; TabNameInput 0; }
               bind "h" "k" { GoToPreviousTab; }
               bind "l" "j" { GoToNextTab; }
