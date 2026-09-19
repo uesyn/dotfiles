@@ -142,6 +142,7 @@ in
     ./mise
     ./neovim
     ./node
+    ./nono
     ./opencode
     ./pi
     ./python

@@ -27,6 +27,37 @@
   # dotfiles.fence.allowedDomains = [ "example.com" ];
   # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
   # dotfiles.fence.deniedCommands = [ "rm" "dd" ];
+  # `wrap` commands get a shell alias named `<aliasPrefix><command>`;
+  # the default prefix keeps fence reachable as `fence-opencode` / `fence-pi`
+  # while the plain names are taken over by nono (see below).
+  # dotfiles.fence.wrap = [ "opencode" "pi" ];
+  # dotfiles.fence.aliasPrefix = "fence-";
+
+  # nono sandbox profile. `wrap` commands get a shell alias that runs
+  # `nono run --profile <profileName> -s --allow-cwd -- <command>`.
+  # dotfiles.nono.profileName = "agents";
+  # dotfiles.nono.aliasPrefix = "";
+  # dotfiles.nono.wrap = [ "opencode" "pi" ];
+
+  # Inside the nono sandbox, `gh` and `git` allow only the read-only
+  # operations listed in `ghAllowRules` / `gitAllowPrefixes`+`gitAllowExact`
+  # (home-manager/nono/default.nix); everything else — including help for
+  # denied commands — is denied. Flags belong after the subcommand path
+  # (`gh repo list -R owner/repo`, `git log --oneline`); `gh --version`/
+  # `--help` and read-only git commands work.
+
+  # Extra paths merged into the generated nono profile. Defaults are kept;
+  # these only append, so the profile can be widened/tightened per machine.
+  #   extraReads      -> filesystem.read       (paths, read-only)
+  #   extraAllows     -> filesystem.allow      (directories, read+write)
+  #   extraAllowFiles -> filesystem.allow_file (single files, read+write)
+  #   extraDenys      -> filesystem.deny       (denied paths; must not sit
+  #                                             below an allowed parent on
+  #                                             Linux or nono refuses to start)
+  # dotfiles.nono.extraReads = [ "~/.config/foo" ];
+  # dotfiles.nono.extraAllows = [ "~/work" ];
+  # dotfiles.nono.extraAllowFiles = [ "~/.foo.rc" ];
+  # dotfiles.nono.extraDenys = [ "~/.ssh2" ];
 
   # Add custom Pi model providers. These are merged with the built-in providers.
   # dotfiles.pi.providers = {
