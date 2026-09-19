@@ -140,6 +140,7 @@
       home.file.".local/share/pi/extensions/directory-tree.ts".source = ./extensions/directory-tree.ts;
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
         ./extensions/dynamic-provider.ts;
+      home.file.".local/share/pi/extensions/favorite-models.ts".source = ./extensions/favorite-models.ts;
       home.file.".local/share/pi/extensions/last-model.ts".source = ./extensions/last-model.ts;
       home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
       home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
@@ -187,6 +188,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/directory-tree.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/autocomplete-priority.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
