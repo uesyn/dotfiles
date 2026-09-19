@@ -486,7 +486,7 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
     ctx.ui.notify(`Switched to favorite: ${describeFavorite(favorite)}`, "info");
   }
 
-  async function selectFavorite(ctx: ExtensionCommandContext, key?: string): Promise<void> {
+  async function selectFavorite(ctx: ExtensionContext, key?: string): Promise<void> {
     const list = await loadFavorites();
     if (list.length === 0) {
       ctx.ui.notify("No favorites yet. Add one with /favorite add.", "warning");
@@ -611,6 +611,13 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
       .map((value) => ({ value, label: value.slice(subcommand.length + 1) }));
     return matches.length > 0 ? matches : null;
   }
+
+  pi.registerShortcut("ctrl+l", {
+    description: "Select favorite model",
+    handler: async (ctx) => {
+      await selectFavorite(ctx);
+    },
+  });
 
   pi.registerCommand("favorite", {
     description: "Select, add, remove, and list favorite models",

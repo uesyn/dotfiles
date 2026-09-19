@@ -33,7 +33,7 @@ Uses `nixfmt-tree`.
 
 - Extensions are wired via `home-manager/pi/default.nix` into `programs.pi-coding-agent.settings.extensions`; sources live in `home-manager/pi/extensions/`.
 - `pi-undo` adds `/undo`, `/redo`, `/undo-status` to pi. Snapshots are stored content-addressed under `~/.pi/agent/undo/<sessionId>/`; config in `~/.pi/agent/undo.json` or `.pi/undo.json`. Tests: `bun test home-manager/pi/extensions/pi-undo/test/`.
-- `favorite-models.ts` adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry. State: `~/.pi/agent/favorite-models.json`.
+- `favorite-models.ts` adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry, and Ctrl+P opens the picker. State: `~/.pi/agent/favorite-models.json`.
 
 ## OpenCode
 
