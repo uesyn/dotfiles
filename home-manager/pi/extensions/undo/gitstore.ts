@@ -16,6 +16,12 @@
  *
  * The project itself is NOT touched: the private gitdir keeps its own index,
  * objects and config. Works only inside a git worktree (like opencode).
+ *
+ * The private repo is selected through the GIT_DIR/GIT_WORK_TREE environment
+ * variables instead of the global flags `--git-dir`/`--work-tree`: the nono
+ * tool sandbox only allows git argv that starts with the subcommand (and
+ * forwards those two variables via command_policies.session_export_env and
+ * commands.git.export_env). Global flags must therefore never be passed.
  */
 
 import { spawn } from "node:child_process";
@@ -60,11 +66,17 @@ interface GitResult {
   stderr: string;
 }
 
-function runGit(args: string[], opts: { cwd?: string } = {}): Promise<GitResult> {
+interface RunGitOptions {
+  cwd?: string;
+  /** Extra environment for the child (e.g. GIT_DIR/GIT_WORK_TREE, see above). */
+  env?: Record<string, string>;
+}
+
+function runGit(args: string[], opts: RunGitOptions = {}): Promise<GitResult> {
   return new Promise((resolvePromise, reject) => {
     const child = spawn("git", args, {
       cwd: opts.cwd,
-      env: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+      env: { ...process.env, GIT_TERMINAL_PROMPT: "0", ...opts.env },
     });
     let stdout = "";
     let stderr = "";
@@ -76,10 +88,17 @@ function runGit(args: string[], opts: { cwd?: string } = {}): Promise<GitResult>
 }
 
 function git(store: GitStore, args: string[]): Promise<GitResult> {
-  // Always run from the worktree root so pathspecs are unambiguous.
-  return runGit(["--git-dir", store.gitdir, "--work-tree", store.worktree, ...args], {
+  // Always run from the worktree root so pathspecs are unambiguous. Repo
+  // selection uses env vars so argv stays subcommand-first (nono git policy).
+  return runGit(args, {
     cwd: store.worktree,
+    env: { GIT_DIR: store.gitdir, GIT_WORK_TREE: store.worktree },
   });
+}
+
+/** Run git against a private gitdir (subcommand-first argv, GIT_DIR env). */
+function runGitDir(gitdir: string, args: string[]): Promise<GitResult> {
+  return runGit(args, { env: { GIT_DIR: gitdir } });
 }
 
 /** Mutating ops retry briefly when another process holds index.lock. */
@@ -98,7 +117,9 @@ function isLockError(result: GitResult): boolean {
 
 /** Resolve the git worktree root for a directory, or null when not in one. */
 export async function gitWorktreeRoot(cwd: string): Promise<string | null> {
-  const result = await runGit(["-C", cwd, "rev-parse", "--show-toplevel"]);
+  // cwd through spawn options instead of `-C`: the nono git policy only
+  // accepts argv that starts with the subcommand (leading flags are denied).
+  const result = await runGit(["rev-parse", "--show-toplevel"], { cwd });
   if (result.code !== 0) return null;
   const root = result.stdout.trim();
   return root ? root : null;
@@ -113,7 +134,7 @@ export async function initGitDir(worktree: string): Promise<GitStore> {
     .catch(() => false);
   if (!initialized) {
     await mkdir(store.gitdir, { recursive: true, mode: 0o700 });
-    const init = await runGit(["--git-dir", store.gitdir, "init", "--quiet"]);
+    const init = await runGitDir(store.gitdir, ["init", "--quiet"]);
     if (init.code !== 0) throw new Error(`git init failed: ${init.stderr}`);
     for (const [key, value] of [
       ["core.autocrlf", "false"],
@@ -122,7 +143,7 @@ export async function initGitDir(worktree: string): Promise<GitStore> {
       ["core.fsmonitor", "false"],
       ["core.quotepath", "false"],
     ] as const) {
-      await runGit(["--git-dir", store.gitdir, "config", key, value]);
+      await runGitDir(store.gitdir, ["config", key, value]);
     }
   }
   return store;
@@ -311,27 +332,27 @@ export async function filesChangedBetween(
 
 /** Pin a checkpoint tree so gc never collects it. */
 export async function setRef(gitdir: string, ref: string, hash: string): Promise<void> {
-  const result = await runGit(["--git-dir", gitdir, "update-ref", ref, hash]);
+  const result = await runGitDir(gitdir, ["update-ref", ref, hash]);
   if (result.code !== 0) throw new Error(`git update-ref failed: ${result.stderr}`);
 }
 
 export async function deleteRef(gitdir: string, ref: string): Promise<void> {
-  await runGit(["--git-dir", gitdir, "update-ref", "-d", ref]);
+  await runGitDir(gitdir, ["update-ref", "-d", ref]);
 }
 
 /** Delete all refs under a prefix (e.g. refs/pi-undo/<sessionId>). */
 export async function deleteRefsByPrefix(gitdir: string, prefix: string): Promise<void> {
-  const result = await runGit(["--git-dir", gitdir, "for-each-ref", "--format=%(refname)", prefix]);
+  const result = await runGitDir(gitdir, ["for-each-ref", "--format=%(refname)", prefix]);
   if (result.code !== 0) throw new Error(`git for-each-ref failed: ${result.stderr}`);
   for (const ref of result.stdout.split("\n").map((x) => x.trim()).filter(Boolean)) {
-    const deleted = await runGit(["--git-dir", gitdir, "update-ref", "-d", ref]);
+    const deleted = await runGitDir(gitdir, ["update-ref", "-d", ref]);
     if (deleted.code !== 0) throw new Error(`git update-ref failed: ${deleted.stderr}`);
   }
 }
 
 /** Fire-and-forget auto GC on the private repo (kept trees stay pinned). */
 export async function gcAuto(gitdir: string): Promise<void> {
-  const result = await runGit(["--git-dir", gitdir, "gc", "--auto", "--quiet"]);
+  const result = await runGitDir(gitdir, ["gc", "--auto", "--quiet"]);
   if (result.code !== 0) {
     console.error("pi-undo: git gc failed:", result.stderr);
   }
@@ -339,6 +360,6 @@ export async function gcAuto(gitdir: string): Promise<void> {
 
 /** Reclaim all currently unreachable objects after an explicit session purge. */
 export async function gcPrune(gitdir: string): Promise<void> {
-  const result = await runGit(["--git-dir", gitdir, "gc", "--prune=now", "--quiet"]);
+  const result = await runGitDir(gitdir, ["gc", "--prune=now", "--quiet"]);
   if (result.code !== 0) throw new Error(`git gc failed: ${result.stderr}`);
 }

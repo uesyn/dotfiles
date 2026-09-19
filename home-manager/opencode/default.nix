@@ -176,6 +176,21 @@
       jsonPlugins = builtins.toJSON (defaultPlugins ++ opencode.plugin);
     in
     {
+      # nono: wrap the `opencode` command so it runs inside the sandbox.
+      dotfiles.nono.wrap = [ "opencode" ];
+
+      # nono: read the OpenCode/Copilot config and grant the OpenCode
+      # data/state dirs plus the opentui cache.
+      dotfiles.nono.filesystem.read = [
+        "~/.config/opencode"
+      ];
+      dotfiles.nono.filesystem.allow = [
+        "~/.opencode"
+        "~/.local/share/opencode"
+        "~/.local/state/opencode"
+        "~/.local/share/opentui"
+      ];
+
       home.packages = [
         pkgs.llm-agents.opencode
       ];

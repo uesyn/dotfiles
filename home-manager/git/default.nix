@@ -111,6 +111,12 @@ in
         '';
       }
     ];
+    # nono: read the git/gh config (git-credential-oauth, gh CLI).
+    dotfiles.nono.filesystem.read = [
+      "~/.config/git"
+      "~/.config/gh"
+    ];
+
     home.packages = [
       pkgs.ghq
 

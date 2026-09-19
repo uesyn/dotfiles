@@ -22,6 +22,18 @@
       default = [ ];
       description = "Denied commands for fence command policy.";
     };
+    aliasPrefix = lib.mkOption {
+      type = lib.types.str;
+      default = "fence-";
+      description = ''
+        Prefix for the generated shell aliases. The default keeps them from
+        colliding with the nono wrappers, which take over the plain command
+        names. Set to `""` to take over the plain command names; drop those
+        commands from `dotfiles.nono.wrap` first (`lib.mkForce [ ]`, since the
+        tool modules add themselves) or Home Manager fails with a conflicting
+        definition.
+      '';
+    };
     wrap = lib.mkOption {
       type = lib.types.listOf lib.types.str;
       default = [
@@ -29,11 +41,11 @@
         "pi"
       ];
       description = ''
-        Commands to wrap with fence. Each entry creates a shell alias of the
-        same name in both zsh and bash. When `allowedDomains` contains `"*"`,
-        the wrapper additionally unsets `HTTP_PROXY` / `HTTPS_PROXY` /
-        `ALL_PROXY` (and lowercase variants) so the wrapped command makes
-        direct connections that fence can permit.
+        Commands to wrap with fence. Each entry creates a shell alias named
+        `<aliasPrefix><command>` in both zsh and bash. When `allowedDomains`
+        contains `"*"`, the wrapper additionally unsets `HTTP_PROXY` /
+        `HTTPS_PROXY` / `ALL_PROXY` (and lowercase variants) so the wrapped
+        command makes direct connections that fence can permit.
       '';
       example = lib.literalExpression ''[ "opencode" "pi" ]'';
     };
@@ -110,7 +122,12 @@
           "fence env -u HTTP_PROXY -u HTTPS_PROXY -u ALL_PROXY -u http_proxy -u https_proxy -u all_proxy ${cmd}"
         else
           "fence ${cmd}";
-      wrappedAliases = lib.genAttrs config.dotfiles.fence.wrap fenceWrap;
+      wrappedAliases = lib.listToAttrs (
+        map (cmd: {
+          name = "${config.dotfiles.fence.aliasPrefix}${cmd}";
+          value = fenceWrap cmd;
+        }) config.dotfiles.fence.wrap
+      );
     in
     {
       home.packages = [

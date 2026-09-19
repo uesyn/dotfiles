@@ -27,6 +27,69 @@
   # dotfiles.fence.allowedDomains = [ "example.com" ];
   # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
   # dotfiles.fence.deniedCommands = [ "rm" "dd" ];
+  # `wrap` commands get a shell alias named `<aliasPrefix><command>`;
+  # the default prefix keeps fence reachable as `fence-opencode` / `fence-pi`
+  # while the plain names are taken over by nono (see below).
+  # dotfiles.fence.wrap = [ "opencode" "pi" ];
+  # dotfiles.fence.aliasPrefix = "fence-";
+
+  # nono sandbox profile (fixed name `agents`). `wrap` commands get a shell
+  # alias that runs `nono run --profile agents -s --allow-cwd -- <command>`;
+  # the OpenCode and Pi modules add themselves to `wrap`.
+  # dotfiles.nono.aliasPrefix = "";
+  # dotfiles.nono.wrap = [ "opencode" "pi" ];
+
+  # Inside the nono sandbox, `gh` uses a read-only allowlist
+  # (`home-manager/nono/commands/gh.nix`): only the listed subcommands run and
+  # everything else — including help for denied commands — is denied. `git`
+  # defaults to allow with a small remote-operation deny list
+  # (`home-manager/nono/commands/git.nix`), so local work runs freely. Flags
+  # belong after the subcommand path (`gh repo list -R owner/repo`,
+  # `git log --oneline`); `gh --version`/`--help` and read-only git commands
+  # work. These are guardrails: each command is a function of `pkgs`, and
+  # replacing one needs `lib.mkForce` on the whole command (a plain definition
+  # would shallow-merge and break it). Add a new sandbox under a new key.
+  # dotfiles.nono.commandPolicies.commands.git = lib.mkForce (pkgs: { ... });
+  # dotfiles.nono.commandPolicies.commands.foo = pkgs: { executable = "${pkgs.foo}/bin/foo"; ... };
+
+  # Paths merged into the generated nono profile. The core policy is kept;
+  # these options only append, so the profile can be widened/tightened per
+  # machine. The option names mirror nono's JSON schema:
+  #   dotfiles.nono.filesystem.read             -> filesystem.read
+  #   dotfiles.nono.filesystem.readFile         -> filesystem.read_file
+  #   dotfiles.nono.filesystem.allow            -> filesystem.allow
+  #   dotfiles.nono.filesystem.allowFile        -> filesystem.allow_file
+  #   dotfiles.nono.filesystem.unixSocket       -> filesystem.unix_socket
+  #   dotfiles.nono.filesystem.deny             -> filesystem.deny
+  #   dotfiles.nono.filesystem.bypassProtection -> filesystem.bypass_protection
+  #   dotfiles.nono.commandPolicies.executableDirs
+  #                                             -> command_policies.executable_dirs
+  #   dotfiles.nono.commandPolicies.commands    -> command_policies.commands
+  #                                                (each value is `pkgs: {...}`)
+  # `deny` paths must not sit below an allowed parent on Linux or nono refuses
+  # to start.
+  # dotfiles.nono.filesystem.read = [ "~/.config/foo" ];
+  # dotfiles.nono.filesystem.readFile = [ "~/.foo.token" ];
+  # dotfiles.nono.filesystem.allow = [ "~/work" ];
+  # dotfiles.nono.filesystem.allowFile = [ "~/.foo.rc" ];
+  # dotfiles.nono.filesystem.unixSocket = [ "/run/user/1000/bus" ];
+  # dotfiles.nono.filesystem.deny = [ "~/.ssh2" ];
+
+  # Stable runtime prefix for the Nix-managed GCC, always enabled on Linux.
+  # `gcc` / `cc` / `g++` / `c++` are wrappers around `pkgs.gcc-unwrapped` whose
+  # output references `~/.local/nix-runtime` instead of `/nix/store/<hash>` paths,
+  # so generated ELF files survive Nix GC and toolchain updates. This replaces
+  # `pkgs.gcc` in `home.packages`.
+  # dotfiles.buildEssential.libraries = [ pkgs.zlib pkgs.openssl ];
+
+  # mise-managed global tools (written to `~/.config/mise/config.toml`).
+  # The `go` and `kubernetes` modules contribute their defaults, so a plain
+  # definition here overrides them without `lib.mkForce`.
+  # `home-manager switch` runs `mise install` for them.
+  # dotfiles.mise.tools = {
+  #   node = "lts";
+  #   python = [ "3.12" "3.11" ];
+  # };
 
   # Add custom Pi model providers. These are merged with the built-in providers.
   # dotfiles.pi.providers = {

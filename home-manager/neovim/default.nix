@@ -1,5 +1,13 @@
 { inputs, pkgs, ... }:
 {
+  # nono: read the Neovim config and grant the plugin/state/data dirs.
+  dotfiles.nono.filesystem.read = [ "~/.config/nvim" ];
+  dotfiles.nono.filesystem.allow = [
+    "~/.local/share/nvim"
+    "~/.local/state/nvim"
+    "~/.local/state/nvim-baleia-bench"
+  ];
+
   xdg.configFile = {
     "nvim" = {
       source = ./nvim;

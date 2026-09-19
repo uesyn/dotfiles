@@ -43,6 +43,23 @@ Git-backed snapshots, no custom snapshot engine (opencode-style):
   `git diff-files` + `git ls-files --others` (index-based, no full walk) and
   trigger a confirmation dialog before being overwritten.
 
+### nono sandbox compatibility
+
+The nono tool sandbox (see `home-manager/nono/default.nix`) only allows git
+argv that starts with the subcommand, so the extension never uses the global
+flags `-C`/`--git-dir`/`--work-tree`:
+
+- worktree discovery runs `git rev-parse --show-toplevel` with the spawn
+  `cwd` set to the session directory (no `-C`);
+- the private repo is selected with the `GIT_DIR`/`GIT_WORK_TREE` environment
+  variables.
+
+The profile forwards those two variables with
+`command_policies.session_export_env` (pi → git; the sandbox strips `GIT_*` by
+default) and `commands.git.export_env` (git → git's own children such as
+`repack` under `git gc`), and grants the git child sandbox `fs_write` on
+`@git:toplevel` and `~/.pi/agent/undo`. Remote operations stay denied.
+
 ### Snapshot scope
 
 - Root = the git worktree top-level (`git rev-parse --show-toplevel`), not the

@@ -10,6 +10,36 @@ let
   isDarwin = pkgs.stdenv.hostPlatform.isDarwin;
 in
 {
+  imports = [
+    ./autoconf
+    ./bash
+    ./build-essential
+    ./copilot-language-server
+    ./dircolors
+    ./docker
+    ./fence
+    ./fzf
+    ./git
+    ./go
+    ./javascript
+    ./kubernetes
+    ./man
+    ./misc
+    ./mise
+    ./neovim
+    ./nono
+    ./opencode
+    ./openssh
+    ./php
+    ./pi
+    ./pkg-config
+    ./python
+    ./rust
+    ./tmux
+    ./zellij
+    ./zsh
+  ];
+
   options.dotfiles = {
     username = lib.mkOption {
       type = lib.types.str;
@@ -66,32 +96,19 @@ in
       home.stateVersion = "26.05"; # Please read the comment before changing.
 
       home.packages = [
-        pkgs.autoconf
-        pkgs.bun
-        pkgs.copilot-language-server
         pkgs.coreutils-full
         pkgs.curl
         pkgs.diffutils
         pkgs.dig
-        pkgs.docker-buildx
-        pkgs.docker-client
         pkgs.file
         pkgs.findutils
-        pkgs.fzf
-        pkgs.gcc
-        pkgs.github-mcp-server
-        pkgs.glib
         pkgs.gnugrep
-        pkgs.gnumake
         pkgs.gnused
         pkgs.gnutar
         pkgs.htop
         pkgs.jq
         pkgs.jsonnet
-        pkgs.openssh
         pkgs.openssl
-        pkgs.phpactor
-        pkgs.pkg-config
         pkgs.procps
         pkgs.pstree
         pkgs.ripgrep
@@ -99,7 +116,6 @@ in
         pkgs.tree
         pkgs.typescript-language-server
         pkgs.unzip
-        pkgs.uv
         pkgs.wget
         pkgs.xz
         pkgs.yq-go
@@ -111,9 +127,12 @@ in
       ]
       ++ lib.optionals isDarwin [
         # macOS packages
-        pkgs.colima
         pkgs.iproute2mac
-        pkgs.docker-credential-helpers
+      ]
+      # `dotfiles.buildEssential` replaces this on Linux with its own
+      # wrappers (both provide `bin/gcc` and `bin/cc`).
+      ++ lib.optionals (!isLinux) [
+        pkgs.gcc
       ]
       ++ (additionalPackages pkgs);
 
@@ -129,25 +148,4 @@ in
       # Let Home Manager install and manage itself.
       programs.home-manager.enable = true;
     };
-
-  imports = [
-    ./bash
-    ./dircolors
-    ./fence
-    ./fzf
-    ./git
-    ./go
-    ./kubernetes
-    ./misc
-    ./mise
-    ./neovim
-    ./node
-    ./opencode
-    ./pi
-    ./python
-    ./rust
-    ./tmux
-    ./zellij
-    ./zsh
-  ];
 }

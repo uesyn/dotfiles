@@ -5,6 +5,11 @@
 {
   programs.dircolors = {
     enable = true;
+    # Use coreutils-full so the absolute path generated into shell init
+    # matches the one reachable through PATH: the nono Tool Sandbox only
+    # allow-lists executables found by scanning PATH, and plain pkgs.coreutils
+    # is not on PATH (home.packages installs coreutils-full).
+    package = pkgs.coreutils-full;
     extraConfig = ''
       # Configuration file for dircolors, a utility to help you set the
       # LS_COLORS environment variable used by GNU ls with the --color option.

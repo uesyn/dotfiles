@@ -1,5 +1,10 @@
 { ... }:
 {
+  # nono: bash reads the Nix installer's `/etc/bashrc` at startup (it sources
+  # `nix-daemon.sh`). `read_file` is the read-only single-file grant, so `/etc`
+  # itself stays hidden.
+  dotfiles.nono.filesystem.readFile = [ "/etc/bashrc" ];
+
   programs.bash = {
     enable = true;
     shellAliases = {

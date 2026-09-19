@@ -24,8 +24,20 @@
       "${config.home.homeDirectory}/bin"
     ];
 
+    # nono: read the Go config (the module cache lives under `~/pkg`, which
+    # the nono core already grants write access to).
+    dotfiles.nono.filesystem.read = [ "~/.config/go" ];
+
+    # Go is managed by mise instead of nixpkgs: the nono Tool Sandbox only
+    # allows executing binaries reachable through PATH (plus its dependency
+    # closure), and nixpkgs Go re-execs its helpers from `$GOROOT/pkg/tool` (a
+    # PATH-external store path), which fails with `EACCES` (`go tool compile:
+    # permission denied`). mise installs under `~/.local/share/mise`, which the
+    # nono profile grants write access to, so these execs are allowed.
+    # `lib.mkDefault` so a plain user definition overrides this without `mkForce`.
+    dotfiles.mise.tools.go = lib.mkDefault "1.26";
+
     home.packages = [
-      pkgs.go
       pkgs.gopls
     ];
   };

@@ -87,6 +87,16 @@
       ) pi.systemPromptModifier;
     in
     {
+      # nono: wrap the `pi` command so it runs inside the sandbox.
+      dotfiles.nono.wrap = [ "pi" ];
+
+      # nono: grant pi's config/data/state dirs.
+      dotfiles.nono.filesystem.allow = [
+        "~/.pi"
+        "~/.local/share/pi"
+        "~/.local/state/pi"
+      ];
+
       home.packages = [ pkgs.llm-agents.code-review-graph ];
 
       home.file.".pi/agent/mcp.json".text = builtins.toJSON {

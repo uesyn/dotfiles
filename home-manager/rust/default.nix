@@ -4,6 +4,13 @@
   ...
 }:
 {
+  # nono: rustup/cargo homes must be writable for toolchain installs and the
+  # Tool Sandbox exec grant.
+  dotfiles.nono.filesystem.allow = [
+    "~/.cargo"
+    "~/.rustup"
+  ];
+
   home.packages = with pkgs; [
     cargo-cross
     cargo-edit
