@@ -97,8 +97,36 @@
         "~/.local/state/pi"
       ];
 
+      home.packages = [ pkgs.llm-agents.code-review-graph ];
+
       home.file.".pi/agent/mcp.json".text = builtins.toJSON {
         mcpServers = {
+          "code-review-graph" = {
+            command = lib.getExe pkgs.llm-agents.code-review-graph;
+            args = [
+              "serve"
+              "--auto-watch"
+            ];
+            lifecycle = "keep-alive";
+            requestTimeoutMs = 120000;
+            directTools = [
+              "get_minimal_context_tool"
+              "semantic_search_nodes_tool"
+              "query_graph_tool"
+              "get_hub_nodes_tool"
+              "get_bridge_nodes_tool"
+              "list_flows_tool"
+              "get_flow_tool"
+              "get_affected_flows_tool"
+              "get_architecture_overview_tool"
+              "list_communities_tool"
+              "get_community_tool"
+              "traverse_graph_tool"
+              "get_impact_radius_tool"
+              "get_surprising_connections_tool"
+              "find_large_functions_tool"
+            ];
+          };
           "exa" = {
             url = "https://mcp.exa.ai/mcp";
             headers."x-api-key" = "\${EXA_API_KEY}";
@@ -139,6 +167,7 @@
           pkgs.nodejs
           pkgs.bun
           pkgs.git
+          pkgs.llm-agents.code-review-graph
         ];
         models.providers = providers;
         keybindings = {
