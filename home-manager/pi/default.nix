@@ -196,7 +196,6 @@
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/directory-tree.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/autocomplete-priority.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
