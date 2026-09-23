@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  options,
   ...
 }:
 let
@@ -12,38 +13,21 @@ let
     oauthClientSecret = "18867509d956965542b521a529a79bb883344c90";
     oauthRedirectURL = "http://localhost/";
   };
-  git-host-config = entry: {
-    "https://${entry.host}" = {
-      oauthClientId =
-        if entry.oauthClientId == null then defaultOAuthCredentials.oauthClientId else entry.oauthClientId;
-      oauthClientSecret =
-        if entry.oauthClientSecret == null then
-          defaultOAuthCredentials.oauthClientSecret
-        else
-          entry.oauthClientSecret;
-      oauthRedirectURL =
-        if entry.oauthRedirectURL == null then
-          defaultOAuthCredentials.oauthRedirectURL
-        else
-          entry.oauthRedirectURL;
-    };
-  };
-in
-{
-  options.dotfiles.git = {
-    user = lib.mkOption {
-      type = lib.types.str;
-      default = "uesyn";
-      description = "Git user name";
-    };
-    email = lib.mkOption {
-      type = lib.types.str;
-      default = "17411645+uesyn@users.noreply.github.com";
-      description = "Git email address";
-    };
-  };
-
-  options.dotfiles.git-credential-oauth = {
+  defaultGitIgnores = [
+    ".direnv"
+    ".DS_Store"
+    ".envrc"
+    ".mise.toml"
+    "mise.toml"
+    ".shell.nix"
+    ".venv"
+    "venv"
+    ".vim-lsp-settings"
+    "CRUSH.md"
+    ".crush"
+    ".code-review-graph/"
+  ];
+  gitCredentialOauthOptions = {
     device = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -97,15 +81,65 @@ in
       '';
     };
   };
+  git-host-config = entry: {
+    "https://${entry.host}" = {
+      oauthClientId =
+        if entry.oauthClientId == null then defaultOAuthCredentials.oauthClientId else entry.oauthClientId;
+      oauthClientSecret =
+        if entry.oauthClientSecret == null then
+          defaultOAuthCredentials.oauthClientSecret
+        else
+          entry.oauthClientSecret;
+      oauthRedirectURL =
+        if entry.oauthRedirectURL == null then
+          defaultOAuthCredentials.oauthRedirectURL
+        else
+          entry.oauthRedirectURL;
+    };
+  };
+  oauthDevice =
+    if options.dotfiles.gitCredentialOauth.device.isDefined then
+      config.dotfiles.gitCredentialOauth.device
+    else
+      config.dotfiles.git-credential-oauth.device;
+  oauthHosts =
+    if options.dotfiles.gitCredentialOauth.ghHosts.isDefined then
+      config.dotfiles.gitCredentialOauth.ghHosts
+    else
+      config.dotfiles.git-credential-oauth.ghHosts;
+in
+{
+  options.dotfiles.git = {
+    user = lib.mkOption {
+      type = lib.types.str;
+      default = "uesyn";
+      description = "Git user name";
+    };
+    email = lib.mkOption {
+      type = lib.types.str;
+      default = "17411645+uesyn@users.noreply.github.com";
+      description = "Git email address";
+    };
+    ignores = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Additional Git ignore patterns appended to the module defaults";
+    };
+  };
+
+  options.dotfiles.gitCredentialOauth = gitCredentialOauthOptions;
+  # Keep the old spelling available while configurations migrate.
+  options.dotfiles.git-credential-oauth = gitCredentialOauthOptions;
 
   config = {
     assertions = [
       {
         assertion = lib.all (
           entry: (entry.oauthClientId == null) == (entry.oauthClientSecret == null)
-        ) config.dotfiles.git-credential-oauth.ghHosts;
+        ) oauthHosts;
         message = ''
-          dotfiles.git-credential-oauth.ghHosts: oauthClientId and
+          dotfiles.gitCredentialOauth.ghHosts (or the legacy
+          dotfiles.git-credential-oauth.ghHosts): oauthClientId and
           oauthClientSecret must be set together (or both left as null
           to use the bundled default credentials) for each host entry.
         '';
@@ -131,7 +165,7 @@ in
 
     programs.git-credential-oauth = {
       enable = true;
-      extraFlags = if config.dotfiles.git-credential-oauth.device then [ "--device" ] else [ ];
+      extraFlags = if oauthDevice then [ "--device" ] else [ ];
     };
 
     programs.git-worktree-switcher.enable = true;
@@ -139,7 +173,6 @@ in
     programs.gh = {
       enable = true;
       extensions = [
-        pkgs.gh-dash
         pkgs.gh-poi
         pkgs.gh-s
       ];
@@ -153,95 +186,10 @@ in
         };
       };
     };
-    programs.gh-dash = {
-      enable = true;
-      settings = {
-        prSections = [
-          {
-            title = "My Pull Requests";
-            filters = "is:open author:@me";
-          }
-          {
-            title = "Review Requests";
-            filters = "is:open review-requested:@me";
-          }
-          {
-            title = "Open PRs";
-            filters = "is:open";
-          }
-          {
-            title = "All PRs";
-            filters = "";
-          }
-        ];
-        issuesSections = [
-          {
-            title = "Assigned Issues";
-            filters = "is:open assignee:@me";
-          }
-          {
-            title = "Open Issues";
-            filters = "is:open";
-          }
-          {
-            title = "All Issues";
-            filters = "";
-          }
-        ];
-        notificationsSections = [
-          {
-            title = "All";
-            filters = "";
-          }
-          {
-            title = "Created";
-            filters = "reason:author";
-          }
-          {
-            title = "Participating";
-            filters = "reason:participating";
-          }
-          {
-            title = "Mentioned";
-            filters = "reason:mention";
-          }
-          {
-            title = "Review Requested";
-            filters = "reason:review-request";
-          }
-          {
-            title = "Assigned";
-            filters = "reason:assign";
-          }
-          {
-            title = "Subscribed";
-            filters = "reason:subscribed";
-          }
-          {
-            title = "Team Mentioned";
-            filters = "reason:team-mention";
-          }
-        ];
-      };
-    };
-
     programs.git = {
       enable = true;
 
-      ignores = [
-        ".direnv"
-        ".DS_Store"
-        ".envrc"
-        ".mise.toml"
-        "mise.toml"
-        ".shell.nix"
-        ".venv"
-        "venv"
-        ".vim-lsp-settings"
-        "CRUSH.md"
-        ".crush"
-        ".code-review-graph/"
-      ];
+      ignores = defaultGitIgnores ++ config.dotfiles.git.ignores;
 
       includes = [
         { path = "~/.gitconfig.local"; }
@@ -268,7 +216,7 @@ in
         }
         // builtins.foldl' (
           acc: entry: acc // git-host-config entry
-        ) { } config.dotfiles.git-credential-oauth.ghHosts;
+        ) { } oauthHosts;
 
         pull.ff = "only";
         feature.manyFiles = true;

@@ -10,9 +10,13 @@
 
   # dotfiles.git.user = "username";
   # dotfiles.git.email = "email@example.com";
+  # Additional patterns appended to the module's default global Git ignores.
+  # dotfiles.git.ignores = [ ".custom-ignore" ];
 
-  # dotfiles.git-credential-oauth.device = false;
-  # dotfiles.git-credential-oauth.ghHosts = [
+  # Preferred spelling. The legacy dotfiles.git-credential-oauth is also
+  # supported during migration; values here take precedence per setting.
+  # dotfiles.gitCredentialOauth.device = false;
+  # dotfiles.gitCredentialOauth.ghHosts = [
   #   { host = "github.com"; }
   #   # Add additional GitHub Enterprise hosts. Override the bundled
   #   # OAuth app with your own by setting the credentials:
