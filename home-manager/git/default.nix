@@ -214,9 +214,7 @@ in
             "cache --timeout=86400"
           ];
         }
-        // builtins.foldl' (
-          acc: entry: acc // git-host-config entry
-        ) { } oauthHosts;
+        // builtins.foldl' (acc: entry: acc // git-host-config entry) { } oauthHosts;
 
         pull.ff = "only";
         feature.manyFiles = true;
