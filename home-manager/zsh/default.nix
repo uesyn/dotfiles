@@ -5,9 +5,6 @@
   ...
 }:
 {
-  # nono: zsh writes its completion dump to `~/.zcompdump*`.
-  dotfiles.nono.filesystem.allow = [ "~/.zcompdump*" ];
-
   programs.zsh = {
     enable = true;
     enableCompletion = true;
