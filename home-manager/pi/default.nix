@@ -174,6 +174,7 @@
           "app.model.cycleBackward" = [ ];
           "app.model.cycleForward" = [ ];
           "app.model.select" = [ ];
+          "app.models.save" = [];
           "app.models.toggleProvider" = [ ];
           "app.session.toggleNamedFilter" = [ ];
           "app.session.togglePath" = [ ];
