@@ -138,6 +138,19 @@ async function runQuery(
       },
       {
         signal,
+        // Some OpenAI-compatible APIs reject an empty tools array.
+        onPayload: (payload) => {
+          if (
+            payload !== null &&
+            typeof payload === "object" &&
+            "tools" in payload &&
+            Array.isArray(payload.tools) &&
+            payload.tools.length === 0
+          ) {
+            return { ...payload, tools: null };
+          }
+          return undefined;
+        },
         // Reuse the main session's prompt cache for the shared conversation context.
         cacheRetention: "short",
         sessionId: ctx.sessionManager.getSessionId(),
