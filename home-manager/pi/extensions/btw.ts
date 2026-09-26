@@ -13,6 +13,7 @@ import {
   type ExtensionCommandContext,
 } from "@earendil-works/pi-coding-agent";
 import {
+  Input,
   Markdown,
   matchesKey,
   Text,
@@ -215,6 +216,95 @@ async function askWithLoader(
   );
 }
 
+async function promptAdditionalQuestion(
+  ctx: ExtensionCommandContext,
+): Promise<string | undefined> {
+  return ctx.ui.custom<string | undefined>(
+    (_tui, theme, _keybindings, done) => {
+      const border = new DynamicBorder((s: string) => theme.fg("accent", s));
+      const title = new Text(
+        theme.fg("accent", theme.bold("btw: 追加の質問")),
+        1,
+        0,
+      );
+      const input = new Input();
+      const footer = new Text(
+        theme.fg("dim", "Enter 送信 · Esc キャンセル"),
+        1,
+        0,
+      );
+
+      input.onSubmit = done;
+      input.onEscape = () => done(undefined);
+
+      return {
+        get focused() {
+          return input.focused;
+        },
+        set focused(focused: boolean) {
+          input.focused = focused;
+        },
+        render: (width: number): string[] => {
+          const hasSideBorders = width >= 3;
+          const contentWidth = hasSideBorders ? width - 2 : width;
+          const topBorderLines = hasSideBorders
+            ? [
+                `${theme.fg("accent", "╭")}${border.render(width - 2)[0]!}${theme.fg("accent", "╮")}`,
+              ]
+            : border.render(width);
+          const bottomBorderLines = hasSideBorders
+            ? [
+                `${theme.fg("accent", "╰")}${border.render(width - 2)[0]!}${theme.fg("accent", "╯")}`,
+              ]
+            : border.render(width);
+          const addSideBorders = (lines: string[]): string[] => {
+            if (!hasSideBorders) {
+              return lines.map((line) => truncateToWidth(line, contentWidth, ""));
+            }
+
+            return lines.map((line) => {
+              const content = truncateToWidth(line, contentWidth, "");
+              return `${theme.fg("accent", "│")}${content}${" ".repeat(
+                Math.max(0, contentWidth - visibleWidth(content)),
+              )}${theme.fg("accent", "│")}`;
+            });
+          };
+
+          return [
+            ...topBorderLines,
+            ...addSideBorders(title.render(contentWidth)),
+            ...addSideBorders(input.render(contentWidth)),
+            ...addSideBorders(footer.render(contentWidth)),
+            ...bottomBorderLines,
+          ];
+        },
+        invalidate: () => {
+          border.invalidate();
+          title.invalidate();
+          input.invalidate();
+          footer.invalidate();
+        },
+        handleInput: (data: string) => {
+          if (matchesKey(data, "ctrl+c")) {
+            done(undefined);
+            return;
+          }
+          input.handleInput(data);
+        },
+      };
+    },
+    {
+      overlay: true,
+      overlayOptions: {
+        anchor: "center",
+        width: "60%",
+        maxHeight: 7,
+        margin: 1,
+      },
+    },
+  );
+}
+
 async function showAnswer(
   ctx: ExtensionCommandContext,
   history: SideHistory,
@@ -228,7 +318,7 @@ async function showAnswer(
       const footer = new Text(
         theme.fg(
           "dim",
-          "Ctrl+A ask · Ctrl+L prev · Ctrl+H next · Ctrl+P/N line · Ctrl+F/B page · Enter/Esc close",
+          "Ctrl+A ask · Ctrl+H prev · Ctrl+L next · Ctrl+P/N line · Ctrl+F/B page · Enter/Esc close",
         ),
         1,
         0,
@@ -255,7 +345,7 @@ async function showAnswer(
       };
 
       const askAdditionalQuestion = async () => {
-        const input = await ctx.ui.input("btw: 追加の質問", "");
+        const input = await promptAdditionalQuestion(ctx);
         const question = input?.trim();
         if (!question) return;
 
@@ -355,13 +445,13 @@ async function showAnswer(
             });
             return;
           }
-          if (matchesKey(data, "ctrl+l")) {
+          if (matchesKey(data, "ctrl+h")) {
             selectedIndex = Math.max(0, selectedIndex - 1);
             updateAnswer();
             tui.requestRender();
             return;
           }
-          if (matchesKey(data, "ctrl+h")) {
+          if (matchesKey(data, "ctrl+l")) {
             selectedIndex = Math.min(
               history.exchanges.length - 1,
               selectedIndex + 1,
