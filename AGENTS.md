@@ -42,7 +42,7 @@ Uses `nixfmt-tree`.
 
 - Extensions are wired via `home-manager/pi/default.nix` into `programs.pi-coding-agent.settings.extensions`; sources live in `home-manager/pi/extensions/`.
 - `pi-undo` (source `home-manager/pi/extensions/undo/`) adds `/undo`, `/redo`, `/undo-purge` to pi. Snapshots are git trees in a private gitdir per worktree under `~/.pi/agent/undo/git/<sha1(worktree)>/`, pinned with `refs/pi-undo/<sessionId>/<i>` and tracked in `registry.json`; config in `~/.pi/agent/undo.json` or `.pi/undo.json`. Git is always invoked subcommand-first (repo selected through `GIT_DIR`/`GIT_WORK_TREE`, cwd via spawn options) to stay compatible with the nono git policy. Tests: `bun test home-manager/pi/extensions/undo/test/`.
-- `favorite-models.ts` adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry, and Ctrl+P opens the picker. State: `~/.pi/agent/favorite-models.json`.
+- `favorite-models.ts` adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry, Ctrl+L opens the picker, and the last selected favorite is restored at session start. State: `~/.pi/agent/favorite-models.json`.
 
 ## OpenCode
 

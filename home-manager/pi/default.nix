@@ -151,7 +151,6 @@
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
         ./extensions/dynamic-provider.ts;
       home.file.".local/share/pi/extensions/favorite-models.ts".source = ./extensions/favorite-models.ts;
-      home.file.".local/share/pi/extensions/last-model.ts".source = ./extensions/last-model.ts;
       home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
       home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
       home.file.".local/share/pi/extensions/systemp-prompt-modifier.ts".source =
@@ -174,7 +173,7 @@
           "app.model.cycleBackward" = [ ];
           "app.model.cycleForward" = [ ];
           "app.model.select" = [ ];
-          "app.models.save" = [];
+          "app.models.save" = [ ];
           "app.models.toggleProvider" = [ ];
           "app.session.toggleNamedFilter" = [ ];
           "app.session.togglePath" = [ ];
@@ -199,7 +198,6 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/directory-tree.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/last-model.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
