@@ -11,13 +11,29 @@
       default = [ ];
       description = "Go private module patterns for GOPRIVATE";
     };
+    goplsBuildTags = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = "Build tags passed to gopls via GOPLS_BUILD_TAGS; additional tags can be appended from home.nix";
+      example = [ "custom" ];
+    };
   };
 
   config = {
+    # List option definitions merge, so tags set in home.nix extend these defaults.
+    dotfiles.go.goplsBuildTags =
+      [
+        "e2e"
+        "integration"
+      ]
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "linux" ]
+      ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ "darwin" ];
+
     home.sessionVariables = {
       GOPATH = "${config.home.homeDirectory}";
       GOBIN = "${config.home.homeDirectory}/bin";
       GOPRIVATE = lib.concatStringsSep "," config.dotfiles.go.private;
+      GOPLS_BUILD_TAGS = lib.concatStringsSep "," config.dotfiles.go.goplsBuildTags;
     };
 
     home.sessionPath = [
