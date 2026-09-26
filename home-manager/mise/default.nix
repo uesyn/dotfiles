@@ -33,6 +33,7 @@
     # mise reads its settings from `~/.config/mise` (this replaces the nono
     # `mise_manager` group's read grant).
     dotfiles.nono.filesystem.read = [ "~/.config/mise" ];
+    dotfiles.nono.filesystem.allowFile = [ "~/.mise.toml" ];
 
     xdg.configFile = {
       "mise/settings.toml".text = ''
