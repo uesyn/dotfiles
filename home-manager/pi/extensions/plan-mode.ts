@@ -10,6 +10,36 @@ const DISABLED_TOOLS = new Set([
   "codemode",
 ]);
 
+// Name of the structured system-prompt section carrying the plan-mode rules.
+// Must match /^[a-z][a-z0-9_-]*$/ and must not be "preamble".
+const PLAN_SECTION = "plan_mode";
+
+const PLAN_INSTRUCTIONS = `You are currently in PLAN MODE.
+
+Your task is to investigate, reason, and produce an implementation plan.
+
+Rules:
+
+- Do not modify files.
+- Do not create files.
+- Do not delete files.
+- Do not run commands that modify the working tree or system state.
+- Inspect the existing codebase as much as necessary.
+- Use available read-only tools to verify assumptions.
+- Do not implement the requested changes yet.
+
+When ready, provide a concrete implementation plan.
+
+Prefer plans that identify:
+- relevant files and components
+- existing behavior
+- changes required
+- important implementation details
+- risks or edge cases
+- validation/tests
+
+The user can leave PLAN MODE with /plan.`;
+
 type PlanModeState = {
   enabled: boolean;
   toolsBeforePlanMode?: string[];
@@ -153,99 +183,22 @@ export default function planMode(pi: ExtensionAPI): void {
     };
   });
 
-  pi.on("before_agent_start", async () => {
+  /*
+   * Contribute the plan-mode rules as a structured system-prompt section.
+   *
+   * Pi diffs the desired sections against the sections the model currently
+   * has and appends a system message patching only what changed, so while
+   * plan mode stays on nothing is appended and the cached prefix is
+   * preserved. Turning plan mode off simply omits the section, which emits a
+   * null patch that takes the rules back out of the prompt - no transcript
+   * cleanup hook is needed.
+   */
+  pi.on("before_agent_start", async (event) => {
     if (!enabled) {
       return;
     }
 
-    return {
-      message: {
-        customType: "plan-mode-context",
-        content: `[PLAN MODE ACTIVE]
-You are currently in PLAN MODE.
-
-Your task is to investigate, reason, and produce an implementation plan.
-
-Rules:
-
-- Do not modify files.
-- Do not create files.
-- Do not delete files.
-- Do not run commands that modify the working tree or system state.
-- Inspect the existing codebase as much as necessary.
-- Use available read-only tools to verify assumptions.
-- Do not implement the requested changes yet.
-
-When ready, provide a concrete implementation plan.
-
-Prefer plans that identify:
-- relevant files and components
-- existing behavior
-- changes required
-- important implementation details
-- risks or edge cases
-- validation/tests
-
-The user can leave PLAN MODE with /plan.
-`,
-        display: false,
-      },
-    };
-  });
-
-  /*
-   * Remove stale plan-mode instructions from the LLM context once plan mode
-   * is disabled. The injected [PLAN MODE ACTIVE] custom messages are
-   * persisted in the session, so without this filter the model would keep
-   * seeing the instructions after /plan and still act as if plan mode were
-   * active.
-   *
-   * Only the injected custom messages and user messages carrying the marker
-   * are removed. Assistant and tool messages are left untouched so
-   * toolCall/toolResult pairs stay intact; the model's own plan-mode-era
-   * replies remain in history, which is fine once the authoritative
-   * instructions are gone.
-   */
-  pi.on("context", async (event) => {
-    if (enabled) {
-      return;
-    }
-
-    return {
-      messages: event.messages.filter((message) => {
-        const msg = message as {
-          customType?: string;
-          content?: unknown;
-        };
-
-        // Injected plan-mode instructions (custom messages).
-        if (msg.customType === "plan-mode-context") {
-          return false;
-        }
-
-        // Only user messages may carry the marker; leave assistant/tool
-        // results untouched so toolCall/toolResult pairs stay intact.
-        if (message.role !== "user") {
-          return true;
-        }
-
-        const content = msg.content;
-        if (typeof content === "string") {
-          return !content.includes("[PLAN MODE ACTIVE]");
-        }
-        if (Array.isArray(content)) {
-          return !content.some(
-            (block) =>
-              (block as { type?: string }).type === "text" &&
-              typeof (block as { text?: unknown }).text === "string" &&
-              (block as { text: string }).text.includes(
-                "[PLAN MODE ACTIVE]",
-              ),
-          );
-        }
-        return true;
-      }),
-    };
+    event.systemPromptOptions.sections[PLAN_SECTION] = PLAN_INSTRUCTIONS;
   });
 
   function getLastPlanModeState(
