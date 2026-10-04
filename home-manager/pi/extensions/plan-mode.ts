@@ -40,6 +40,18 @@ Prefer plans that identify:
 
 The user can leave PLAN MODE with /plan.`;
 
+// Custom message type for the plan-mode transition announcements. `details`
+// carries the announced state so it can be recovered from the transcript on resume.
+const TRANSITION_CUSTOM_TYPE = "plan-mode-transition";
+
+const ENABLED_ANNOUNCEMENT =
+  "[PLAN MODE ENABLED] Plan mode is now active. Investigate and plan only; " +
+  "do not modify files or run commands that change state.";
+
+const DISABLED_ANNOUNCEMENT =
+  "[PLAN MODE DISABLED] Plan mode is now inactive. Normal tool access is restored; " +
+  "changes may now be implemented.";
+
 type PlanModeState = {
   enabled: boolean;
   toolsBeforePlanMode?: string[];
@@ -68,6 +80,7 @@ function isPlanModeState(value: unknown): value is PlanModeState {
 export default function planMode(pi: ExtensionAPI): void {
   let enabled = false;
   let toolsBeforePlanMode: string[] | undefined;
+  let announcedEnabled = false;
 
   function updateStatus(ctx: ExtensionContext): void {
     if (!ctx.hasUI) {
@@ -184,7 +197,8 @@ export default function planMode(pi: ExtensionAPI): void {
   });
 
   /*
-   * Contribute the plan-mode rules as a structured system-prompt section.
+   * Contribute the plan-mode rules as a structured system-prompt section, and
+   * announce the transition as a hidden custom message.
    *
    * Pi diffs the desired sections against the sections the model currently
    * has and appends a system message patching only what changed, so while
@@ -192,14 +206,57 @@ export default function planMode(pi: ExtensionAPI): void {
    * preserved. Turning plan mode off simply omits the section, which emits a
    * null patch that takes the rules back out of the prompt - no transcript
    * cleanup hook is needed.
+   *
+   * The announcement is produced here (once per agent run) rather than on
+   * every toggle, and only when the state differs from the one the model was
+   * last told about. A rapid disable -> enable -> disable therefore nets out
+   * and does not emit a stale "disabled" message.
    */
   pi.on("before_agent_start", async (event) => {
-    if (!enabled) {
+    if (enabled) {
+      event.systemPromptOptions.sections[PLAN_SECTION] = PLAN_INSTRUCTIONS;
+    }
+
+    if (enabled === announcedEnabled) {
       return;
     }
 
-    event.systemPromptOptions.sections[PLAN_SECTION] = PLAN_INSTRUCTIONS;
+    announcedEnabled = enabled;
+
+    return {
+      message: {
+        customType: TRANSITION_CUSTOM_TYPE,
+        content: enabled ? ENABLED_ANNOUNCEMENT : DISABLED_ANNOUNCEMENT,
+        display: false,
+        details: { enabled },
+      },
+    };
   });
+
+  function getLastAnnouncedEnabled(
+    ctx: ExtensionContext,
+  ): boolean | undefined {
+    let last: boolean | undefined;
+
+    for (const entry of ctx.sessionManager.getBranch()) {
+      if (
+        entry.type !== "custom_message" ||
+        entry.customType !== TRANSITION_CUSTOM_TYPE
+      ) {
+        continue;
+      }
+
+      const details = entry.details as
+        | { enabled?: unknown }
+        | undefined;
+
+      if (typeof details?.enabled === "boolean") {
+        last = details.enabled;
+      }
+    }
+
+    return last;
+  }
 
   function getLastPlanModeState(
     ctx: ExtensionContext,
@@ -276,6 +333,13 @@ export default function planMode(pi: ExtensionAPI): void {
       enabled = false;
       toolsBeforePlanMode = undefined;
     }
+
+    /*
+     * Recover the state the model was last told about from the transcript so
+     * that resuming a session neither re-announces nor wrongly announces a
+     * transition. Absent any announcement, the default is "disabled".
+     */
+    announcedEnabled = getLastAnnouncedEnabled(ctx) ?? false;
 
     updateStatus(ctx);
   }
