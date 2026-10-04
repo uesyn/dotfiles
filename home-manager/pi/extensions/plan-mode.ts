@@ -7,6 +7,7 @@ const DISABLED_TOOLS = new Set([
   "bash",
   "edit",
   "write",
+  "codemode",
 ]);
 
 type PlanModeState = {
@@ -80,7 +81,7 @@ export default function planMode(pi: ExtensionAPI): void {
 
     if (ctx.hasUI) {
       ctx.ui.notify(
-        "Plan mode enabled: bash, write, and edit tools are disabled.",
+        "Plan mode enabled: bash, write, edit, and codemode tools are disabled.",
         "info",
       );
     }
@@ -135,8 +136,9 @@ export default function planMode(pi: ExtensionAPI): void {
   });
 
   /*
-   * Bash is removed from the active tool list above, but keep this guard for
-   * tool calls that were already in flight when plan mode was enabled.
+   * The disabled tools are removed from the active tool list above, but keep
+   * this guard for tool calls that were already in flight when plan mode was
+   * enabled and for nested calls made by other tools.
    */
   pi.on("tool_call", async (event) => {
     if (!enabled || !DISABLED_TOOLS.has(event.toolName)) {

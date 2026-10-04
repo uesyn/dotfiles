@@ -99,6 +99,9 @@
 
       home.packages = [ pkgs.llm-agents.code-review-graph ];
 
+      # Built-in MCP support (no pi-mcp-adapter package): servers in
+      # ~/.pi/agent/mcp.json are connected directly. Tool names are
+      # mcp__<server>__<tool>; `exposure = "direct"` declares them to the model.
       home.file.".pi/agent/mcp.json".text = builtins.toJSON {
         mcpServers = {
           "code-review-graph" = {
@@ -107,35 +110,13 @@
               "serve"
               "--auto-watch"
             ];
-            lifecycle = "keep-alive";
-            requestTimeoutMs = 120000;
-            directTools = [
-              "get_minimal_context_tool"
-              "semantic_search_nodes_tool"
-              "query_graph_tool"
-              "get_hub_nodes_tool"
-              "get_bridge_nodes_tool"
-              "list_flows_tool"
-              "get_flow_tool"
-              "get_affected_flows_tool"
-              "get_architecture_overview_tool"
-              "list_communities_tool"
-              "get_community_tool"
-              "traverse_graph_tool"
-              "get_impact_radius_tool"
-              "get_surprising_connections_tool"
-              "find_large_functions_tool"
-            ];
+            timeout = 120;
+            exposure = "direct";
           };
           "exa" = {
             url = "https://mcp.exa.ai/mcp";
-            headers."x-api-key" = "\${EXA_API_KEY}";
-            lifecycle = "lazy";
-            requestTimeoutMs = 60000;
-            toolPrefix = "none";
-            directTools = [
-              "web_search_exa"
-            ];
+            timeout = 60;
+            exposure = "direct";
           };
         };
       };
@@ -147,7 +128,6 @@
       };
 
       home.file.".local/share/pi/extensions/btw.ts".source = ./extensions/btw.ts;
-      home.file.".local/share/pi/extensions/directory-tree.ts".source = ./extensions/directory-tree.ts;
       home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
         ./extensions/dynamic-provider.ts;
       home.file.".local/share/pi/extensions/favorite-models.ts".source = ./extensions/favorite-models.ts;
@@ -193,18 +173,21 @@
             keepRecentTokens = 20000;
             reserveTokens = 16384;
           };
+          # Built-in grep/find/ls (off by default) plus codemode.
+          defaultTools = [
+            "+grep"
+            "+find"
+            "+ls"
+            "+codemode"
+          ];
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/directory-tree.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier.ts"
-          ];
-          packages = [
-            "npm:pi-mcp-adapter@2.32.1"
           ];
           skills = [
             "${config.home.homeDirectory}/.config/opencode/skills"
