@@ -127,14 +127,30 @@
         };
       };
 
-      home.file.".local/share/pi/extensions/btw.ts".source = ./extensions/btw.ts;
-      home.file.".local/share/pi/extensions/dynamic-provider.ts".source =
-        ./extensions/dynamic-provider.ts;
-      home.file.".local/share/pi/extensions/favorite-models.ts".source = ./extensions/favorite-models.ts;
-      home.file.".local/share/pi/extensions/notification.ts".source = ./extensions/notification.ts;
-      home.file.".local/share/pi/extensions/plan-mode.ts".source = ./extensions/plan-mode.ts;
-      home.file.".local/share/pi/extensions/systemp-prompt-modifier.ts".source =
-        ./extensions/systemp-prompt-modifier.ts;
+      home.file.".local/share/pi/extensions/btw" = {
+        source = ./extensions/btw;
+        recursive = true;
+      };
+      home.file.".local/share/pi/extensions/dynamic-provider" = {
+        source = ./extensions/dynamic-provider;
+        recursive = true;
+      };
+      home.file.".local/share/pi/extensions/favorite-models" = {
+        source = ./extensions/favorite-models;
+        recursive = true;
+      };
+      home.file.".local/share/pi/extensions/notification" = {
+        source = ./extensions/notification;
+        recursive = true;
+      };
+      home.file.".local/share/pi/extensions/plan-mode" = {
+        source = ./extensions/plan-mode;
+        recursive = true;
+      };
+      home.file.".local/share/pi/extensions/systemp-prompt-modifier" = {
+        source = ./extensions/systemp-prompt-modifier;
+        recursive = true;
+      };
       home.file.".local/share/pi/extensions/undo" = {
         source = ./extensions/undo;
         recursive = true;
@@ -181,13 +197,13 @@
             "+codemode"
           ];
           extensions = [
-            "${config.home.homeDirectory}/.local/share/pi/extensions/btw.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/notification.ts"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
             "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier.ts"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
           ];
           skills = [
             "${config.home.homeDirectory}/.config/opencode/skills"

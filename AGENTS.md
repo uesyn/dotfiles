@@ -40,10 +40,10 @@ Uses `nixfmt-tree`.
 
 ## Pi
 
-- Extensions are wired via `home-manager/pi/default.nix` into `programs.pi-coding-agent.settings.extensions`; sources live in `home-manager/pi/extensions/`.
+- Extensions are wired via `home-manager/pi/default.nix` into `programs.pi-coding-agent.settings.extensions`; sources live in `home-manager/pi/extensions/`, each extension in its own directory with an `index.ts` entry point.
 - `settings.defaultTools = [ "+grep" "+find" "+ls" "+codemode" ]` keeps the stock `read`/`bash`/`edit`/`write` and enables the built-in `grep`/`find`/`ls` (off by default) plus `codemode`. The former custom `directory-tree.ts` extension was removed in favor of the built-in `ls`.
 - `pi-undo` (source `home-manager/pi/extensions/undo/`) adds `/undo`, `/redo`, `/undo-purge` to pi. Snapshots are git trees in a private gitdir per worktree under `~/.pi/agent/undo/git/<sha1(worktree)>/`, pinned with `refs/pi-undo/<sessionId>/<i>` and tracked in `registry.json`; config in `~/.pi/agent/undo.json` or `.pi/undo.json`. Git is always invoked subcommand-first (repo selected through `GIT_DIR`/`GIT_WORK_TREE`, cwd via spawn options) to stay compatible with the nono git policy. Tests: `bun test home-manager/pi/extensions/undo/test/`.
-- `favorite-models.ts` adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry, Ctrl+L opens the picker, and the last selected favorite is restored at session start. State: `~/.pi/agent/favorite-models.json`.
+- `favorite-models/` (source `home-manager/pi/extensions/favorite-models/`) adds `/favorite` (`select`/`add`/`remove`/`list`) for favorite models with a per-favorite thinking level; the same model at different levels is a separate entry, Ctrl+L opens the picker, and the last selected favorite is restored at session start. State: `~/.pi/agent/favorite-models.json`.
 - MCP uses pi's built-in support (no `pi-mcp-adapter`, which would replace it). `home-manager/pi/default.nix` writes `~/.pi/agent/mcp.json` with the `code-review-graph` stdio server (`timeout = 120`) and the `exa` HTTP server (`timeout = 60`), both with `exposure = "direct"` so their tools are declared to the model; tool names are `mcp__<server>__<tool>`. The exa entry has no auth header (exa allows anonymous access), so no `EXA_API_KEY` is needed.
 
 ## OpenCode
