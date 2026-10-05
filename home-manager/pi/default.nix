@@ -213,6 +213,8 @@
             maxRetries = 3;
           };
           theme = "dark";
+          # Interactive TUI mode; pi v1.0.0 defaults to "fullscreen".
+          tuiMode = "regular";
         };
       };
     };
