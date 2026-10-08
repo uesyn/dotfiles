@@ -201,6 +201,10 @@
         "opencode/skills/skill-creator" = {
           source = "${skills}/skills/skill-creator";
         };
+        "opencode/skills/k8s-api-conventions" = {
+          source = ./skills/k8s-api-conventions;
+          recursive = true;
+        };
         "opencode/skills/kubebuilder" = {
           source = ./skills/kubebuilder;
           recursive = true;

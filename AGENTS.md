@@ -34,7 +34,7 @@ Uses `nixfmt-tree`.
 - `home-manager/php/default.nix` — installs phpactor and owns its config/data sandbox grants.
 - `home-manager/pkg-config/default.nix` — installs `pkg-config` and points `PKG_CONFIG_PATH` at `dotfiles.buildEssential.libraries`' `.pc` dirs.
 - `home-manager/mise/default.nix` — installs mise, owns its sandbox grants, exposes `dotfiles.mise.tools` for tool modules to contribute global tool versions as `lib.mkDefault` (`go` from `home-manager/go`, `kubebuilder` from `home-manager/kubernetes`, so a plain definition overrides them without `lib.mkForce`), and runs `mise install` in a `home.activation` step (after `linkGeneration`) so `home-manager switch` installs the declared tools.
-- `home-manager/opencode/skills/` — custom OpenCode skills (`kubebuilder`, `sakura-cloud-iaas`).
+- `home-manager/opencode/skills/` — custom OpenCode skills (`kubebuilder`, `k8s-api-conventions`).
 - `home-manager/pi/extensions/undo/` — git-backed pi extension providing `/undo` `/redo` `/undo-purge` for agent runs (conversation rewind + file snapshot restore). See its README.
 - No `lib/` directory; flake utilities (`forAllSystems`) are defined inline in `flake.nix`.
 
@@ -50,7 +50,7 @@ Uses `nixfmt-tree`.
 
 - The `opencode` / `pi` shell aliases run the nono wrapper (`nono run --profile agents -s --allow-cwd -- <cmd>`); use `fence-opencode` / `fence-pi` for the fence wrappers (`dotfiles.fence.aliasPrefix`).
 - Config generated into `~/.config/opencode/opencode.jsonc` from `home-manager/opencode/default.nix`.
-- Bundled skills: `kubebuilder` (references `inputs.kubebuilder/docs`), `sakura-cloud-iaas`, `skill-creator` (from `inputs.anthropic-skills`).
+- Bundled skills: `kubebuilder` (references `inputs.kubebuilder/docs`), `k8s-api-conventions` (distilled from the upstream kubernetes/community API conventions doc; full doc bundled as `references/api-conventions.md`), `skill-creator` (from `inputs.anthropic-skills`).
 - Default agent is `plan`; `autoupdate: false`; `share: disabled`.
 - Env vars set: `OPENCODE_ENABLE_EXA=true`, `OPENCODE_EXPERIMENTAL_LSP_TOOL=true`.
 - Providers enabled by default: `ollama-cloud`, `github-copilot`, `ai-engine`, `dynamic`.
