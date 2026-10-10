@@ -57,31 +57,23 @@ let
       "@git:toplevel"
       "/nix/store"
       "~/.config/git"
-      "~/.pi/agent/undo"
     ];
-    # pi-undo writes its private gitdir (~/.pi/agent/undo/git/<hash>) and
-    # restores files in the worktree. The undo store stays part of the git
-    # sandbox (not the pi module) so the whole git policy is one auditable
-    # unit; see `commands/default.nix`.
-    fs_write = [
-      "@git:toplevel"
-      "~/.pi/agent/undo"
-    ];
+    # Allowed local write commands (commits, rebases, `git stash push`)
+    # update the worktree. The worktree stays out of the child sandbox below.
+    fs_write = [ "@git:toplevel" ];
   };
   gitInvocationPolicy = {
     default = "allow";
     deny = gitDenyRules;
   };
-  # git's own children (git gc → repack/pack-refs/...) only need the
-  # private snapshot store. Keeping the worktree out of reach makes them
-  # fail closed if GIT_DIR were ever not forwarded to the child.
+  # git's own children (git gc → repack/pack-refs/...) get a minimal sandbox
+  # with no worktree write access, so they fail closed if GIT_DIR were ever
+  # not forwarded to the child.
   gitChildSandbox = {
     fs_read = [
       "/nix/store"
       "~/.config/git"
-      "~/.pi/agent/undo"
     ];
-    fs_write = [ "~/.pi/agent/undo" ];
   };
   gitChildInvocationPolicy = {
     default = "allow";
@@ -90,13 +82,6 @@ let
 in
 {
   dotfiles.nono.commandPolicies.commands.git = _: {
-    # git gc spawns git repack/pack-refs/... as `git` children; the tool
-    # sandbox strips GIT_* from the child env, so forward the private repo
-    # selection to them too.
-    export_env = [
-      "GIT_DIR"
-      "GIT_WORK_TREE"
-    ];
     from = {
       session = {
         sandbox = gitSandbox;

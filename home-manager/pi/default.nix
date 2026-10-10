@@ -151,10 +151,6 @@
         source = ./extensions/systemp-prompt-modifier;
         recursive = true;
       };
-      home.file.".local/share/pi/extensions/undo" = {
-        source = ./extensions/undo;
-        recursive = true;
-      };
 
       programs.pi-coding-agent = {
         enable = true;
@@ -202,7 +198,6 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/undo"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
           ];
           skills = [

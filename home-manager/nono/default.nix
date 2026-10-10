@@ -168,13 +168,6 @@
           # Core helper dirs plus `commandPolicies.executableDirs`; used by
           # toolchains that re-exec helpers by absolute path.
           executable_dirs = nono.commandPolicies.executableDirs;
-          # pi-undo selects its private gitdir with GIT_DIR/GIT_WORK_TREE.
-          # pi spawns git directly (caller `session`) and the tool sandbox
-          # strips GIT_* by default, so forward those two from the session.
-          session_export_env = [
-            "GIT_DIR"
-            "GIT_WORK_TREE"
-          ];
           # gh/git command policies (guardrails) are contributed by the
           # `commands/` submodule; each value is a function of `pkgs`.
           commands = lib.mapAttrs (_: f: f pkgs) nono.commandPolicies.commands;
