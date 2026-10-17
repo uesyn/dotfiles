@@ -254,9 +254,8 @@ let
   ];
 
   # Tool-sandbox children start network-blocked and only get egress via an
-  # explicit `network` grant; only `gh` opts in (`allow_all`), so both git
-  # sandboxes stay fully offline (push/fetch cannot reach a network remote
-  # even if argv allowed it).
+  # explicit `network` grant. gh opts in (`allow_all`); git stays offline
+  # except for its argv-prefix clone intercept's dedicated sandbox.
   ghSandbox = {
     fs_read = [
       "."

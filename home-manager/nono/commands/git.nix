@@ -1,11 +1,9 @@
 { ... }:
 let
-  # Local git is free (`default = "allow"`); only remote operations are
-  # denied. The git sandboxes are network-blocked, so this list keeps the
-  # intent explicit and also covers local (`file://`/path) remotes.
-  # Matching starts at the first argument, so a leading global option
-  # (`git -c x=y push`) can bypass it; network egress stays blocked at the
-  # sandbox level regardless.
+  # Local git is free (`default = "allow"`); remote operations other than
+  # clone are denied. Only an argv beginning with `clone` gets the networked
+  # intercept sandbox below. Leading global flags cannot opt into networking,
+  # so `git -c x=y push` stays offline even though it bypasses this deny list.
   gitDenyRules =
     map
       (tokens: {
@@ -16,7 +14,6 @@ let
         [ "push" ]
         [ "fetch" ]
         [ "pull" ]
-        [ "clone" ]
         [ "ls-remote" ]
         [
           "remote"
@@ -77,11 +74,43 @@ let
   };
   gitChildInvocationPolicy = {
     default = "allow";
-    deny = gitDenyRules;
+    # Do not let recursive git calls opt into the clone intercept sandbox.
+    deny = gitDenyRules ++ [
+      {
+        argv.prefix = [ "clone" ];
+        reason = "nested git clone is denied";
+      }
+    ];
   };
 in
 {
-  dotfiles.nono.commandPolicies.commands.git = _: {
+  dotfiles.nono.commandPolicies.commands.git = pkgs: {
+    intercept = [
+      {
+        match.argv.prefix = [ "clone" ];
+        action.type = "passthrough";
+        # Overrides (does not extend) the caller edge's sandbox. Avoid
+        # @git:toplevel because clone may run outside an existing repository.
+        sandbox = {
+          fs_read = [
+            "."
+            "/nix/store"
+            "~/.config/git"
+          ];
+          fs_read_file = [
+            "/etc/ssl/certs/ca-certificates.crt"
+            "/etc/ssl/cert.pem"
+          ];
+          fs_write = [
+            "."
+            "/tmp"
+          ];
+          # git-remote-https and the other PATH-external Git helpers.
+          exec_paths = [ "${pkgs.git}/libexec/git-core" ];
+          network.allow_all = true;
+        };
+      }
+    ];
     from = {
       session = {
         sandbox = gitSandbox;
