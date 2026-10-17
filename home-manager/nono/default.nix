@@ -204,6 +204,10 @@
         pkgs.llm-agents.nono
       ];
 
+      home.sessionVariables = {
+        PI_CLIPBOARD_OSC52 = "1";
+      };
+
       programs.zsh.shellAliases = wrappedAliases;
       programs.bash.shellAliases = wrappedAliases;
 
