@@ -139,6 +139,10 @@
         source = ./extensions/favorite-models;
         recursive = true;
       };
+      home.file.".local/share/pi/extensions/git-readonly" = {
+        source = ./extensions/git-readonly;
+        recursive = true;
+      };
       home.file.".local/share/pi/extensions/notification" = {
         source = ./extensions/notification;
         recursive = true;
@@ -191,11 +195,13 @@
             "+find"
             "+ls"
             "+codemode"
+            "+git"
           ];
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
