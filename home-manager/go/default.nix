@@ -21,13 +21,12 @@
 
   config = {
     # List option definitions merge, so tags set in home.nix extend these defaults.
-    dotfiles.go.goplsBuildTags =
-      [
-        "e2e"
-        "integration"
-      ]
-      ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "linux" ]
-      ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ "darwin" ];
+    dotfiles.go.goplsBuildTags = [
+      "e2e"
+      "integration"
+    ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isLinux [ "linux" ]
+    ++ lib.optionals pkgs.stdenv.hostPlatform.isDarwin [ "darwin" ];
 
     home.sessionVariables = {
       GOPATH = "${config.home.homeDirectory}";

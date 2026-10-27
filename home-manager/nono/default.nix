@@ -14,13 +14,15 @@
   ];
 
   options.dotfiles.nono = {
-    experimentalElfReader = (lib.mkEnableOption ''
-      experimental Linux ELF scanning with bounded positional reads instead of
-      full-file copies. Uses no mmap and keeps command policies unchanged.
-      Enabled by default on Linux
-    '') // {
-      default = pkgs.stdenv.isLinux;
-    };
+    experimentalElfReader =
+      (lib.mkEnableOption ''
+        experimental Linux ELF scanning with bounded positional reads instead of
+        full-file copies. Uses no mmap and keeps command policies unchanged.
+        Enabled by default on Linux
+      '')
+      // {
+        default = pkgs.stdenv.hostPlatform.isLinux;
+      };
     aliasPrefix = lib.mkOption {
       type = lib.types.str;
       default = "";
