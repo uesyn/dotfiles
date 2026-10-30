@@ -5,24 +5,9 @@
   ...
 }:
 {
-  imports = [
-    ./commands
-    (lib.mkRenamedOptionModule
-      [ "dotfiles" "nono" "experimentalElfMmap" ]
-      [ "dotfiles" "nono" "experimentalElfReader" ]
-    )
-  ];
+  imports = [ ./commands ];
 
   options.dotfiles.nono = {
-    experimentalElfReader =
-      (lib.mkEnableOption ''
-        experimental Linux ELF scanning with bounded positional reads instead of
-        full-file copies. Uses no mmap and keeps command policies unchanged.
-        Enabled by default on Linux
-      '')
-      // {
-        default = pkgs.stdenv.hostPlatform.isLinux;
-      };
     aliasPrefix = lib.mkOption {
       type = lib.types.str;
       default = "";
@@ -215,23 +200,8 @@
         };
       };
 
-      assertions = [
-        {
-          assertion = !nono.experimentalElfReader || pkgs.stdenv.hostPlatform.isLinux;
-          message = "dotfiles.nono.experimentalElfReader is supported only on Linux";
-        }
-      ];
-
       home.packages = [
-        (
-          if nono.experimentalElfReader then
-            import ./reader-package.nix {
-              nono = pkgs.llm-agents.nono;
-              inherit (pkgs) python3 stdenv;
-            }
-          else
-            pkgs.llm-agents.nono
-        )
+        pkgs.llm-agents.nono
       ];
 
       home.sessionVariables = {
