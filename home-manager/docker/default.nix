@@ -23,9 +23,7 @@ in
     else
       [
         # macOS runs Colima, whose per-profile sockets live under the home
-        # directory. `fence` lists the same sockets, but the two sandboxes are
-        # intentionally independent (no shared source); keep them in sync by
-        # hand if Colima's paths change.
+        # directory.
         "~/.colima/docker.sock"
         "~/.colima/default/docker.sock"
         "~/.config/colima/docker.sock"

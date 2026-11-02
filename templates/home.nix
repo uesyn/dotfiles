@@ -28,15 +28,6 @@
   #   # }
   # ];
 
-  # dotfiles.fence.allowedDomains = [ "example.com" ];
-  # dotfiles.fence.allowedUnixSockets = [ "/var/run/docker.sock" ];
-  # dotfiles.fence.deniedCommands = [ "rm" "dd" ];
-  # `wrap` commands get a shell alias named `<aliasPrefix><command>`;
-  # the default prefix keeps fence reachable as `fence-opencode` / `fence-pi`
-  # while the plain names are taken over by nono (see below).
-  # dotfiles.fence.wrap = [ "opencode" "pi" ];
-  # dotfiles.fence.aliasPrefix = "fence-";
-
   # nono sandbox profile (fixed name `agents`). `wrap` commands get a shell
   # alias that runs `nono run --profile agents -s --allow-cwd -- <command>`;
   # the Pi module adds itself to `wrap`.

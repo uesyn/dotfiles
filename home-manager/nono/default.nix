@@ -13,8 +13,7 @@
       default = "";
       description = ''
         Prefix for the generated shell aliases. Defaults to `""`, so the nono
-        wrappers take over the plain command names. The fence wrappers stay
-        reachable via `dotfiles.fence.aliasPrefix` (default `"fence-"`).
+        wrappers take over the plain command names.
       '';
     };
     wrap = lib.mkOption {
