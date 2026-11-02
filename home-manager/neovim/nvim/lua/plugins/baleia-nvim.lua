@@ -1,22 +1,22 @@
 return {
   "baleia.nvim",
+  -- `dump` buffers are terminal scrollback captured by zellij.
   ft = "dump",
   after = function()
-    -- Strip SGR sequences from the text and represent them as highlights, so
+    -- SGR sequences are stripped from the text and rendered as highlights, so
     -- searches and yanks operate on plain text.
     local baleia = require("baleia").setup({
       async = false,
       strip_ansi_codes = true,
     })
-    local group = vim.api.nvim_create_augroup("ZellijScrollback", { clear = true })
 
     vim.api.nvim_create_autocmd("FileType", {
-      group = group,
+      group = vim.api.nvim_create_augroup("user_baleia", { clear = true }),
       pattern = "dump",
-      callback = function(args)
-        baleia.once(args.buf)
+      callback = function(event)
+        baleia.once(event.buf)
         -- Colorization changes the buffer text; it is still only a viewer.
-        vim.api.nvim_set_option_value("modified", false, { buf = args.buf })
+        vim.api.nvim_set_option_value("modified", false, { buf = event.buf })
       end,
     })
   end,

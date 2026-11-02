@@ -1,5 +1,7 @@
 return {
   "render-markdown.nvim",
+  -- Only Avante's chat buffers are rendered as markdown; regular markdown
+  -- files stay raw so that the text can be edited.
   ft = {
     "Avante",
   },

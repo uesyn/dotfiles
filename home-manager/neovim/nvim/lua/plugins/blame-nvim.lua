@@ -1,18 +1,20 @@
 return {
   "blame.nvim",
+  -- Load trigger: lz.n loads the plugin and replays the key, the mapping
+  -- itself is created in after().
   keys = {
-    {"<leader>gb", "n"},
+    { "<leader>gb", "n" },
   },
   after = function()
     require("blame").setup()
-    vim.keymap.set("n", "<leader>gb", "<Cmd>BlameToggle<CR>")
+
+    vim.keymap.set("n", "<leader>gb", "<Cmd>BlameToggle<CR>", { desc = "Toggle git blame" })
+
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "blame",
-      callback = function()
-        vim.bo.buflisted = false
-        vim.keymap.set("n", "<C-q>", ":clo<CR>", { buffer = true, desc = "Close blame window" })
-        vim.keymap.set("n", "<C-n>", "<Nop>", { buffer = true })
-        vim.keymap.set("n", "<C-p>", "<Nop>", { buffer = true })
+      callback = function(event)
+        vim.bo[event.buf].buflisted = false
+        require("util").temp_buffer_keymaps("close")
       end,
     })
   end,

@@ -3,95 +3,81 @@ return {
   lazy = false,
   priority = 10,
   after = function()
+    -- Telescope-like picker layout: input on top, results below.
+    local layout = { preset = "telescope", reverse = false }
+
+    -- `q` sends the selection to the quickfix list, <C-q> aborts.
+    local picker_keys = {
+      ["q"] = "qflist",
+      ["<C-q>"] = "cancel",
+    }
+
+    local explorer_keys = {
+      ["a"] = "explorer_add",
+      ["c"] = "explorer_copy",
+      ["d"] = "explorer_del",
+      ["h"] = "explorer_close",
+      ["m"] = "explorer_move",
+      ["o"] = "explorer_open", -- open with the system application
+      ["p"] = "explorer_paste",
+      ["r"] = "explorer_rename",
+      ["u"] = "explorer_update",
+      ["P"] = "toggle_preview",
+      ["y"] = { "explorer_yank", mode = { "n", "x" } },
+    }
+
     require("snacks").setup({
       input = { enabled = true },
       notifier = { enabled = true },
       picker = {
-        layout = {
-	  preset = "telescope",
-	  reverse = false
-        },
+        layout = layout,
         win = {
-          list = {
-            keys = {
-	      ["q"] = "qflist",
-	      ["<C-q>"] = "cancel",
-            },
+          list = { keys = picker_keys },
+          input = { keys = picker_keys },
+        },
+        sources = {
+          explorer = {
+            -- Show hidden files and entries that `.gitignore` filters out;
+            -- ignored ones are drawn dimmed (see SnacksPickerPathIgnored).
+            ignored = true,
+            hidden = true,
           },
-          input = {
-            keys = {
-	      ["q"] = "qflist",
-	      ["<C-q>"] = "cancel",
-            },
-          },
-	},
-	sources = {
-	  explorer = {
-	    ignored = true,
-	    hidden = true,
-	  },
-	},
+        },
       },
     })
+
     vim.api.nvim_set_hl(0, "SnacksPickerPathIgnored", { link = "Comment" })
 
-    local explorer = function()
+    vim.keymap.set("n", "<S-f>", function()
       Snacks.picker.explorer({
-        layout = {
-	  preset = "telescope",
-	  reverse = false
-        },
-	auto_close = true,
-	win = {
-	  list = {
-	    keys = {
-              ["h"] = "explorer_close",
-              ["a"] = "explorer_add",
-              ["d"] = "explorer_del",
-              ["r"] = "explorer_rename",
-              ["c"] = "explorer_copy",
-              ["m"] = "explorer_move",
-              ["o"] = "explorer_open", -- open with system application
-              ["P"] = "toggle_preview",
-              ["p"] = "explorer_paste",
-              ["y"] = { "explorer_yank", mode = { "n", "x" } },
-              ["u"] = "explorer_update",
-	    },
-	  },
-	},
+        layout = layout,
+        auto_close = true,
+        win = { list = { keys = explorer_keys } },
       })
-    end
+    end, { desc = "Open file explorer" })
 
-    local resume = function()
+    vim.keymap.set("n", "<leader>fr", function()
       Snacks.picker.resume()
-    end
+    end, { desc = "Resume picker" })
 
-    local grep = function()
-      Snacks.picker.pick("grep", {})
-    end
-
-    local files = function()
+    vim.keymap.set("n", "<leader>ff", function()
       Snacks.picker.pick("files", {})
-    end
+    end, { desc = "Find files" })
 
-    local gitbrowse = function()
+    vim.keymap.set("n", "<leader>fg", function()
+      Snacks.picker.pick("grep", {})
+    end, { desc = "Grep files" })
+
+    vim.keymap.set({ "n", "v" }, "<leader>go", function()
       Snacks.gitbrowse.open()
-    end
+    end, { desc = "Open in GitHub" })
 
-    local ghIssues = function()
+    vim.keymap.set("n", "<leader>fgi", function()
       Snacks.picker.gh_issue({ state = "all" })
-    end
+    end, { desc = "Open GitHub issues" })
 
-    local ghPRs = function()
+    vim.keymap.set("n", "<leader>fgp", function()
       Snacks.picker.gh_pr({ state = "all" })
-    end
-
-    vim.keymap.set("n", "<S-f>", explorer, { desc = "Open file explorer" })
-    vim.keymap.set("n", "<leader>fr", resume, { desc = "Resume picker" })
-    vim.keymap.set("n", "<leader>fg", grep, { desc = "Grep files" })
-    vim.keymap.set("n", "<leader>ff", files, { desc = "Find files" })
-    vim.keymap.set({ "n", "v" }, "<leader>go", gitbrowse, { desc = "Open in Github" })
-    vim.keymap.set("n", "<leader>fgi", ghIssues, { desc = "Open Github issues" })
-    vim.keymap.set("n", "<leader>fgp", ghPRs, { desc = "Open Github pull requests" })
+    end, { desc = "Open GitHub pull requests" })
   end,
 }

@@ -18,7 +18,7 @@ home-manager switch --flake . --impure -b backup --show-trace
 nix fmt
 ```
 
-Uses `nixfmt-tree`.
+Uses `nixfmt-tree`. Lua style is pinned in `stylua.toml` (2-space indent, double quotes, no trailing semicolons): `nix run nixpkgs#stylua -- home-manager/neovim/nvim`.
 
 ## Repo Structure
 
@@ -69,6 +69,16 @@ Uses `nixfmt-tree`.
 - `git-fixup` — fzf-based `git commit --fixup` for staged changes.
 - `ghq.root = ~/src`.
 - `GIT_EDITOR = nvim`.
+
+## Neovim
+
+- `home-manager/neovim/default.nix` installs Neovim, lists the plugins and holds the whole `init.lua` (a `require` list only). home-manager generates `~/.config/nvim/init.lua`, so the repo tree `nvim/` must not contain one.
+- `nvim/lua/config/` — one file per concern: `option` (grouped `vim.opt.*` settings), `keymap` (global maps), `autocmd` (yank → OSC52 clipboard), `lsp` (diagnostics, `LspAttach` keymap table, completion popup border, `LspProgress` echo, `vim.lsp.enable` list), `copilot` (sign-in command, inline completion), `statusline` (`_G.statusline`, the config's only global, referenced as `%!v:lua.statusline()`).
+- `nvim/lsp/<server>.lua` — declarative server config (a returned table, no side effects), loaded by name from `vim.lsp.enable`.
+- `nvim/lua/plugins/<plugin>.lua` — one lz.n spec per plugin; `after` does `setup` and sets that plugin's keymaps. `keys`/`ft`/`event` are load triggers only (`keys` replays the key after `after` runs), which is why a plugin key can appear both as a trigger and as a real mapping.
+- `nvim/lua/util.lua` — shared helpers (`temp_buffer_keymaps` for quickfix/blame-style read-only windows).
+- Rules: `vim.opt.*` (never `vim.opt["x"]`), `vim.opt_local.*` in `ftplugin/`; double quotes, 2-space indent, no trailing semicolons (`stylua.toml`); `local` everywhere (`_G` only for the statusline); every keymap carries `desc`; comments explain *why*, with `-- ref:` URLs for upstream workarounds.
+- Lazy-loaded plugins are declared with `optional = true` in `programs.neovim.plugins` (`map (plugin: { inherit plugin; optional = true; }) lazyPlugins`) so home-manager keeps them out of the startup packpath.
 
 ## Environment Quirks
 

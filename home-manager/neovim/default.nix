@@ -1,4 +1,21 @@
-{ inputs, pkgs, ... }:
+{
+  pkgs,
+  ...
+}:
+let
+  inherit (pkgs) vimPlugins;
+
+  # Loaded on demand by lz.n (see nvim/lua/plugins/). `optional` keeps
+  # home-manager from adding them to the startup packpath.
+  lazyPlugins = with vimPlugins; [
+    baleia-nvim
+    barbar-nvim
+    blame-nvim
+    gitsigns-nvim
+    nvim-surround
+    render-markdown-nvim
+  ];
+in
 {
   # nono: read the Neovim config and grant the plugin/state/data dirs.
   dotfiles.nono.filesystem.read = [ "~/.config/nvim" ];
@@ -32,63 +49,50 @@
       ripgrep
     ];
 
+    # home-manager writes ~/.config/nvim/init.lua, so ./nvim must not contain
+    # one. Everything else lives under ./nvim/lua and is required from here.
     initLua = ''
       vim.loader.enable()
 
-      require('keymap')
-      require('option')
-      require('autocmd')
-      require('lsp')
-      require('statusline')
+      require("config.option")
+      require("config.keymap")
+      require("config.autocmd")
+      require("config.lsp")
+      require("config.copilot")
+      require("config.statusline")
+
       require("lz.n").load("plugins")
     '';
 
-    plugins = with pkgs.vimPlugins; [
-      lz-n
-      nvim-web-devicons
-      plenary-nvim
-      nui-nvim
-      snacks-nvim
-      dracula-nvim
-      (pkgs.vimPlugins.nvim-treesitter.withPlugins (p: [
-        p.bash
-        p.c
-        p.go
-        p.json
-        p.lua
-        p.markdown
-        p.markdown_inline
-        p.php
-        p.python
-        p.rust
-        p.toml
-        p.typescript
-        p.yaml
-      ]))
-      {
-        plugin = gitsigns-nvim;
+    plugins =
+      (with vimPlugins; [
+        lz-n
+        nvim-web-devicons
+        plenary-nvim
+        nui-nvim
+        snacks-nvim
+        dracula-nvim
+        (nvim-treesitter.withPlugins (
+          p: with p; [
+            bash
+            c
+            go
+            json
+            lua
+            markdown
+            markdown_inline
+            php
+            python
+            rust
+            toml
+            typescript
+            yaml
+          ]
+        ))
+      ])
+      ++ map (plugin: {
+        inherit plugin;
         optional = true;
-      }
-      {
-        plugin = barbar-nvim;
-        optional = true;
-      }
-      {
-        plugin = nvim-surround;
-        optional = true;
-      }
-      {
-        plugin = blame-nvim;
-        optional = true;
-      }
-      {
-        plugin = render-markdown-nvim;
-        optional = true;
-      }
-      {
-        plugin = baleia-nvim;
-        optional = true;
-      }
-    ];
+      }) lazyPlugins;
   };
 }
