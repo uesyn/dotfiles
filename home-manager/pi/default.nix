@@ -177,6 +177,10 @@
         };
       };
 
+      home.packages = [
+        pkgs.llm-agents.code-review-graph
+      ];
+
       programs.pi-coding-agent = {
         enable = true;
         package = pkgs.llm-agents.pi;
@@ -184,7 +188,6 @@
           pkgs.nodejs
           pkgs.bun
           pkgs.git
-          pkgs.llm-agents.code-review-graph
         ];
         models.providers = providers;
         keybindings = {
