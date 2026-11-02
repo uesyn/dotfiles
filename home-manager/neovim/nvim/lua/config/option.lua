@@ -9,7 +9,6 @@ vim.g.clipboard = "osc52" -- yank/paste through the terminal, works over ssh
 -- Display --------------------------------------------------------------------
 vim.opt.ambiwidth = "single"
 vim.opt.breakindent = true
-vim.opt.emoji = true
 vim.opt.foldcolumn = "0"
 vim.opt.laststatus = 3 -- one global statusline
 vim.opt.number = true
@@ -24,7 +23,6 @@ vim.opt.termguicolors = true
 vim.opt.winborder = "rounded"
 
 -- Editing --------------------------------------------------------------------
-vim.opt.fileformats = { "unix", "dos", "mac" }
 vim.opt.inccommand = "split" -- preview :s in a split window instead of inline
 vim.opt.maxmempattern = 20000
 vim.opt.updatetime = 100 -- gitsigns and diagnostics react immediately

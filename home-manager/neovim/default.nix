@@ -13,7 +13,6 @@ let
     blame-nvim
     gitsigns-nvim
     nvim-surround
-    render-markdown-nvim
   ];
 in
 {
@@ -66,12 +65,10 @@ in
 
     plugins =
       (with vimPlugins; [
+        dracula-nvim
         lz-n
         nvim-web-devicons
-        plenary-nvim
-        nui-nvim
         snacks-nvim
-        dracula-nvim
         (nvim-treesitter.withPlugins (
           p: with p; [
             bash
