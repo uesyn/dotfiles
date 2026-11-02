@@ -53,7 +53,7 @@
       TERM st
       TERM terminator
       TERM tmux*
-      TERM vt48;2;98;114;164
+      TERM vt100
       TERM xterm*
 
       # ===================================================================

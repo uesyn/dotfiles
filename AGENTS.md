@@ -94,4 +94,4 @@ Uses `nixfmt-tree`. Lua style is pinned in `stylua.toml` (2-space indent, double
 
 - zsh `dotDir` is `~/.config/zsh` and loads `~/.zshenv.local` if present.
 - tmux prefix is `Ctrl+s` (not `Ctrl+b`).
-- zellij leader is `Ctrl+s` entering "tmux" mode; default layout is `simple`.
+- zellij leader is `Ctrl+s` entering `locked` mode (toggle back with `Ctrl+s`); the built-in default layout is used.

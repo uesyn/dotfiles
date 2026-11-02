@@ -32,6 +32,7 @@
             pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               dotfiles.homeManagerModules.default
+              { imports = [ ./home.nix ]; }
             ];
           };
         };

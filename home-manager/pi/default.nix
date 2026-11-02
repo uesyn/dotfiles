@@ -102,8 +102,6 @@
         "~/.local/state/pi"
       ];
 
-      home.packages = [ pkgs.llm-agents.code-review-graph ];
-
       # Built-in MCP support (no pi-mcp-adapter package): servers in
       # ~/.pi/agent/mcp.json are connected directly. Tool names are
       # mcp__<server>__<tool>; `exposure = "direct"` declares them to the model.

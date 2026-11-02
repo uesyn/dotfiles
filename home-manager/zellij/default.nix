@@ -24,8 +24,6 @@
       plugins {
           tab-bar location="zellij:tab-bar"
           status-bar location="zellij:status-bar"
-          strider location="zellij:strider"
-          compact-bar location="zellij:compact-bar"
       }
 
       themes {
@@ -189,15 +187,6 @@
           shared_except "move" "locked" "renametab" "renamepane" "entersearch" {
               bind "m" { SwitchToMode "Move"; }
           }
-      }
-    '';
-
-    ".config/zellij/layouts/simple.kdl".text = ''
-      layout {
-          pane size=1 borderless=true {
-              plugin location="compact-bar"
-          }
-          pane
       }
     '';
   };

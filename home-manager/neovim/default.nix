@@ -21,7 +21,6 @@ in
   dotfiles.nono.filesystem.allow = [
     "~/.local/share/nvim"
     "~/.local/state/nvim"
-    "~/.local/state/nvim-baleia-bench"
   ];
 
   xdg.configFile = {
@@ -44,7 +43,6 @@ in
     extraPackages = with pkgs; [
       bash
       fd
-      fzf
       ripgrep
     ];
 

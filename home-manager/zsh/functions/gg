@@ -1,1 +1,16 @@
-co
+#!/usr/bin/env zsh
+
+if [[ ! -x "$(command -v ghq)" ]]; then
+  echo "Please Install ghq!!!"
+  exit 1
+fi
+
+list=($(ghq list) tmp)
+local selected_dir=$(for e in "${list[@]}"; do echo "$e"; done | sort | uniq | fzf)
+if [[ -n $selected_dir ]]; then
+  local target="$(ghq root)/${selected_dir}"
+  if [[ $selected_dir == "tmp" ]]; then
+    mkdir -p "$target"
+  fi
+  cd "$target"
+fi
