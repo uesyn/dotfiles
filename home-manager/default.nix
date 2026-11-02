@@ -28,7 +28,6 @@ in
     ./mise
     ./neovim
     ./nono
-    ./opencode
     ./openssh
     ./php
     ./pi

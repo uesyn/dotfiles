@@ -39,9 +39,9 @@
 
   # nono sandbox profile (fixed name `agents`). `wrap` commands get a shell
   # alias that runs `nono run --profile agents -s --allow-cwd -- <command>`;
-  # the OpenCode and Pi modules add themselves to `wrap`.
+  # the Pi module adds itself to `wrap`.
   # dotfiles.nono.aliasPrefix = "";
-  # dotfiles.nono.wrap = [ "opencode" "pi" ];
+  # dotfiles.nono.wrap = [ "pi" ];
 
   # Inside the nono sandbox, `gh` uses a read-only allowlist
   # (`home-manager/nono/commands/gh.nix`): only the listed subcommands run and
@@ -122,49 +122,4 @@
   #     '';
   #   };
   # };
-
-  # dotfiles.opencode.provider = {
-  #   "ai-engine" = {
-  #     name = "AI Engine";
-  #     # NOTE: models / options here fully replace the defaults.
-  #     models = {
-  #       "model-name" = {
-  #         name = "Model Name";
-  #         # Custom variants for the model. Each variant name maps to a set of
-  #         # provider-specific options (e.g., reasoningEffort, textVerbosity,
-  #         # thinking, budgetTokens). Set a variant to { disabled = true; } to
-  #         # disable a built-in variant.
-  #         variants = {
-  #           no-think = {
-  #             chat_template_kwargs = { reasoning_effort = "no_think"; };
-  #           };
-  #           low = {
-  #             chat_template_kwargs = { reasoning_effort = "low"; };
-  #           };
-  #           high = {
-  #             chat_template_kwargs = { reasoning_effort = "high"; };
-  #           };
-  #         };
-  #         # Model-level provider options (e.g., thinking budget).
-  #         options = {
-  #           thinking = { type = "enabled"; budgetTokens = 16000; };
-  #         };
-  #       };
-  #     };
-  #     options = {
-  #       baseURL = "https://api.example.com/v1";
-  #       apiKey = "{env:API_KEY}";
-  #     };
-  #   };
-  # };
-  # dotfiles.opencode.enabledProviders = [ "test" ];
-  # dotfiles.opencode.disabledProviders = [ "test" ];
-  # dotfiles.opencode.plugin = [
-  #   "opencode-helicone-session"
-  #   "opencode-helicone-session@2.1.0"
-  #   "@my-org/custom-plugin@next"
-  #   "./plugins/my-plugin.ts"
-  #   "file:///absolute/path/plugin.js"
-  #   [ "opencode-bar" { key = "value"; } ]
-  # ];
 }

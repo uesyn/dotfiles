@@ -85,12 +85,17 @@
       systemPromptModifiers = lib.mapAttrs (
         _: modifier: lib.filterAttrs (_: text: text != null) modifier
       ) pi.systemPromptModifier;
+      skills = inputs.anthropic-skills;
+      kubebuilder = inputs.kubebuilder;
     in
     {
       # nono: wrap the `pi` command so it runs inside the sandbox.
       dotfiles.nono.wrap = [ "pi" ];
 
       # nono: grant pi's config/data/state dirs.
+      dotfiles.nono.filesystem.read = [
+        "~/.config/pi"
+      ];
       dotfiles.nono.filesystem.allow = [
         "~/.pi"
         "~/.local/share/pi"
@@ -156,6 +161,24 @@
         recursive = true;
       };
 
+      # Skills live under ~/.config/pi/skills; the config below points Pi there.
+      xdg.configFile = {
+        "pi/skills/skill-creator" = {
+          source = "${skills}/skills/skill-creator";
+        };
+        "pi/skills/k8s-api-conventions" = {
+          source = ./skills/k8s-api-conventions;
+          recursive = true;
+        };
+        "pi/skills/kubebuilder" = {
+          source = ./skills/kubebuilder;
+          recursive = true;
+        };
+        "pi/skills/kubebuilder/references" = {
+          source = "${kubebuilder}/docs";
+        };
+      };
+
       programs.pi-coding-agent = {
         enable = true;
         package = pkgs.llm-agents.pi;
@@ -208,7 +231,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
           ];
           skills = [
-            "${config.home.homeDirectory}/.config/opencode/skills"
+            "${config.home.homeDirectory}/.config/pi/skills"
           ];
           retry = {
             enabled = true;
