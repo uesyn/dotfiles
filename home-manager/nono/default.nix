@@ -200,7 +200,8 @@
       };
 
       home.packages = [
-        pkgs.llm-agents.nono
+        # pkgs.llm-agents.nono
+        pkgs.nono
       ];
 
       home.sessionVariables = {
