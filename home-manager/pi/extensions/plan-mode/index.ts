@@ -2,13 +2,11 @@ import type {
   ExtensionAPI,
   ExtensionContext,
 } from "@earendil-works/pi-coding-agent";
+import { PLAN_MODE_EVENT } from "./state.ts";
 
-const DISABLED_TOOLS = new Set([
-  "bash",
-  "edit",
-  "write",
-  "codemode",
-]);
+// Snapshots made before subagents existed did not record the blocking policy.
+const LEGACY_DISABLED_TOOLS = ["bash", "edit", "write", "codemode"];
+const DISABLED_TOOLS = new Set([...LEGACY_DISABLED_TOOLS, "subagent"]);
 
 // Name of the structured system-prompt section carrying the plan-mode rules.
 // Must match /^[a-z][a-z0-9_-]*$/ and must not be "preamble".
@@ -55,7 +53,12 @@ const DISABLED_ANNOUNCEMENT =
 type PlanModeState = {
   enabled: boolean;
   toolsBeforePlanMode?: string[];
+  disabledTools?: string[];
 };
+
+function isToolList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((tool) => typeof tool === "string");
+}
 
 function isPlanModeState(value: unknown): value is PlanModeState {
   if (typeof value !== "object" || value === null) {
@@ -65,21 +68,37 @@ function isPlanModeState(value: unknown): value is PlanModeState {
   const candidate = value as {
     enabled?: unknown;
     toolsBeforePlanMode?: unknown;
+    disabledTools?: unknown;
   };
 
   return (
     typeof candidate.enabled === "boolean" &&
-    (candidate.toolsBeforePlanMode === undefined ||
-      (Array.isArray(candidate.toolsBeforePlanMode) &&
-        candidate.toolsBeforePlanMode.every(
-          (tool): tool is string => typeof tool === "string",
-        )))
+    (candidate.toolsBeforePlanMode === undefined || isToolList(candidate.toolsBeforePlanMode)) &&
+    (candidate.disabledTools === undefined || isToolList(candidate.disabledTools))
   );
+}
+
+function restorableTools(
+  before: string[] | undefined,
+  active: string[],
+  disabledBefore = LEGACY_DISABLED_TOOLS,
+  previousBefore: string[] = [],
+): string[] {
+  // Keep newcomers before hiding them, including ones already hidden on a
+  // different legacy branch. Do not re-enable a tool excluded by a snapshot
+  // that already knew about its blocking policy.
+  const newlyBlocked = (tool: string) => DISABLED_TOOLS.has(tool) && !disabledBefore.includes(tool);
+  return [...new Set([
+    ...(before ?? []),
+    ...active.filter((tool) => !DISABLED_TOOLS.has(tool) || newlyBlocked(tool)),
+    ...previousBefore.filter(newlyBlocked),
+  ])];
 }
 
 export default function planMode(pi: ExtensionAPI): void {
   let enabled = false;
   let toolsBeforePlanMode: string[] | undefined;
+  let disabledToolsBeforePlanMode: string[] | undefined;
   let announcedEnabled = false;
 
   function updateStatus(ctx: ExtensionContext): void {
@@ -101,6 +120,7 @@ export default function planMode(pi: ExtensionAPI): void {
     pi.appendEntry("plan-mode", {
       enabled,
       toolsBeforePlanMode,
+      disabledTools: disabledToolsBeforePlanMode,
     } satisfies PlanModeState);
   }
 
@@ -110,6 +130,7 @@ export default function planMode(pi: ExtensionAPI): void {
     }
 
     toolsBeforePlanMode = pi.getActiveTools();
+    disabledToolsBeforePlanMode = [...DISABLED_TOOLS];
 
     const tools = toolsBeforePlanMode.filter(
       (tool) => !DISABLED_TOOLS.has(tool),
@@ -121,10 +142,11 @@ export default function planMode(pi: ExtensionAPI): void {
 
     updateStatus(ctx);
     persist();
+    pi.events.emit(PLAN_MODE_EVENT, { enabled });
 
     if (ctx.hasUI) {
       ctx.ui.notify(
-        "Plan mode enabled: bash, write, edit, and codemode tools are disabled.",
+        "Plan mode enabled: bash, write, edit, codemode, and subagent tools are disabled.",
         "info",
       );
     }
@@ -135,25 +157,19 @@ export default function planMode(pi: ExtensionAPI): void {
       return;
     }
 
-    /*
-     * Restore the pre-plan tool list, but keep tools that other extensions
-     * activated while plan mode was on. This mirrors session restoration,
-     * which avoids blindly reapplying a stale list.
-     */
-    const restored = toolsBeforePlanMode ?? [];
-    const kept = pi
-      .getActiveTools()
-      .filter(
-        (tool) => !restored.includes(tool) && !DISABLED_TOOLS.has(tool),
-      );
-
-    pi.setActiveTools([...restored, ...kept]);
+    pi.setActiveTools(restorableTools(
+      toolsBeforePlanMode,
+      pi.getActiveTools(),
+      disabledToolsBeforePlanMode,
+    ));
 
     toolsBeforePlanMode = undefined;
+    disabledToolsBeforePlanMode = undefined;
     enabled = false;
 
     updateStatus(ctx);
     persist();
+    pi.events.emit(PLAN_MODE_EVENT, { enabled });
 
     if (ctx.hasUI) {
       ctx.ui.notify(
@@ -298,6 +314,7 @@ export default function planMode(pi: ExtensionAPI): void {
         : [...savedState.toolsBeforePlanMode];
     const wasEnabled = enabled;
     const previousToolsBeforePlanMode = toolsBeforePlanMode;
+    const previousDisabledTools = disabledToolsBeforePlanMode;
     const activeTools = pi.getActiveTools();
 
     if (nextEnabled) {
@@ -306,9 +323,13 @@ export default function planMode(pi: ExtensionAPI): void {
        * switching branches in an existing process, this also replaces the
        * snapshot used when leaving plan mode.
        */
-      toolsBeforePlanMode =
-        nextToolsBeforePlanMode ??
-        (wasEnabled ? previousToolsBeforePlanMode : activeTools);
+      toolsBeforePlanMode = restorableTools(
+        nextToolsBeforePlanMode ?? (wasEnabled ? previousToolsBeforePlanMode : activeTools),
+        activeTools,
+        savedState?.disabledTools,
+        wasEnabled ? previousToolsBeforePlanMode : undefined,
+      );
+      disabledToolsBeforePlanMode = [...DISABLED_TOOLS];
       enabled = true;
 
       // Preserve newly available tools, but always remove plan-mode tools.
@@ -322,16 +343,16 @@ export default function planMode(pi: ExtensionAPI): void {
          * restore the tools that were active before plan mode was enabled.
          * Keep tools added by other extensions while plan mode was active.
          */
-        const restored = previousToolsBeforePlanMode ?? [];
-        const kept = activeTools.filter(
-          (tool) =>
-            !restored.includes(tool) && !DISABLED_TOOLS.has(tool),
-        );
-        pi.setActiveTools([...restored, ...kept]);
+        pi.setActiveTools(restorableTools(
+          previousToolsBeforePlanMode,
+          activeTools,
+          previousDisabledTools,
+        ));
       }
 
       enabled = false;
       toolsBeforePlanMode = undefined;
+      disabledToolsBeforePlanMode = undefined;
     }
 
     /*
@@ -342,6 +363,7 @@ export default function planMode(pi: ExtensionAPI): void {
     announcedEnabled = getLastAnnouncedEnabled(ctx) ?? false;
 
     updateStatus(ctx);
+    pi.events.emit(PLAN_MODE_EVENT, { enabled });
   }
 
   /*

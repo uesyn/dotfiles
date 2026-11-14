@@ -130,32 +130,10 @@
         };
       };
 
-      home.file.".local/share/pi/extensions/btw" = {
-        source = ./extensions/btw;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/dynamic-provider" = {
-        source = ./extensions/dynamic-provider;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/favorite-models" = {
-        source = ./extensions/favorite-models;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/git-readonly" = {
-        source = ./extensions/git-readonly;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/notification" = {
-        source = ./extensions/notification;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/plan-mode" = {
-        source = ./extensions/plan-mode;
-        recursive = true;
-      };
-      home.file.".local/share/pi/extensions/systemp-prompt-modifier" = {
-        source = ./extensions/systemp-prompt-modifier;
+      # Pi resolves entry-point symlinks before loading imports. Keep sibling
+      # extensions in one store tree so their relative imports still resolve.
+      home.file.".local/share/pi/extensions" = {
+        source = ./extensions;
         recursive = true;
       };
 
@@ -221,6 +199,7 @@
             "+ls"
             "+codemode"
             "+git"
+            "+subagent"
           ];
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
@@ -229,6 +208,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/subagent"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
           ];
           skills = [

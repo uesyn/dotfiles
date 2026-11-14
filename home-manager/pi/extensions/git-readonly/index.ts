@@ -31,6 +31,7 @@ import {
   DEFAULT_MAX_BYTES,
   DEFAULT_MAX_LINES,
   formatSize,
+  defineTool,
   truncateHead,
   type ExtensionAPI,
 } from "@earendil-works/pi-coding-agent";
@@ -814,8 +815,9 @@ function errorResult(
   };
 }
 
-export default function gitReadonlyExtension(pi: ExtensionAPI): void {
-  pi.registerTool({
+// SDK subagents reuse the exact same validation and nono-aware execution path.
+export function createGitReadonlyTool() {
+  return defineTool<typeof GitParamsSchema, GitOutput>({
     name: "git",
     label: "Git (read-only)",
     description:
@@ -912,3 +914,6 @@ export default function gitReadonlyExtension(pi: ExtensionAPI): void {
   });
 }
 
+export default function gitReadonlyExtension(pi: ExtensionAPI): void {
+  pi.registerTool(createGitReadonlyTool());
+}
