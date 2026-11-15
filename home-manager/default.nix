@@ -17,7 +17,6 @@ in
     ./copilot-language-server
     ./dircolors
     ./docker
-    ./dsh
     ./fzf
     ./git
     ./go
