@@ -4,7 +4,6 @@ import type {
   UserMessage,
 } from "@earendil-works/pi-ai";
 import {
-  BorderedLoader,
   buildSessionContext,
   convertToLlm,
   DynamicBorder,
@@ -50,6 +49,13 @@ type SideHistory = {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
+}
+
+// pi-tui wraps the cursor character in zero-width APC markers so the TUI can
+// position the hardware cursor. Other clients (pi-web) print the lines as-is,
+// so they have to be removed before rendering there.
+function stripCursorMarkers(lines: string[]): string[] {
+  return lines.map((line) => line.replace(/\x1b_pi:[^\x07]*\x07/g, ""));
 }
 
 function extractText(response: {
@@ -188,158 +194,47 @@ async function runQuery(
   }
 }
 
-async function askWithLoader(
-  ctx: ExtensionCommandContext,
-  question: string,
-  sideMessages: Message[],
-): Promise<QueryResult> {
-  const model = ctx.model;
-  if (!model) {
-    return { kind: "error", error: new Error("No model selected") };
-  }
+type PanelMode = "view" | "input" | "loading";
 
-  return ctx.ui.custom<QueryResult>(
-    (tui, theme, _keybindings, done) => {
-      const loader = new BorderedLoader(tui, theme, `Asking ${model.id}...`);
-      let settled = false;
-
-      const finish = (result: QueryResult) => {
-        if (settled) return;
-        settled = true;
-        done(result);
-      };
-
-      loader.onAbort = () => finish({ kind: "cancelled" });
-
-      void runQuery(ctx, question, sideMessages, loader.signal).then(finish, (error) =>
-        finish({ kind: "error", error }),
-      );
-
-      return loader;
-    },
-    {
-      overlay: true,
-      overlayOptions: {
-        anchor: "center",
-        width: "60%",
-        maxHeight: "30%",
-        margin: 1,
-      },
-    },
-  );
-}
-
-async function promptAdditionalQuestion(
-  ctx: ExtensionCommandContext,
-): Promise<string | undefined> {
-  return ctx.ui.custom<string | undefined>(
-    (_tui, theme, _keybindings, done) => {
-      const border = new DynamicBorder((s: string) => theme.fg("accent", s));
-      const title = new Text(
-        theme.fg("accent", theme.bold("btw: 追加の質問")),
-        1,
-        0,
-      );
-      const input = new Input();
-      const footer = new Text(
-        theme.fg("dim", "Enter 送信 · Esc キャンセル"),
-        1,
-        0,
-      );
-
-      input.onSubmit = done;
-      input.onEscape = () => done(undefined);
-
-      return {
-        get focused() {
-          return input.focused;
-        },
-        set focused(focused: boolean) {
-          input.focused = focused;
-        },
-        render: (width: number): string[] => {
-          const hasSideBorders = width >= 3;
-          const contentWidth = hasSideBorders ? width - 2 : width;
-          const topBorderLines = hasSideBorders
-            ? [
-                `${theme.fg("accent", "╭")}${border.render(width - 2)[0]!}${theme.fg("accent", "╮")}`,
-              ]
-            : border.render(width);
-          const bottomBorderLines = hasSideBorders
-            ? [
-                `${theme.fg("accent", "╰")}${border.render(width - 2)[0]!}${theme.fg("accent", "╯")}`,
-              ]
-            : border.render(width);
-          const addSideBorders = (lines: string[]): string[] => {
-            if (!hasSideBorders) {
-              return lines.map((line) => truncateToWidth(line, contentWidth, ""));
-            }
-
-            return lines.map((line) => {
-              const content = truncateToWidth(line, contentWidth, "");
-              return `${theme.fg("accent", "│")}${content}${" ".repeat(
-                Math.max(0, contentWidth - visibleWidth(content)),
-              )}${theme.fg("accent", "│")}`;
-            });
-          };
-
-          return [
-            ...topBorderLines,
-            ...addSideBorders(title.render(contentWidth)),
-            ...addSideBorders(input.render(contentWidth)),
-            ...addSideBorders(footer.render(contentWidth)),
-            ...bottomBorderLines,
-          ];
-        },
-        invalidate: () => {
-          border.invalidate();
-          title.invalidate();
-          input.invalidate();
-          footer.invalidate();
-        },
-        handleInput: (data: string) => {
-          if (matchesKey(data, "ctrl+c")) {
-            done(undefined);
-            return;
-          }
-          input.handleInput(data);
-        },
-      };
-    },
-    {
-      overlay: true,
-      overlayOptions: {
-        anchor: "center",
-        width: "60%",
-        maxHeight: 7,
-        margin: 1,
-      },
-    },
-  );
-}
-
-async function showAnswer(
+// One panel serves both clients. The TUI allows nested overlays, but pi-web
+// renders only the first queued `custom()` UI, so asking, typing and showing
+// the answer are modes of a single component instead of stacked overlays.
+async function showPanel(
   ctx: ExtensionCommandContext,
   history: SideHistory,
-  initialIndex: number,
-): Promise<void> {
+  options: { initialIndex: number; initialQuestion?: string },
+): Promise<boolean> {
+  let mounted = false;
+
   await ctx.ui.custom<void>(
     (tui, theme, _keybindings, done) => {
+      mounted = true;
+
+      // pi-web exposes a fixed 40x92 fake terminal and only requestRender(), so
+      // keep the layout independent of terminal sizing beyond that.
       const border = new DynamicBorder((s: string) => theme.fg("accent", s));
       const title = new Text("", 1, 0);
-      const markdown = new Markdown("", 1, 1, getMarkdownTheme());
-      const footer = new Text(
-        theme.fg(
-          "dim",
-          "Ctrl+A ask · Ctrl+H prev · Ctrl+L next · Ctrl+P/N line · Ctrl+F/B page · Enter/Esc close",
-        ),
-        1,
-        0,
-      );
-      let selectedIndex = initialIndex;
+      const answer = new Markdown("", 1, 1, getMarkdownTheme());
+      const input = new Input({ placeholder: "質問を入力" });
+      // A spinner would push a full frame through pi-web's stream every 80 ms,
+      // so the waiting state is a single static line instead.
+      const status = new Text("", 1, 1);
+      const footer = new Text("", 1, 0);
+
+      let mode: PanelMode = options.initialQuestion ? "loading" : "view";
+      let selectedIndex = options.initialIndex;
       let scrollOffset = 0;
       let viewportHeight = 0;
+      let disposed = false;
       let asking = false;
+      let controller: AbortController | undefined;
+
+      const finish = () => {
+        if (disposed) return;
+        disposed = true;
+        controller?.abort();
+        done(undefined);
+      };
 
       const updateAnswer = () => {
         const exchange = history.exchanges[selectedIndex];
@@ -353,39 +248,119 @@ async function showAnswer(
             ),
           ),
         );
-        markdown.setText(exchange.answer);
+        answer.setText(exchange.answer);
         scrollOffset = 0;
       };
 
-      const askAdditionalQuestion = async () => {
-        const input = await promptAdditionalQuestion(ctx);
-        const question = input?.trim();
-        if (!question) return;
+      const updateFooter = () => {
+        const hint =
+          mode === "view"
+            ? "Ctrl+A ask · ←/→ Ctrl+H/L prev/next · ↑/↓ Ctrl+P/N line · Ctrl+F/B pg · Enter/Esc close"
+            : mode === "input"
+              ? "Enter 送信 · Esc 戻る"
+              : "Esc キャンセル";
+        footer.setText(theme.fg("dim", hint));
+      };
 
-        const result = await askWithLoader(
+      const ask = async (question: string) => {
+        if (asking || disposed) return;
+        asking = true;
+        mode = "loading";
+        scrollOffset = 0;
+        status.setText(
+          theme.fg("accent", `Asking ${ctx.model?.id ?? "the model"}...`),
+        );
+        updateFooter();
+        controller = new AbortController();
+        tui.requestRender();
+
+        const result = await runQuery(
           ctx,
           question,
           getSideMessages(history),
+          controller.signal,
         );
-        if (result.kind === "cancelled") {
+
+        asking = false;
+        controller = undefined;
+        if (disposed) return;
+
+        mode = "view";
+        if (result.kind === "answer") {
+          selectedIndex = addSideExchange(
+            history,
+            question,
+            result.text,
+            result.message,
+          );
+        } else if (result.kind === "cancelled") {
           ctx.ui.notify("btw cancelled", "info");
-          return;
-        }
-        if (result.kind === "error") {
+        } else {
           ctx.ui.notify(`btw failed: ${errorMessage(result.error)}`, "error");
+        }
+
+        if (history.exchanges.length === 0) {
+          // Nothing to show: close instead of leaving an empty panel behind.
+          finish();
           return;
         }
 
-        selectedIndex = addSideExchange(
-          history,
-          question,
-          result.text,
-          result.message,
-        );
         updateAnswer();
+        updateFooter();
+        tui.requestRender();
       };
 
-      updateAnswer();
+      input.onSubmit = (value: string) => {
+        const question = value.trim();
+        if (!question) {
+          mode = "view";
+          updateFooter();
+          tui.requestRender();
+          return;
+        }
+        void ask(question);
+      };
+      input.onEscape = () => {
+        mode = "view";
+        updateFooter();
+        tui.requestRender();
+      };
+
+      const openInput = () => {
+        input.setValue("");
+        mode = "input";
+        updateFooter();
+        tui.requestRender();
+      };
+
+      const selectExchange = (delta: number) => {
+        const last = Math.max(0, history.exchanges.length - 1);
+        selectedIndex = Math.min(last, Math.max(0, selectedIndex + delta));
+        updateAnswer();
+        tui.requestRender();
+      };
+
+      const scrollLines = (delta: number) => {
+        scrollOffset = Math.max(0, scrollOffset + delta);
+        tui.requestRender();
+      };
+
+      const scrollPages = (direction: -1 | 1) => {
+        scrollOffset = Math.max(
+          0,
+          scrollOffset + direction * Math.max(1, viewportHeight),
+        );
+        tui.requestRender();
+      };
+
+      // Kick off the first request inside the panel so the initial question and
+      // the follow-up share one component (and therefore one UI in pi-web).
+      if (options.initialQuestion) {
+        void ask(options.initialQuestion);
+      } else {
+        updateAnswer();
+      }
+      updateFooter();
 
       const render = (width: number): string[] => {
         const hasSideBorders = width >= 3;
@@ -400,9 +375,6 @@ async function showAnswer(
               `${theme.fg("accent", "╰")}${border.render(width - 2)[0]!}${theme.fg("accent", "╯")}`,
             ]
           : border.render(width);
-        const titleLines = title.render(contentWidth);
-        const answerLines = markdown.render(contentWidth);
-        const footerLines = footer.render(contentWidth);
         const addSideBorders = (lines: string[]): string[] => {
           if (!hasSideBorders) {
             return lines.map((line) => truncateToWidth(line, contentWidth, ""));
@@ -415,27 +387,52 @@ async function showAnswer(
             )}${theme.fg("accent", "│")}`;
           });
         };
+
+        const titleLines = title.render(contentWidth);
+        const footerLines = footer.render(contentWidth);
         const availableHeight = Math.max(1, tui.terminal.rows - 2);
         const maxHeight = Math.min(
           availableHeight,
           Math.max(1, Math.floor(tui.terminal.rows * 0.8)),
         );
-        const fixedHeight =
-          topBorderLines.length + bottomBorderLines.length + titleLines.length + footerLines.length;
-        viewportHeight = Math.max(0, maxHeight - fixedHeight);
-        const maxScrollOffset = Math.max(0, answerLines.length - viewportHeight);
+        const bodyHeight = Math.max(
+          1,
+          maxHeight -
+            topBorderLines.length -
+            bottomBorderLines.length -
+            titleLines.length -
+            footerLines.length,
+        );
 
-        scrollOffset = Math.min(scrollOffset, maxScrollOffset);
+        let bodyLines: string[];
+        if (mode === "loading") {
+          viewportHeight = 0;
+          bodyLines = status.render(contentWidth);
+        } else if (mode === "input") {
+          viewportHeight = 0;
+          bodyLines = ["", ...input.render(contentWidth)];
+        } else {
+          const answerLines = answer.render(contentWidth);
+          viewportHeight = bodyHeight;
+          scrollOffset = Math.min(
+            scrollOffset,
+            Math.max(0, answerLines.length - viewportHeight),
+          );
+          bodyLines = answerLines.slice(
+            scrollOffset,
+            scrollOffset + viewportHeight,
+          );
+        }
 
-        return [
+        const lines = [
           ...topBorderLines,
           ...addSideBorders(titleLines),
-          ...addSideBorders(
-            answerLines.slice(scrollOffset, scrollOffset + viewportHeight),
-          ),
+          ...addSideBorders(bodyLines.slice(0, bodyHeight)),
           ...addSideBorders(footerLines),
           ...bottomBorderLines,
         ];
+
+        return ctx.mode === "tui" ? lines : stripCursorMarkers(lines);
       };
 
       return {
@@ -443,58 +440,77 @@ async function showAnswer(
         invalidate: () => {
           border.invalidate();
           title.invalidate();
-          markdown.invalidate();
+          answer.invalidate();
+          input.invalidate();
+          status.invalidate();
           footer.invalidate();
         },
+        dispose: () => {
+          // pi-web disposes the component when the client goes away or aborts.
+          disposed = true;
+          controller?.abort();
+        },
+        get focused() {
+          return input.focused;
+        },
+        set focused(focused: boolean) {
+          input.focused = focused;
+        },
         handleInput: (data: string) => {
+          if (mode === "loading") {
+            if (matchesKey(data, "escape") || matchesKey(data, "ctrl+c")) {
+              controller?.abort();
+            }
+            return;
+          }
+
+          if (mode === "input") {
+            // Ctrl+C closes the prompt; every other key belongs to the input.
+            if (matchesKey(data, "ctrl+c")) {
+              mode = "view";
+              updateFooter();
+              tui.requestRender();
+              return;
+            }
+            input.handleInput(data);
+            tui.requestRender();
+            return;
+          }
+
           // The overlay owns input while open, so these take precedence over
           // the normal editor/selector keybindings.
           if (matchesKey(data, "ctrl+a")) {
-            if (asking) return;
-            asking = true;
-            void askAdditionalQuestion().finally(() => {
-              asking = false;
-              tui.requestRender();
-            });
+            openInput();
             return;
           }
-          if (matchesKey(data, "ctrl+h")) {
-            selectedIndex = Math.max(0, selectedIndex - 1);
-            updateAnswer();
-            tui.requestRender();
+          // Arrow keys are aliases for the Ctrl bindings: ←/→ pick an exchange,
+          // ↑/↓ scroll one line.
+          if (matchesKey(data, "ctrl+h") || matchesKey(data, "left")) {
+            selectExchange(-1);
             return;
           }
-          if (matchesKey(data, "ctrl+l")) {
-            selectedIndex = Math.min(
-              history.exchanges.length - 1,
-              selectedIndex + 1,
-            );
-            updateAnswer();
-            tui.requestRender();
+          if (matchesKey(data, "ctrl+l") || matchesKey(data, "right")) {
+            selectExchange(1);
             return;
           }
-          if (matchesKey(data, "ctrl+p")) {
-            scrollOffset = Math.max(0, scrollOffset - 1);
-            tui.requestRender();
+          if (matchesKey(data, "ctrl+p") || matchesKey(data, "up")) {
+            scrollLines(-1);
             return;
           }
-          if (matchesKey(data, "ctrl+n")) {
-            scrollOffset += 1;
-            tui.requestRender();
+          if (matchesKey(data, "ctrl+n") || matchesKey(data, "down")) {
+            scrollLines(1);
             return;
           }
           if (matchesKey(data, "ctrl+b")) {
-            scrollOffset = Math.max(0, scrollOffset - Math.max(1, viewportHeight));
-            tui.requestRender();
+            scrollPages(-1);
             return;
           }
           if (matchesKey(data, "ctrl+f")) {
-            scrollOffset += Math.max(1, viewportHeight);
-            tui.requestRender();
+            scrollPages(1);
             return;
           }
           if (matchesKey(data, "enter") || matchesKey(data, "escape")) {
-            done(undefined);
+            finish();
           }
         },
       };
@@ -509,6 +525,8 @@ async function showAnswer(
       },
     },
   );
+
+  return mounted;
 }
 
 export default function btwExtension(pi: ExtensionAPI): void {
@@ -517,53 +535,50 @@ export default function btwExtension(pi: ExtensionAPI): void {
   pi.registerCommand("btw", {
     description: "Ask a temporary question with /btw <question>",
     handler: async (args, ctx) => {
-      if (ctx.mode !== "tui") {
-        ctx.ui.notify("btw requires interactive mode", "error");
+      // `hasUI` is true in the TUI and in RPC clients that implement the
+      // extension UI sub-protocol (pi-web does).
+      if (!ctx.hasUI) {
+        ctx.ui.notify("btw requires an interactive UI", "error");
         return;
       }
 
       const sessionId = ctx.sessionManager.getSessionId();
-      const history = sideHistoryBySession.get(sessionId);
       const question = args.trim();
+      const history = sideHistoryBySession.get(sessionId) ?? { exchanges: [] };
 
-      if (!question) {
-        if (history && history.exchanges.length > 0) {
-          await showAnswer(ctx, history, history.exchanges.length - 1);
-        } else {
-          ctx.ui.notify("No previous btw answer. Usage: /btw <question>", "info");
-        }
+      if (!question && history.exchanges.length === 0) {
+        ctx.ui.notify("No previous btw answer. Usage: /btw <question>", "info");
         return;
       }
-
-      if (!ctx.model) {
+      if (question && !ctx.model) {
         ctx.ui.notify("No model selected", "error");
         return;
       }
 
-      const currentHistory = history ?? { exchanges: [] };
-      const result = await askWithLoader(
+      sideHistoryBySession.set(sessionId, history);
+
+      const mounted = await showPanel(ctx, history, {
+        initialIndex: Math.max(0, history.exchanges.length - 1),
+        initialQuestion: question || undefined,
+      });
+      if (mounted || !question) return;
+
+      // A client without `custom()` support (plain `pi --mode rpc`) never runs
+      // the panel factory, so answer the question in a dialog instead.
+      const result = await runQuery(
         ctx,
         question,
-        getSideMessages(currentHistory),
+        getSideMessages(history),
+        new AbortController().signal,
       );
       if (result.kind === "cancelled") {
         ctx.ui.notify("btw cancelled", "info");
-        return;
-      }
-      if (result.kind === "error") {
+      } else if (result.kind === "error") {
         ctx.ui.notify(`btw failed: ${errorMessage(result.error)}`, "error");
-        return;
+      } else {
+        addSideExchange(history, question, result.text, result.message);
+        await ctx.ui.editor(`btw: ${question}`, result.text);
       }
-
-      const answerIndex = addSideExchange(
-        currentHistory,
-        question,
-        result.text,
-        result.message,
-      );
-      sideHistoryBySession.set(sessionId, currentHistory);
-
-      await showAnswer(ctx, currentHistory, answerIndex);
     },
   });
 }
