@@ -11,7 +11,8 @@
     description = ''
       mise tools written to the global `config.toml` (the `mise use -g`
       target). Tool modules contribute their own entries as `lib.mkDefault`
-      (Go from the go module, kubebuilder from the kubernetes module), so a
+      (Go from the go module, kubebuilder from the kubernetes module, pi-web
+      from the pi module), so a
       plain definition here overrides them and a fresh machine only needs
       `mise install`.
     '';

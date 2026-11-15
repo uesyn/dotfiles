@@ -125,6 +125,13 @@
       # Pi runs outside nono, so this module contributes no nono grants; the
       # bash-sandbox extension runs bash and !/!! through nono instead.
 
+      # pi-web comes from npm through mise (the npm backend needs `npm`, which
+      # the javascript module provides). Its install directory is writable,
+      # which pi-web needs: it rewrites `.next/prerender-manifest.json` on every
+      # start so the `previewModeId` published in the package cannot bypass its
+      # password gate. `lib.mkDefault` so a plain definition overrides it.
+      dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.17.0";
+
       home.file.".local/share/pi/extensions".source = "${extensionsTree}";
       # Built-in MCP support (no pi-mcp-adapter package): servers in
       # ~/.pi/agent/mcp.json are connected directly. Tool names are

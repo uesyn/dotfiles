@@ -25,6 +25,7 @@ nix run nixpkgs#stylua -- home-manager/neovim/nvim              # Lua: stylua.to
 - `subagent/`: model-only `subagent` tool with fixed read-only `scout`/`planner`/`reviewer` roles, two-slot queue, cancelled by plan mode and shutdown. See its README.
 - `git-readonly/`: read-only `git` tool (`status`, `diff`, `log`, `show`, `branch`, `blame`, `rev_parse`), argv spawn, validated revs/paths, `--` before paths; stays enabled in plan mode.
 - Skills: `settings.skills` → `~/.config/pi/skills` — `kubebuilder` (+ upstream docs), `k8s-api-conventions`, `skill-creator`.
+- `pi-web`: browser UI for pi ([agegr/pi-web](https://github.com/agegr/pi-web)), installed from npm by mise (`dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.17.0"`; the npm backend needs `npm` from the javascript module). The backend's install directory is writable, which pi-web needs: it rewrites `.next/prerender-manifest.json` on every start so the `previewModeId` published in the package cannot bypass its password gate (Next skips middleware for `x-prerender-revalidate` requests). Shares `~/.pi/agent` with pi, so sessions, models and extensions (bash-sandbox included) apply.
 - MCP: built-in support. `~/.pi/agent/mcp.json` declares `code-review-graph` (stdio, 120s) and `exa` (HTTP, 60s), both `exposure = "direct"`; tool names `mcp__<server>__<tool>`.
 
 ## nono
@@ -56,5 +57,5 @@ nix run nixpkgs#stylua -- home-manager/neovim/nvim              # Lua: stylua.to
 ## Rules & Quirks
 
 - Public repo: no absolute home paths, usernames, hostnames, emails or credentials; use `~`/relative paths and resolve machine paths at runtime (`tmpdir()`, `homedir()`, `process.execPath`).
-- `allowUnfree = true`. `GOPATH=$HOME`, `GOBIN=$HOME/bin`. Go and kubebuilder are mise tools (`dotfiles.mise.tools` as `lib.mkDefault`, `mise install` on switch); only `gopls` is in Nix, because nixpkgs Go re-execs `$GOROOT/pkg/tool` which the exec gate denies. Node prefix `~/.node` (+ `$HOME/.node/bin`), mise shims `~/.local/share/mise/shims`. `EDITOR`/`KUBE_EDITOR = nvim`. macOS extras via `Brewfile`.
+- `allowUnfree = true`. `GOPATH=$HOME`, `GOBIN=$HOME/bin`. Go, kubebuilder and pi-web are mise tools (`dotfiles.mise.tools` as `lib.mkDefault`, `mise install` on switch); only `gopls` is in Nix, because nixpkgs Go re-execs `$GOROOT/pkg/tool` which the exec gate denies. Node prefix `~/.node` (+ `$HOME/.node/bin`), mise shims `~/.local/share/mise/shims`. `EDITOR`/`KUBE_EDITOR = nvim`. macOS extras via `Brewfile`.
 - zsh `dotDir = ~/.config/zsh` (+ `~/.zshenv.local`). tmux prefix `Ctrl+s`. zellij leader `Ctrl+s` → `locked` (default layout).
