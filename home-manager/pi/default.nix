@@ -7,6 +7,18 @@
 }:
 {
   options.dotfiles.pi = {
+    # Bash tool sandbox bootstrap, generated below and read by bash-sandbox.
+    sandbox.profile = lib.mkOption {
+      type = lib.types.str;
+      default = "agents";
+      description = ''
+        Existing nono profile name or absolute profile path used for Pi's bash
+        and !/!! commands. Defaults to the previously used agents profile. Pi
+        runs normally; the extension invokes nono per command. Explicit outer
+        sandboxing still limits the grants available to that profile.
+      '';
+    };
+
     providers = lib.mkOption {
       type = lib.types.attrsOf lib.types.attrs;
       default = { };
@@ -87,21 +99,33 @@
       ) pi.systemPromptModifier;
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
+      # The extension only swaps `shellPath`. This immutable wrapper turns that
+      # shell into `nono run ... <nix bash> "$@"`, so Pi keeps owning spawn,
+      # timeout, process-tree termination and exit cleanup.
+      bashSandbox = pkgs.writeShellScript "nono-bash" ''
+        set +u
+        # Pi is never started inside nono; this only keeps an accidental nested
+        # run from joining an outer broker and inheriting its grants.
+        for name in ''${!NONO_@}; do unset "$name"; done
+        unset NODE_OPTIONS NODE_PATH BASH_ENV ENV
+        exec ${lib.getExe pkgs.nono} run -s --profile ${lib.escapeShellArg pi.sandbox.profile} --allow-cwd --workdir "$PWD" --no-rollback --no-audit --no-diagnostics -- ${pkgs.bash}/bin/bash "$@"
+      '';
+      # Pi resolves entry-point symlinks before loading imports. Keep sibling
+      # extensions in one store tree so their relative imports still resolve.
+      # The bash-sandbox copy has its wrapper path substituted at build time, so
+      # the extension never reads a config file or environment variable.
+      extensionsTree = pkgs.runCommand "pi-extensions" { } ''
+        cp -r ${./extensions} $out
+        chmod -R u+w $out
+        substituteInPlace $out/bash-sandbox/endpoint.ts \
+          --replace-fail '@sandboxShell@' '${bashSandbox}'
+      '';
     in
     {
-      # nono: wrap the `pi` command so it runs inside the sandbox.
-      dotfiles.nono.wrap = [ "pi" ];
+      # Pi runs outside nono, so this module contributes no nono grants; the
+      # bash-sandbox extension runs bash and !/!! through nono instead.
 
-      # nono: grant pi's config/data/state dirs.
-      dotfiles.nono.filesystem.read = [
-        "~/.config/pi"
-      ];
-      dotfiles.nono.filesystem.allow = [
-        "~/.pi"
-        "~/.local/share/pi"
-        "~/.local/state/pi"
-      ];
-
+      home.file.".local/share/pi/extensions".source = "${extensionsTree}";
       # Built-in MCP support (no pi-mcp-adapter package): servers in
       # ~/.pi/agent/mcp.json are connected directly. Tool names are
       # mcp__<server>__<tool>; `exposure = "direct"` declares them to the model.
@@ -128,13 +152,6 @@
         text = builtins.toJSON {
           models = systemPromptModifiers;
         };
-      };
-
-      # Pi resolves entry-point symlinks before loading imports. Keep sibling
-      # extensions in one store tree so their relative imports still resolve.
-      home.file.".local/share/pi/extensions" = {
-        source = ./extensions;
-        recursive = true;
       };
 
       # Skills live under ~/.config/pi/skills; the config below points Pi there.
@@ -207,6 +224,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
             "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/bash-sandbox"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
             "${config.home.homeDirectory}/.local/share/pi/extensions/subagent"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
