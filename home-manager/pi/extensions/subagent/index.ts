@@ -88,7 +88,7 @@ export default function subagentExtension(pi: ExtensionAPI): void {
     description:
       "Delegate 1–8 independent read-only tasks to scout (code discovery), planner (implementation planning), or reviewer (adversarial code review). " +
       "Runs at most two SDK sessions concurrently across calls. Children inherit the current model/thinking level, not conversation history. " +
-      "Only read/grep/find/ls/read-only git; no edits, bash, MCP, recursive delegation, or worktrees. " +
+      "Only read/grep/find/ls/read-only git/read-only ast_grep; no edits, bash, MCP, recursive delegation, or worktrees. " +
       "Each task is limited to 5 minutes and 20 model turns; output to 4 KiB/180 lines with full truncated answers saved to a private temporary file. " +
       "Returns task statuses and answers in input order, preserving partial failures. Disabled in plan mode.",
     promptSnippet: "Delegate independent code discovery, planning, or review to read-only subagents (two concurrent).",

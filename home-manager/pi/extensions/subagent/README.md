@@ -25,9 +25,10 @@ subagent({
   OAuth refresh without extracting the private runtime or copying credentials.
   Parent extension request hooks are not inherited.
 - Children have only `read`, `grep`, `find`, `ls`, and the same read-only `git`
-  tool as the parent. They never load global/project extension code, MCP,
-  codemode, prompt templates, skills, or project settings. They load normal
-  global/ancestor `AGENTS.md` context and the existing per-model prompt modifier.
+  and `ast_grep` tools as the parent. They never load global/project extension
+  code, MCP, codemode, prompt templates, skills, or project settings. They load
+  normal global/ancestor `AGENTS.md` context and the existing per-model prompt
+  modifier.
 - No parent conversation history. Supply relevant background in each task.
 - No worktrees, edits, commits, shell commands, test execution, or recursive
   delegation. Parent owns implementation and verification.

@@ -14,6 +14,7 @@ import {
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { createAstGrepTool } from "../ast-grep/index.ts";
 import { createGitReadonlyTool } from "../git-readonly/index.ts";
 import { applyPromptModifier, parseConfig } from "../systemp-prompt-modifier/index.ts";
 import { agentPrompt, type AgentName } from "./agents.ts";
@@ -154,8 +155,8 @@ export async function createChildSession(
       cacheWarming: "off",
     }),
     resourceLoader: loader,
-    tools: ["read", "grep", "find", "ls", "git"],
-    customTools: [createGitReadonlyTool()],
+    tools: ["read", "grep", "find", "ls", "git", "ast_grep"],
+    customTools: [createGitReadonlyTool(), createAstGrepTool()],
   });
   return session;
 }

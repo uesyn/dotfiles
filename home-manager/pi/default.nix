@@ -223,9 +223,11 @@
             "+ls"
             "+codemode"
             "+git"
+            "+ast_grep"
             "+subagent"
           ];
           extensions = [
+            "${config.home.homeDirectory}/.local/share/pi/extensions/ast-grep"
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"

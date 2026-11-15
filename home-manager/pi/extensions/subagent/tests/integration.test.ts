@@ -183,13 +183,13 @@ test("actual SDK session has only read-only tools, isolated context, and parent 
   context.cwd = cwd;
   const session = await createChildSession(context, "scout", new AbortController().signal) as AgentSession;
   try {
-    assert.deepEqual(session.getActiveToolNames().sort(), ["find", "git", "grep", "ls", "read"]);
+    assert.deepEqual(session.getActiveToolNames().sort(), ["ast_grep", "find", "git", "grep", "ls", "read"]);
     assert.equal(session.thinkingLevel, "high");
     assert.equal(session.sessionFile, undefined);
     await session.prompt("Inspect evidence.txt");
     assert.equal(session.getLastAssistantText(), "done");
     assert.equal(requests, 2);
-    assert.deepEqual(toolNames[0].sort(), ["find", "git", "grep", "ls", "read"]);
+    assert.deepEqual(toolNames[0].sort(), ["ast_grep", "find", "git", "grep", "ls", "read"]);
     await assert.rejects(access(join(cwd, "must-not-exist")));
   } finally {
     session.dispose();
