@@ -95,6 +95,7 @@ in
       home.stateVersion = "26.05"; # Please read the comment before changing.
 
       home.packages = [
+        pkgs.ast-grep
         pkgs.coreutils-full
         pkgs.curl
         pkgs.diffutils
