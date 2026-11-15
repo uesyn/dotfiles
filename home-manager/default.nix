@@ -33,6 +33,7 @@ in
     ./pkg-config
     ./python
     ./rust
+    ./tailcat
     ./tmux
     ./zellij
     ./zsh
