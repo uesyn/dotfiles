@@ -32,17 +32,18 @@ if [[ -z $allow && -z $deny ]]; then
   exit 1
 fi
 
-root="$(git rev-parse --show-toplevel 2>/dev/null)"
 branch=$(git branch --no-color --show-current)
-dotgit="${root}/.git"
-allow_file="${dotgit}/git_allow"
+# `--git-common-dir`, not `<toplevel>/.git`: a linked worktree's `.git` is a
+# file, and the marker is per repository, so worktrees share the one in the
+# main repository's git directory.
+allow_file="$(git rev-parse --path-format=absolute --git-common-dir)/git_allow"
 
 if [[ -n $deny ]]; then
-  rm -f ${allow_file}
+  rm -f -- "${allow_file}"
   exit 0
 fi
 
 if [[ -n $allow ]]; then
-  touch ${allow_file}
+  touch -- "${allow_file}"
   exit 0
 fi

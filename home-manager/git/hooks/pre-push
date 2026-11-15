@@ -2,7 +2,9 @@
 
 set -e -o pipefail
 
-git_allow_file=".git/git_allow"
+# `--git-common-dir`, not `.git`: a linked worktree's `.git` is a file, and
+# the marker is per repository (`git-allow` writes the same path).
+git_allow_file="$(git rev-parse --path-format=absolute --git-common-dir)/git_allow"
 [[ -f ${git_allow_file} ]] && exit 0
 
 readonly DENY_BRANCH_REGEX='^(master|main|release.*|gh-pages)$'

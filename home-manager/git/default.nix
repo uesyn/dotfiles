@@ -6,6 +6,7 @@
   ...
 }:
 let
+  isLinux = pkgs.stdenv.hostPlatform.isLinux;
   git-allow = pkgs.writeShellScriptBin "git-allow" (builtins.readFile ./commands/git-allow);
   git-fixup = pkgs.writeShellScriptBin "git-fixup" (builtins.readFile ./commands/git-fixup);
   defaultOAuthCredentials = {
@@ -106,6 +107,10 @@ let
       config.dotfiles.gitCredentialOauth.ghHosts
     else
       config.dotfiles.git-credential-oauth.ghHosts;
+  # home-manager builds the `programs.git.hooks` linkFarm and points
+  # `core.hooksPath` at it; the directory is not exposed as an option, so read
+  # it back from the ini it lands in.
+  gitHooksPath = config.programs.git.iniContent.core.hooksPath;
 in
 {
   options.dotfiles.git = {
@@ -149,6 +154,16 @@ in
       "~/.config/git"
       "~/.config/gh"
     ];
+
+    # nono: `git commit` execs the hook in the store linkFarm that
+    # `core.hooksPath` points at. `executableDirs` covers execs the session
+    # sandbox starts, and `gitExecPaths` the same exec inside git's own command
+    # sandbox (Linux only; macOS allows all exec). Without both, the exec gate
+    # denies the hook and every commit fails.
+    dotfiles.nono.commandPolicies = {
+      executableDirs = lib.optionals isLinux [ gitHooksPath ];
+      gitExecPaths = lib.optionals isLinux [ gitHooksPath ];
+    };
 
     home.packages = [
       pkgs.ghq

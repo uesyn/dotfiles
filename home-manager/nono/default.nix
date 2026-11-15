@@ -108,6 +108,19 @@
         be writable by the sandbox.
       '';
     };
+    commandPolicies.gitExecPaths = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ ];
+      description = ''
+        Paths appended to `exec_paths` of the git command sandbox (directory
+        entries cover everything beneath them; Linux-only, ignored on macOS).
+        `executableDirs` covers execs the *session* sandbox starts, but `git`
+        runs in its own command sandbox with its own execute allowlist, so a
+        program git itself execs by absolute path (e.g. the home-manager hooks
+        linkFarm behind `core.hooksPath`) must also be listed here. A matching
+        `fs_read` grant is still required; missing paths are skipped.
+      '';
+    };
     commandPolicies.commands = lib.mkOption {
       type = lib.types.attrsOf (lib.types.functionTo lib.types.attrs);
       default = { };
