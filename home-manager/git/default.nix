@@ -25,7 +25,6 @@ let
     ".vim-lsp-settings"
     "CRUSH.md"
     ".crush"
-    ".code-review-graph/"
   ];
   gitCredentialOauthOptions = {
     device = lib.mkOption {

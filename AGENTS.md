@@ -27,7 +27,7 @@ nix run nixpkgs#stylua -- home-manager/neovim/nvim              # Lua: stylua.to
 - `ast-grep/`: read-only structural search `ast_grep` (`search` pattern/node kind, `rule` inline YAML via `scan --inline-rules`, `debug` `--debug-query` + `--stdin`), streamed `--json=stream` sorted into `path:line:col` text, validated paths/globs, no rewrite flag ever, and every call pins `-c <empty config>` + `--custom-languages ignore` so a repo's `sgconfig.yml` (or an ancestor's) cannot remap languages or `dlopen` a native custom-language library; enabled in plan mode and shared with subagents. See its README.
 - Skills: `settings.skills` → `~/.config/pi/skills` — `kubebuilder` (+ upstream docs), `k8s-api-conventions`, `skill-creator`.
 - `pi-web`: browser UI for pi ([agegr/pi-web](https://github.com/agegr/pi-web)), installed from npm by mise (`dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.17.0"`; the npm backend needs `npm` from the javascript module). The backend's install directory is writable, which pi-web needs: it rewrites `.next/prerender-manifest.json` on every start so the `previewModeId` published in the package cannot bypass its password gate (Next skips middleware for `x-prerender-revalidate` requests). Shares `~/.pi/agent` with pi, so sessions, models and extensions (bash-sandbox included) apply.
-- MCP: built-in support. `~/.pi/agent/mcp.json` declares `code-review-graph` (stdio, 120s) and `exa` (HTTP, 60s), both `exposure = "direct"`; tool names `mcp__<server>__<tool>`.
+- MCP: built-in support. `~/.pi/agent/mcp.json` declares `exa` (HTTP, 60s, `exposure = "direct"`); tool names `mcp__<server>__<tool>`.
 
 ## nono
 

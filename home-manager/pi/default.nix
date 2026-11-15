@@ -138,15 +138,6 @@
       # mcp__<server>__<tool>; `exposure = "direct"` declares them to the model.
       home.file.".pi/agent/mcp.json".text = builtins.toJSON {
         mcpServers = {
-          "code-review-graph" = {
-            command = lib.getExe pkgs.llm-agents.code-review-graph;
-            args = [
-              "serve"
-              "--auto-watch"
-            ];
-            timeout = 120;
-            exposure = "direct";
-          };
           "exa" = {
             url = "https://mcp.exa.ai/mcp";
             timeout = 60;
@@ -178,10 +169,6 @@
           source = "${kubebuilder}/docs";
         };
       };
-
-      home.packages = [
-        pkgs.llm-agents.code-review-graph
-      ];
 
       programs.pi-coding-agent = {
         enable = true;
