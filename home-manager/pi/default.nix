@@ -6,6 +6,8 @@
   ...
 }:
 {
+  imports = [ ./pi-web-tailcat.nix ];
+
   options.dotfiles.pi = {
     # Bash tool sandbox bootstrap, generated below and read by bash-sandbox.
     sandbox.profile = lib.mkOption {
