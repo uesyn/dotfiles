@@ -111,6 +111,17 @@ let
   # `core.hooksPath` at it; the directory is not exposed as an option, so read
   # it back from the ini it lands in.
   gitHooksPath = config.programs.git.iniContent.core.hooksPath;
+  mkGitHook =
+    name: path:
+    pkgs.runCommand name { nativeBuildInputs = [ pkgs.bash ]; } ''
+      install -m755 ${path} "$out"
+      export PATH="${pkgs.bash}/bin:$PATH"
+      patchShebangs "$out"
+    '';
+  gitHooks = {
+    pre-commit = mkGitHook "pre-commit" ./hooks/pre-commit;
+    pre-push = mkGitHook "pre-push" ./hooks/pre-push;
+  };
 in
 {
   options.dotfiles.git = {
@@ -155,14 +166,14 @@ in
       "~/.config/gh"
     ];
 
-    # nono: `git commit` execs the hook in the store linkFarm that
-    # `core.hooksPath` points at. `executableDirs` covers execs the session
-    # sandbox starts, and `gitExecPaths` the same exec inside git's own command
-    # sandbox (Linux only; macOS allows all exec). Without both, the exec gate
-    # denies the hook and every commit fails.
+    # The linkFarm entries point to separate store files. Landlock checks the
+    # resolved hook and its shebang interpreter, not just the linkFarm path.
     dotfiles.nono.commandPolicies = {
-      executableDirs = lib.optionals isLinux [ gitHooksPath ];
-      gitExecPaths = lib.optionals isLinux [ gitHooksPath ];
+      executableDirs = lib.optionals isLinux [
+        gitHooksPath
+        "${pkgs.bash}/bin"
+      ];
+      gitExecPaths = lib.optionals isLinux (map toString (lib.attrValues gitHooks) ++ [ "${pkgs.bash}/bin/bash" ]);
     };
 
     home.packages = [
@@ -209,10 +220,7 @@ in
         { path = "~/.gitconfig.local"; }
       ];
 
-      hooks = {
-        pre-commit = ./hooks/pre-commit;
-        pre-push = ./hooks/pre-push;
-      };
+      hooks = gitHooks;
 
       settings = {
         ghq.root = "~/src";

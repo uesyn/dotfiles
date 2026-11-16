@@ -47,7 +47,7 @@ nix run nixpkgs#stylua -- home-manager/neovim/nvim              # Lua: stylua.to
 
 ## Git
 
-- Hooks block commits/pushes to `master`, `main`, `release.*`, `gh-pages`; per-repo bypass `git-allow -y`, re-enable `git-allow -n`. The marker is `${git rev-parse --path-format=absolute --git-common-dir}/git_allow`, not `<toplevel>/.git/git_allow`, so a linked worktree (where `.git` is a file) shares the repository marker. Home-manager builds `programs.git.hooks` into a store linkFarm and points `core.hooksPath` at it, so the module adds that directory (`config.programs.git.iniContent.core.hooksPath`, not a public option) to both `commandPolicies.executableDirs` and `commandPolicies.gitExecPaths`: the Linux exec gate otherwise denies the hook in the session sandbox and again inside git's own command sandbox.
+- Hooks block commits/pushes to `master`, `main`, `release.*`, `gh-pages`; per-repo bypass `git-allow -y`, re-enable `git-allow -n`. The marker is `${git rev-parse --path-format=absolute --git-common-dir}/git_allow`, not `<toplevel>/.git/git_allow`, so a linked worktree (where `.git` is a file) shares the repository marker. Hooks are built with `patchShebangs` to use Nix Bash. Home-manager links them into a store linkFarm at `core.hooksPath`; Linux exec grants include the linkFarm and Bash directories in `commandPolicies.executableDirs`, and the hook targets and Bash executable in `commandPolicies.gitExecPaths`.
 - `git-fixup`: fzf `git commit --fixup` for staged changes. `ghq.root = ~/src`. `GIT_EDITOR = nvim`.
 
 ## Neovim
