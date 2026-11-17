@@ -114,8 +114,8 @@
       '';
       # Pi resolves entry-point symlinks before loading imports. Keep sibling
       # extensions in one store tree so their relative imports still resolve.
-      # The bash-sandbox copy has its wrapper path substituted at build time, so
-      # the extension never reads a config file or environment variable.
+      # Pin the bash wrapper and read-only tool executables at build time, so
+      # the extensions do not resolve them through PATH or runtime configuration.
       extensionsTree = pkgs.runCommand "pi-extensions" { } ''
         cp -r ${./extensions} $out
         chmod -R u+w $out
@@ -123,6 +123,8 @@
           --replace-fail '@sandboxShell@' '${bashSandbox}'
         substituteInPlace $out/gh-readonly/endpoint.ts \
           --replace-fail '@ghExecutable@' '${lib.getExe pkgs.gh}'
+        substituteInPlace $out/git-readonly/endpoint.ts \
+          --replace-fail '@gitExecutable@' '${lib.getExe pkgs.git}'
       '';
     in
     {

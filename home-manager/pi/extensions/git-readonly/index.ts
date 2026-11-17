@@ -9,8 +9,8 @@
  *   magic are rejected.
  * - The command allowlist below is the only way to run Git. There is no
  *   passthrough flag or raw-argument option.
- * - Git is started through PATH so the nono `git` command policy (and its
- *   sandbox) applies. Do not replace this with a store absolute path.
+ * - The Nix-managed Git executable is pinned at build time, not found via PATH.
+ *   Pi runs outside nono; the command allowlist is not a sandbox.
  * - Optional locks are disabled so status/diff do not update `.git/index`.
  */
 
@@ -26,7 +26,8 @@ import {
   writeSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join } from "node:path";
+import { gitExecutable } from "./endpoint.ts";
 import {
   DEFAULT_MAX_BYTES,
   DEFAULT_MAX_LINES,
@@ -595,12 +596,13 @@ interface RunResult {
 }
 
 function runGit(
+  executable: string,
   args: string[],
   cwd: string,
   signal: AbortSignal | undefined,
 ): Promise<RunResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn("git", args, {
+    const child = spawn(executable, args, {
       cwd,
       env: buildEnv(),
       stdio: ["ignore", "pipe", "pipe"],
@@ -815,8 +817,8 @@ function errorResult(
   };
 }
 
-// SDK subagents reuse the exact same validation and nono-aware execution path.
-export function createGitReadonlyTool() {
+// SDK subagents reuse the same validation and pinned executable.
+export function createGitReadonlyTool(executable = gitExecutable) {
   return defineTool<typeof GitParamsSchema, GitOutput>({
     name: "git",
     label: "Git (read-only)",
@@ -850,7 +852,8 @@ export function createGitReadonlyTool() {
 
       let run: RunResult;
       try {
-        run = await runGit(argv, ctx.cwd, signal);
+        if (!isAbsolute(executable)) throw new Error("git executable path is not configured");
+        run = await runGit(executable, argv, ctx.cwd, signal);
       } catch (error) {
         return errorResult(
           params.operation,

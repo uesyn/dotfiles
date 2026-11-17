@@ -368,8 +368,10 @@ test("parent abort and shutdown drain running jobs and reject work after shutdow
   }
 });
 
-test("SDK Git factory retains read-only command validation and PATH-based execution", async () => {
-  const tool = createGitReadonlyTool();
+test("SDK Git factory retains read-only command validation with a pinned executable", async () => {
+  const executable = join(dir, "test-git");
+  await writeFile(executable, "#!/bin/sh\nprintf 'test status\\n'\n", { mode: 0o755 });
+  const tool = createGitReadonlyTool(executable);
   const context = { cwd: process.cwd() } as ExtensionToolContext;
   const status = await tool.execute("status", { operation: "status" }, undefined, undefined, context);
   assert.equal(status.isError, false);
