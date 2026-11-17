@@ -121,6 +121,8 @@
         chmod -R u+w $out
         substituteInPlace $out/bash-sandbox/endpoint.ts \
           --replace-fail '@sandboxShell@' '${bashSandbox}'
+        substituteInPlace $out/gh-readonly/endpoint.ts \
+          --replace-fail '@ghExecutable@' '${lib.getExe pkgs.gh}'
       '';
     in
     {
@@ -212,6 +214,7 @@
             "+ls"
             "+codemode"
             "+git"
+            "+gh"
             "+ast_grep"
             "+subagent"
           ];
@@ -220,6 +223,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/gh-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/last-model"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
