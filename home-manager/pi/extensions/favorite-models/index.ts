@@ -7,8 +7,11 @@
  *   /favorite remove [key]   remove a favorite
  *   /favorite list           list favorites
  *
- * The last favorite selected is restored on session start. A favorite is a
- * model plus its variable: the thinking level applied when
+ * Favorites are presets only: nothing here tracks what was used last. The
+ * last-model extension records every model/thinking-level change, including
+ * the ones made by selecting a favorite, and restores that record on startup.
+ *
+ * A favorite is a model plus its variable: the thinking level applied when
  * the favorite is selected. The same model can be saved several times with
  * different thinking levels, each as its own favorite. Favorites live in
  * `<agentDir>/favorite-models.json` (override with PI_FAVORITE_MODELS_FILE),
@@ -64,7 +67,6 @@ type FavoriteModel = {
 
 type FavoriteConfig = {
   favorites: FavoriteModel[];
-  selected?: string;
 };
 
 /** Result of resolving a user-supplied favorite key. */
@@ -131,17 +133,7 @@ function sanitizeFavorites(value: unknown): FavoriteModel[] {
 }
 
 function sanitizeFavoriteConfig(value: unknown): FavoriteConfig {
-  const favorites = sanitizeFavorites(value);
-  const record = (typeof value === "object" && value !== null ? value : {}) as Record<
-    string,
-    unknown
-  >;
-  const selected =
-    typeof record.selected === "string" &&
-    favorites.some((favorite) => favoriteKey(favorite) === record.selected)
-      ? record.selected
-      : undefined;
-  return { favorites, selected };
+  return { favorites: sanitizeFavorites(value) };
 }
 
 let writeQueue: Promise<void> = Promise.resolve();
@@ -489,19 +481,7 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
     return { level: levels[labels.indexOf(choice)] };
   }
 
-  async function rememberFavorite(favorite: FavoriteModel): Promise<void> {
-    const config = await loadFavoriteConfig();
-    const key = favoriteKey(favorite);
-    if (!config.favorites.some((entry) => favoriteKey(entry) === key)) return;
-    config.selected = key;
-    await saveFavoriteConfig(config);
-  }
-
-  async function applyFavorite(
-    ctx: ExtensionContext,
-    favorite: FavoriteModel,
-    options: { remember?: boolean; notify?: boolean } = {},
-  ): Promise<void> {
+  async function applyFavorite(ctx: ExtensionContext, favorite: FavoriteModel): Promise<void> {
     const key = favoriteKey(favorite);
     const model = ctx.modelRegistry.find(favorite.provider, favorite.model);
     if (!model) {
@@ -520,10 +500,7 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
     }
 
     if (favorite.thinkingLevel) pi.setThinkingLevel(favorite.thinkingLevel);
-    if (options.remember !== false) await rememberFavorite(favorite);
-    if (options.notify !== false) {
-      ctx.ui.notify(`Switched to favorite: ${describeFavorite(favorite)}`, "info");
-    }
+    ctx.ui.notify(`Switched to favorite: ${describeFavorite(favorite)}`, "info");
   }
 
   async function selectFavorite(ctx: ExtensionContext, key?: string): Promise<void> {
@@ -614,7 +591,6 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
     }
 
     const [removed] = list.splice(index, 1);
-    if (removed && config.selected === favoriteKey(removed)) delete config.selected;
     await saveFavoriteConfig(config);
     if (removed) ctx.ui.notify(`Removed favorite: ${describeFavorite(removed)}`, "info");
   }
@@ -655,18 +631,6 @@ export default function favoriteModelsExtension(pi: ExtensionAPI): void {
       .map((value) => ({ value, label: value.slice(subcommand.length + 1) }));
     return matches.length > 0 ? matches : null;
   }
-
-  pi.on("session_start", async (event, ctx) => {
-    // Preserve the chosen favorite across sessions, but do not reset the model
-    // when the extension is reloaded into the current session.
-    if (event.reason === "reload") return;
-
-    const config = await loadFavoriteConfig();
-    const favorite = config.favorites.find(
-      (entry) => favoriteKey(entry) === config.selected,
-    );
-    if (favorite) await applyFavorite(ctx, favorite, { remember: false, notify: false });
-  });
 
   pi.registerShortcut("ctrl+l", {
     description: "Select favorite model",

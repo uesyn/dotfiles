@@ -221,6 +221,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
             "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/last-model"
             "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
             "${config.home.homeDirectory}/.local/share/pi/extensions/bash-sandbox"
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
