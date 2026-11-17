@@ -21,6 +21,16 @@
       '';
     };
 
+    toolToggle.disabledByDefault = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      default = [ "gh" ];
+      description = ''
+        Pi tool names disabled at session start. They can be enabled for the
+        current session with /tool. Unknown names are allowed for late tools.
+      '';
+      example = [ "gh" "mcp__exa__web_search_exa" ];
+    };
+
     providers = lib.mkOption {
       type = lib.types.attrsOf lib.types.attrs;
       default = { };
@@ -152,6 +162,10 @@
         };
       };
 
+      home.file.".pi/agent/tool-toggle.json".text = builtins.toJSON {
+        disabledByDefault = pi.toolToggle.disabledByDefault;
+      };
+
       home.file.".pi/agent/system-prompt-modifier.json" = lib.mkIf (systemPromptModifiers != { }) {
         text = builtins.toJSON {
           models = systemPromptModifiers;
@@ -233,6 +247,7 @@
             "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
             "${config.home.homeDirectory}/.local/share/pi/extensions/subagent"
             "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/tool-toggle"
           ];
           skills = [
             "${config.home.homeDirectory}/.config/pi/skills"
