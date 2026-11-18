@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import register, { createConfluenceTool } from "../index.ts";
-import { request } from "../core.ts";
+import { buildRequest, request } from "../core.ts";
 
 test("registers the read-only confluence tool and exposes list_spaces", () => {
   let registered: any;
@@ -9,6 +9,53 @@ test("registers the read-only confluence tool and exposes list_spaces", () => {
   assert.equal(registered.name, "confluence");
   assert.equal(registered.annotations.readOnlyHint, true);
   assert.ok(registered.parameters.properties.operation.anyOf.some((entry: any) => entry.const === "list_spaces"));
+});
+
+test("normalizes placeholder arguments from callers that require every schema property", async () => {
+  const cases = [
+    { input: { operation: "list_spaces" as const, query: "", space: "", limit: 1, cursor: "", pageId: "" }, expected: { operation: "list_spaces", limit: 1 } },
+    { input: { operation: "search" as const, query: "release notes", space: "", limit: 5, cursor: "", pageId: "" }, expected: { operation: "search", query: "release notes", limit: 5 } },
+    { input: { operation: "get_page" as const, query: "", space: "", limit: 1, cursor: "", pageId: "123" }, expected: { operation: "get_page", pageId: "123" } },
+    { input: { operation: "search" as const, query: "release notes", space: "ENG", limit: 5, cursor: "abc+def", pageId: "" }, expected: { operation: "search", query: "release notes", space: "ENG", limit: 5, cursor: "abc+def" } },
+    { input: { operation: "list_spaces" as const, query: "", space: "", limit: 5, cursor: "abc+def", pageId: "" }, expected: { operation: "list_spaces", limit: 5, cursor: "abc+def" } },
+  ];
+  for (const { input, expected } of cases) {
+    let forwarded: unknown;
+    const tool = createConfluenceTool({
+      loadConfig: async () => ({ cloudId: "12345678-1234-1234-1234-123456789abc" }),
+      request: async (config, params) => { buildRequest(config, params); forwarded = params; return {}; },
+    });
+    const original = { ...input };
+    const result = await tool.execute("id", input, undefined, undefined, {} as never);
+    assert.ok(!result.isError, result.content[0].text);
+    assert.deepEqual(forwarded, expected);
+    assert.deepEqual(input, original, "normalization must not mutate the caller's arguments");
+  }
+});
+
+test("placeholder normalization still rejects missing required values and non-empty irrelevant arguments", async () => {
+  let requests = 0;
+  const tool = createConfluenceTool({
+    loadConfig: async () => ({ cloudId: "12345678-1234-1234-1234-123456789abc" }),
+    request: async (config, params) => { buildRequest(config, params); requests++; return {}; },
+  });
+  const cases = [
+    { operation: "search", query: "" },
+    { operation: "get_page", pageId: "" },
+    { operation: "list_spaces", query: "unexpected" },
+    { operation: "search", query: "test", pageId: "123" },
+    { operation: "get_page", pageId: "123", query: "unexpected" },
+    { operation: "get_page", pageId: "123", cursor: "abc" },
+    { operation: "list_spaces", unknown: "" },
+    { operation: "get_page", pageId: "123", limit: 26 },
+    { operation: "get_page", pageId: "123", limit: 0 },
+    { operation: "search", query: "test", space: " " },
+  ];
+  for (const input of cases) {
+    const result = await tool.execute("id", input as never, undefined, undefined, {} as never);
+    assert.equal(result.isError, true, JSON.stringify(input));
+  }
+  assert.equal(requests, 0);
 });
 
 test("execute forwards environment credentials and returns results and safe errors", async () => {
