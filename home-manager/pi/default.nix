@@ -104,9 +104,8 @@
           api = "openai-completions";
           apiKey = "$AI_ENGINE_API_KEY";
           models = [
-            { id = "Qwen3-Coder-480B-A35B-Instruct-FP8"; }
-            { id = "Qwen3-Coder-30B-A3B-Instruct"; }
-            { id = "preview/Kimi-K2.6"; }
+            { id = "preview/DeepSeek-V4.1-Flash-1017"; }
+            { id = "preview/GLM-5.3-Flash"; }
             { id = "preview/Kimi-K2.7-Code"; }
           ];
         };
