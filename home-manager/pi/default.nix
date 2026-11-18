@@ -104,8 +104,40 @@
           api = "openai-completions";
           apiKey = "$AI_ENGINE_API_KEY";
           models = [
-            { id = "preview/DeepSeek-V4.1-Flash-1017"; }
-            { id = "preview/GLM-5.3-Flash"; }
+            {
+              id = "preview/DeepSeek-V4.1-Flash-1017";
+              reasoning = true;
+              thinkingLevelMap = {
+                off = "none";
+                minimal = null;
+                low = "low";
+                medium = null;
+                high = "high";
+                xhigh = "xhigh";
+                max = "max";
+              };
+              compat = {
+                thinkingFormat = "openai";
+                supportsReasoningEffort = true;
+              };
+            }
+            {
+              id = "preview/GLM-5.3-Flash";
+              reasoning = true;
+              thinkingLevelMap = {
+                off = null;
+                minimal = null;
+                low = "low";
+                medium = null;
+                high = "high";
+                xhigh = null;
+                max = "max";
+              };
+              compat = {
+                thinkingFormat = "openai";
+                supportsReasoningEffort = true;
+              };
+            }
             { id = "preview/Kimi-K2.7-Code"; }
           ];
         };
