@@ -86,6 +86,12 @@
   #   python = [ "3.12" "3.11" ];
   # };
 
+  # Confluence Cloud read-only Pi tool (disabled by default; /tool confluence
+  # enables it for the session). Set the Cloud ID and use a scoped API token.
+  # Set CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN in the Pi process
+  # environment, not in Nix or this public template.
+  # dotfiles.pi.confluence.cloudId = "00000000-0000-0000-0000-000000000000";
+
   # Add custom Pi model providers. These are merged with the built-in providers.
   # dotfiles.pi.providers = {
   #   openrouter = {

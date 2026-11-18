@@ -23,12 +23,18 @@
 
     toolToggle.disabledByDefault = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      default = [ "gh" ];
+      default = [ "gh" "confluence" ];
       description = ''
         Pi tool names disabled at session start. They can be enabled for the
         current session with /tool. Unknown names are allowed for late tools.
       '';
       example = [ "gh" "mcp__exa__web_search_exa" ];
+    };
+
+    confluence.cloudId = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      description = "Confluence Cloud ID used with a scoped API token.";
     };
 
     providers = lib.mkOption {
@@ -162,6 +168,8 @@
         };
       };
 
+      home.file.".pi/agent/confluence-readonly.json".text = builtins.toJSON pi.confluence;
+
       home.file.".pi/agent/tool-toggle.json".text = builtins.toJSON {
         disabledByDefault = pi.toolToggle.disabledByDefault;
       };
@@ -231,12 +239,14 @@
             "+codemode"
             "+git"
             "+gh"
+            "+confluence"
             "+ast_grep"
             "+subagent"
           ];
           extensions = [
             "${config.home.homeDirectory}/.local/share/pi/extensions/ast-grep"
             "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
+            "${config.home.homeDirectory}/.local/share/pi/extensions/confluence-readonly"
             "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
             "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
             "${config.home.homeDirectory}/.local/share/pi/extensions/gh-readonly"
