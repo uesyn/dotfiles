@@ -3,7 +3,20 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildArgs, createGhReadonlyTool } from "../index.ts";
+import { buildArgs, createGhReadonlyTool, schema } from "../index.ts";
+
+test("schemas parameters by operation", () => {
+  const variants = (schema as unknown as {
+    anyOf: Array<{ properties: Record<string, unknown>; required: string[] }>;
+  }).anyOf;
+  const variant = (operation: string) => variants.find((item) =>
+    (item.properties.operation as { const?: string }).const === operation);
+
+  assert.deepEqual(Object.keys(variant("issue_list")!.properties).sort(), ["limit", "operation", "repo", "state"]);
+  assert.deepEqual(Object.keys(variant("issue_view")!.properties).sort(), ["number", "operation", "repo"]);
+  assert.deepEqual(variant("issue_view")!.required.sort(), ["number", "operation", "repo"]);
+  assert.deepEqual(Object.keys(variant("repo_view")!.properties).sort(), ["operation", "repo"]);
+});
 
 test("builds fixed read-only commands", () => {
   assert.deepEqual(buildArgs({ operation: "repo_view", repo: "org/repo" }, "github.com"), ["repo", "view", "github.com/org/repo", "--json", "nameWithOwner,description,url,defaultBranchRef,isPrivate"]);

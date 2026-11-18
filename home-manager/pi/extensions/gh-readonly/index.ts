@@ -4,17 +4,43 @@ import { ghExecutable } from "./endpoint.ts";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
 
-const schema = Type.Object({
-  operation: Type.Union([
-    Type.Literal("repo_view"),
-    Type.Literal("pr_list"), Type.Literal("pr_view"),
-    Type.Literal("issue_list"), Type.Literal("issue_view"),
-  ]),
-  repo: Type.String({ description: "Repository in owner/name form. Set GH_HOST before starting Pi for GitHub Enterprise." }),
-  number: Type.Optional(Type.Integer({ minimum: 1, maximum: 2147483647 })),
-  state: Type.Optional(Type.Union([Type.Literal("open"), Type.Literal("closed"), Type.Literal("all")])),
-  limit: Type.Optional(Type.Integer({ minimum: 1, maximum: 100 })),
-}, { additionalProperties: false });
+const repoSchema = () => Type.String({ description: "Repository in owner/name form. Set GH_HOST before starting Pi for GitHub Enterprise." });
+const numberSchema = () => Type.Integer({ minimum: 1, maximum: 2147483647, description: "Issue or pull request number; required for view operations only." });
+const stateSchema = () => Type.Optional(Type.Union([Type.Literal("open"), Type.Literal("closed"), Type.Literal("all")]));
+const limitSchema = () => Type.Optional(Type.Integer({ minimum: 1, maximum: 100, description: "Maximum number of results; list operations only." }));
+
+// Keep one tool, but give each operation its own exact input shape. A shared
+// object with every optional field encourages models to send view-only fields
+// with list operations (and vice versa), even when runtime validation rejects
+// them correctly.
+export const schema = Type.Union([
+  Type.Object({
+    operation: Type.Literal("repo_view"),
+    repo: repoSchema(),
+  }, { additionalProperties: false }),
+  Type.Object({
+    operation: Type.Literal("pr_list"),
+    repo: repoSchema(),
+    state: stateSchema(),
+    limit: limitSchema(),
+  }, { additionalProperties: false }),
+  Type.Object({
+    operation: Type.Literal("pr_view"),
+    repo: repoSchema(),
+    number: numberSchema(),
+  }, { additionalProperties: false }),
+  Type.Object({
+    operation: Type.Literal("issue_list"),
+    repo: repoSchema(),
+    state: stateSchema(),
+    limit: limitSchema(),
+  }, { additionalProperties: false }),
+  Type.Object({
+    operation: Type.Literal("issue_view"),
+    repo: repoSchema(),
+    number: numberSchema(),
+  }, { additionalProperties: false }),
+]);
 type Params = Static<typeof schema>;
 
 export function buildArgs(p: Params, host: string): string[] {
@@ -32,15 +58,17 @@ export function buildArgs(p: Params, host: string): string[] {
   const keys = allowed.get(p.operation);
   if (keys === undefined || Object.keys(p).some(k => !keys.includes(k))) throw new Error("Unsupported operation or parameter");
   const view = p.operation === "pr_view" || p.operation === "issue_view";
-  if (view && (!Number.isInteger(p.number) || p.number! < 1 || p.number! > 2147483647)) throw new Error("A positive issue or PR number is required");
-  if (p.limit !== undefined && (!Number.isInteger(p.limit) || p.limit < 1 || p.limit > 100)) throw new Error("Invalid limit");
-  if (p.state !== undefined && !["open", "closed", "all"].includes(p.state)) throw new Error("Invalid state");
+  if (view && (!Number.isInteger(p.number) || p.number < 1 || p.number > 2147483647)) throw new Error("A positive issue or PR number is required");
+  if ((p.operation === "pr_list" || p.operation === "issue_list") &&
+      p.limit !== undefined && (!Number.isInteger(p.limit) || p.limit < 1 || p.limit > 100)) throw new Error("Invalid limit");
+  if ((p.operation === "pr_list" || p.operation === "issue_list") &&
+      p.state !== undefined && !["open", "closed", "all"].includes(p.state)) throw new Error("Invalid state");
   const [kind, action] = p.operation.split("_");
   const args = [kind, action];
-  if (view) args.push(String(p.number));
+  if (p.operation === "pr_view" || p.operation === "issue_view") args.push(String(p.number));
   if (kind === "repo") args.push(`${host}/${p.repo}`);
   else args.push("--repo", `${host}/${p.repo}`);
-  if (action === "list") args.push("--limit", String(p.limit ?? 30), "--state", p.state ?? "open");
+  if (p.operation === "pr_list" || p.operation === "issue_list") args.push("--limit", String(p.limit ?? 30), "--state", p.state ?? "open");
   const fields = kind === "repo" ? "nameWithOwner,description,url,defaultBranchRef,isPrivate" :
     kind === "pr" ? "number,title,state,url,author,body,createdAt,updatedAt,baseRefName,headRefName" :
     "number,title,state,url,author,body,createdAt,updatedAt";
@@ -51,7 +79,7 @@ export function buildArgs(p: Params, host: string): string[] {
 export function createGhReadonlyTool(executable = ghExecutable) {
   return defineTool({
     name: "gh", label: "GitHub (read-only)",
-    description: "Read repository, pull request, and issue information using gh authentication. Set GH_HOST before starting Pi for GitHub Enterprise. No arbitrary commands or writes.",
+    description: "Read repository, pull request, and issue information using gh authentication. Each operation has an exact parameter shape: list takes repo/state/limit; view takes repo/number. Set GH_HOST before starting Pi for GitHub Enterprise. No arbitrary commands or writes.",
     parameters: schema,
     annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true, openWorldHint: true },
     async execute(_id, params, signal, _update, ctx) {

@@ -1,6 +1,6 @@
 # Read-only GitHub tool
 
-`gh` exposes `repo_view`, `pr_list`, `pr_view`, `issue_list`, and `issue_view`. Supply `repo` as `owner/name`; view operations for PRs and issues also require `number`. Lists accept `state` and `limit` (maximum 100).
+`gh` exposes `repo_view`, `pr_list`, `pr_view`, `issue_list`, and `issue_view` as one discriminated-union schema. Supply `repo` as `owner/name`; view operations require `number`, while list operations accept only `state` and `limit` (maximum 100). Fields that belong to other operations are not included in the generated tool schema.
 
 The tool runs fixed `gh` subcommands without a shell or arbitrary flags. The Nix-managed `gh` executable's absolute path is baked into the extension at build time; it is not resolved through `PATH`. An unconfigured path fails closed. It delegates authentication to gh. Set `GH_HOST` in Pi's environment before starting Pi to select GitHub Enterprise; otherwise the host is `github.com`. The model cannot choose the host. Authenticate with gh first. No automatic repository or host discovery is performed.
 
