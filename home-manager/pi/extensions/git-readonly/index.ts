@@ -72,6 +72,7 @@ const OperationSchema = Type.Union(
 
 const FormatSchema = Type.Union(
   [
+    Type.Literal(""),
     Type.Literal("short"),
     Type.Literal("porcelain_v2"),
     Type.Literal("patch"),
@@ -87,6 +88,7 @@ const FormatSchema = Type.Union(
 
 const ModeSchema = Type.Union(
   [
+    Type.Literal(""),
     Type.Literal("unstaged"),
     Type.Literal("staged"),
     Type.Literal("commit"),
@@ -98,12 +100,16 @@ const ModeSchema = Type.Union(
   },
 );
 
-const RangeModeSchema = Type.Union([Type.Literal("three-dot"), Type.Literal("two-dot")], {
-  description: "Separator for diff mode=range: three-dot (default) or two-dot.",
-});
+const RangeModeSchema = Type.Union(
+  [Type.Literal(""), Type.Literal("three-dot"), Type.Literal("two-dot")],
+  {
+    description: "Separator for diff mode=range: three-dot (default) or two-dot.",
+  },
+);
 
 const WhatSchema = Type.Union(
   [
+    Type.Literal(""),
     Type.Literal("rev"),
     Type.Literal("toplevel"),
     Type.Literal("is-inside-work-tree"),
@@ -197,6 +203,13 @@ const GitParamsSchema = Type.Object(
 
 type GitParams = Static<typeof GitParamsSchema>;
 type Operation = GitParams["operation"];
+type ParameterKey = Exclude<keyof GitParams, "operation">;
+type NormalizedGitParams = Omit<GitParams, "mode" | "format" | "range_mode" | "what"> & {
+  mode?: Exclude<GitParams["mode"], "">;
+  format?: Exclude<GitParams["format"], "">;
+  range_mode?: Exclude<GitParams["range_mode"], "">;
+  what?: Exclude<GitParams["what"], "">;
+};
 type DiffFormat = "patch" | "stat" | "name-only" | "name-status";
 
 const GitOutputSchema = Type.Object(
@@ -219,7 +232,7 @@ const GitOutputSchema = Type.Object(
 
 type GitOutput = Static<typeof GitOutputSchema>;
 
-const ALLOWED_KEYS: Record<Operation, readonly string[]> = {
+const OPERATION_PARAMETER_KEYS: Record<Operation, readonly ParameterKey[]> = {
   status: ["format", "paths"],
   diff: ["mode", "format", "context", "paths", "rev", "base", "head", "range_mode"],
   log: ["rev", "paths", "max_count", "oneline", "stat", "author", "since", "until"],
@@ -229,6 +242,7 @@ const ALLOWED_KEYS: Record<Operation, readonly string[]> = {
   rev_parse: ["rev", "what"],
 };
 
+const KNOWN_PARAMETER_KEYS = new Set<string>(Object.values(OPERATION_PARAMETER_KEYS).flat());
 const STATUS_FORMATS = new Set(["short", "porcelain_v2"]);
 const DIFF_FORMATS = new Set<DiffFormat>(["patch", "stat", "name-only", "name-status"]);
 
@@ -238,20 +252,26 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function validateAllowedKeys(params: GitParams): void {
-  const allowedKeys = ALLOWED_KEYS[params.operation];
-  if (allowedKeys === undefined) {
-    throw new Error(`unsupported operation: ${String(params.operation)}`);
+function normalizeParams(params: GitParams): NormalizedGitParams {
+  const operation = params.operation;
+  if (!Object.hasOwn(OPERATION_PARAMETER_KEYS, operation)) {
+    throw new Error(`unsupported operation: ${String(operation)}`);
   }
-  const allowed = new Set(allowedKeys);
-  for (const key of Object.keys(params)) {
+
+  const supported = new Set(OPERATION_PARAMETER_KEYS[operation]);
+  const normalized: Record<string, unknown> = { operation };
+  for (const [key, value] of Object.entries(params)) {
     if (key === "operation") continue;
-    if (!allowed.has(key)) {
-      throw new Error(
-        `Parameter "${key}" is not supported for operation "${params.operation}"`,
-      );
+    if (!KNOWN_PARAMETER_KEYS.has(key)) {
+      throw new Error(`Parameter "${key}" is not supported for operation "${operation}"`);
     }
+    // Model-facing schemas sometimes fill fields belonging to other operations.
+    // Ignore those fields and treat empty strings as omitted. Keep parameters
+    // belonging to this operation so its existing semantic validation runs.
+    if (!supported.has(key) || value === "") continue;
+    normalized[key] = value;
   }
+  return normalized as NormalizedGitParams;
 }
 
 function validateOptionValue(value: string, name: string): string {
@@ -321,7 +341,7 @@ function pushDiffFormat(args: string[], format: DiffFormat): void {
   else if (format === "name-status") args.push("--name-status");
 }
 
-function resolveDiffContext(params: GitParams, format: DiffFormat): number {
+function resolveDiffContext(params: NormalizedGitParams, format: DiffFormat): number {
   if (format !== "patch" && params.context !== undefined) {
     throw new Error('"context" is only supported with format "patch"');
   }
@@ -333,7 +353,7 @@ function resolveDiffContext(params: GitParams, format: DiffFormat): number {
 }
 
 function buildDiffArgs(
-  params: GitParams,
+  params: NormalizedGitParams,
   paths: string[],
   mode: "unstaged" | "staged" | "commit" | "range",
 ): string[] {
@@ -412,8 +432,8 @@ function buildDiffArgs(
   return args;
 }
 
-function buildGitArgs(params: GitParams): string[] {
-  validateAllowedKeys(params);
+function buildGitArgs(rawParams: GitParams): string[] {
+  const params = normalizeParams(rawParams);
 
   if (params.paths !== undefined && !Array.isArray(params.paths)) {
     throw new Error('"paths" must be an array of strings');
@@ -828,6 +848,7 @@ export function createGitReadonlyTool(executable = gitExecutable) {
       "Read-only Git inspection (status, diff, log, show, branch, blame, rev-parse).",
     promptGuidelines: [
       "Use the `git` tool instead of `bash git ...` to inspect repository state; it is read-only and cannot commit, checkout, fetch, or push.",
+      "Only specify parameters for the selected operation. Unused parameters and empty string placeholders are ignored.",
     ],
     parameters: GitParamsSchema,
     outputSchema: GitOutputSchema,
