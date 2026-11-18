@@ -3,7 +3,27 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
-import { createGitReadonlyTool } from "../index.ts";
+import { createGitReadonlyTool, GitParamsSchema } from "../index.ts";
+
+test("schemas parameters by operation", () => {
+  const variants = (GitParamsSchema as unknown as {
+    anyOf: Array<{ properties: Record<string, unknown>; required: string[] }>;
+  }).anyOf;
+  const variant = (operation: string) => variants.find((item) =>
+    (item.properties.operation as { const?: string }).const === operation);
+
+  assert.equal(variants.length, 7);
+  assert.deepEqual(Object.keys(variant("status")!.properties).sort(), [
+    "format", "operation", "paths",
+  ]);
+  assert.deepEqual(Object.keys(variant("log")!.properties).sort(), [
+    "author", "max_count", "oneline", "operation", "paths", "rev", "since", "stat", "until",
+  ]);
+  assert.ok("context" in variant("diff")!.properties);
+  assert.ok("context" in variant("show")!.properties);
+  assert.ok(!("mode" in variant("show")!.properties));
+  assert.ok(!("format" in variant("log")!.properties));
+});
 
 test("uses the configured executable instead of git on PATH and fails closed", async () => {
   const dir = mkdtempSync(join(tmpdir(), "pi-git-path-"));
@@ -106,6 +126,34 @@ test("ignores parameters that do not apply to the selected operation", async () 
     );
     assert.equal(emptyFormat.isError, false);
     assert.ok(emptyFormat.details.argv.includes("-U7"));
+
+    const summary = await tool.execute(
+      "test",
+      {
+        operation: "diff",
+        mode: "range",
+        format: "name-status",
+        context: 0,
+        base: "origin/feat/billing_delivery",
+        head: "HEAD",
+      } as never,
+      undefined,
+      undefined,
+      { cwd: process.cwd() } as never,
+    );
+    assert.equal(summary.isError, false);
+    assert.ok(summary.details.argv.includes("--name-status"));
+    assert.ok(!summary.details.argv.some((arg) => arg.startsWith("-U")));
+
+    const show = await tool.execute(
+      "test",
+      { operation: "show", rev: "HEAD", format: "patch", context: 5 },
+      undefined,
+      undefined,
+      { cwd: process.cwd() } as never,
+    );
+    assert.equal(show.isError, false);
+    assert.ok(show.details.argv.includes("-U5"));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -138,6 +186,16 @@ test("still validates parameters that apply to the selected operation", async ()
         ctx,
       ),
       /not supported for this diff mode/,
+    );
+    await assert.rejects(
+      tool.execute(
+        "test",
+        { operation: "diff", format: "patch", context: 51 },
+        undefined,
+        undefined,
+        ctx,
+      ),
+      /"context" must be an integer between 0 and 50/,
     );
     await assert.rejects(
       tool.execute(

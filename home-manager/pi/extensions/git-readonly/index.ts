@@ -57,158 +57,201 @@ const GLOBAL_OPTIONS = [
   "core.quotePath=false",
 ] as const;
 
-const OperationSchema = Type.Union(
-  [
-    Type.Literal("status"),
-    Type.Literal("diff"),
-    Type.Literal("log"),
-    Type.Literal("show"),
-    Type.Literal("branch"),
-    Type.Literal("blame"),
-    Type.Literal("rev_parse"),
-  ],
-  { description: "Read-only Git inspection operation." },
-);
-
-const FormatSchema = Type.Union(
-  [
-    Type.Literal(""),
-    Type.Literal("short"),
-    Type.Literal("porcelain_v2"),
-    Type.Literal("patch"),
-    Type.Literal("stat"),
-    Type.Literal("name-only"),
-    Type.Literal("name-status"),
-  ],
-  {
-    description:
-      "Output format. status: short|porcelain_v2. diff/show: patch|stat|name-only|name-status.",
-  },
-);
-
-const ModeSchema = Type.Union(
-  [
-    Type.Literal(""),
-    Type.Literal("unstaged"),
-    Type.Literal("staged"),
-    Type.Literal("commit"),
-    Type.Literal("range"),
-  ],
-  {
-    description:
-      "Diff mode: unstaged (default), staged, commit (requires rev), range (requires base; head defaults to HEAD).",
-  },
-);
-
-const RangeModeSchema = Type.Union(
-  [Type.Literal(""), Type.Literal("three-dot"), Type.Literal("two-dot")],
-  {
-    description: "Separator for diff mode=range: three-dot (default) or two-dot.",
-  },
-);
-
-const WhatSchema = Type.Union(
-  [
-    Type.Literal(""),
-    Type.Literal("rev"),
-    Type.Literal("toplevel"),
-    Type.Literal("is-inside-work-tree"),
-    Type.Literal("short-sha"),
-  ],
-  { description: "Target for rev_parse (default: rev)." },
-);
-
-const GitParamsSchema = Type.Object(
-  {
-    operation: OperationSchema,
-    paths: Type.Optional(
-      Type.Array(Type.String({ maxLength: MAX_TEXT_LENGTH }), {
-        maxItems: MAX_PATHS,
+const pathsSchema = () =>
+  Type.Optional(
+    Type.Array(Type.String({ maxLength: MAX_TEXT_LENGTH }), {
+      maxItems: MAX_PATHS,
+      description:
+        "Repository-relative paths. Passed after `--`; absolute paths, `..`, and pathspec magic are rejected.",
+    }),
+  );
+const revisionSchema = (description: string) =>
+  Type.Optional(Type.String({ maxLength: MAX_TEXT_LENGTH, description }));
+const modeSchema = () =>
+  Type.Optional(
+    Type.Union(
+      [
+        Type.Literal("unstaged"),
+        Type.Literal("staged"),
+        Type.Literal("commit"),
+        Type.Literal("range"),
+      ],
+      {
         description:
-          "Repository-relative paths. Passed after `--`; absolute paths, `..`, and pathspec magic are rejected.",
+          "Diff mode: unstaged (default), staged, commit (requires rev), range (requires base; head defaults to HEAD).",
+      },
+    ),
+  );
+const rangeModeSchema = () =>
+  Type.Optional(
+    Type.Union([Type.Literal("three-dot"), Type.Literal("two-dot")], {
+      description: "Separator for diff mode=range: three-dot (default) or two-dot.",
+    }),
+  );
+const contextSchema = () =>
+  Type.Optional(
+    Type.Integer({
+      minimum: 0,
+      maximum: 50,
+      description: "Patch context lines (default 3). Only available for patch output.",
+    }),
+  );
+const diffFields = () => ({
+  mode: modeSchema(),
+  paths: pathsSchema(),
+  rev: revisionSchema("Revision for diff mode=commit. Must not start with '-'."),
+  base: revisionSchema("Base revision for diff mode=range."),
+  head: revisionSchema("Head revision for diff mode=range (default HEAD)."),
+  range_mode: rangeModeSchema(),
+});
+
+// Like gh, expose an exact shape for each operation instead of one object
+// containing every operation's parameters.
+export const GitParamsSchema = Type.Union([
+  Type.Object(
+    {
+      operation: Type.Literal("status"),
+      format: Type.Optional(
+        Type.Union([Type.Literal("short"), Type.Literal("porcelain_v2")]),
+      ),
+      paths: pathsSchema(),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("diff"),
+      ...diffFields(),
+      format: Type.Optional(
+        Type.Union([
+          Type.Literal("patch"),
+          Type.Literal("stat"),
+          Type.Literal("name-only"),
+          Type.Literal("name-status"),
+        ]),
+      ),
+      context: contextSchema(),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("log"),
+      rev: revisionSchema("Revision or range, e.g. HEAD~3 or main..feature."),
+      paths: pathsSchema(),
+      max_count: Type.Optional(
+        Type.Integer({ minimum: 1, maximum: 200, description: "Maximum commits (default 20)." }),
+      ),
+      oneline: Type.Optional(Type.Boolean({ description: "Use one-line format (default true)." })),
+      stat: Type.Optional(Type.Boolean({ description: "Include a diffstat." })),
+      author: Type.Optional(Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter by author." })),
+      since: Type.Optional(Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter by start date." })),
+      until: Type.Optional(Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter by end date." })),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("show"),
+      rev: revisionSchema("Revision to show (default HEAD)."),
+      paths: pathsSchema(),
+      format: Type.Optional(
+        Type.Union([
+          Type.Literal("patch"),
+          Type.Literal("stat"),
+          Type.Literal("name-only"),
+          Type.Literal("name-status"),
+        ]),
+      ),
+      context: contextSchema(),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("branch"),
+      all: Type.Optional(Type.Boolean({ description: "Include remote-tracking branches." })),
+      verbose: Type.Optional(Type.Boolean({ description: "Show upstream information." })),
+      contains: revisionSchema("Only list branches containing this revision."),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("blame"),
+      paths: Type.Array(Type.String({ maxLength: MAX_TEXT_LENGTH }), {
+        minItems: 1,
+        maxItems: 1,
+        description: "Exactly one repository-relative path to blame.",
       }),
-    ),
-    rev: Type.Optional(
-      Type.String({
-        maxLength: MAX_TEXT_LENGTH,
-        description: "Revision or range, e.g. HEAD~3 or main..feature. Must not start with '-'.",
-      }),
-    ),
-    base: Type.Optional(
-      Type.String({
-        maxLength: MAX_TEXT_LENGTH,
-        description: "Base revision for diff mode=range.",
-      }),
-    ),
-    head: Type.Optional(
-      Type.String({
-        maxLength: MAX_TEXT_LENGTH,
-        description: "Head revision for diff mode=range (default HEAD).",
-      }),
-    ),
-    mode: Type.Optional(ModeSchema),
-    format: Type.Optional(FormatSchema),
-    context: Type.Optional(
-      Type.Integer({
-        minimum: 0,
-        maximum: 50,
-        description: "Patch context lines for diff/show patch output (default 3).",
-      }),
-    ),
-    max_count: Type.Optional(
-      Type.Integer({
-        minimum: 1,
-        maximum: 200,
-        description: "Maximum commits for log (default 20).",
-      }),
-    ),
-    oneline: Type.Optional(
-      Type.Boolean({ description: "Use one-line log format (default true)." }),
-    ),
-    stat: Type.Optional(
-      Type.Boolean({ description: "Include a diffstat in log output." }),
-    ),
-    author: Type.Optional(
-      Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter log by author." }),
-    ),
-    since: Type.Optional(
-      Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter log by start date." }),
-    ),
-    until: Type.Optional(
-      Type.String({ maxLength: MAX_TEXT_LENGTH, description: "Filter log by end date." }),
-    ),
-    all: Type.Optional(
-      Type.Boolean({ description: "Include remote-tracking branches." }),
-    ),
-    verbose: Type.Optional(
-      Type.Boolean({ description: "Show upstream information for branches." }),
-    ),
-    contains: Type.Optional(
-      Type.String({
-        maxLength: MAX_TEXT_LENGTH,
-        description: "Only list branches containing this revision.",
-      }),
-    ),
-    line_start: Type.Optional(
-      Type.Integer({ minimum: 1, description: "First blame line (1-based)." }),
-    ),
-    line_end: Type.Optional(
-      Type.Integer({ minimum: 1, description: "Last blame line (inclusive)." }),
-    ),
-    range_mode: Type.Optional(RangeModeSchema),
-    what: Type.Optional(WhatSchema),
-  },
-  { additionalProperties: false },
-);
+      rev: revisionSchema("Revision to blame (default working tree)."),
+      line_start: Type.Optional(Type.Integer({ minimum: 1, description: "First line (1-based)." })),
+      line_end: Type.Optional(Type.Integer({ minimum: 1, description: "Last line (inclusive)." })),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      operation: Type.Literal("rev_parse"),
+      what: Type.Optional(
+        Type.Union([
+          Type.Literal("rev"),
+          Type.Literal("toplevel"),
+          Type.Literal("is-inside-work-tree"),
+          Type.Literal("short-sha"),
+        ]),
+      ),
+      rev: revisionSchema("Revision to resolve (default HEAD)."),
+    },
+    { additionalProperties: false },
+  ),
+]);
 
 type GitParams = Static<typeof GitParamsSchema>;
 type Operation = GitParams["operation"];
-type ParameterKey = Exclude<keyof GitParams, "operation">;
-type NormalizedGitParams = Omit<GitParams, "mode" | "format" | "range_mode" | "what"> & {
-  mode?: Exclude<GitParams["mode"], "">;
-  format?: Exclude<GitParams["format"], "">;
-  range_mode?: Exclude<GitParams["range_mode"], "">;
-  what?: Exclude<GitParams["what"], "">;
+type ParameterKey =
+  | "paths"
+  | "rev"
+  | "base"
+  | "head"
+  | "mode"
+  | "format"
+  | "context"
+  | "max_count"
+  | "oneline"
+  | "stat"
+  | "author"
+  | "since"
+  | "until"
+  | "all"
+  | "verbose"
+  | "contains"
+  | "line_start"
+  | "line_end"
+  | "range_mode"
+  | "what";
+type NormalizedGitParams = {
+  operation: Operation;
+  paths?: string[];
+  rev?: string;
+  base?: string;
+  head?: string;
+  mode?: "unstaged" | "staged" | "commit" | "range";
+  format?: string;
+  context?: number;
+  max_count?: number;
+  oneline?: boolean;
+  stat?: boolean;
+  author?: string;
+  since?: string;
+  until?: string;
+  all?: boolean;
+  verbose?: boolean;
+  contains?: string;
+  line_start?: number;
+  line_end?: number;
+  range_mode?: "three-dot" | "two-dot";
+  what?: "rev" | "toplevel" | "is-inside-work-tree" | "short-sha";
 };
 type DiffFormat = "patch" | "stat" | "name-only" | "name-status";
 
@@ -236,7 +279,7 @@ const OPERATION_PARAMETER_KEYS: Record<Operation, readonly ParameterKey[]> = {
   status: ["format", "paths"],
   diff: ["mode", "format", "context", "paths", "rev", "base", "head", "range_mode"],
   log: ["rev", "paths", "max_count", "oneline", "stat", "author", "since", "until"],
-  show: ["rev", "format", "paths"],
+  show: ["rev", "format", "context", "paths"],
   branch: ["all", "verbose", "contains"],
   blame: ["paths", "rev", "line_start", "line_end"],
   rev_parse: ["rev", "what"],
@@ -342,9 +385,9 @@ function pushDiffFormat(args: string[], format: DiffFormat): void {
 }
 
 function resolveDiffContext(params: NormalizedGitParams, format: DiffFormat): number {
-  if (format !== "patch" && params.context !== undefined) {
-    throw new Error('"context" is only supported with format "patch"');
-  }
+  // Treat context as inapplicable for summary formats. Keeping this tolerant
+  // at runtime also handles older callers that sent schema-generated 0 values.
+  if (format !== "patch") return 3;
   const context = params.context ?? 3;
   if (!Number.isInteger(context) || context < 0 || context > 50) {
     throw new Error('"context" must be an integer between 0 and 50');
@@ -498,6 +541,7 @@ function buildGitArgs(rawParams: GitParams): string[] {
         throw new Error(`format "${format}" is not supported for operation "show"`);
       }
       const rev = validateRevision(params.rev ?? "HEAD", "rev");
+      const context = resolveDiffContext(params, format);
       const args = [
         ...GLOBAL_OPTIONS,
         "show",
@@ -507,6 +551,7 @@ function buildGitArgs(rawParams: GitParams): string[] {
         "--ignore-submodules=all",
       ];
       pushDiffFormat(args, format);
+      if (format === "patch") args.push(`-U${context}`);
       args.push("--end-of-options", rev);
       if (paths.length > 0) args.push("--", ...paths);
       return args;
@@ -843,12 +888,12 @@ export function createGitReadonlyTool(executable = gitExecutable) {
     name: "git",
     label: "Git (read-only)",
     description:
-      "Inspect a Git repository without modifying it. Supports status, diff, log, show, branch, blame, and rev-parse. No network access and no mutating commands.",
+      "Inspect a Git repository without modifying it. Each operation exposes only its relevant parameters. Supports status, diff, log, show, branch, blame, and rev-parse; no network access or mutating commands.",
     promptSnippet:
       "Read-only Git inspection (status, diff, log, show, branch, blame, rev-parse).",
     promptGuidelines: [
       "Use the `git` tool instead of `bash git ...` to inspect repository state; it is read-only and cannot commit, checkout, fetch, or push.",
-      "Only specify parameters for the selected operation. Unused parameters and empty string placeholders are ignored.",
+      "Choose the schema variant for the selected operation; omit optional parameters to use their defaults.",
     ],
     parameters: GitParamsSchema,
     outputSchema: GitOutputSchema,
