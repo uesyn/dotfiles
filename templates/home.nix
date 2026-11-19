@@ -13,6 +13,14 @@
   # Additional patterns appended to the module's default global Git ignores.
   # dotfiles.git.ignores = [ ".custom-ignore" ];
 
+  # Optional signing settings. Unset (null) values are omitted, so existing
+  # configuration, including ~/.gitconfig.local, keeps its behavior.
+  # dotfiles.git.signing = {
+  #   key = "~/.ssh/git_signing.pub";
+  #   format = "ssh";
+  #   enable = true;
+  # };
+
   # Preferred spelling. The legacy dotfiles.git-credential-oauth is also
   # supported during migration; values here take precedence per setting.
   # dotfiles.gitCredentialOauth.device = false;

@@ -8,6 +8,8 @@ let
   # absolute path (Linux-only; see the option for why this cannot live in
   # `executable_dirs` alone).
   execPaths = config.dotfiles.nono.commandPolicies.gitExecPaths;
+  seatbeltEscape = builtins.replaceStrings [ "\\" "\"" ] [ "\\\\" "\\\"" ];
+  sshReadRule = ''(allow file-read* (subpath "${seatbeltEscape "${config.home.homeDirectory}/.ssh"}"))'';
   # Local git is free (`default = "allow"`); remote operations other than
   # clone are denied. Only an argv beginning with `clone` gets the networked
   # intercept sandbox below. Leading global flags cannot opt into networking,
@@ -73,9 +75,23 @@ let
     # update the worktree, and from a worktree they write the objects, refs
     # and logs of the main repository's git directory. The main worktree
     # itself stays out of the child sandbox below.
-    fs_write = [ "@git:toplevel" "@git:common-dir" ];
+    fs_write = [
+      "@git:toplevel"
+      "@git:common-dir"
+    ];
   }
   // lib.optionalAttrs (execPaths != [ ]) { exec_paths = execPaths; };
+  gitCommitSandbox =
+    isDarwin:
+    gitSandbox
+    // {
+      fs_read = gitSandbox.fs_read ++ [ "~/.ssh" ];
+      fs_write = gitSandbox.fs_write ++ [
+        "$TMPDIR"
+        "/tmp"
+      ];
+    }
+    // lib.optionalAttrs isDarwin { unsafe_macos_seatbelt_rules = [ sshReadRule ]; };
   gitInvocationPolicy = {
     default = "allow";
     deny = gitDenyRules;
@@ -109,6 +125,11 @@ in
 {
   dotfiles.nono.commandPolicies.commands.git = pkgs: {
     intercept = [
+      {
+        match.argv.prefix = [ "commit" ];
+        action.type = "passthrough";
+        sandbox = gitCommitSandbox pkgs.stdenv.hostPlatform.isDarwin;
+      }
       {
         match.argv.prefix = [ "clone" ];
         action.type = "passthrough";

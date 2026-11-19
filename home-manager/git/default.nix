@@ -140,6 +140,32 @@ in
       default = [ ];
       description = "Additional Git ignore patterns appended to the module defaults";
     };
+    signing = {
+      key = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Key-file path for `user.signingKey`. A null value leaves signing-key
+          configuration to Git's other configuration sources.
+        '';
+      };
+      format = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        description = ''
+          Value for `gpg.format`, such as `ssh` or `openpgp`. A null value
+          leaves the setting unset.
+        '';
+      };
+      enable = lib.mkOption {
+        type = lib.types.nullOr lib.types.bool;
+        default = null;
+        description = ''
+          Value for `commit.gpgSign`. A null value leaves the setting unset;
+          true enables signing by default and false explicitly disables it.
+        '';
+      };
+    };
   };
 
   options.dotfiles.gitCredentialOauth = gitCredentialOauthOptions;
@@ -173,7 +199,13 @@ in
         gitHooksPath
         "${pkgs.bash}/bin"
       ];
-      gitExecPaths = lib.optionals isLinux (map toString (lib.attrValues gitHooks) ++ [ "${pkgs.bash}/bin/bash" ]);
+      gitExecPaths = lib.optionals isLinux (
+        map toString (lib.attrValues gitHooks)
+        ++ [
+          "${pkgs.bash}/bin/bash"
+          "${pkgs.openssh}/bin/ssh-keygen"
+        ]
+      );
     };
 
     home.packages = [
@@ -222,29 +254,45 @@ in
 
       hooks = gitHooks;
 
-      settings = {
-        ghq.root = "~/src";
+      settings =
+        let
+          signing = config.dotfiles.git.signing;
+        in
+        {
+          ghq.root = "~/src";
 
-        user = {
-          name = config.dotfiles.git.user;
-          email = config.dotfiles.git.email;
-        };
+          user = {
+            name = config.dotfiles.git.user;
+            email = config.dotfiles.git.email;
+          }
+          // lib.optionalAttrs (signing.key != null) { signingKey = signing.key; };
 
-        credential = {
-          helper = [
-            ""
-            "cache --timeout=86400"
-          ];
+          credential = {
+            helper = [
+              ""
+              "cache --timeout=86400"
+            ];
+          }
+          // builtins.foldl' (acc: entry: acc // git-host-config entry) { } oauthHosts;
+
+          pull.ff = "only";
+          feature.manyFiles = true;
+          init.defaultBranch = "main";
+          index.skipHash = false;
+          rebase.updateRefs = true;
+          push.autoSetupRemote = true;
         }
-        // builtins.foldl' (acc: entry: acc // git-host-config entry) { } oauthHosts;
-
-        pull.ff = "only";
-        feature.manyFiles = true;
-        init.defaultBranch = "main";
-        index.skipHash = false;
-        rebase.updateRefs = true;
-        push.autoSetupRemote = true;
-      };
+        // lib.optionalAttrs (signing.format != null) {
+          gpg = {
+            format = signing.format;
+          }
+          // lib.optionalAttrs (signing.format == "ssh") {
+            ssh.program = "${pkgs.openssh}/bin/ssh-keygen";
+          };
+        }
+        // lib.optionalAttrs (signing.enable != null) {
+          commit.gpgSign = signing.enable;
+        };
     };
   };
 }
