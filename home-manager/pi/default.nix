@@ -106,6 +106,10 @@
           models = [
             {
               id = "preview/DeepSeek-V4.1-Flash-1017";
+              input = [
+                "text"
+                "image"
+              ];
               reasoning = true;
               thinkingLevelMap = {
                 off = "none";
@@ -123,6 +127,10 @@
             }
             {
               id = "preview/GLM-5.3-Flash";
+              input = [
+                "text"
+                "image"
+              ];
               reasoning = true;
               thinkingLevelMap = {
                 off = null;
