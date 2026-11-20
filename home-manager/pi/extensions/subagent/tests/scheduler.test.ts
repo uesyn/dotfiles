@@ -9,8 +9,8 @@ function gate() {
 }
 
 test("one FIFO limit covers independent batches; results keep their own order", async () => {
-  const scheduler = new Scheduler(2);
-  const gates = Array.from({ length: 5 }, gate);
+  const scheduler = new Scheduler();
+  const gates = Array.from({ length: 7 }, gate);
   const starts: number[] = [];
   let active = 0;
   let peak = 0;
@@ -21,19 +21,20 @@ test("one FIFO limit covers independent batches; results keep their own order", 
     active--;
     return index;
   }, new AbortController().signal));
-  assert.deepEqual(starts, [0, 1]);
-  gates[1].resolve();
-  assert.equal(await jobs[1], 1);
-  assert.deepEqual(starts, [0, 1, 2]);
+  assert.deepEqual(starts, [0, 1, 2, 3, 4]);
+  gates[4].resolve();
+  assert.equal(await jobs[4], 4);
+  assert.deepEqual(starts, [0, 1, 2, 3, 4, 5]);
   gates[0].resolve();
   await jobs[0];
-  assert.deepEqual(starts, [0, 1, 2, 3]);
+  assert.deepEqual(starts, [0, 1, 2, 3, 4, 5, 6]);
+  gates[1].resolve();
   gates[2].resolve();
-  await jobs[2];
   gates[3].resolve();
-  gates[4].resolve();
-  assert.deepEqual(await Promise.all(jobs), [0, 1, 2, 3, 4]);
-  assert.equal(peak, 2);
+  gates[5].resolve();
+  gates[6].resolve();
+  assert.deepEqual(await Promise.all(jobs), [0, 1, 2, 3, 4, 5, 6]);
+  assert.equal(peak, 5);
 });
 
 test("queued cancellation never starts the job; running cancellation retains its slot", async () => {

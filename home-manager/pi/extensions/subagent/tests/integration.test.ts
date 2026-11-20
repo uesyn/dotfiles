@@ -254,7 +254,7 @@ test("tool preserves successful siblings, input order, and nested usage on parti
   await pi.emit("session_shutdown");
 });
 
-test("two-slot limit spans tool calls; plan mode cancels active and queued tasks", async () => {
+test("five-slot limit spans tool calls; plan mode cancels active and queued tasks", async () => {
   let running = 0;
   let peak = 0;
   let started = 0;
@@ -273,13 +273,17 @@ test("two-slot limit spans tool calls; plan mode cancels active and queued tasks
   const pi = mockPi(context);
   const first = pi.tool().execute("one", { tasks: [
     { agent: "scout", task: "one" }, { agent: "reviewer", task: "two" },
+    { agent: "planner", task: "three" },
   ] }, undefined, undefined, pi.ctx);
-  const second = pi.tool().execute("two", { tasks: [{ agent: "planner", task: "queued" }] }, undefined, undefined, pi.ctx);
-  await waitUntil(() => started === 2);
+  const second = pi.tool().execute("two", { tasks: [
+    { agent: "scout", task: "four" }, { agent: "reviewer", task: "five" },
+    { agent: "planner", task: "queued" },
+  ] }, undefined, undefined, pi.ctx);
+  await waitUntil(() => started === 5);
   await pi.commands.get("plan")!("", pi.ctx);
   const results = await Promise.all([first, second]);
-  assert.equal(peak, 2);
-  assert.equal(started, 2);
+  assert.equal(peak, 5);
+  assert.equal(started, 5);
   assert.equal(running, 0);
   assert.equal(pi.active().includes("subagent"), false);
   for (const result of results.flatMap((value) => value.details.results)) assert.equal(result.status, "cancelled");

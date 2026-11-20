@@ -17,7 +17,7 @@ subagent({
 
 - Fixed roles: `scout`, `planner`, `reviewer`. No project-defined agents.
 - 1–8 tasks per invocation; FIFO queue shared across invocations in the parent
-  extension runtime, two running tasks, at most 32 running/queued tasks.
+  extension runtime, five running tasks, at most 32 running/queued tasks.
 - Model and thinking level are captured when invoked. Physical models only;
   virtual models fail explicitly, without fallback.
 - A native-provider bridge delegates requests to the parent's public model

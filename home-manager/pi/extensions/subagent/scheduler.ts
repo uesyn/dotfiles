@@ -11,7 +11,7 @@ export class Scheduler {
   private readonly concurrency: number;
   private readonly capacity: number;
 
-  constructor(concurrency = 2, capacity = 32) {
+  constructor(concurrency = 5, capacity = 32) {
     if (!Number.isInteger(concurrency) || concurrency < 1 ||
       !Number.isInteger(capacity) || capacity < concurrency) {
       throw new Error("Invalid scheduler limits");

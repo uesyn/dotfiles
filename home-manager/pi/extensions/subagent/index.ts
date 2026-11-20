@@ -62,7 +62,7 @@ function formatResults(results: TaskResult[], partial = false): string {
 }
 
 export default function subagentExtension(pi: ExtensionAPI): void {
-  const scheduler = new Scheduler(2);
+  const scheduler = new Scheduler();
   const calls = new Map<AbortController, Promise<void>>();
   let closed = false;
   const cancelAll = (reason: string) => {
@@ -87,11 +87,11 @@ export default function subagentExtension(pi: ExtensionAPI): void {
     exposure: "model-only",
     description:
       "Delegate 1–8 independent read-only tasks to scout (code discovery), planner (implementation planning), or reviewer (adversarial code review). " +
-      "Runs at most two SDK sessions concurrently across calls. Children inherit the current model/thinking level, not conversation history. " +
+      "Runs at most five SDK sessions concurrently across calls. Children inherit the current model/thinking level, not conversation history. " +
       "Only read/grep/find/ls/read-only git/read-only ast_grep; no edits, bash, MCP, recursive delegation, or worktrees. " +
       "Each task is limited to 5 minutes and 20 model turns; output to 4 KiB/180 lines with full truncated answers saved to a private temporary file. " +
       "Returns task statuses and answers in input order, preserving partial failures. Disabled in plan mode.",
-    promptSnippet: "Delegate independent code discovery, planning, or review to read-only subagents (two concurrent).",
+    promptSnippet: "Delegate independent code discovery, planning, or review to read-only subagents (five concurrent).",
     promptGuidelines: [
       "Use subagent with a tasks array to parallelize independent investigations; give each task enough background and a clear deliverable.",
       "Subagent children share the working tree, not the conversation. Parent owns implementation and test execution; do not edit relevant files while subagents inspect them.",
