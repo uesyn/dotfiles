@@ -34,9 +34,12 @@ type FakeSession = {
   notes: string[];
   model: FakeModel | undefined;
   level: string;
+  /** Session entries, as a host-created session leaves them: model + level only. */
+  entries: { type: string }[];
   pi: FakePi;
   ctx: {
     model: FakeModel | undefined;
+    sessionManager: { getEntries: () => { type: string }[] };
     modelRegistry: { find: (provider: string, id: string) => FakeModel | undefined };
     ui: { notify: (message: string, level: string) => void };
   };
@@ -49,6 +52,8 @@ function createSession(
     level?: string;
     registry?: FakeModel[];
     canAuthenticate?: boolean;
+    /** Message entries already in the session; a host-created fresh one has none. */
+    messages?: number;
   } = {},
 ): FakeSession {
   const notes: string[] = [];
@@ -63,12 +68,18 @@ function createSession(
     notes,
     model: options.model,
     level: options.level ?? "off",
+    entries: [
+      { type: "model_change" },
+      { type: "thinking_level_change" },
+      ...Array.from({ length: options.messages ?? 0 }, () => ({ type: "message" })),
+    ],
   } as FakeSession;
 
   session.ctx = {
     get model() {
       return session.model;
     },
+    sessionManager: { getEntries: () => session.entries },
     modelRegistry: {
       find: (provider, id) =>
         registry.find((model) => model.provider === provider && model.id === id),
@@ -174,19 +185,55 @@ test("a fresh session starts with the recorded model and level", async () => {
   });
 });
 
-test("resume, fork and reload keep the session's own model", async () => {
+test("a session with history keeps its own model", async () => {
   await withStateFile(async (path) => {
-    await writeFile(
-      path,
-      JSON.stringify({ provider: "prov", model: "beta", thinkingLevel: "high" }),
-    );
+    const record = { provider: "prov", model: "beta", thinkingLevel: "high" };
+    await writeFile(path, JSON.stringify(record));
 
-    for (const reason of ["resume", "fork", "reload"]) {
-      const session = createSession({ model: { provider: "prov", id: "alpha" }, level: "off" });
+    // Resume and fork restore their own model; a host reopening a chat reports
+    // `startup` for it, so the reason cannot be what decides.
+    for (const reason of ["resume", "fork", "startup", "reload"]) {
+      const session = createSession({
+        model: { provider: "prov", id: "alpha" },
+        level: "off",
+        messages: 2,
+      });
       await emitSessionStart(session, reason);
       assert.deepEqual(session.model, { provider: "prov", id: "alpha" }, reason);
       assert.equal(session.level, "off", reason);
+      await flushWrites();
+      assert.deepEqual(JSON.parse(await readFile(path, "utf8")), record, reason);
     }
+  });
+});
+
+test("an empty chat started by a host takes the record", async () => {
+  await withStateFile(async (path) => {
+    const record = { provider: "prov", model: "beta", thinkingLevel: "high" };
+    await writeFile(path, JSON.stringify(record));
+
+    // pi-web creates a new chat, writes its model and binds extensions without
+    // emitting model_select for it; nothing has been chosen for the chat yet.
+    const session = createSession({ model: { provider: "prov", id: "alpha" }, level: "low" });
+    await emitSessionStart(session, "startup");
+
+    assert.deepEqual(session.model, { provider: "prov", id: "beta" });
+    assert.equal(session.level, "high");
+    await flushWrites();
+    assert.deepEqual(JSON.parse(await readFile(path, "utf8")), record);
+  });
+});
+
+test("an empty chat with no record adopts the model it resolved", async () => {
+  await withStateFile(async (path) => {
+    const session = createSession({ model: { provider: "prov", id: "alpha" }, level: "low" });
+    await emitSessionStart(session, "startup");
+    await flushWrites();
+    assert.deepEqual(JSON.parse(await readFile(path, "utf8")), {
+      provider: "prov",
+      model: "alpha",
+      thinkingLevel: "low",
+    });
   });
 });
 
