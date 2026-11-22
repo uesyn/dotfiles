@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# One command for exposing the local pi-web server over a tailcat tunnel, and
-# for dialing it from the client side with tailcat's SOCKS5 proxy.
+# One command for exposing the local pi-web server over a tailcat tunnel.
+# Clients run tailcat's SOCKS5 proxy directly.
 #
 # Why the magic hostname: tailcat's SOCKS5 proxy dials the tailcat server named
 # by its address argument when the browser asks for "server.tailcat". A browser
@@ -25,7 +25,6 @@ allow=""
 key="default"
 password_file=""
 keep_pi_web=0
-listen="127.0.0.1:1080"
 resolved_password=""
 positionals=()
 
@@ -42,7 +41,6 @@ usage() {
   cat <<EOF
 Usage:
   pi-web-tailcat [serve] [options]   start pi-web if needed, then tunnel its port
-  pi-web-tailcat connect [<addr>]    run the SOCKS5 proxy that dials the server
   pi-web-tailcat address             print the address the last serve published
 
 Options:
@@ -56,13 +54,11 @@ Options:
                             \$PI_WEB_PASSWORD; no password at all (the
                             default) leaves pi-web without authentication
       --keep-pi-web         leave a pi-web started by this command running
-  -l, --listen ADDR:PORT    SOCKS5 listen address for connect
-                            (default: 127.0.0.1:1080)
   -h, --help                show this help
 
 serve prints the tailcat address and saves it to
-\$XDG_CACHE_HOME/tailcat/pi-web-<port>.addr, which connect and address read
-when no address is given. The address is stable only with a saved server key:
+\$XDG_CACHE_HOME/tailcat/pi-web-<port>.addr, which address reads.
+The address is stable only with a saved server key:
 serve runs "tailcat genkey --key=default --fixed-region" for you on first use
 instead of letting tailcat pick an ephemeral key per run. The address is the
 key's, so two tunnels must not listen with the same key at the same time (the
@@ -76,7 +72,7 @@ Client side of the tunnel:
   tailcat socks --listen=127.0.0.1:1080 <addr>
   then open http://${magic_host}:<port>/ with the browser's SOCKS5 proxy set to
   127.0.0.1:1080 and remote DNS enabled (Firefox: "Proxy DNS when using SOCKS
-  v5"). "pi-web-tailcat connect" does the first step.
+  v5").
 EOF
 }
 
@@ -108,10 +104,6 @@ while [ "$#" -gt 0 ]; do
       keep_pi_web=1
       shift
       ;;
-    -l | --listen)
-      listen="${2:?--listen needs a value}"
-      shift 2
-      ;;
     -h | --help)
       usage
       exit 0
@@ -119,7 +111,7 @@ while [ "$#" -gt 0 ]; do
     -*)
       die "unknown option: $1 (see --help)"
       ;;
-    serve | connect | address)
+    serve | address)
       subcmd="$1"
       shift
       ;;
@@ -175,18 +167,76 @@ resolve_password() {
   fi
 }
 
+# EXIT can run after cmd_serve returns, so cleanup state is not function-local.
+pi_pid=""
+tc_pid=""
+addr_file=""
+launching=0
+signal_status=0
+
+serve_signal() {
+  # Don't exit between starting a job and recording $! for cleanup.
+  if [ "$launching" = 1 ]; then
+    signal_status=$1
+  else
+    exit "$1"
+  fi
+}
+
+finish_launch() {
+  set +m
+  launching=0
+  if [ "$signal_status" != 0 ]; then
+    exit "$signal_status"
+  fi
+}
+
+group_alive() {
+  [ -n "$1" ] && kill -0 -- "-$1" 2>/dev/null
+}
+
+stop_serve() {
+  trap '' HUP INT TERM
+  local owned_pi_pid="" pid deadline=$((SECONDS + 7))
+  if [ "$keep_pi_web" = 0 ]; then
+    owned_pi_pid=$pi_pid
+  fi
+
+  if [ -n "$tc_pid" ]; then
+    kill -TERM -- "-$tc_pid" 2>/dev/null || true
+  fi
+  if [ -n "$owned_pi_pid" ]; then
+    # The pi-web launcher forwards TERM to Next.js, gives it up to 5s,
+    # and reaps it. Don't bypass that by signalling the whole group first.
+    kill -TERM "$owned_pi_pid" 2>/dev/null ||
+      kill -TERM -- "-$owned_pi_pid" 2>/dev/null || true
+  fi
+
+  while group_alive "$tc_pid" || group_alive "$owned_pi_pid"; do
+    if [ "$SECONDS" -ge "$deadline" ]; then
+      break
+    fi
+    sleep 0.1
+  done
+  for pid in "$tc_pid" "$owned_pi_pid"; do
+    if [ -n "$pid" ]; then
+      if group_alive "$pid"; then
+        kill -KILL -- "-$pid" 2>/dev/null || true
+      fi
+      wait -f "$pid" 2>/dev/null || true
+    fi
+  done
+  if [ -n "$addr_file" ]; then
+    rm -f -- "$addr_file" || true
+  fi
+}
+
 cmd_serve() {
-  local pi_pid="" started_pi=0 tc_pid="" addr_file="" log=""
-  cleanup() {
-    trap - EXIT INT TERM
-    if [ -n "${tc_pid:-}" ]; then
-      kill "$tc_pid" 2>/dev/null || true
-    fi
-    if [ "${started_pi:-0}" = 1 ] && [ "${keep_pi_web:-0}" = 0 ] && [ -n "${pi_pid:-}" ]; then
-      kill "$pi_pid" 2>/dev/null || true
-    fi
-  }
-  trap cleanup EXIT INT TERM
+  local log=""
+  trap stop_serve EXIT
+  trap 'serve_signal 129' HUP
+  trap 'serve_signal 130' INT
+  trap 'serve_signal 143' TERM
 
   if pi_web_up; then
     note "pi-web already listening on $(pi_web_url)"
@@ -198,12 +248,16 @@ cmd_serve() {
     resolve_password
     log=$(mktemp -t pi-web.XXXXXX.log)
     note "starting pi-web on $(pi_web_url) (log: $log)"
+    # Give each background service its own process group so terminal Ctrl-C
+    # reaches the wrapper, not the services (including a kept pi-web).
+    launching=1
+    set -m
     PI_WEB_PASSWORD="$resolved_password" \
       PI_WEB_ALLOWED_HOSTS="${PI_WEB_ALLOWED_HOSTS:+${PI_WEB_ALLOWED_HOSTS},}${magic_host}" \
       PI_WEB_NO_OPEN=1 \
-      pi-web --no-open --port "$port" >>"$log" 2>&1 &
+      pi-web --no-open --port "$port" </dev/null >>"$log" 2>&1 &
     pi_pid=$!
-    started_pi=1
+    finish_launch
     for _ in $(seq 1 160); do
       pi_web_up && break
       kill -0 "$pi_pid" 2>/dev/null || die "pi-web exited (see $log)"
@@ -242,8 +296,11 @@ cmd_serve() {
   fi
 
   note "starting the tunnel on port ${port}"
-  TAILCAT_ADDR_FILE="$addr_file" tailcat "${tailcat_args[@]}" &
+  launching=1
+  set -m
+  TAILCAT_ADDR_FILE="$addr_file" tailcat "${tailcat_args[@]}" </dev/null &
   tc_pid=$!
+  finish_launch
 
   # Registering with a DERP relay can take a while (public relays rate-limit),
   # so give the tunnel more room than pi-web's local startup.
@@ -271,24 +328,11 @@ client:
   tailcat socks --listen=127.0.0.1:1080 ${addr}
   browser -> http://${magic_host}:${port}/  with SOCKS5 127.0.0.1:1080
              and remote DNS enabled
-  or run "pi-web-tailcat connect" on the client once the address is known
 
 Ctrl-C stops the tunnel.
 EOF
 
-  wait "$tc_pid"
-}
-
-cmd_connect() {
-  local addr="${1:-}"
-  if [ -z "$addr" ]; then
-    [ -r "$cache_file" ] || die "no address given and no ${cache_file}; run serve on the server or pass an address"
-    addr=$(tr -d '\r\n' <"$cache_file")
-  fi
-  [ -n "$addr" ] || die "empty tailcat address"
-  printf 'SOCKS5 %s -> %s\n' "$listen" "$addr"
-  printf 'open http://%s:%s/ with remote DNS enabled\n' "$magic_host" "$port"
-  exec tailcat socks --listen="$listen" "$addr"
+  wait -f "$tc_pid"
 }
 
 cmd_address() {
@@ -297,13 +341,11 @@ cmd_address() {
   printf '\n'
 }
 
+[ "$#" -eq 0 ] || die "unexpected argument: $1"
+
 case "$subcmd" in
   serve)
-    [ "$#" -eq 0 ] || die "unexpected argument: $1"
     cmd_serve
-    ;;
-  connect)
-    cmd_connect "${1:-}"
     ;;
   address)
     cmd_address

@@ -1,9 +1,8 @@
 { pkgs, ... }:
 {
-  # `pi-web-tailcat` is the one-command way to reach pi-web from another machine
-  # through a tailcat tunnel: `serve` starts pi-web with the host allow-list
-  # entry the SOCKS client needs and runs `tailcat serve`, `connect` runs
-  # `tailcat socks` on the client. See the script header for the why.
+  # `pi-web-tailcat` exposes pi-web through a tailcat tunnel: `serve` starts
+  # pi-web with the host allow-list entry clients need and runs `tailcat serve`.
+  # Clients run `tailcat socks` directly. See the script header for the why.
   home.packages = [
     (pkgs.writeShellApplication {
       name = "pi-web-tailcat";
