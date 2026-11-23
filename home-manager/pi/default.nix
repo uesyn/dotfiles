@@ -191,7 +191,7 @@
       # which pi-web needs: it rewrites `.next/prerender-manifest.json` on every
       # start so the `previewModeId` published in the package cannot bypass its
       # password gate. `lib.mkDefault` so a plain definition overrides it.
-      dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.17.0";
+      dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.18.0";
 
       home.file.".local/share/pi/extensions".source = "${extensionsTree}";
       # Built-in MCP support (no pi-mcp-adapter package): servers in
