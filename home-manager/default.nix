@@ -23,6 +23,7 @@ in
     ./javascript
     ./kubernetes
     ./man
+    ./marp
     ./misc
     ./mise
     ./neovim
