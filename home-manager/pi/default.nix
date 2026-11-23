@@ -250,6 +250,10 @@
           pkgs.bun
           pkgs.git
         ];
+        # User context file → ~/.pi/agent/AGENTS.md, loaded in every working
+        # directory (unlike the project AGENTS.md, which only applies inside
+        # this repo). `mkDefault` so a module can still set `context` itself.
+        context = lib.mkDefault ./context.md;
         models.providers = providers;
         keybindings = {
           "app.model.cycleBackward" = [ ];
