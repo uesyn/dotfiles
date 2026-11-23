@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# One command for exposing the local pi-web server over a tailcat tunnel.
-# Clients run tailcat's SOCKS5 proxy directly.
+# One entry point for exposing the local pi-web server over a tailcat tunnel:
+# `start` runs pi-web (unless it is already up) plus `tailcat serve`, `stop`
+# takes the tunnel down again.
 #
 # Why the magic hostname: tailcat's SOCKS5 proxy dials the tailcat server named
 # by its address argument when the browser asks for "server.tailcat". A browser
@@ -8,25 +9,25 @@
 # browser hostnames are lowercased), so this name is the only way in. pi-web's
 # proxy answers only to loopback names, IPs and the hostnames in
 # PI_WEB_ALLOWED_HOSTS (DNS-rebinding guard), so "server.tailcat" has to be
-# added there: `serve` does it when it starts pi-web and refuses to start the
-# tunnel when an already running pi-web would reject the requests.
+# added there.
 #
 # No TLS involved: tailcat is a WireGuard tunnel, so the password crosses the
 # network encrypted while the browser still sees plain http (no secure context,
 # HTTP/1.1 only).
+#
+# Transient systemd user services run pi-web and tailcat in the foreground.
+# systemd owns process monitoring, termination and dependency propagation.
+# No PID tracking, user/PID namespaces or persistent unit files are needed.
+# `stop` stops the units; --collect unloads them after exit.
 
 set -euo pipefail
 
 readonly magic_host="server.tailcat"
 
-subcmd="serve"
+subcmd="start"
 port="30141"
 allow=""
 key="default"
-password_file=""
-keep_pi_web=0
-resolved_password=""
-positionals=()
 
 die() {
   printf 'pi-web-tailcat: %s\n' "$*" >&2
@@ -40,8 +41,8 @@ note() {
 usage() {
   cat <<EOF
 Usage:
-  pi-web-tailcat [serve] [options]   start pi-web if needed, then tunnel its port
-  pi-web-tailcat address             print the address the last serve published
+  pi-web-tailcat [start] [options]   start pi-web if needed, then tunnel it
+  pi-web-tailcat stop [-p PORT]      stop the tunnel and its pi-web
 
 Options:
   -p, --port PORT           pi-web and tailcat port (default: 30141)
@@ -50,23 +51,26 @@ Options:
                             --client --key=client-default" on the client
       --key NAME            saved tailcat server key to serve with (default:
                             default); "new" for a throwaway key and address
-      --password-file FILE  read the pi-web password from FILE instead of
-                            \$PI_WEB_PASSWORD; no password at all (the
-                            default) leaves pi-web without authentication
-      --keep-pi-web         leave a pi-web started by this command running
   -h, --help                show this help
 
-serve prints the tailcat address and saves it to
-\$XDG_CACHE_HOME/tailcat/pi-web-<port>.addr, which address reads.
-The address is stable only with a saved server key:
-serve runs "tailcat genkey --key=default --fixed-region" for you on first use
-instead of letting tailcat pick an ephemeral key per run. The address is the
-key's, so two tunnels must not listen with the same key at the same time (the
-connections land on whichever node answers); give the second one --key NAME.
+start keeps the address stable: it runs "tailcat genkey --key=NAME
+--fixed-region" on first use instead of letting tailcat pick an ephemeral key
+per run. The address is the key's, so two tunnels must not listen with the same
+key at the same time (the connections land on whichever node answers); give the
+second one --key NAME.
 
-Without a password pi-web runs unauthenticated and the address is the only
-credential, so serve warns and suggests --allow=nodekey:... (a client's key
+start reuses a pi-web that is already listening on PORT, and stop leaves that
+one alone -- only what this command started lives inside its service cgroups.
+The services are transient (no unit files), require systemd --user, and follow
+that user's logout/linger policy. If the user manager is absent, start enables
+linger with sudo loginctl enable-linger for the current user (sudo may prompt).
+
+If pi-web runs unauthenticated, the address is the only credential, so start
+warns and suggests --allow=nodekey:... (a client's key
 from "tailcat genkey --client --key=client-default").
+
+State lives in \$XDG_CACHE_HOME/tailcat/pi-web-PORT.{addr,log}.
+Transient units: pi-web-tailcat-PORT.service and pi-web-tailcat-PORT-web.service.
 
 Client side of the tunnel:
   tailcat socks --listen=127.0.0.1:1080 <addr>
@@ -96,14 +100,6 @@ while [ "$#" -gt 0 ]; do
       key="${2:?--key needs a value}"
       shift 2
       ;;
-    --password-file)
-      password_file="${2:?--password-file needs a value}"
-      shift 2
-      ;;
-    --keep-pi-web)
-      keep_pi_web=1
-      shift
-      ;;
     -h | --help)
       usage
       exit 0
@@ -111,23 +107,26 @@ while [ "$#" -gt 0 ]; do
     -*)
       die "unknown option: $1 (see --help)"
       ;;
-    serve | address)
+    start | stop)
       subcmd="$1"
       shift
       ;;
     *)
-      positionals+=("$1")
-      shift
+      die "unexpected argument: $1 (see --help)"
       ;;
   esac
 done
 
-if [ "${#positionals[@]}" -gt 0 ]; then
-  set -- "${positionals[@]}"
-else
-  set --
+# Ports also become unit names and filenames; reject unsafe or ambiguous input.
+if ! [[ "$port" =~ ^[1-9][0-9]{0,4}$ ]] || ((port > 65535)); then
+  die "port must be an integer from 1 to 65535 (no leading zeros)"
 fi
-readonly cache_file="${XDG_CACHE_HOME:-$HOME/.cache}/tailcat/pi-web-${port}.addr"
+
+readonly unit="pi-web-tailcat-${port}.service"
+readonly web_unit="pi-web-tailcat-${port}-web.service"
+readonly state_dir="${XDG_CACHE_HOME:-$HOME/.cache}/tailcat"
+readonly addr_file="${state_dir}/pi-web-${port}.addr"
+readonly log_file="${state_dir}/pi-web-${port}.log"
 
 pi_web_url() {
   printf 'http://127.0.0.1:%s' "$port"
@@ -153,125 +152,118 @@ auth_has_password() {
   ! curl -s --max-time 3 "$(pi_web_url)/api/web-auth" 2>/dev/null | grep -q '"enabled":false'
 }
 
-# The password is optional: empty means pi-web runs without authentication
-# (its own opt-in), and the warning in cmd_serve reports that. Sets
-# resolved_password instead of printing it, so "die" cannot run in a command
-# substitution subshell (whose exit trap would lose cmd_serve's locals).
-resolve_password() {
-  resolved_password=""
-  if [ -n "$password_file" ]; then
-    [ -r "$password_file" ] || die "cannot read $password_file"
-    resolved_password=$(<"$password_file")
-  else
-    resolved_password="${PI_WEB_PASSWORD:-}"
+connect_user_manager() {
+  # tmux/SSH sessions can outlive or miss PAM's environment. Recover only an
+  # existing runtime directory owned by this user; never create one ourselves.
+  local runtime="/run/user/$UID"
+  if [ -z "${XDG_RUNTIME_DIR:-}" ] && [ -d "$runtime" ] && [ -O "$runtime" ]; then
+    export XDG_RUNTIME_DIR="$runtime"
   fi
+  if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && [ -n "${XDG_RUNTIME_DIR:-}" ] &&
+    [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+  fi
+  systemctl --user show-environment >/dev/null 2>&1
 }
 
-# EXIT can run after cmd_serve returns, so cleanup state is not function-local.
-pi_pid=""
-tc_pid=""
-addr_file=""
-launching=0
-signal_status=0
-
-serve_signal() {
-  # Don't exit between starting a job and recording $! for cleanup.
-  if [ "$launching" = 1 ]; then
-    signal_status=$1
-  else
-    exit "$1"
-  fi
-}
-
-finish_launch() {
-  set +m
-  launching=0
-  if [ "$signal_status" != 0 ]; then
-    exit "$signal_status"
-  fi
-}
-
-group_alive() {
-  [ -n "$1" ] && kill -0 -- "-$1" 2>/dev/null
-}
-
-stop_serve() {
-  trap '' HUP INT TERM
-  local owned_pi_pid="" pid deadline=$((SECONDS + 7))
-  if [ "$keep_pi_web" = 0 ]; then
-    owned_pi_pid=$pi_pid
+require_user_manager() {
+  if connect_user_manager; then
+    return 0
   fi
 
-  if [ -n "$tc_pid" ]; then
-    kill -TERM -- "-$tc_pid" 2>/dev/null || true
-  fi
-  if [ -n "$owned_pi_pid" ]; then
-    # The pi-web launcher forwards TERM to Next.js, gives it up to 5s,
-    # and reaps it. Don't bypass that by signalling the whole group first.
-    kill -TERM "$owned_pi_pid" 2>/dev/null ||
-      kill -TERM -- "-$owned_pi_pid" 2>/dev/null || true
-  fi
-
-  while group_alive "$tc_pid" || group_alive "$owned_pi_pid"; do
-    if [ "$SECONDS" -ge "$deadline" ]; then
-      break
+  local runtime="/run/user/$UID" user linger
+  # Bootstrap only on start, and only when no local user manager is present.
+  # A connection failure to an existing manager must not change login policy.
+  if [ "${1:-}" = "enable-linger" ] &&
+    [ ! -S "$runtime/systemd/private" ] && [ ! -S "$runtime/bus" ]; then
+    user=$(id -un)
+    linger=$(loginctl show-user "$user" --property=Linger --value 2>/dev/null) || linger=""
+    if [ "$linger" != "yes" ]; then
+      command -v sudo >/dev/null || die "sudo is required to enable linger for $user"
+      note "enabling linger for $user; user services will be allowed to run after logout"
+      note "running sudo loginctl enable-linger $user (sudo may request authentication)"
+      sudo loginctl enable-linger "$user" || die "could not enable linger for $user"
     fi
-    sleep 0.1
-  done
-  for pid in "$tc_pid" "$owned_pi_pid"; do
-    if [ -n "$pid" ]; then
-      if group_alive "$pid"; then
-        kill -KILL -- "-$pid" 2>/dev/null || true
+    # logind may still be starting the runtime directory, manager and bus.
+    for _ in $(seq 1 50); do
+      if connect_user_manager; then
+        return 0
       fi
-      wait -f "$pid" 2>/dev/null || true
+      sleep 0.1
+    done
+  fi
+  systemctl --user show-environment >/dev/null ||
+    die "cannot reach systemd --user; run outside nono and check the user manager and connection environment"
+}
+
+lock_state() {
+  mkdir -p "$state_dir"
+  # Serialize start/stop for this port, including readiness and cleanup.
+  exec {lock_fd}>"${state_dir}/pi-web-${port}.lock"
+  flock "$lock_fd"
+}
+
+unit_running() {
+  local state
+  state=$(systemctl --user show --property=ActiveState --value "$1" 2>/dev/null) || return 1
+  case "$state" in
+    active | activating | reloading | deactivating) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+# env_args is collected by cmd_start and shared with its start_unit calls.
+start_unit() {
+  local service="$1"
+  shift
+  systemd-run --user --collect \
+    --unit="$service" --service-type=exec --expand-environment=no \
+    --property=KillMode=control-group --property=TimeoutStopSec=10s \
+    --property=Restart=no --working-directory="$PWD" \
+    --property="StandardOutput=append:${log_file}" \
+    --property=StandardError=inherit \
+    "${env_args[@]}" "$@"
+}
+
+stop_unit() {
+  local service
+  for service in "$unit" "$web_unit"; do
+    if unit_running "$service"; then
+      systemctl --user stop "$service" || die "could not stop $service"
     fi
   done
-  if [ -n "$addr_file" ]; then
-    rm -f -- "$addr_file" || true
+  rm -f -- "$addr_file" "$addr_file.part"
+  note "stopped"
+  if pi_web_up; then
+    note "a pi-web not started by this command is still listening on $(pi_web_url)"
   fi
 }
 
-cmd_serve() {
-  local log=""
-  trap stop_serve EXIT
-  trap 'serve_signal 129' HUP
-  trap 'serve_signal 130' INT
-  trap 'serve_signal 143' TERM
+fail_start() {
+  note "$* (log: ${log_file})"
+  tail -n 20 -- "$log_file" >&2 || true
+  note "inspect with: journalctl --user -u $unit -u $web_unit"
+  stop_unit
+  exit 1
+}
 
-  if pi_web_up; then
-    note "pi-web already listening on $(pi_web_url)"
-    if ! host_allowed; then
-      die "the running pi-web rejects Host: ${magic_host}; restart it with PI_WEB_ALLOWED_HOSTS=${magic_host}"
-    fi
-  else
-    command -v pi-web >/dev/null || die "pi-web not found on PATH (mise install)"
-    resolve_password
-    log=$(mktemp -t pi-web.XXXXXX.log)
-    note "starting pi-web on $(pi_web_url) (log: $log)"
-    # Give each background service its own process group so terminal Ctrl-C
-    # reaches the wrapper, not the services (including a kept pi-web).
-    launching=1
-    set -m
-    PI_WEB_PASSWORD="$resolved_password" \
-      PI_WEB_ALLOWED_HOSTS="${PI_WEB_ALLOWED_HOSTS:+${PI_WEB_ALLOWED_HOSTS},}${magic_host}" \
-      PI_WEB_NO_OPEN=1 \
-      pi-web --no-open --port "$port" </dev/null >>"$log" 2>&1 &
-    pi_pid=$!
-    finish_launch
-    for _ in $(seq 1 160); do
-      pi_web_up && break
-      kill -0 "$pi_pid" 2>/dev/null || die "pi-web exited (see $log)"
-      sleep 0.25
-    done
-    pi_web_up || die "pi-web did not answer on $(pi_web_url) (see $log)"
-    host_allowed || die "pi-web rejects Host: ${magic_host} (see $log)"
+cmd_start() {
+  lock_state
+  require_user_manager enable-linger
+  if unit_running "$unit"; then
+    note "already running or stopping ($unit)"
+    [ -s "$addr_file" ] && cat "$addr_file"
+    return 0
   fi
 
-  # The tunnel address is a credential: with no pi-web password, --allow is the
-  # only thing between the internet and an agent that runs commands.
-  if [ -z "$allow" ] && ! auth_has_password; then
-    note "warning: pi-web has no password and no --allow was given, so the tunnel address alone grants access"
-  fi
+  # Pass exported environment by name; values never enter systemd-run's argv.
+  # env -0 works in Nix's non-interactive Bash and preserves multiline values.
+  local entry name env_args=()
+  while IFS= read -r -d '' entry; do
+    name="${entry%%=*}"
+    [[ "$name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]] || continue
+    env_args+=("--setenv=$name")
+  done < <(env -0)
 
   if [ "$key" != "new" ]; then
     local keys
@@ -282,72 +274,105 @@ cmd_serve() {
     fi
   fi
 
-  mkdir -p "${cache_file%/*}"
-  addr_file=$(mktemp -t pi-web-tailcat.XXXXXX)
-  rm -f "$addr_file"
+  rm -f -- "$addr_file" "$addr_file.part"
+  local owned_web=0 hosts web_command
+  if unit_running "$web_unit"; then
+    # Adopt our own web unit left by an interrupted start, not an external web.
+    owned_web=1
+  elif pi_web_up; then
+    note "using the pi-web already listening on $(pi_web_url)"
+  else
+    web_command=$(command -v pi-web) || die "pi-web not found on PATH (mise install)"
+    hosts="${PI_WEB_ALLOWED_HOSTS:-}"
+    case ",${hosts}," in
+      *",${magic_host},"*) ;;
+      *) hosts="${hosts:+${hosts},}${magic_host}" ;;
+    esac
+    note "starting $web_unit (log: ${log_file})"
+    PI_WEB_ALLOWED_HOSTS="$hosts" start_unit "$web_unit" \
+      --setenv=PI_WEB_ALLOWED_HOSTS --setenv=PI_WEB_NO_OPEN=1 \
+      -- "$web_command" --no-open --port "$port" ||
+      fail_start "could not start $web_unit"
+    owned_web=1
+  fi
 
-  local tailcat_args=(serve --key "$key")
+  if [ "$owned_web" = 1 ]; then
+    # HTTP readiness is not implied by Type=exec; liveness belongs to systemd.
+    for _ in $(seq 1 160); do
+      pi_web_up && break
+      unit_running "$web_unit" || fail_start "$web_unit exited before becoming ready"
+      sleep 0.25
+    done
+    pi_web_up || fail_start "pi-web did not answer on $(pi_web_url)"
+  fi
+  if ! host_allowed; then
+    if [ "$owned_web" = 1 ]; then
+      fail_start "pi-web rejects Host: ${magic_host}"
+    fi
+    die "the running pi-web rejects Host: ${magic_host}; restart it with PI_WEB_ALLOWED_HOSTS=${magic_host}"
+  fi
+
+  if [ -z "$allow" ] && ! auth_has_password; then
+    note "warning: pi-web has no password and no --allow was given, so the tunnel address alone grants access"
+  fi
+
+  local dependencies=() tailcat_args=(serve --key "$key")
+  if [ "$owned_web" = 1 ]; then
+    # Web failure stops the tunnel. Tunnel exit (including failure) stops only
+    # our web unit. --no-block avoids waiting on ordered stop jobs here.
+    dependencies+=(
+      "--property=BindsTo=$web_unit"
+      "--property=After=$web_unit"
+      "--property=ExecStopPost=-$(command -v systemctl) --user --no-block stop $web_unit"
+    )
+  fi
   if [ -n "$allow" ]; then
     tailcat_args+=(--allow "$allow")
   fi
   tailcat_args+=("$port")
   if [ "$key" = "new" ]; then
-    note "ephemeral key: the address below changes on every start"
+    note "ephemeral key: the address changes on every start"
   fi
 
-  note "starting the tunnel on port ${port}"
-  launching=1
-  set -m
-  TAILCAT_ADDR_FILE="$addr_file" tailcat "${tailcat_args[@]}" </dev/null &
-  tc_pid=$!
-  finish_launch
+  note "starting $unit (log: ${log_file})"
+  TAILCAT_ADDR_FILE="$addr_file.part" start_unit "$unit" \
+    "${dependencies[@]}" --setenv=TAILCAT_ADDR_FILE \
+    -- "$(command -v tailcat)" "${tailcat_args[@]}" ||
+    fail_start "could not start $unit"
 
-  # Registering with a DERP relay can take a while (public relays rate-limit),
-  # so give the tunnel more room than pi-web's local startup.
+  # Relay registration can take up to two minutes. No PID tracking is needed.
   for _ in $(seq 1 240); do
-    if [ -s "$addr_file" ] && grep -q '^tc' "$addr_file"; then
+    if [ -s "$addr_file.part" ] && grep -q '^tc' "$addr_file.part"; then
       break
     fi
-    kill -0 "$tc_pid" 2>/dev/null || die "tailcat serve exited"
+    unit_running "$unit" || fail_start "$unit exited before publishing an address"
     sleep 0.5
   done
-  [ -s "$addr_file" ] || die "tailcat did not publish an address"
-
+  if [ ! -s "$addr_file.part" ] || ! grep -q '^tc' "$addr_file.part"; then
+    fail_start "tailcat did not publish an address"
+  fi
   local addr
-  addr=$(tr -d '\r\n' <"$addr_file")
-  [ -n "$addr" ] || die "tailcat published an empty address"
-  printf '%s\n' "$addr" >"$cache_file"
+  addr=$(tr -d '\r\n' <"$addr_file.part")
+  mv -- "$addr_file.part" "$addr_file"
 
   cat <<EOF
 
 pi-web   $(pi_web_url)  (served as http://${magic_host}:${port}/)
 tailcat  ${addr}
-saved    ${cache_file}
+log      ${log_file}
 
-client:
-  tailcat socks --listen=127.0.0.1:1080 ${addr}
-  browser -> http://${magic_host}:${port}/  with SOCKS5 127.0.0.1:1080
-             and remote DNS enabled
-
-Ctrl-C stops the tunnel.
+stop:
+  pi-web-tailcat stop -p ${port}
 EOF
-
-  wait -f "$tc_pid"
 }
 
-cmd_address() {
-  [ -r "$cache_file" ] || die "no ${cache_file}; run serve on the server first"
-  tr -d '\r\n' <"$cache_file"
-  printf '\n'
+cmd_stop() {
+  lock_state
+  require_user_manager
+  stop_unit
 }
-
-[ "$#" -eq 0 ] || die "unexpected argument: $1"
 
 case "$subcmd" in
-  serve)
-    cmd_serve
-    ;;
-  address)
-    cmd_address
-    ;;
+  start) cmd_start ;;
+  stop) cmd_stop ;;
 esac
