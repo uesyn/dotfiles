@@ -207,6 +207,11 @@
         };
       };
 
+      # Themes: user themes live at ~/.pi/agent/themes/<name>.json and the file
+      # name must match the theme `name` (the only path Pi hot-reloads). The
+      # module has no `themes` option, so the vendored themes are linked here.
+      home.file.".pi/agent/themes/dracula.json".source = ./themes/dracula.json;
+
       home.file.".pi/agent/confluence-readonly.json".text = builtins.toJSON pi.confluence;
 
       home.file.".pi/agent/tool-toggle.json".text = builtins.toJSON {
@@ -305,7 +310,7 @@
             enabled = true;
             maxRetries = 3;
           };
-          theme = "dark";
+          theme = "dracula";
           # Interactive TUI mode; pi v1.0.0 defaults to "fullscreen".
           tuiMode = "regular";
         };
