@@ -1,12 +1,19 @@
 /**
- * last-model — remember the model and thinking level in use.
+ * last-model — remember the model and thinking level in use in the TUI.
  *
- * Every model or thinking-level change is recorded, and a session with nothing
- * in it yet starts with the recorded combination — that is a fresh `pi`, `/new`,
- * or a new chat in a host such as pi-web — unless the invocation already chose
- * one with `--model`, `--models` or `--thinking`. A session that carries
- * messages keeps the model from its own history, which covers resume and fork
- * as well as a host reopening a chat, and a reload keeps the running session's.
+ * Every model or thinking-level change is recorded, and a session started with
+ * nothing in it yet — a fresh `pi`, `/new` — begins with the recorded
+ * combination unless the invocation already chose one with `--model`,
+ * `--models` or `--thinking`. Resuming, forking and reloading keep the model
+ * their session already carries.
+ *
+ * Only the TUI is involved. A host that drives pi (pi-web) picks a new chat's
+ * model from its own picker and keeps every chat's model in the session file,
+ * so it has no use for a global record — worse, applying one there reverts the
+ * selection the user just made: pi takes any model set while binding
+ * extensions as the session's final choice, and pi-web then drops its own.
+ * Scripted `print`/`json` runs are left alone for the same reason: the
+ * invocation already decided the model.
  *
  * This is deliberately independent of favorite-models: favorites are presets
  * the user manages, while the model used last is observation. Because the
@@ -126,12 +133,13 @@ function selectionPinnedOnCommandLine(): boolean {
 }
 
 /**
- * Whether this session already carries a conversation. Sessions are written
- * with their model and thinking level before extensions are bound, so those
- * entries do not mean the session had history: only messages do.
+ * Whether the user drives this session from the TUI. Every other mode resolves
+ * the model on its own — a host such as pi-web (`rpc`) from its picker, a
+ * scripted `print`/`json` run from the invocation — so the record is neither
+ * applied nor written there.
  */
-function hasConversation(ctx: ExtensionContext): boolean {
-  return ctx.sessionManager.getEntries().some((entry) => entry.type === "message");
+function isTuiSession(ctx: ExtensionContext): boolean {
+  return ctx.mode === "tui";
 }
 
 export default function lastModelExtension(pi: ExtensionAPI): void {
@@ -163,8 +171,6 @@ export default function lastModelExtension(pi: ExtensionAPI): void {
   }
 
   async function restore(ctx: ExtensionContext, record: LastModel): Promise<void> {
-    if (selectionPinnedOnCommandLine()) return;
-
     const model = ctx.modelRegistry.find(record.provider, record.model);
     if (!model) {
       // Keep the record: the provider may be configured again later.
@@ -187,19 +193,21 @@ export default function lastModelExtension(pi: ExtensionAPI): void {
       if (record.thinkingLevel) pi.setThinkingLevel(record.thinkingLevel);
     } finally {
       restoring = false;
-      // Adopt the state pi actually settled on, so an unchanged selection does
-      // not rewrite the file.
+      // Adopt the state pi actually settled on (it clamps the level), so an
+      // unchanged selection does not rewrite the file.
       const actual = currentRecord(ctx);
       if (actual) written = recordKey(actual);
     }
   }
 
-  pi.on("session_start", async (event, ctx) => {
-    // `event.reason` alone does not say whether the session has a model of its
-    // own: a host that drives pi (pi-web) reports reopening a chat as `startup`
-    // and emits no model_select for the model it resolved. Messages are the
-    // signal that holds for every host.
-    if (event.reason === "reload" || hasConversation(ctx)) return;
+  /**
+   * A TUI session that starts empty: adopt the record, or remember the
+   * selection the session resolved when nothing is recorded yet.
+   */
+  async function start(ctx: ExtensionContext): Promise<void> {
+    // The invocation decided this session's selection; do not apply the record
+    // to it, nor record its one-off choice.
+    if (selectionPinnedOnCommandLine()) return;
 
     const saved = await loadLastModel();
     if (saved) {
@@ -208,13 +216,21 @@ export default function lastModelExtension(pi: ExtensionAPI): void {
     }
     // Nothing recorded yet: whatever the session resolved is the selection.
     await remember(ctx);
+  }
+
+  pi.on("session_start", async (event, ctx) => {
+    // A host or a scripted run resolves the model itself, and a TUI session
+    // that resumes, forks or reloads carries its own.
+    if (!isTuiSession(ctx)) return;
+    if (event.reason !== "startup" && event.reason !== "new") return;
+    await start(ctx);
   });
 
-  pi.on("model_select", async (_event, ctx) => {
+  /** Every selection the TUI makes, from `/model` or a favorite as much as from the picker. */
+  const onSelection = async (_event: unknown, ctx: ExtensionContext): Promise<void> => {
+    if (!isTuiSession(ctx)) return;
     await remember(ctx);
-  });
-
-  pi.on("thinking_level_select", async (_event, ctx) => {
-    await remember(ctx);
-  });
+  };
+  pi.on("model_select", onSelection);
+  pi.on("thinking_level_select", onSelection);
 }
