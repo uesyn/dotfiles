@@ -1,5 +1,5 @@
-import { spawn } from "node:child_process";
 import { isAbsolute } from "node:path";
+import { capture, type CaptureResult } from "../lib/capture.ts";
 import { ghExecutable } from "./endpoint.ts";
 import { defineTool, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
@@ -42,6 +42,11 @@ export const schema = Type.Union([
   }, { additionalProperties: false }),
 ]);
 type Params = Static<typeof schema>;
+
+const TIMEOUT_MS = 30_000;
+// A result this large is a failure, not something to page through.
+const OUTPUT_LIMIT_BYTES = 128 * 1024;
+const TEMP_PREFIX = "pi-gh-";
 
 export function buildArgs(p: Params, host: string): string[] {
   if (!/^[a-zA-Z0-9](?:[a-zA-Z0-9.-]*[a-zA-Z0-9])?(?::[0-9]{1,5})?$/.test(host) || host.length > 253) throw new Error("Invalid GH_HOST");
@@ -87,46 +92,60 @@ export function createGhReadonlyTool(executable = ghExecutable) {
       const args = buildArgs(params, host);
       if (signal?.aborted) throw new Error("gh request cancelled");
       if (!isAbsolute(executable)) throw new Error("gh executable path is not configured");
-      const env = { ...process.env, GH_HOST: host, GH_PAGER: "cat", GH_PROMPT_DISABLED: "1", GH_NO_UPDATE_NOTIFIER: "1", NO_COLOR: "1" };
+      // gh honours its own debug and repository overrides; drop them so the
+      // pinned arguments decide what runs and where.
+      const env: NodeJS.ProcessEnv = { ...process.env, GH_HOST: host, GH_PAGER: "cat", GH_PROMPT_DISABLED: "1", GH_NO_UPDATE_NOTIFIER: "1", NO_COLOR: "1" };
       delete env.GH_DEBUG;
       delete env.GH_REPO;
       delete env.DEBUG;
-      return await new Promise((resolve) => {
-        const child = spawn(executable, args, { cwd: ctx.cwd, env, shell: false, detached: true, stdio: ["ignore", "pipe", "pipe"] });
-        const max = 128 * 1024;
-        let output = Buffer.alloc(0), errors = Buffer.alloc(0), limited = false, timedOut = false, aborted = false, finished = false;
-        let forceSettle: ReturnType<typeof setTimeout> | undefined;
-        // Kill the whole process group: gh helpers that outlive the parent would
-        // otherwise keep the stdio pipes open and `close` would never fire, so
-        // the timeout would not actually bound the call. The fallback timer makes
-        // settling unconditional even if a grandchild survives the kill.
-        const stop = (reason: string) => {
-          if (child.pid !== undefined && child.exitCode === null && child.signalCode === null) {
-            try { process.kill(-child.pid, "SIGKILL"); }
-            catch { try { child.kill("SIGKILL"); } catch { /* already gone */ } }
-          }
-          forceSettle ??= setTimeout(() => finish(null, reason), 1000);
+      let run: CaptureResult;
+      try {
+        run = await capture({
+          executable,
+          argv: args,
+          cwd: ctx.cwd,
+          env,
+          timeoutMs: TIMEOUT_MS,
+          tempPrefix: TEMP_PREFIX,
+          stdoutLimitBytes: OUTPUT_LIMIT_BYTES,
+          // gh spawns helpers; a surviving one must not keep the call open.
+          killProcessGroup: true,
+          signal,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return {
+          content: [{ type: "text", text: `Failed to start gh: ${message}` }],
+          details: {
+            operation: params.operation,
+            hostname: host,
+            exitCode: null,
+            truncated: false,
+          },
+          isError: true,
         };
-        const abort = () => { aborted = true; stop("Request cancelled"); };
-        const timer = setTimeout(() => { timedOut = true; stop("Request timed out"); }, 30000);
-        signal?.addEventListener("abort", abort, { once: true });
-        if (signal?.aborted) abort();
-        const collect = (current: Buffer, chunk: Buffer): Buffer => {
-          if (current.length + chunk.length > max) { limited = true; stop("Output limit exceeded"); }
-          return Buffer.concat([current, chunk.subarray(0, Math.max(0, max - current.length))]);
-        };
-        child.stdout.on("data", (chunk: Buffer) => { output = collect(output, chunk); });
-        child.stderr.on("data", (chunk: Buffer) => { errors = collect(errors, chunk); });
-        const finish = (code: number | null, error?: string) => {
-          if (finished) return;
-          finished = true; clearTimeout(timer); if (forceSettle !== undefined) clearTimeout(forceSettle); signal?.removeEventListener("abort", abort);
-          const failed = code !== 0 || limited || timedOut || aborted || !!error;
-          const message = [output.toString("utf8"), errors.toString("utf8"), error, limited ? "Output limit exceeded" : "", timedOut ? "Request timed out" : "", aborted ? "Request cancelled" : ""].filter(Boolean).join("\n");
-          resolve({ content: [{ type: "text", text: message || (failed ? "gh failed" : "No results") }], details: { operation: params.operation, hostname: host, exitCode: code, truncated: limited }, isError: failed });
-        };
-        child.on("error", e => finish(null, `Failed to start gh: ${e.message}`));
-        child.on("close", code => finish(code));
-      });
+      }
+      const limited = run.stdoutLimitExceeded;
+      const failed = run.exitCode !== 0 || limited || run.timedOut || run.aborted;
+      const text = [
+        run.stdoutHead,
+        run.stderr,
+        limited ? "Output limit exceeded" : "",
+        run.timedOut ? "Request timed out" : "",
+        run.aborted ? "Request cancelled" : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      return {
+        content: [{ type: "text", text: text || (failed ? "gh failed" : "No results") }],
+        details: {
+          operation: params.operation,
+          hostname: host,
+          exitCode: run.exitCode,
+          truncated: limited || run.stderrTruncated,
+        },
+        isError: failed,
+      };
     },
   });
 }
