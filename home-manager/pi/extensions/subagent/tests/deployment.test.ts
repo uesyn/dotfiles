@@ -20,7 +20,10 @@ async function linkTree(source: string, target: string): Promise<void> {
 
 test("Home Manager packages sibling extensions in a single source tree", async () => {
   const config = await readFile(join(extensionsDir, "../default.nix"), "utf8");
-  assert.match(config, /home\.file\."\.local\/share\/pi\/extensions"\s*=\s*{\s*source\s*=\s*\.\/extensions;/);
+  assert.match(config, /home\.file\."\.local\/share\/pi\/extensions"\.source = "\$\{extensionsTree\}";/);
+  // The store tree is one writable copy of the whole extensions directory, so
+  // sibling imports still resolve after Pi realpath-resolves the entry point.
+  assert.match(config, /cp -r \$\{\.\/extensions\} \$out/);
   assert.doesNotMatch(config, /home\.file\."\.local\/share\/pi\/extensions\/[^"]+"/);
 });
 

@@ -72,13 +72,13 @@ keep nono's own limits.
 
 ```sh
 PI_TEST_PACKAGE_DIR=/path/to/pi-package \
-  node --import ./home-manager/pi/extensions/subagent/tests/register.mjs \
-  --test home-manager/pi/extensions/bash-sandbox/tests/*.test.ts
+  node --test --import ./home-manager/pi/extensions/tests/register.mjs \
+  home-manager/pi/extensions/bash-sandbox/tests/*.test.ts
 
 # Opt-in: real installed nono, temporary profiles only.
 PI_TEST_PACKAGE_DIR=/path/to/pi-package PI_NONO_INTEGRATION=1 \
-  node --import ./home-manager/pi/extensions/subagent/tests/register.mjs \
-  --test home-manager/pi/extensions/bash-sandbox/tests/sandbox.test.ts
+  node --test --import ./home-manager/pi/extensions/tests/register.mjs \
+  home-manager/pi/extensions/bash-sandbox/tests/sandbox.test.ts
 ```
 
 The offline suite covers wrapper routing, disabled-mode local execution,

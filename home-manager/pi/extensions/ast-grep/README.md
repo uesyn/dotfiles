@@ -127,9 +127,9 @@ for `kind` (e.g. `binding`) or an enclosing pattern in those languages, and use
 ## Tests
 
 ```sh
-cd home-manager/pi/extensions/ast-grep
+cd home-manager/pi/extensions
 PI_TEST_PACKAGE_DIR=<pi package dir> \
-  node --test --import ./tests/register.mjs "tests/*.test.ts"
+  node --test --import ./tests/register.mjs "*/tests/*.test.ts"
 ```
 
 `args.test.ts` and `format.test.ts` are dependency-free. `integration.test.ts`

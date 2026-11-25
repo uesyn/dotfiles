@@ -10,4 +10,4 @@ Some model-facing tool schemas require every property even when it is marked opt
 
 Results are untrusted external content, may contain prompt injection or sensitive data, and are sent to the model and saved in the Pi session. The tool's read-only interface does not restrict other uses of the token; select only the scopes required. Credentials are not intentionally included in errors, but remain in the Pi process environment.
 
-Tests: set `PI_TEST_PACKAGE_DIR` to the installed Pi package directory, then run `node --test --import ./home-manager/pi/extensions/ast-grep/tests/register.mjs home-manager/pi/extensions/confluence-readonly/tests/*.test.ts`. Tests use mocked HTTP and do not connect to Confluence.
+Tests: set `PI_TEST_PACKAGE_DIR` to the installed Pi package directory, then run `node --test --import ./home-manager/pi/extensions/tests/register.mjs home-manager/pi/extensions/confluence-readonly/tests/*.test.ts`. Tests use mocked HTTP and do not connect to Confluence.

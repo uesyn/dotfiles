@@ -69,8 +69,8 @@ not downloaded replacements. Pi itself supplies the extension's peer modules.
 
 ```sh
 PI_TEST_PACKAGE_DIR=/path/to/pi-package \
-  node --import ./home-manager/pi/extensions/subagent/tests/register.mjs \
-  --test home-manager/pi/extensions/subagent/tests/*.test.ts
+  node --test --import ./home-manager/pi/extensions/tests/register.mjs \
+  home-manager/pi/extensions/subagent/tests/*.test.ts
 ```
 
 The package directory contains Pi's `package.json`, `dist/`, and `node_modules/`.
