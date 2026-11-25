@@ -1,6 +1,6 @@
 # Confluence Cloud read-only tool
 
-The `confluence` Pi tool lists spaces, searches pages and retrieves a page by ID. It is disabled by default; `/tool confluence` enables it for the session. It is available in plan mode but not to subagents; enable it before entering plan mode because `/tool` changes are blocked while plan mode is active. Operations are fixed GET requests; this is not a sandbox and does not restrict other tools or the account itself.
+The `confluence` Pi tool lists spaces, searches pages and retrieves a page by ID. Home Manager enables it by default. To disable it, set `dotfiles.pi.extensions.confluence-readonly.enable = false`. Operations are fixed GET requests; this is not a sandbox and does not restrict other tools or the account itself.
 
 Set `dotfiles.pi.confluence.cloudId` to the site's UUID and use a scoped personal API token. The API destination is fixed to `https://api.atlassian.com`; unscoped tokens are not supported. The Cloud ID is written to the Nix store. Set `CONFLUENCE_EMAIL` and `CONFLUENCE_API_TOKEN` in Pi's environment; never put credentials in Nix. Pi-web must receive them when its server starts. Scoped tokens need permissions for [space listing](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-space/) (`read:space:confluence`), [search](https://developer.atlassian.com/cloud/confluence/rest/v1/api-group-search/) and [page retrieval](https://developer.atlassian.com/cloud/confluence/rest/v2/api-group-page/); the account also needs access to the relevant pages.
 

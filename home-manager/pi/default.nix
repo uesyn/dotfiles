@@ -7,35 +7,13 @@
 }:
 let
   extensions = [
-    {
-      name = "ast-grep";
-      tool = "ast_grep";
-    }
     { name = "btw"; }
     {
       name = "confluence-readonly";
       tool = "confluence";
     }
-    { name = "dynamic-provider"; }
-    { name = "favorite-models"; }
-    {
-      name = "gh-readonly";
-      tool = "gh";
-    }
-    {
-      name = "git-readonly";
-      tool = "git";
-    }
     { name = "last-model"; }
-    { name = "notification"; }
     { name = "bash-sandbox"; }
-    { name = "plan-mode"; }
-    {
-      name = "subagent";
-      tool = "subagent";
-    }
-    { name = "systemp-prompt-modifier"; }
-    { name = "tool-toggle"; }
   ];
 in
 {
@@ -67,16 +45,6 @@ in
       '';
     };
 
-    toolToggle.disabledByDefault = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ "gh" "confluence" ];
-      description = ''
-        Pi tool names disabled at session start. They can be enabled for the
-        current session with /tool. Unknown names are allowed for late tools.
-      '';
-      example = [ "gh" "mcp__exa__web_search_exa" ];
-    };
-
     confluence.cloudId = lib.mkOption {
       type = lib.types.nullOr lib.types.str;
       default = null;
@@ -100,40 +68,6 @@ in
             models = [
               { id = "openai/gpt-4o"; }
             ];
-          };
-        }
-      '';
-    };
-    systemPromptModifier = lib.mkOption {
-      type = lib.types.attrsOf (
-        lib.types.submodule {
-          options = {
-            prepend = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
-              default = null;
-              description = "Text prepended to the model's system prompt.";
-            };
-            append = lib.mkOption {
-              type = lib.types.nullOr lib.types.str;
-              default = null;
-              description = "Text appended to the model's system prompt.";
-            };
-          };
-        }
-      );
-      default = { };
-      description = ''
-        Per-model system prompt modifiers for the `systemp-prompt-modifier`
-        extension. Attribute names are Pi model identifiers of the form
-        `provider/model-id`. `prepend` and `append` are joined with the
-        model's system prompt (separated by newlines). Models without any
-        modifier content are omitted, and the configuration file is only
-        generated when at least one model defines content.
-      '';
-      example = lib.literalExpression ''
-        {
-          "ai-engine/preview/Kimi-K2.7-Code" = {
-            prepend = "Always respond in Japanese.";
           };
         }
       '';
@@ -198,9 +132,6 @@ in
         };
       };
       providers = defaultProviders // pi.providers;
-      systemPromptModifiers = lib.mapAttrs (
-        _: modifier: lib.filterAttrs (_: text: text != null) modifier
-      ) pi.systemPromptModifier;
       skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       # The extension only swaps `shellPath`. This immutable wrapper turns that
@@ -216,17 +147,12 @@ in
       '';
       # Pi resolves entry-point symlinks before loading imports. Keep sibling
       # extensions in one store tree so their relative imports still resolve.
-      # Pin the bash wrapper and read-only tool executables at build time, so
-      # the extensions do not resolve them through PATH or runtime configuration.
+      # Pin the bash wrapper at build time instead of looking it up at runtime.
       extensionsTree = pkgs.runCommand "pi-extensions" { } ''
         cp -r ${./extensions} $out
         chmod -R u+w $out
         substituteInPlace $out/bash-sandbox/endpoint.ts \
           --replace-fail '@sandboxShell@' '${bashSandbox}'
-        substituteInPlace $out/gh-readonly/endpoint.ts \
-          --replace-fail '@ghExecutable@' '${lib.getExe pkgs.gh}'
-        substituteInPlace $out/git-readonly/endpoint.ts \
-          --replace-fail '@gitExecutable@' '${lib.getExe pkgs.git}'
       '';
     in
     {
@@ -260,16 +186,6 @@ in
       home.file.".pi/agent/themes/dracula.json".source = ./themes/dracula.json;
 
       home.file.".pi/agent/confluence-readonly.json".text = builtins.toJSON pi.confluence;
-
-      home.file.".pi/agent/tool-toggle.json".text = builtins.toJSON {
-        disabledByDefault = pi.toolToggle.disabledByDefault;
-      };
-
-      home.file.".pi/agent/system-prompt-modifier.json" = lib.mkIf (systemPromptModifiers != { }) {
-        text = builtins.toJSON {
-          models = systemPromptModifiers;
-        };
-      };
 
       # Skills live under ~/.config/pi/skills; the config below points Pi there.
       xdg.configFile = {

@@ -26,7 +26,6 @@ async function mock(bakedShell?: string, settings: { shellPath?: string; shellCo
   const notifications: string[] = [];
   const notifyKinds: string[] = [];
   const statuses: string[] = [];
-  const branch: any[] = [];
   let idle = true;
   const state: State = createState();
   const api = {
@@ -38,7 +37,7 @@ async function mock(bakedShell?: string, settings: { shellPath?: string; shellCo
   } as unknown as ExtensionAPI;
   const ctx = {
     cwd: dir, hasUI: true, isIdle: () => idle, hasPendingMessages: () => false,
-    sessionManager: { getBranch: () => branch, getSessionId: () => "s", getSessionFile: () => undefined },
+    sessionManager: { getSessionId: () => "s", getSessionFile: () => undefined },
     ui: {
       notify: (message: string, type?: string) => { notifications.push(message); notifyKinds.push(type ?? "info"); },
       setStatus: (_key: string, text: string | undefined) => statuses.push(text ?? ""),
@@ -47,7 +46,7 @@ async function mock(bakedShell?: string, settings: { shellPath?: string; shellCo
   } as unknown as ExtensionToolContext & ExtensionCommandContext;
   installBashSandbox(api, state, bakedShell ?? shell);
   return {
-    api, ctx, state, tools, notifications, notifyKinds, statuses, branch, shell, dir,
+    api, ctx, state, tools, notifications, notifyKinds, statuses, shell, dir,
     idle: (value: boolean) => { idle = value; },
     command: (args: string) => commands.get("sandbox")(args, ctx),
     emit: async (name: string) => { let value; for (const handler of handlers.get(name) ?? []) value = await handler({}, ctx); return value; },
@@ -129,16 +128,6 @@ test("OFF needs no confirmation and works without UI", async () => {
   await m.command("off");
   assert.equal(m.state.enabled, false);
   assert.equal(await m.emit("user_bash"), undefined);
-});
-
-// Plan mode disables model tools (including bash) on its own; user-initiated
-// !/!! remain available and stay sandboxed while the sandbox is ON.
-test("user bash is not gated by plan mode", async () => {
-  const m = await mock();
-  await m.emit("session_start");
-  m.branch.push({ type: "custom", customType: "plan-mode", data: { enabled: true } });
-  const userBash = await m.emit("user_bash");
-  assert.deepEqual(await userBash.operations.exec("ignored", m.dir, { onData() {} }), { exitCode: 3 });
 });
 
 test("user bash uses the wrapper while enabled and yields to Pi when disabled", async () => {

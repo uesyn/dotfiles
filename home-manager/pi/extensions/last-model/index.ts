@@ -15,11 +15,6 @@
  * Scripted `print`/`json` runs are left alone for the same reason: the
  * invocation already decided the model.
  *
- * This is deliberately independent of favorite-models: favorites are presets
- * the user manages, while the model used last is observation. Because the
- * record is written on every change, selecting a favorite records it too, so a
- * favorite needs no "last selected" bookkeeping of its own.
- *
  * State lives in `<agentDir>/last-model.json` (override with
  * PI_LAST_MODEL_FILE), which stays writable even when settings.json is managed
  * read-only (e.g. by home-manager).

@@ -57,8 +57,6 @@ nested run would otherwise join an outer broker) plus `NODE_OPTIONS`,
 - Switching requires idle Pi with no pending input.
 - Failures are ERROR, never OFF: there is no local fallback and no
   model-accessible toggle.
-- Plan mode blocks the `bash` tool itself; `!`/`!!` stay available and
-  sandboxed while ON. Running processes are not tracked or force-cancelled.
 
 ## Cancellation
 
@@ -83,7 +81,7 @@ PI_TEST_PACKAGE_DIR=/path/to/pi-package PI_NONO_INTEGRATION=1 \
 
 The offline suite covers wrapper routing, disabled-mode local execution,
 fail-closed startup (missing or non-executable wrapper, unsubstituted
-placeholder), the `/sandbox` toggle, settings parity, plan-mode independence,
+placeholder), the `/sandbox` toggle, settings parity,
 `!`/`!!` and codemode. The opt-in suite checks real nono enforcement (cwd
 writes, outside and symlink denial, network denial, abort/timeout cleanup,
 profile selection) on Linux; macOS enforcement is unverified.

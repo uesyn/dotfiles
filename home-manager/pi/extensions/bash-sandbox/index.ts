@@ -18,8 +18,6 @@ export function installBashSandbox(pi: ExtensionAPI, state: State, shell: string
   // The sandboxed shell is a Nix-store wrapper that execs nono. Pi keeps its own
   // spawn/timeout/process-tree handling because only shellPath changes.
   const operations = () => createLocalBashOperations({ shellPath: sandboxShell(state) });
-  // Plan mode already blocks this tool by name and removes it from the active
-  // set. !/!! stay user-initiated, so they are not gated here.
   pi.registerTool({
     ...createBashToolDefinition(cwd),
     // Async so a fail-closed `operations()` throw surfaces as a rejected tool call.

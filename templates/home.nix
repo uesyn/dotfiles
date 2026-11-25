@@ -94,28 +94,18 @@
   #   python = [ "3.12" "3.11" ];
   # };
 
-  # Confluence Cloud read-only Pi tool (disabled by default; /tool confluence
-  # enables it for the session). Set the Cloud ID and use a scoped API token.
+  # Confluence Cloud read-only Pi tool is enabled by default.
+  # Set the Cloud ID and use a scoped API token.
   # Set CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN in the Pi process
   # environment, not in Nix or this public template.
   # dotfiles.pi.confluence.cloudId = "00000000-0000-0000-0000-000000000000";
 
   # Dotfiles Pi extensions are enabled by default. Uncomment only the entries
   # you want to disable. Disabling bash-sandbox removes the nono wrapper, not bash.
-  # dotfiles.pi.extensions.ast-grep.enable = false;
   # dotfiles.pi.extensions.bash-sandbox.enable = false;
   # dotfiles.pi.extensions.btw.enable = false;
   # dotfiles.pi.extensions.confluence-readonly.enable = false;
-  # dotfiles.pi.extensions.dynamic-provider.enable = false;
-  # dotfiles.pi.extensions.favorite-models.enable = false;
-  # dotfiles.pi.extensions.gh-readonly.enable = false;
-  # dotfiles.pi.extensions.git-readonly.enable = false;
   # dotfiles.pi.extensions.last-model.enable = false;
-  # dotfiles.pi.extensions.notification.enable = false;
-  # dotfiles.pi.extensions.plan-mode.enable = false;
-  # dotfiles.pi.extensions.subagent.enable = false;
-  # dotfiles.pi.extensions.systemp-prompt-modifier.enable = false;
-  # dotfiles.pi.extensions.tool-toggle.enable = false;
 
   # pstack skills and extensions are enabled by default.
   # dotfiles.pi.pstack.enable = false;
@@ -130,21 +120,6 @@
   #     models = [
   #       { id = "openai/gpt-4o"; }
   #     ];
-  #   };
-  # };
-
-  # Customize Pi system prompts per model via the systemp-prompt-modifier
-  # extension. Keys are `provider/model-id`; `prepend` and `append` are joined
-  # with the model's system prompt. Generated into
-  # ~/.pi/agent/system-prompt-modifier.json.
-  # dotfiles.pi.systemPromptModifier = {
-  #   "ai-engine/preview/Kimi-K2.7-Code" = {
-  #     prepend = ''
-  #       Always respond in Japanese.
-  #     '';
-  #     append = ''
-  #       Keep answers concise and to the point.
-  #     '';
   #   };
   # };
 }
