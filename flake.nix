@@ -54,6 +54,7 @@
             pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               self.homeManagerModules.default
+              { dotfiles.pi.extensions.confluence-readonly.enable = false; }
             ];
           };
         };
