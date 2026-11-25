@@ -162,13 +162,30 @@
         "type": "github"
       }
     },
+    "pstack-claude": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795551898,
+        "narHash": "sha256-mLtz4au3kks0fAmGUq6FTBqRmUk43y3pUFqcUYm9pkI=",
+        "owner": "michael-denyer",
+        "repo": "pstack-claude",
+        "rev": "103a68d9a9aa23759d00ad95b01cb78cb8f57772",
+        "type": "github"
+      },
+      "original": {
+        "owner": "michael-denyer",
+        "repo": "pstack-claude",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
         "kubebuilder": "kubebuilder",
         "llm-agents": "llm-agents",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_2",
+        "pstack-claude": "pstack-claude"
       }
     },
     "systems": {

@@ -5,10 +5,56 @@
   lib,
   ...
 }:
+let
+  extensions = [
+    {
+      name = "ast-grep";
+      tool = "ast_grep";
+    }
+    { name = "btw"; }
+    {
+      name = "confluence-readonly";
+      tool = "confluence";
+    }
+    { name = "dynamic-provider"; }
+    { name = "favorite-models"; }
+    {
+      name = "gh-readonly";
+      tool = "gh";
+    }
+    {
+      name = "git-readonly";
+      tool = "git";
+    }
+    { name = "last-model"; }
+    { name = "notification"; }
+    { name = "bash-sandbox"; }
+    { name = "plan-mode"; }
+    {
+      name = "subagent";
+      tool = "subagent";
+    }
+    { name = "systemp-prompt-modifier"; }
+    { name = "tool-toggle"; }
+  ];
+in
 {
   imports = [ ./pi-web-tailcat.nix ];
 
   options.dotfiles.pi = {
+    extensions = lib.listToAttrs (
+      map (extension: {
+        inherit (extension) name;
+        value.enable = lib.mkEnableOption "the ${extension.name} Pi extension" // {
+          default = true;
+        };
+      }) extensions
+    );
+
+    pstack.enable = lib.mkEnableOption "the pstack Pi package" // {
+      default = true;
+    };
+
     # Bash tool sandbox bootstrap, generated below and read by bash-sandbox.
     sandbox.profile = lib.mkOption {
       type = lib.types.str;
@@ -97,6 +143,7 @@
   config =
     let
       pi = config.dotfiles.pi;
+      enabledExtensions = lib.filter (extension: pi.extensions.${extension.name}.enable) extensions;
       defaultProviders = {
         "ai-engine" = {
           name = "AI Engine";
@@ -274,6 +321,7 @@
           ];
         };
         settings = {
+          packages = lib.mkIf pi.pstack.enable [ "${inputs.pstack-claude}" ];
           compaction = {
             enabled = true;
             keepRecentTokens = 20000;
@@ -285,28 +333,10 @@
             "+find"
             "+ls"
             "+codemode"
-            "+git"
-            "+gh"
-            "+confluence"
-            "+ast_grep"
-            "+subagent"
-          ];
-          extensions = [
-            "${config.home.homeDirectory}/.local/share/pi/extensions/ast-grep"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/btw"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/confluence-readonly"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/dynamic-provider"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/favorite-models"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/gh-readonly"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/git-readonly"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/last-model"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/notification"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/bash-sandbox"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/plan-mode"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/subagent"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/systemp-prompt-modifier"
-            "${config.home.homeDirectory}/.local/share/pi/extensions/tool-toggle"
-          ];
+          ] ++ map (extension: "+${extension.tool}") (lib.filter (extension: extension ? tool) enabledExtensions);
+          extensions = map (
+            extension: "${config.home.homeDirectory}/.local/share/pi/extensions/${extension.name}"
+          ) enabledExtensions;
           skills = [
             "${config.home.homeDirectory}/.config/pi/skills"
           ];

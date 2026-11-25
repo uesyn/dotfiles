@@ -100,6 +100,26 @@
   # environment, not in Nix or this public template.
   # dotfiles.pi.confluence.cloudId = "00000000-0000-0000-0000-000000000000";
 
+  # Dotfiles Pi extensions are enabled by default. Uncomment only the entries
+  # you want to disable. Disabling bash-sandbox removes the nono wrapper, not bash.
+  # dotfiles.pi.extensions.ast-grep.enable = false;
+  # dotfiles.pi.extensions.bash-sandbox.enable = false;
+  # dotfiles.pi.extensions.btw.enable = false;
+  # dotfiles.pi.extensions.confluence-readonly.enable = false;
+  # dotfiles.pi.extensions.dynamic-provider.enable = false;
+  # dotfiles.pi.extensions.favorite-models.enable = false;
+  # dotfiles.pi.extensions.gh-readonly.enable = false;
+  # dotfiles.pi.extensions.git-readonly.enable = false;
+  # dotfiles.pi.extensions.last-model.enable = false;
+  # dotfiles.pi.extensions.notification.enable = false;
+  # dotfiles.pi.extensions.plan-mode.enable = false;
+  # dotfiles.pi.extensions.subagent.enable = false;
+  # dotfiles.pi.extensions.systemp-prompt-modifier.enable = false;
+  # dotfiles.pi.extensions.tool-toggle.enable = false;
+
+  # pstack skills and extensions are enabled by default.
+  # dotfiles.pi.pstack.enable = false;
+
   # Add custom Pi model providers. These are merged with the built-in providers.
   # dotfiles.pi.providers = {
   #   openrouter = {
