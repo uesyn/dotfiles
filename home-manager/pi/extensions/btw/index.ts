@@ -145,7 +145,7 @@ async function runQuery(
       {
         signal,
         // Some OpenAI-compatible APIs reject an empty tools array.
-        onPayload: (payload) => {
+        onPayload: (payload: unknown) => {
           if (
             payload !== null &&
             typeof payload === "object" &&
@@ -375,7 +375,7 @@ async function showPanel(
               `${theme.fg("accent", "╰")}${border.render(width - 2)[0]!}${theme.fg("accent", "╯")}`,
             ]
           : border.render(width);
-        const addSideBorders = (lines: string[]): string[] => {
+        const addSideBorders = (lines: readonly string[]): string[] => {
           if (!hasSideBorders) {
             return lines.map((line) => truncateToWidth(line, contentWidth, ""));
           }
@@ -404,7 +404,7 @@ async function showPanel(
             footerLines.length,
         );
 
-        let bodyLines: string[];
+        let bodyLines: readonly string[];
         if (mode === "loading") {
           viewportHeight = 0;
           bodyLines = status.render(contentWidth);
