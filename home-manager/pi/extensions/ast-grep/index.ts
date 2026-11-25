@@ -28,19 +28,9 @@
  *   `paths` still reads its target, exactly like the `read` and `grep` tools.
  */
 
-import { spawn } from "node:child_process";
-import {
-  chmodSync,
-  closeSync,
-  mkdtempSync,
-  openSync,
-  rmSync,
-  writeFileSync,
-  writeSync,
-} from "node:fs";
+import { chmodSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { createInterface } from "node:readline";
+import { join } from "node:path";
 import { StringEnum } from "@earendil-works/pi-ai";
 import {
   DEFAULT_MAX_BYTES,
@@ -52,10 +42,15 @@ import {
   type ExtensionAPI,
 } from "@earendil-works/pi-coding-agent";
 import { Type, type Static } from "typebox";
+import {
+  capture,
+  appendStderrToOutput,
+  writeTempOutput,
+  type CaptureResult,
+} from "../lib/capture.ts";
 
 const TIMEOUT_MS = 30_000;
-const HEAD_CAPTURE_BYTES = 256 * 1024;
-const STDERR_CAPTURE_BYTES = 64 * 1024;
+const TEMP_PREFIX = "pi-ast-grep-";
 const MAX_TEXT_LENGTH = 4096;
 const MAX_RULE_LENGTH = 16 * 1024;
 const MAX_PATHS = 16;
@@ -515,20 +510,10 @@ function buildEnv(): NodeJS.ProcessEnv {
   return env;
 }
 
-interface RunResult {
+interface RunResult extends CaptureResult {
   matches: AstGrepMatch[];
   limitReached: boolean;
   parseErrors: number;
-  stdoutText: string;
-  stdoutBytes: number;
-  stderr: string;
-  stderrBytes: number;
-  stderrTruncated: boolean;
-  exitCode: number | null;
-  signal: NodeJS.Signals | null;
-  timedOut: boolean;
-  aborted: boolean;
-  fullStdoutPath?: string;
 }
 
 interface RawMatch {
@@ -580,213 +565,53 @@ function normalizeMatch(raw: RawMatch): AstGrepMatch | undefined {
   return match;
 }
 
-function runAstGrep(
+async function runAstGrep(
   argv: string[],
   cwd: string,
   signal: AbortSignal | undefined,
   options: { json: boolean; limit: number },
 ): Promise<RunResult> {
-  return new Promise((resolve, reject) => {
-    const child = spawn("ast-grep", argv, {
-      cwd,
-      env: buildEnv(),
-      stdio: ["ignore", "pipe", "pipe"],
-      shell: false,
-    });
+  const matches: AstGrepMatch[] = [];
+  let parseErrors = 0;
+  let limitReached = false;
 
-    const matches: AstGrepMatch[] = [];
-    const headChunks: Buffer[] = [];
-    const stderrChunks: Buffer[] = [];
-    let headBytes = 0;
-    let stdoutBytes = 0;
-    let stderrBytes = 0;
-    let stderrCaptured = 0;
-    let stderrTruncated = false;
-    let parseErrors = 0;
-    let limitReached = false;
-    let timedOut = false;
-    let aborted = false;
-    let settled = false;
-    let tempPath: string | undefined;
-    let tempFd: number | undefined;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    const lines = options.json
-      ? createInterface({ input: child.stdout, crlfDelay: Infinity })
-      : undefined;
-
-    function removeTemp(): void {
-      if (tempPath === undefined) return;
-      try {
-        rmSync(dirname(tempPath), { recursive: true, force: true });
-      } catch {
-        // Best-effort cleanup only.
-      }
-      tempPath = undefined;
-    }
-
-    function cleanup(): void {
-      if (timer !== undefined) clearTimeout(timer);
-      if (signal !== undefined) signal.removeEventListener("abort", onAbort);
-      if (tempFd !== undefined) {
-        try {
-          closeSync(tempFd);
-        } catch {
-          // The stream may already be closed.
+  const result = await capture({
+    executable: "ast-grep",
+    argv,
+    cwd,
+    env: buildEnv(),
+    timeoutMs: TIMEOUT_MS,
+    tempPrefix: TEMP_PREFIX,
+    signal,
+    ...(options.json
+      ? {
+          onStdoutLine: (line: string): boolean | void => {
+            if (limitReached || line.trim().length === 0) return;
+            let raw: RawMatch;
+            try {
+              raw = JSON.parse(line) as RawMatch;
+            } catch {
+              parseErrors++;
+              return;
+            }
+            const match = normalizeMatch(raw);
+            if (match === undefined) {
+              parseErrors++;
+              return;
+            }
+            if (matches.length >= options.limit) {
+              // One match past the limit proves the result set is incomplete,
+              // so the notice is accurate instead of merely "maybe more".
+              limitReached = true;
+              return false;
+            }
+            matches.push(match);
+          },
         }
-        tempFd = undefined;
-      }
-      lines?.close();
-    }
-
-    function ensureTemp(): void {
-      if (tempPath !== undefined) return;
-      const dir = mkdtempSync(join(tmpdir(), "pi-ast-grep-"));
-      chmodSync(dir, 0o700);
-      tempPath = join(dir, "output.txt");
-      tempFd = openSync(tempPath, "w", 0o600);
-    }
-
-    function finish(code: number | null, childSignal: NodeJS.Signals | null): void {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      resolve({
-        matches,
-        limitReached,
-        parseErrors,
-        stdoutText: Buffer.concat(headChunks).toString("utf8"),
-        stdoutBytes,
-        stderr: Buffer.concat(stderrChunks).toString("utf8"),
-        stderrBytes,
-        stderrTruncated,
-        exitCode: code,
-        signal: childSignal,
-        timedOut,
-        aborted,
-        fullStdoutPath: tempPath,
-      });
-    }
-
-    function fail(error: unknown): void {
-      if (settled) return;
-      settled = true;
-      cleanup();
-      removeTemp();
-      reject(error instanceof Error ? error : new Error(String(error)));
-    }
-
-    function stop(): void {
-      if (!child.killed) child.kill("SIGKILL");
-    }
-
-    function onStdout(chunk: Buffer): void {
-      stdoutBytes += chunk.length;
-      if (lines !== undefined) return;
-      // debug output is plain text: keep a head in memory and spill the rest to
-      // a temporary file so no output is lost to truncation.
-      try {
-        if (tempFd !== undefined) {
-          writeSync(tempFd, chunk);
-          return;
-        }
-        const remaining = HEAD_CAPTURE_BYTES - headBytes;
-        if (chunk.length <= remaining) {
-          headChunks.push(chunk);
-          headBytes += chunk.length;
-          return;
-        }
-        ensureTemp();
-        const fd = tempFd;
-        if (fd === undefined) throw new Error("failed to create temporary output file");
-        for (const buffered of headChunks) writeSync(fd, buffered);
-        writeSync(fd, chunk);
-        if (remaining > 0) {
-          headChunks.push(chunk.subarray(0, remaining));
-          headBytes = remaining;
-        }
-      } catch (error) {
-        stop();
-        fail(error);
-      }
-    }
-
-    function onStderr(chunk: Buffer): void {
-      stderrBytes += chunk.length;
-      if (stderrCaptured >= STDERR_CAPTURE_BYTES) {
-        stderrTruncated = true;
-        return;
-      }
-      const remaining = STDERR_CAPTURE_BYTES - stderrCaptured;
-      const taken = chunk.length <= remaining ? chunk : chunk.subarray(0, remaining);
-      stderrChunks.push(taken);
-      stderrCaptured += taken.length;
-      if (taken.length < chunk.length) stderrTruncated = true;
-    }
-
-    function onAbort(): void {
-      if (settled) return;
-      aborted = true;
-      stop();
-    }
-
-    lines?.on("line", (line) => {
-      if (settled || limitReached || line.trim().length === 0) return;
-      let raw: RawMatch;
-      try {
-        raw = JSON.parse(line) as RawMatch;
-      } catch {
-        parseErrors++;
-        return;
-      }
-      const match = normalizeMatch(raw);
-      if (match === undefined) {
-        parseErrors++;
-        return;
-      }
-      if (matches.length >= options.limit) {
-        // One match past the limit proves the result set is incomplete, so the
-        // notice is accurate instead of merely "maybe more".
-        limitReached = true;
-        stop();
-        return;
-      }
-      matches.push(match);
-    });
-
-    child.stdout.on("data", onStdout);
-    child.stderr.on("data", onStderr);
-    child.on("error", fail);
-    child.on("close", finish);
-
-    timer = setTimeout(() => {
-      timedOut = true;
-      stop();
-    }, TIMEOUT_MS);
-
-    if (signal !== undefined) {
-      if (signal.aborted) onAbort();
-      else signal.addEventListener("abort", onAbort, { once: true });
-    }
+      : {}),
   });
-}
 
-function writeTempOutput(text: string): string {
-  const dir = mkdtempSync(join(tmpdir(), "pi-ast-grep-"));
-  chmodSync(dir, 0o700);
-  const path = join(dir, "output.txt");
-  writeFileSync(path, text, { mode: 0o600 });
-  return path;
-}
-
-function appendStderrToOutput(path: string, stderr: string, truncated: boolean): void {
-  if (stderr.length === 0) return;
-  const suffix = `\n\n[stderr]\n${stderr}${truncated ? "\n[stderr truncated]" : ""}\n`;
-  try {
-    writeFileSync(path, suffix, { flag: "a", mode: 0o600 });
-  } catch {
-    // The full-output hint is best-effort; the head is already returned.
-  }
+  return { ...result, matches, limitReached, parseErrors };
 }
 
 function compareMatches(a: AstGrepMatch, b: AstGrepMatch): number {
@@ -844,7 +669,7 @@ function buildSuccessContent(params: AstGrepParams, run: RunResult, limit: numbe
     const ast = run.stderr.trimEnd();
     if (ast.length > 0) sections.push(ast);
     if (run.stderrTruncated) sections.push("[debug output truncated]");
-    const stdout = run.stdoutText.trimEnd();
+    const stdout = run.stdoutHead.trimEnd();
     if (stdout.length > 0) sections.push(stdout);
     return sections.length > 0 ? sections.join("\n\n") : "(no debug output)";
   }
@@ -880,7 +705,7 @@ function buildFailureContent(params: AstGrepParams, run: RunResult): string {
         })`;
   const sections = [header];
   const stderr = run.stderr.trimEnd();
-  const stdout = run.stdoutText.trimEnd();
+  const stdout = run.stdoutHead.trimEnd();
   if (stderr.length > 0) sections.push(stderr);
   if (stdout.length > 0) sections.push(stdout);
   if (run.stderrTruncated) sections.push("[stderr truncated]");
@@ -982,7 +807,7 @@ export function createAstGrepTool() {
       const noMatches =
         run.exitCode === 1 &&
         run.matches.length === 0 &&
-        run.stdoutText.trim().length === 0 &&
+        run.stdoutHead.trim().length === 0 &&
         !LOOKS_LIKE_ERROR.test(run.stderr);
       // Reaching the limit kills the child on purpose; that is not a failure.
       const failed =
@@ -1005,7 +830,7 @@ export function createAstGrepTool() {
         if (fullOutputPath !== undefined) {
           appendStderrToOutput(fullOutputPath, run.stderr, run.stderrTruncated);
         } else {
-          fullOutputPath = writeTempOutput(truncatedContent.content);
+          fullOutputPath = writeTempOutput(TEMP_PREFIX, truncatedContent.content);
         }
         content +=
           `\n\n[Output truncated (${truncatedContent.totalLines} lines, ` +
