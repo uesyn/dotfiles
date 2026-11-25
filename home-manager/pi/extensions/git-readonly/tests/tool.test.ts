@@ -207,6 +207,18 @@ test("still validates parameters that apply to the selected operation", async ()
       ),
       /"base" is required/,
     );
+    // Regression: an unknown mode used to look unreachable because the schema
+    // only allows four values, so removing the check silently ran `git diff`.
+    await assert.rejects(
+      tool.execute(
+        "test",
+        { operation: "diff", mode: "bogus" } as never,
+        undefined,
+        undefined,
+        ctx,
+      ),
+      /unsupported diff mode: bogus/,
+    );
     await assert.rejects(
       tool.execute(
         "test",
@@ -227,6 +239,71 @@ test("still validates parameters that apply to the selected operation", async ()
       ),
       /Parameter "raw" is not supported for operation "status"/,
     );
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+// Every argument below is hand-checked: a leading global flag, the read-only
+// subcommand, the flags that keep output stable, and `--` before paths. This
+// pins argv so a refactor of the argument builders cannot widen the command.
+const GLOBAL = [
+  "--no-pager", "--no-optional-locks",
+  "-c", "color.ui=false",
+  "-c", "core.fsmonitor=false",
+  "-c", "log.showSignature=false",
+  "-c", "core.quotePath=false",
+];
+
+test("builds the documented argv for every operation", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "pi-git-argv-"));
+  const executable = join(dir, "git");
+  writeFileSync(executable, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+  const tool = createGitReadonlyTool(executable);
+  const cases: Array<[Record<string, unknown>, string[]]> = [
+    [
+      { operation: "status", paths: ["src"] },
+      [...GLOBAL, "status", "--short", "--branch", "--untracked-files=normal",
+        "--ignore-submodules=all", "--", "src"],
+    ],
+    [
+      { operation: "diff", mode: "staged" },
+      [...GLOBAL, "diff", "--no-ext-diff", "--no-textconv", "--ignore-submodules=all",
+        "--cached", "-U3"],
+    ],
+    [
+      { operation: "diff", mode: "range", base: "main", head: "HEAD", format: "name-status" },
+      [...GLOBAL, "diff", "--no-ext-diff", "--no-textconv", "--ignore-submodules=all",
+        "--name-status", "--end-of-options", "main...HEAD"],
+    ],
+    [
+      { operation: "diff", mode: "commit", rev: "HEAD~1", context: 1, paths: ["a"] },
+      [...GLOBAL, "show", "--no-ext-diff", "--no-textconv", "--no-show-signature",
+        "--ignore-submodules=all", "--format=", "-U1", "--end-of-options", "HEAD~1", "--", "a"],
+    ],
+    [
+      { operation: "log", rev: "main..feat", max_count: 2, oneline: false, author: "me", paths: ["src"] },
+      [...GLOBAL, "log", "--no-ext-diff", "--no-textconv", "--no-show-signature",
+        "--decorate=short", "--max-count=2", "--author=me", "--end-of-options", "main..feat",
+        "--", "src"],
+    ],
+    [
+      { operation: "blame", paths: ["f.ts"], line_start: 2, line_end: 4 },
+      [...GLOBAL, "blame", "--no-textconv", "--no-ext-diff", "--no-show-signature",
+        "--date=short", "-L2,4", "--", "f.ts"],
+    ],
+    [
+      { operation: "rev_parse", what: "short-sha" },
+      [...GLOBAL, "rev-parse", "--verify", "--short", "--end-of-options", "HEAD"],
+    ],
+  ];
+  try {
+    for (const [params, expected] of cases) {
+      const result = await tool.execute("test", params as never, undefined, undefined, {
+        cwd: dir,
+      } as never);
+      assert.deepEqual(result.details.argv, expected, JSON.stringify(params));
+    }
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
