@@ -15,10 +15,13 @@ let
     oauthRedirectURL = "http://localhost/";
   };
   defaultGitIgnores = [
+    ".audit/"
+    ".claude/"
     ".direnv"
     ".DS_Store"
     ".envrc"
     ".mise.toml"
+    ".pi/"
     "mise.toml"
     ".shell.nix"
     ".venv"
