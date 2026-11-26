@@ -94,6 +94,11 @@
   #   python = [ "3.12" "3.11" ];
   # };
 
+  # pi-web and pi-web-tailcat are disabled by default. Uncomment either option
+  # to install it. pi-web-tailcat is available only on Linux.
+  # dotfiles.pi.pi-web.enable = true;
+  # dotfiles.pi.pi-web-tailcat.enable = true;
+
   # Confluence Cloud read-only Pi tool is enabled by default.
   # Set the Cloud ID and use a scoped API token.
   # Set CONFLUENCE_EMAIL and CONFLUENCE_API_TOKEN in the Pi process
