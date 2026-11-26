@@ -1,65 +1,142 @@
 # dotfiles
 
-Personal dotfiles: Nix + home-manager flakes.
+Personal dotfiles: Nix + home-manager flakes, public repository.
 
-## Apply & Format
+## Commands
+
+These run inside the Pi bash sandbox.
+
+```sh
+# Extension tests, from home-manager/pi/extensions.
+PI_TEST_PACKAGE_DIR=<installed pi package> node --test --import ./tests/register.mjs "*/tests/*.test.ts"
+
+# Evaluate a flake attribute, or plan the build of one.
+nix --extra-experimental-features 'nix-command flakes' eval .#formatter.x86_64-linux
+nix --extra-experimental-features 'nix-command flakes' build .#pi-web --dry-run
+```
+
+`nix` needs the flag inside the sandbox. `tests/register.mjs` is the only
+copy of the peer-module resolver, and it stays out of the store tree Pi loads.
+
+These need the user, because the exec gate denies store binaries and store
+writes.
 
 ```sh
 home-manager switch --flake . --impure -b backup --show-trace   # --impure: eval reads env vars
-nix fmt                                                        # nixfmt-tree
-nix run nixpkgs#stylua -- home-manager/neovim/nvim              # Lua: stylua.toml
+nix fmt                                                         # nixfmt-tree
+nix run nixpkgs#stylua -- home-manager/neovim/nvim               # Lua
 ```
 
-## Layout
+## Validation
 
-- `flake.nix` — `homeManagerModules.default`, `packages.homeConfigurations`, `templates`, `formatter`; utilities (`forAllSystems`) inline.
-- `home-manager/default.nix` imports one module per tool. A tool module installs the tool and owns its nono grants (`filesystem.*`, `commandPolicies.executableDirs`); the nono module holds only core policy.
-- `home-manager/pi/` — Pi module, `extensions/`, `skills/`, `themes/`, `context.md`. `home-manager/build-essential/` — `gcc.nix`, `make.nix`. `home-manager/nono/` — profile + `commands/`.
+- Nix change: evaluate or dry-run the attribute you touched, then ask the user
+  to run `home-manager switch`.
+- Pi extension change: run the extension tests above, which run in the sandbox.
+- Lua change: ask the user to run the stylua command above.
+
+## Rules
+
+- Never write an absolute home path, a username, a hostname, an email or a
+  credential. Use `~` or a relative path, and resolve a machine path at runtime
+  with `tmpdir()`, `homedir()` or `process.execPath`.
+- Keep one directory per tool under `home-manager/`. The module that installs a
+  tool owns that tool's nono grants (`dotfiles.nono.filesystem.*`,
+  `dotfiles.nono.commandPolicies.*`), and `home-manager/nono/` holds core
+  policy only.
+- Register a Pi skill as an `xdg.configFile."pi/skills/<name>"` entry in
+  `home-manager/pi/default.nix`. A directory added under `pi/skills/` alone is
+  not installed.
+- Keep this file to rules an agent cannot read off the code. Implementation
+  detail belongs in the module's comments or its README.
 
 ## Pi
 
-- Extensions: `home-manager/pi/extensions/<name>/index.ts`, wired via `settings.extensions`. The tree is copied into one store directory (`~/.local/share/pi/extensions` links to it) so sibling imports resolve.
-- `settings.defaultTools = [ "+grep" "+find" "+ls" "+codemode" "+confluence" ]` when the Confluence extension is enabled. Use pstack `agent` for delegation and the sandboxed `bash` tool for `git`, `gh`, and `ast-grep`.
-- `bash-sandbox/`: overrides only `bash` (incl. codemode) and `!`/`!!` by swapping `shellPath` to the `nono-bash` wrapper (`dotfiles.pi.sandbox.profile`). The wrapper path is baked into `endpoint.ts` at build time, so no config or env is read and project settings cannot pick the shell. The wrapper unsets `NONO_*`/node/bash init env and `exec`s `nono run -s --profile <profile> --allow-cwd --workdir "$PWD" --no-rollback --no-audit --no-diagnostics -- <nix bash> "$@"`; Pi keeps spawn, timeout, process-group kill and cleanup. `write`/`edit`/`read`/MCP stay unsandboxed; no nested-run support. `/sandbox [on|off]` toggles (OFF needs idle Pi, no confirmation, not persisted). A missing or non-executable wrapper fails closed; a new wrapper needs a Pi restart. See its README.
-- Pi settings: `programs.pi-coding-agent.mutableSettings = true` merges Nix settings into writable `settings.json` on `home-manager switch`, not on launch. Stop Pi and pi-web before activation. Declared values win, nested objects merge, and declared arrays replace local arrays except for `packages`, which merges by package identity. Removing a declaration does not remove its saved value. pstack is always registered through `~/.local/share/pi/pstack`. Pi saves model and thinking preferences in `settings.json`.
-- Tests: one runner for every extension. From `home-manager/pi/extensions`, `PI_TEST_PACKAGE_DIR=<installed pi package> node --test --import ./tests/register.mjs "*/tests/*.test.ts"`. `tests/register.mjs` is the only copy of the peer-module resolver and is not part of the store tree Pi loads (extension paths are listed explicitly).
-- Module resolution: Pi maps an extension's `@earendil-works/pi-ai` to `dist/core/extensions/pi-ai-extension-view.{js,d.ts}` (`VIRTUAL_MODULES`), not to the package root. That view adds typebox `Type`/`Static` and a `StringEnum` returning `TUnsafe`, so `Static<typeof StringEnum(...)>` is a literal union.
-- Skills: `settings.skills` → `~/.config/pi/skills` — `kubebuilder` (+ upstream docs), `k8s-api-conventions`, `skill-creator`.
-- Themes: `home-manager/pi/themes/<name>.json` are vendored user themes linked into `~/.pi/agent/themes/` (the module has no `themes` option); the file name must equal the theme `name`, the only path Pi hot-reloads. `settings.theme = "dracula"` selects the fork of [dracula/pi-coding-agent](https://github.com/dracula/pi-coding-agent) (MIT, `dracula.json` kept byte-identical to upstream).
-- Context: `home-manager/pi/context.md` is the module default for `programs.pi-coding-agent.context` (`lib.mkDefault`, so a module can still set `context`), installed as `~/.pi/agent/AGENTS.md` — user instructions Pi loads in every working directory: investigate first, codemode as the orchestration layer, smallest coherent change, work autonomously, verify before claiming, concise final response, and always answer in Japanese. Repo-specific rules stay in the root `AGENTS.md`, which only applies inside this repository.
-- `pi-web`: pinned in `flake.lock` and built from source with `nix build .#pi-web`. Home Manager installs the resulting package. Each server creates a private Next.js directory under `~/.local/state/pi-web/runtime/` and rotates preview secrets there before serving. A rotation failure aborts startup. Normal shutdown removes that instance's directory. After a forced stop, remove a leftover directory only after confirming no server uses it. Keep updates in Nix rather than using `pi-web update`. If a previous mise installation still shadows the command, remove that installation with `mise uninstall npm:@agegr/pi-web@0.18.0` and start a fresh shell.
-- `pi-web-tailcat` (`pi-web-tailcat.nix` + `pi-web-tailcat.sh`): server-side, `start` and `stop` only. `start` detaches `tailcat serve <port>` plus the Home Manager `pi-web` package — with `PI_WEB_ALLOWED_HOSTS` carrying `server.tailcat`, the name tailcat's SOCKS proxy dials and the only one a browser can send, since tailcat addresses are case-sensitive and browser hostnames are not; a pi-web already listening on the port is reused and left alone, one that answers 403 to that Host is refused. Linux only: tailcat and an owned pi-web run in separate foreground transient user services, `pi-web-tailcat-<port>.service` and `pi-web-tailcat-<port>-web.service` (`systemd-run --user --collect`, `KillMode=control-group`, `TimeoutStopSec=10s`); no persistent unit files or user/PID namespaces. For an owned web service, the tunnel uses `BindsTo`/`After` so web exit stops the tunnel, and `ExecStopPost=systemctl --user --no-block stop ...-web.service` so tunnel exit stops web. An external pi-web receives neither dependency nor stop action. `stop` synchronously stops both managed units. There are no PID files/checks, background jobs, `wait`, or traps in the wrapper; systemd owns process lifecycles. The wrapper only waits for HTTP/address readiness while querying unit state. Exported caller environment is enumerated with `env -0` (not `compgen`, absent from Nix's non-interactive Bash) and forwarded by name (values never enter argv). A usable user manager is required; missing connection environment is recovered from an existing user-owned `/run/user/<UID>` and its bus socket, never by creating that directory. If the manager and local bus sockets are absent, `start` checks linger and runs `sudo loginctl enable-linger` for the current user when needed, announces the persistent logout-lifetime change, and waits for the manager. An existing manager's connection failure and `stop` never trigger sudo or a login-policy change. Logout lifetime follows the linger policy. State: `~/.cache/tailcat/pi-web-<port>.{addr,log,lock}`. Start/stop are serialized per port. Address cache files are cleared on fresh start, explicit stop and startup failure; saved tailcat keys are never removed. Clients run `tailcat socks` directly (no `connect` subcommand). Plain HTTP/1.1 inside the WireGuard tunnel: no TLS, no secure context (no web push/service worker), no h2. One listener per saved key (`--key`, default `default`; two tunnels on one key fight for the address), `--allow` passes client node keys. Authentication configuration belongs to pi-web; the wrapper has no password options or environment overrides. When pi-web reports authentication disabled and no `--allow` is set, the command warns that the address is the only credential. Run it outside nono, because pi-web writes `~/.pi/agent` (sessions, run records).
-- MCP: built-in support. `~/.pi/agent/mcp.json` declares `exa` (HTTP, 60s, `exposure = "direct"`); tool names `mcp__<server>__<tool>`.
+- An extension is `home-manager/pi/extensions/<name>/index.ts`, wired through
+  `settings.extensions`. The whole tree is copied into one store directory that
+  `~/.local/share/pi/extensions` links to, so imports between extensions
+  resolve.
+- `bash` (codemode's too) and `!`/`!!` run inside nono. `write`, `edit`, `read`,
+  `grep`, `find`, `ls` and MCP run directly as Pi. Nested `nono run` does not
+  work. See `home-manager/pi/extensions/bash-sandbox/README.md`.
+- Delegate with the pstack `agent` tool. Run `git`, `gh` and `ast-grep` through
+  the sandboxed `bash` tool.
+- `mutableSettings = true` merges the declared settings into a writable
+  `settings.json` on `home-manager switch`, not at launch, so stop Pi and
+  pi-web before you switch. A declared value wins and nested objects merge, but
+  a declared array replaces the saved array, except `packages`, which merges by
+  package identity. Removing a declaration leaves its saved value. Pi saves the
+  model and thinking preferences there too.
+- `home-manager/pi/context.md` is the default for
+  `programs.pi-coding-agent.context` (`lib.mkDefault`). It installs as
+  `~/.pi/agent/AGENTS.md`, which loads in every working directory. Rules for
+  this repository stay in this file.
+- Pi resolves an extension's `@earendil-works/pi-ai` to
+  `dist/core/extensions/pi-ai-extension-view.{js,d.ts}`, not to the package
+  root. That view's `StringEnum` returns `TUnsafe`, so
+  `Static<typeof StringEnum(...)>` is a literal union.
+- A theme is one file in `home-manager/pi/themes/`, and its file name must
+  equal the theme `name` because Pi hot-reloads by that path. See its README.
+- `pi-web` is built with `nix build .#pi-web` and pinned in `flake.lock`. Update
+  it in Nix, never with `pi-web update`. Each server keeps a private Next.js
+  directory under `~/.local/state/pi-web/runtime/` and aborts startup when it
+  cannot rotate the preview secrets there. A normal shutdown removes it, so
+  delete a leftover directory after a forced stop only once no server uses it.
+- `pi-web-tailcat` tunnels pi-web on Linux, with `start` and `stop` only. Run it
+  outside nono, because pi-web writes `~/.pi/agent`. The script header and
+  `pi-web-tailcat --help` carry the design and the client steps.
 
 ## nono
 
-- Profile `~/.config/nono/profiles/agents.json` from `home-manager/nono/default.nix`. Options `dotfiles.nono.{filesystem.*,commandPolicies.*}` are the extension points (list options concatenate; each command value is a `pkgs` function).
-- Core grants: `~/bin`, `~/pkg`, `~/src`, `/tmp`, `~/.cache`, `~/.local/state/{home-manager,nix}`, `~/.config/nix`, plus the `nix_runtime` group. Runtime homes come from their own modules via `filesystem.allow`. A deny cannot sit under a grant (Linux rejects deny-under-allow), so `~/.cargo` has no credentials deny.
-- `commands/` (`{default,gh,git}.nix`) holds the gh/git child sandboxes as one security unit. `gh`: deny by default with a read-only allowlist, subcommand path first, no leading flags, `fs_write` + `network.allow_all`, pinned `${pkgs.gh}/bin/.gh-wrapped`. `git`: allow with a short deny list (`push`, `fetch`, `pull`, `ls-remote`, `remote add|remove|rm|set-url|prune|update`, `submodule add|update`); a leading global flag bypasses it and the sandbox is offline. Local writes are `@git:toplevel` plus `@git:common-dir` (a worktree's `.git` is a file into the main repository, so commits there write objects/refs/logs outside the checkout) and reads add `@git:config-files` (global config and its `include.path` targets, which `git` fatals on when unreadable); git's own children get the same reads without the writes, so hooks that shell out to `git` work. The git sandbox also takes `exec_paths` from `commandPolicies.gitExecPaths`: `git` execs hooks inside its own command sandbox, whose execute allowlist does not include the session's `executable_dirs` scan. Clone is the only intercepted command: networked passthrough with cwd/`/tmp` writes, CA reads and `libexec/git-core` exec, not `@git:toplevel` (works outside a repo); leading global flags skip it and the caller edge denies clone.
-- Exec gate: rebuilt per activation by scanning non-writable `PATH` dirs (+ lib closure); other store binaries are denied with `EACCES`, so `$GOROOT/pkg/tool`, `nix fmt`→`treefmt` and hardcoded store paths fail inside. Tools that re-exec helpers either live under writable grants (mise) or add their helper dir via `commandPolicies.executableDirs` (openssh `libexec`, man, docker compose plugins, git's hooks linkFarm).
-- Docker: `unix_socket` (`/var/run/docker.sock`; Colima sockets on macOS) plus `~/.docker` allow/bypass.
-- The required `deny_credentials` denial for `~/.ssh` remains in the outer profile. Only the mediated macOS `git commit` sandbox overrides it for read access using a command-scoped Seatbelt rule; Linux relies on the command sandbox's explicit read grant. Other Git operations receive no grant.
+- The profile comes from `home-manager/nono/default.nix` and renders to
+  `~/.config/nono/profiles/agents.json`. The option descriptions there carry
+  the policy.
+- A module adds its runtime home with `dotfiles.nono.filesystem.allow`. Linux
+  rejects a deny below a grant, so `~/.cargo` has no credentials deny.
+- The exec gate is rebuilt on every activation from the non-writable `PATH`
+  directories and their lib closure. Every other store binary fails with
+  `EACCES`, which is why a build, `nix fmt` and `nix run` need the user. A tool
+  that execs helpers by absolute path needs their directory in
+  `commandPolicies.executableDirs`.
+- `gh` denies by default against a read-only allowlist, so it needs the
+  subcommand path first and no leading flags. `git` allows local work and
+  denies the remote operations, and clone is its only networked command. A
+  leading global flag skips the git deny list and still leaves git offline.
+- `deny_credentials` for `~/.ssh` stays in the outer profile. Only the mediated
+  `git commit` sandbox on macOS overrides it for reads.
 
 ## build-essential
 
-- `gcc.nix`: ELF output references `~/.local/nix-runtime` (one `home.file` symlink to a store derivation, GC-rooted) instead of `/nix/store/<hash>`; tree = glibc lib/lib64/include, gcc-unwrapped lib, `dotfiles.buildEssential.libraries`.
-- `gcc`/`cc`/`g++`/`c++` wrap `pkgs.gcc-unwrapped` with `-B$RUNTIME/{lib,gcc-lib}/`, `-B${pkgs.binutils-unwrapped}/bin/` (raw `as`/`ld`, else RUNPATH gets store paths), `-isystem`, `-L`, `-rpath`, `--dynamic-linker`. `cpp`/`gcc-ar`/`gcc-nm`/`gcc-ranlib` are plain wrappers; `binutils-unwrapped` is installed.
-- nono: prefix in `filesystem.read` (must stay non-writable so the exec gate trusts it), `$RUNTIME/lib` and GCC `libexec` in `commandPolicies.executableDirs`.
-- `make.nix`: `gnumake`.
+`gcc.nix` keeps generated ELF files on the stable `~/.local/nix-runtime` prefix
+instead of a store hash. See `home-manager/build-essential/README.md`. The
+prefix and the GCC `libexec` helpers have their own nono grants, and the prefix
+must stay read-only so the exec gate trusts it.
 
 ## Git
 
-- Hooks block commits/pushes to `master`, `main`, `release.*`, `gh-pages`; per-repo bypass `git-allow -y`, re-enable `git-allow -n`. The marker is `${git rev-parse --path-format=absolute --git-common-dir}/git_allow`, not `<toplevel>/.git/git_allow`, so a linked worktree (where `.git` is a file) shares the repository marker. Hooks are built with `patchShebangs` to use Nix Bash. Home-manager links them into a store linkFarm at `core.hooksPath`; Linux exec grants include the linkFarm and Bash directories in `commandPolicies.executableDirs`, and the hook targets and Bash executable in `commandPolicies.gitExecPaths`.
-- `git-fixup`: fzf `git commit --fixup` for staged changes. `ghq.root = ~/src`. `GIT_EDITOR = nvim`.
+- `pre-commit` and `pre-push` block `master`, `main`, `release.*` and
+  `gh-pages`. Bypass per repository with `git-allow -y` and re-enable with
+  `git-allow -n`.
+- Home-manager links the hooks into a store linkFarm at `core.hooksPath`. On
+  Linux the linkFarm and the Nix Bash directory are in
+  `commandPolicies.executableDirs`, and each hook target is in
+  `commandPolicies.gitExecPaths`.
+- `ghq.root = ~/src`, `GIT_EDITOR = nvim`.
 
 ## Neovim
 
-- `home-manager/neovim/default.nix` installs Neovim, lists plugins and holds `init.lua` (a `require` list); HM generates `~/.config/nvim/init.lua`, so `nvim/` has none.
-- `nvim/lua/config/`: `option`, `keymap`, `autocmd` (yank→OSC52), `lsp`, `copilot`, `statusline` (`_G.statusline`, `%!v:lua.statusline()`). `nvim/lsp/<server>.lua`: declarative table. `nvim/lua/plugins/<plugin>.lua`: one lz.n spec, `after` sets up + keymaps, `keys`/`ft`/`event` are triggers only. `nvim/lua/util.lua`: helpers.
-- Rules: `vim.opt.*` (`vim.opt_local.*` in `ftplugin/`), `local` everywhere (`_G` only for the statusline), every keymap has `desc`, comments explain why with `-- ref:` links. Lazy plugins use `optional = true` in `programs.neovim.plugins`.
+- `home-manager/neovim/default.nix` installs Neovim, lists the plugins and holds
+  `init.lua`, a list of `require` calls. Home Manager generates
+  `~/.config/nvim/init.lua`, so `home-manager/neovim/nvim/` has none.
+- A plugin is one lz.n spec in `nvim/lua/plugins/<plugin>.lua`, where `after`
+  sets it up and adds keymaps, and `keys`, `ft` and `event` only trigger. An
+  LSP server is a declarative table in `nvim/lsp/<server>.lua`.
+- Use `vim.opt.*` (`vim.opt_local.*` in `ftplugin/`), `local` everywhere except
+  the statusline, a `desc` on every keymap, and a comment with a `-- ref:` link
+  wherever the code needs a reason. A lazy plugin is `optional = true` in
+  `programs.neovim.plugins`.
 
-## Rules & Quirks
+## Tools
 
-- Public repo: no absolute home paths, usernames, hostnames, emails or credentials; use `~`/relative paths and resolve machine paths at runtime (`tmpdir()`, `homedir()`, `process.execPath`).
-- `allowUnfree = true`. `GOPATH=$HOME`, `GOBIN=$HOME/bin`. Go and kubebuilder are mise tools (`dotfiles.mise.tools` as `lib.mkDefault`, `mise install` on switch); only `gopls` is in Nix, because nixpkgs Go re-execs `$GOROOT/pkg/tool` which the exec gate denies. Node prefix `~/.node` (+ `$HOME/.node/bin`), mise shims `~/.local/share/mise/shims`. `EDITOR`/`KUBE_EDITOR = nvim`. macOS extras via `Brewfile`.
-- zsh `dotDir = ~/.config/zsh` (+ `~/.zshenv.local`). tmux prefix `Ctrl+s`. zellij leader `Ctrl+s` → `locked` (default layout).
+Go is a mise tool, and `gopls` is the only Go binary from Nix, because nixpkgs
+Go re-execs `$GOROOT/pkg/tool`, which the exec gate denies. Add a tool the same
+way: mise when it execs helpers outside `PATH`, Nix otherwise.
