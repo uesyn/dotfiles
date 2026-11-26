@@ -114,3 +114,50 @@
 
  Options:
    -p, --port <port>          Server port (default: 30141, or PORT)
+--- a/components/MarkdownBody.tsx
++++ b/components/MarkdownBody.tsx
+@@ -9,10 +9,8 @@
+ import { isAudioPath, isVideoPath } from "@/lib/file-types";
+ import { isExternalMarkdownHref, jumpToMarkdownFragment, markdownAppUrlTransform, markdownDocumentRehypePlugins, markdownRehypePlugins, markdownRemarkPlugins, markdownTextLayoutRemarkPlugins, markdownUrlTransform, markdownUserRemarkPlugins, normalizeDisplayMath } from "@/lib/markdown";
+ import { parseFenceBlock, splitMarkdownBlocks } from "@/lib/markdown-blocks";
+-import { isPlantUmlLang } from "@/lib/plantuml";
+ import { ImagePreview } from "./ImagePreview";
+ import { MermaidBlock, CodeBlock } from "./MermaidBlock";
+-import { PlantUmlBlock } from "./PlantUmlBlock";
+ import { SvgBlock } from "./SvgBlock";
+
+ const MarkdownLinkContext = createContext(false);
+@@ -113,11 +111,10 @@
+   );
+ });
+
+-/** A fenced block: a diagram's block for mermaid, svg and plantuml, else a code block. */
++/** A fenced block: a diagram's block for Mermaid and SVG, else a code block. */
+ function renderFence(lang: string, code: string, isStreaming: boolean | undefined) {
+   if (lang === "mermaid") return <MermaidBlock code={code} isStreaming={isStreaming} defaultPreview />;
+   if (lang === "svg") return <SvgBlock code={code} isStreaming={isStreaming} />;
+-  if (isPlantUmlLang(lang)) return <PlantUmlBlock code={code} lang={lang} isStreaming={isStreaming} />;
+   return <CodeBlock code={code} lang={lang} isStreaming={isStreaming} />;
+ }
+
+--- a/components/FileViewer.tsx
++++ b/components/FileViewer.tsx
+@@ -27,8 +27,6 @@
+ import { parseFrontmatter } from "@/lib/frontmatter";
+ import { isExternalMarkdownHref, jumpToMarkdownFragment, markdownAppUrlTransform, markdownPreviewRehypePlugins, markdownPreviewRemarkPlugins, markdownUrlTransform, normalizeDisplayMath } from "@/lib/markdown";
+ import { CodeBlock, MermaidBlock } from "./MermaidBlock";
+-import { PlantUmlBlock } from "./PlantUmlBlock";
+-import { isPlantUmlLang } from "@/lib/plantuml";
+ import { DelimitedTable } from "./DelimitedTable";
+ import { isDelimitedTablePath } from "@/lib/delimited-table";
+ import { FrontmatterCard } from "./FrontmatterCard";
+@@ -1816,9 +1814,6 @@
+           if (lang === "mermaid") {
+             return <MermaidBlock code={raw.replace(/\n$/, "")} defaultPreview />;
+           }
+-          if (isPlantUmlLang(lang)) {
+-            return <PlantUmlBlock code={raw.replace(/\n$/, "")} lang={lang} />;
+-          }
+           return <CodeBlock code={raw.replace(/\n$/, "")} lang={lang} />;
+         }
+         return (
