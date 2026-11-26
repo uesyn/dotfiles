@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "anthropic-skills": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1794838967,
-        "narHash": "sha256-Gr9LatjawHHK9uKpoclWoiDHZ0NTpP3/4Pmeatl8p/Q=",
-        "owner": "anthropics",
-        "repo": "skills",
-        "rev": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "anthropics",
-        "repo": "skills",
-        "type": "github"
-      }
-    },
     "bun2nix": {
       "inputs": {
         "flake-parts": [
@@ -94,16 +78,16 @@
     "kubebuilder": {
       "flake": false,
       "locked": {
-        "lastModified": 1772207819,
-        "narHash": "sha256-8rdi9jP4kRJCNOSzjDqD3MOccOq5/TXz6xubzilISco=",
+        "lastModified": 1789032636,
+        "narHash": "sha256-u31HsZzVevNkXUYz1Q6EhBamleRq8ZjSuUeu2nPIWAU=",
         "owner": "kubernetes-sigs",
         "repo": "kubebuilder",
-        "rev": "bb95ce240477f3d9be177b8c8f40d4876a618f45",
+        "rev": "4d01fcdf146e4d832fc973ef95684a00bcf0f0c0",
         "type": "github"
       },
       "original": {
         "owner": "kubernetes-sigs",
-        "ref": "v4.13.0",
+        "ref": "v4.16.0",
         "repo": "kubebuilder",
         "type": "github"
       }
@@ -197,7 +181,6 @@
     },
     "root": {
       "inputs": {
-        "anthropic-skills": "anthropic-skills",
         "home-manager": "home-manager",
         "kubebuilder": "kubebuilder",
         "llm-agents": "llm-agents",

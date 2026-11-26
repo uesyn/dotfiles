@@ -8,10 +8,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
     };
-    anthropic-skills = {
-      url = "github:anthropics/skills";
-      flake = false;
-    };
     pstack-claude = {
       url = "github:michael-denyer/pstack-claude";
       flake = false;
@@ -21,7 +17,7 @@
       flake = false;
     };
     kubebuilder = {
-      url = "github:kubernetes-sigs/kubebuilder/v4.13.0";
+      url = "github:kubernetes-sigs/kubebuilder/v4.16.0";
       flake = false;
     };
   };

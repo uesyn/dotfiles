@@ -31,19 +31,6 @@ Before starting, verify these requirements:
 4. **Docker** (for building images): `docker version`
 5. **Kubernetes cluster** (local or remote) for testing
 
-If kubebuilder is not installed:
-```bash
-# macOS/Linux
-curl -L -o kubebuilder "https://github.com/kubernetes-sigs/kubebuilder/releases/download/v4.1.1/kubebuilder_$(go env GOOS)_$(go env GOARCH)"
-chmod +x kubebuilder
-sudo mv kubebuilder /usr/local/bin/
-```
-
-Or via homebrew:
-```bash
-brew install kubebuilder
-```
-
 ## Full Workflow
 
 ### 1. Initialize Project
@@ -452,7 +439,7 @@ kubebuilder edit --multigroup=true
 ## Troubleshooting
 
 ### Issue: "kubebuilder not found"
-Solution: Install via curl or homebrew (see Prerequisites)
+Solution: kubebuilder comes from mise. Run `mise install`.
 
 ### Issue: "make generate" fails with "no such file"
 Solution: Install controller-gen: `make controller-gen`
@@ -468,6 +455,7 @@ Solution: Ensure cert-manager is installed in the cluster for webhook certificat
 
 ## Resources
 
+- Upstream docs for the installed version: `references/` (`references/book/src` for the guide, `references/migration_guide.md` for upgrades)
 - [Kubebuilder Documentation](https://book.kubebuilder.io/)
 - [Kubernetes Controller Runtime](https://pkg.go.dev/sigs.k8s.io/controller-runtime)
 - [Custom Resource Definitions](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/)

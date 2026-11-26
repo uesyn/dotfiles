@@ -132,7 +132,6 @@ in
         };
       };
       providers = defaultProviders // pi.providers;
-      skills = inputs.anthropic-skills;
       kubebuilder = inputs.kubebuilder;
       # The extension only swaps `shellPath`. This immutable wrapper turns that
       # shell into `nono run ... <nix bash> "$@"`, so Pi keeps owning spawn,
@@ -187,9 +186,6 @@ in
 
       # Skills live under ~/.config/pi/skills; the config below points Pi there.
       xdg.configFile = {
-        "pi/skills/skill-creator" = {
-          source = "${skills}/skills/skill-creator";
-        };
         "pi/skills/k8s-api-conventions" = {
           source = ./skills/k8s-api-conventions;
           recursive = true;
