@@ -160,6 +160,9 @@ in
       # bash-sandbox extension runs bash and !/!! through nono instead.
 
       home.packages = lib.mkIf pi.pi-web.enable [ piWeb ];
+      # Marks the session remote so Pi also emits OSC52 for the client
+      # terminal; multiplexer attaches and IDE daemons leave no SSH markers.
+      home.sessionVariables.PI_CLIPBOARD_OSC52 = "1";
       home.file.".local/share/pi/extensions".source = "${extensionsTree}";
       home.file.".local/share/pi/pstack".source = inputs.pstack-claude;
       # Built-in MCP support (no pi-mcp-adapter package): servers in

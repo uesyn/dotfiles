@@ -21,8 +21,6 @@
   #   enable = true;
   # };
 
-  # Preferred spelling. The legacy dotfiles.git-credential-oauth is also
-  # supported during migration; values here take precedence per setting.
   # dotfiles.gitCredentialOauth.device = false;
   # dotfiles.gitCredentialOauth.ghHosts = [
   #   { host = "github.com"; }
@@ -35,12 +33,6 @@
   #   #   # oauthRedirectURL = "https://github.example.com/oauth/callback";
   #   # }
   # ];
-
-  # nono sandbox profile (fixed name `agents`). `wrap` commands get a shell
-  # alias that runs `nono run --profile agents -s --allow-cwd -- <command>`;
-  # the Pi module adds itself to `wrap`.
-  # dotfiles.nono.aliasPrefix = "";
-  # dotfiles.nono.wrap = [ "pi" ];
 
   # Inside the nono sandbox, `gh` uses a read-only allowlist
   # (`home-manager/nono/commands/gh.nix`): only the listed subcommands run and

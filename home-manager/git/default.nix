@@ -2,7 +2,6 @@
   config,
   pkgs,
   lib,
-  options,
   ...
 }:
 let
@@ -100,16 +99,8 @@ let
           entry.oauthRedirectURL;
     };
   };
-  oauthDevice =
-    if options.dotfiles.gitCredentialOauth.device.isDefined then
-      config.dotfiles.gitCredentialOauth.device
-    else
-      config.dotfiles.git-credential-oauth.device;
-  oauthHosts =
-    if options.dotfiles.gitCredentialOauth.ghHosts.isDefined then
-      config.dotfiles.gitCredentialOauth.ghHosts
-    else
-      config.dotfiles.git-credential-oauth.ghHosts;
+  oauthDevice = config.dotfiles.gitCredentialOauth.device;
+  oauthHosts = config.dotfiles.gitCredentialOauth.ghHosts;
   # home-manager builds the `programs.git.hooks` linkFarm and points
   # `core.hooksPath` at it; the directory is not exposed as an option, so read
   # it back from the ini it lands in.
@@ -172,8 +163,6 @@ in
   };
 
   options.dotfiles.gitCredentialOauth = gitCredentialOauthOptions;
-  # Keep the old spelling available while configurations migrate.
-  options.dotfiles.git-credential-oauth = gitCredentialOauthOptions;
 
   config = {
     assertions = [
@@ -182,8 +171,7 @@ in
           entry: (entry.oauthClientId == null) == (entry.oauthClientSecret == null)
         ) oauthHosts;
         message = ''
-          dotfiles.gitCredentialOauth.ghHosts (or the legacy
-          dotfiles.git-credential-oauth.ghHosts): oauthClientId and
+          dotfiles.gitCredentialOauth.ghHosts: oauthClientId and
           oauthClientSecret must be set together (or both left as null
           to use the bundled default credentials) for each host entry.
         '';

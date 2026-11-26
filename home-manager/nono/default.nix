@@ -8,26 +8,6 @@
   imports = [ ./commands ];
 
   options.dotfiles.nono = {
-    aliasPrefix = lib.mkOption {
-      type = lib.types.str;
-      default = "";
-      description = ''
-        Prefix for the generated shell aliases. Defaults to `""`, so the nono
-        wrappers take over the plain command names.
-      '';
-    };
-    wrap = lib.mkOption {
-      type = lib.types.listOf lib.types.str;
-      default = [ ];
-      description = ''
-        Commands to wrap with nono. Each entry creates a shell alias named
-        `<aliasPrefix><command>` in both zsh and bash that runs
-        `nono run --profile agents -s --allow-cwd -- <command>`. Tool modules
-        add themselves here (e.g. the OpenCode and Pi modules), so a command
-        can be un-wrapped only with `lib.mkForce`.
-      '';
-      example = lib.literalExpression ''[ "opencode" "pi" ]'';
-    };
     # The `filesystem.*` lists are the profile's `filesystem.*` arrays. The
     # nono module's own `config` defines the core policy through these options,
     # so a module setting one *appends* to the core (list options concatenate)
@@ -140,16 +120,9 @@
     let
       nono = config.dotfiles.nono;
 
-      # Fixed profile name; the alias wrappers and the rendered file name use
-      # it, so `nono run --profile agents` works out of the box.
+      # Fixed profile name; the rendered file name uses it, so
+      # `nono run --profile agents` works out of the box.
       profileName = "agents";
-
-      wrappedAliases = lib.listToAttrs (
-        map (cmd: {
-          name = "${nono.aliasPrefix}${cmd}";
-          value = "nono run --profile ${profileName} -s --allow-cwd -- ${cmd}";
-        }) nono.wrap
-      );
 
       profile = {
         extends = "default";
@@ -216,13 +189,6 @@
         # pkgs.llm-agents.nono
         pkgs.nono
       ];
-
-      home.sessionVariables = {
-        PI_CLIPBOARD_OSC52 = "1";
-      };
-
-      programs.zsh.shellAliases = wrappedAliases;
-      programs.bash.shellAliases = wrappedAliases;
 
       xdg.configFile."nono/profiles/${profileName}.json".text = builtins.toJSON profile;
     };
