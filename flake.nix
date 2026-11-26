@@ -61,7 +61,13 @@
             pkgs = nixpkgs.legacyPackages.${system};
             modules = [
               self.homeManagerModules.default
-              { dotfiles.pi.extensions.confluence-readonly.enable = false; }
+              {
+                dotfiles.pi = {
+                  extensions.confluence-readonly.enable = false;
+                  pi-web.enable = true;
+                  pi-web-tailcat.enable = true;
+                };
+              }
             ];
           };
         };

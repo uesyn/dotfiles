@@ -22,6 +22,8 @@ in
   imports = [ (import ./pi-web-tailcat.nix { inherit piWeb; }) ];
 
   options.dotfiles.pi = {
+    pi-web.enable = lib.mkEnableOption "Pi Web";
+
     extensions = lib.listToAttrs (
       map (extension: {
         inherit (extension) name;
@@ -157,7 +159,7 @@ in
       # Pi runs outside nono, so this module contributes no nono grants; the
       # bash-sandbox extension runs bash and !/!! through nono instead.
 
-      home.packages = [ piWeb ];
+      home.packages = lib.mkIf pi.pi-web.enable [ piWeb ];
       home.file.".local/share/pi/extensions".source = "${extensionsTree}";
       home.file.".local/share/pi/pstack".source = inputs.pstack-claude;
       # Built-in MCP support (no pi-mcp-adapter package): servers in
