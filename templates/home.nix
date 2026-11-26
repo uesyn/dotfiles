@@ -105,10 +105,6 @@
   # dotfiles.pi.extensions.bash-sandbox.enable = false;
   # dotfiles.pi.extensions.btw.enable = false;
   # dotfiles.pi.extensions.confluence-readonly.enable = false;
-  # dotfiles.pi.extensions.last-model.enable = false;
-
-  # pstack skills and extensions are enabled by default.
-  # dotfiles.pi.pstack.enable = false;
 
   # Add custom Pi model providers. These are merged with the built-in providers.
   # dotfiles.pi.providers = {

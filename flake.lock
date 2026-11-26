@@ -162,6 +162,23 @@
         "type": "github"
       }
     },
+    "pi-web": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1795175046,
+        "narHash": "sha256-Dl8cgjULhdc5dNeIxexOe7oMaxIZqF0Kv0JGa9AFt7A=",
+        "owner": "agegr",
+        "repo": "pi-web",
+        "rev": "2daa0d131eae6c2fd8c2a80872eee01ea3c7a0a1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "agegr",
+        "ref": "v0.18.0",
+        "repo": "pi-web",
+        "type": "github"
+      }
+    },
     "pstack-claude": {
       "flake": false,
       "locked": {
@@ -185,6 +202,7 @@
         "kubebuilder": "kubebuilder",
         "llm-agents": "llm-agents",
         "nixpkgs": "nixpkgs_2",
+        "pi-web": "pi-web",
         "pstack-claude": "pstack-claude"
       }
     },

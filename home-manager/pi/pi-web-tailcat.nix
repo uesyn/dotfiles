@@ -1,3 +1,4 @@
+{ piWeb }:
 {
   pkgs,
   lib,
@@ -18,7 +19,9 @@
         pkgs.systemd
         pkgs.util-linux
       ];
-      text = builtins.readFile ./pi-web-tailcat.sh;
+      text = builtins.replaceStrings [ "@piWeb@" ] [ (lib.getExe piWeb) ] (
+        builtins.readFile ./pi-web-tailcat.sh
+      );
     })
   ];
 }

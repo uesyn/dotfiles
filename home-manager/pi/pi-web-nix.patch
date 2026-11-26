@@ -1,0 +1,116 @@
+--- a/app/layout.tsx
++++ b/app/layout.tsx
+@@ -1,5 +1,4 @@
+ import type { Metadata, Viewport } from "next";
+-import { Noto_Sans_Mono } from "next/font/google";
+ import { PwaRegistration } from "@/components/PwaRegistration";
+ import { THEME_INIT_SCRIPT } from "@/lib/theme";
+ import "katex/dist/katex.min.css";
+@@ -8,12 +7,6 @@
+ import "./sidebar.css";
+ import "./sidebar-menu.css";
+
+-const notoSansMono = Noto_Sans_Mono({
+-  subsets: ["latin", "cyrillic"],
+-  variable: "--font-noto-mono",
+-  display: "swap",
+-});
+-
+ export const metadata: Metadata = {
+   title: "Pi Web",
+   description: "Pi Web interface for the pi coding agent",
+@@ -61,7 +54,7 @@
+   children: React.ReactNode;
+ }) {
+   return (
+-    <html lang="en" translate="no" className={`${notoSansMono.variable} notranslate`} suppressHydrationWarning>
++    <html lang="en" translate="no" className="notranslate" suppressHydrationWarning>
+       <head>
+         <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
+         <meta name="google" content="notranslate" />
+--- a/app/globals.css
++++ b/app/globals.css
+@@ -1194,7 +1194,7 @@
+   --font-ui-default: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+   /* The drawing faces come before the web font: its generated fallback is
+      Arial, which would otherwise take the box drawing it lacks. */
+-  --font-mono-default: "Terminal Drawing", "Terminal Drawing Windows", var(--font-noto-mono), 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, 'PingFang SC', 'Microsoft YaHei', monospace;
++  --font-mono-default: "Terminal Drawing", "Terminal Drawing Windows", "JetBrainsMono Nerd Font Mono", 'JetBrains Mono', 'Fira Code', 'Consolas', ui-monospace, 'PingFang SC', 'Microsoft YaHei', monospace;
+   --font-ui: var(--font-ui-default);
+   --font-mono: var(--font-mono-default);
+   --font-ui-weight: 400;
+@@ -3004,3 +3004,15 @@
+     display: none !important;
+   }
+ }
++@font-face {
++  font-family: "JetBrainsMono Nerd Font Mono";
++  src: url("./JetBrainsMonoNerdFontMono-Regular.ttf") format("truetype");
++  font-weight: 400;
++  font-display: swap;
++}
++@font-face {
++  font-family: "JetBrainsMono Nerd Font Mono";
++  src: url("./JetBrainsMonoNerdFontMono-Bold.ttf") format("truetype");
++  font-weight: 700;
++  font-display: swap;
++}
+--- a/bin/pi-web.js
++++ b/bin/pi-web.js
+@@ -72,7 +72,7 @@
+
+ function startServer({ port, hostname, openBrowser }) {
+
+-  const pkgDir = path.join(__dirname, "..");
++  const pkgDir = require("./nix-runtime.cjs").prepare(path.join(__dirname, ".."));
+   const nextDir = path.join(pkgDir, ".next");
+
+   // Resolve next's CLI entry directly to avoid relying on .bin symlinks (which
+@@ -103,7 +103,7 @@
+   // (via the x-prerender-revalidate header). Must happen before `next start`.
+   const rotation = rotatePreviewSecrets(nextDir);
+   if (!rotation.ok) {
+-    console.warn(getRotationWarning(rotation.reason));
++    throw new Error(getRotationWarning(rotation.reason));
+   }
+
+   if (!loopbackHostnames.has(hostname)) {
+--- a/bin/pi-web-commands.js
++++ b/bin/pi-web-commands.js
+@@ -7,8 +7,6 @@
+ // eslint-disable-next-line @typescript-eslint/no-require-imports
+ const { openInBrowser } = require("./browser-opener");
+ // eslint-disable-next-line @typescript-eslint/no-require-imports
+-const { runUpdate } = require("./pi-web-update");
+-// eslint-disable-next-line @typescript-eslint/no-require-imports
+ const records = require("./run-records");
+
+ const STOP_TIMEOUT_MS = 10_000;
+@@ -100,15 +98,7 @@
+       return 0;
+     }
+     case "update":
+-      return runUpdate({
+-        check: options.check,
+-        currentVersion: getPackageVersion(pkgDir),
+-        pkgDir,
+-        listRecords: list,
+-        formatRecord: records.formatRunRecord,
+-        log,
+-        error,
+-      });
++      throw new Error("pi-web is managed by Nix; update the flake input instead.");
+     default:
+       error(`Unknown command: ${options.command}`);
+       return 1;
+--- a/bin/pi-web-options.js
++++ b/bin/pi-web-options.js
+@@ -49,7 +49,7 @@
+   status                     List running Pi Web servers
+   stop [--port <port>]       Stop a running server
+   open [--port <port>]       Open a running server in the browser
+-  update [--check]           Update a global npm install to the latest version
++  update [--check]           Updates are managed by Nix; update the flake input
+
+ Options:
+   -p, --port <port>          Server port (default: 30141, or PORT)

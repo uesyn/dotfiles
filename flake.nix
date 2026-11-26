@@ -16,6 +16,10 @@
       url = "github:michael-denyer/pstack-claude";
       flake = false;
     };
+    pi-web = {
+      url = "github:agegr/pi-web/v0.18.0";
+      flake = false;
+    };
     kubebuilder = {
       url = "github:kubernetes-sigs/kubebuilder/v4.13.0";
       flake = false;
@@ -49,6 +53,9 @@
       formatter = lib.forAllSystems (system: nixpkgs.legacyPackages.${system}.nixfmt-tree);
 
       packages = lib.forAllSystems (system: {
+        pi-web = nixpkgs.legacyPackages.${system}.callPackage ./home-manager/pi/pi-web-package.nix {
+          src = inputs.pi-web;
+        };
         homeConfigurations = {
           ${builtins.getEnv "USER"} = home-manager.lib.homeManagerConfiguration {
             pkgs = nixpkgs.legacyPackages.${system};

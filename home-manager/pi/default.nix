@@ -12,12 +12,14 @@ let
       name = "confluence-readonly";
       tool = "confluence";
     }
-    { name = "last-model"; }
     { name = "bash-sandbox"; }
   ];
+  extensionsDir = "${config.home.homeDirectory}/.local/share/pi/extensions";
+  pstackDir = "${config.home.homeDirectory}/.local/share/pi/pstack";
+  piWeb = pkgs.callPackage ./pi-web-package.nix { src = inputs.pi-web; };
 in
 {
-  imports = [ ./pi-web-tailcat.nix ];
+  imports = [ (import ./pi-web-tailcat.nix { inherit piWeb; }) ];
 
   options.dotfiles.pi = {
     extensions = lib.listToAttrs (
@@ -28,10 +30,6 @@ in
         };
       }) extensions
     );
-
-    pstack.enable = lib.mkEnableOption "the pstack Pi package" // {
-      default = true;
-    };
 
     # Bash tool sandbox bootstrap, generated below and read by bash-sandbox.
     sandbox.profile = lib.mkOption {
@@ -159,14 +157,9 @@ in
       # Pi runs outside nono, so this module contributes no nono grants; the
       # bash-sandbox extension runs bash and !/!! through nono instead.
 
-      # pi-web comes from npm through mise (the npm backend needs `npm`, which
-      # the javascript module provides). Its install directory is writable,
-      # which pi-web needs: it rewrites `.next/prerender-manifest.json` on every
-      # start so the `previewModeId` published in the package cannot bypass its
-      # password gate. `lib.mkDefault` so a plain definition overrides it.
-      dotfiles.mise.tools."npm:@agegr/pi-web" = lib.mkDefault "0.18.0";
-
+      home.packages = [ piWeb ];
       home.file.".local/share/pi/extensions".source = "${extensionsTree}";
+      home.file.".local/share/pi/pstack".source = inputs.pstack-claude;
       # Built-in MCP support (no pi-mcp-adapter package): servers in
       # ~/.pi/agent/mcp.json are connected directly. Tool names are
       # mcp__<server>__<tool>; `exposure = "direct"` declares them to the model.
@@ -207,7 +200,7 @@ in
 
       programs.pi-coding-agent = {
         enable = true;
-        # package = pkgs.llm-agents.pi;
+        mutableSettings = true;
         extraPackages = [
           pkgs.nodejs
           pkgs.bun
@@ -237,7 +230,7 @@ in
           ];
         };
         settings = {
-          packages = lib.mkIf pi.pstack.enable [ "${inputs.pstack-claude}" ];
+          packages = [ pstackDir ];
           compaction = {
             enabled = true;
             keepRecentTokens = 20000;
@@ -251,7 +244,7 @@ in
             "+codemode"
           ] ++ map (extension: "+${extension.tool}") (lib.filter (extension: extension ? tool) enabledExtensions);
           extensions = map (
-            extension: "${config.home.homeDirectory}/.local/share/pi/extensions/${extension.name}"
+            extension: "${extensionsDir}/${extension.name}"
           ) enabledExtensions;
           skills = [
             "${config.home.homeDirectory}/.config/pi/skills"

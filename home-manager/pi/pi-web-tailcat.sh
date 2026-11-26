@@ -282,7 +282,7 @@ cmd_start() {
   elif pi_web_up; then
     note "using the pi-web already listening on $(pi_web_url)"
   else
-    web_command=$(command -v pi-web) || die "pi-web not found on PATH (mise install)"
+    web_command=@piWeb@
     hosts="${PI_WEB_ALLOWED_HOSTS:-}"
     case ",${hosts}," in
       *",${magic_host},"*) ;;
